@@ -1,0 +1,17 @@
+{"card":"hirelane-model-and-lib/B","status":"landed","shas":["e9edff1b"],
+ "tests_added":[
+  "examples/hirelane/test/preview.test.ts::case 1: each rejection preview is the letter sendRejection really sends",
+  "examples/hirelane/test/preview.test.ts::case 2: a scheduling preview is the letter sendSchedulingEmail really sends",
+  "examples/hirelane/test/preview.test.ts::case 3: a decided applicant gets the action's own refusal and no letter",
+  "examples/hirelane/test/preview.test.ts::case 4: a slot held for someone else refuses as slot_taken, and Applied is too early",
+  "examples/hirelane/test/preview.test.ts::case 5: preview_message is an AUTO read with enums for kind and template, and the register counts it",
+  "examples/hirelane/test/preview.test.ts::case 6: no wording label claims what its letter does not say (strengths, or a criterion)",
+  "examples/hirelane/test/preview.test.ts::case 7: previewing every seeded applicant, every kind and every choice writes nothing",
+  "examples/hirelane/test/preview.test.ts::case 8 (guard): the standard rejection to the Kestrel applicant is byte-identical to the base tree's"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter hirelane typecheck":0,"pnpm --filter hirelane lint":0,"pnpm --filter hirelane test":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":12,"lines_changed":517,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Card guard indexes '6','7' read as cases 7 and 8; case 7 (no-write sweep) cannot be green before because previewMessage does not exist, so only case 8 is a true guard (red-before 7 of 8). Case 6 follows the revision: a label may use 'strength(s)/strong/strongest' or any rubric criterion name word only if its letter's body does; encouraging label is now 'Encouraging - warm, says it was a hard decision'. Write set grew by one line in examples/hirelane/components/board/Dossier.tsx (passes roleTitle={role.title} to DossierGate, the only caller of the changed signature; the letter needs the role title). Gate renders the letter with existing classes (bd-block-label, bd-arm-q + inline whiteSpace pre-wrap) so no stylesheet changed. MESSAGE_KINDS lives in lib/constants.ts (manifest cannot import a components module) and is re-exported from preview.ts. Re-verified premise after r1 37f0280 (undo outcome): untouched by it, still true.",
+ "notes":"First root pnpm typecheck was red in examples/demo-kit test/demo-kit-template.test.ts ('the template's prose names no sibling app') - sibling demo-kit-template/B in flight, not my paths; re-run after lint was green (exit 0). ADR 0162 taken under the lock. Manual browser check of the armed gate not done."}

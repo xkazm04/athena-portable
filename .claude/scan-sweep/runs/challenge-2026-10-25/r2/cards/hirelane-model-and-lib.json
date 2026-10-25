@@ -1,0 +1,138 @@
+{
+  "host": "hirelane-model-and-lib",
+  "cards": [
+    {
+      "context": "hirelane-model-and-lib",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Unread applications stop reporting evidence: the evidence facets become null by type",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/components/board/model/candidates.ts",
+        "examples/hirelane/components/board/model.ts",
+        "examples/hirelane/lib/board/index.ts",
+        "examples/hirelane/lib/board/read.ts",
+        "examples/hirelane/components/board/tools/read.ts",
+        "examples/hirelane/components/board/columns/facts.tsx",
+        "examples/hirelane/components/board/carousel/StageMeta.tsx",
+        "examples/hirelane/components/board/carousel/Slide.tsx",
+        "examples/hirelane/components/board/dossier/Verdict.tsx",
+        "examples/hirelane/test/board.test.ts"
+      ],
+      "new_files": [
+        "examples/hirelane/components/board/model/evidence.ts",
+        "examples/hirelane/test/evidence.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/hirelane/components/board/columns/facts.tsx, carousel/StageMeta.tsx, carousel/Slide.tsx, dossier/Verdict.tsx are hirelane-board-ui's files (not scouted in this run); each edit is a render of the new nullable field, the logic moves into the host model"
+      ],
+      "generated": [],
+      "acceptance": [
+        "buildBoard() on the seed: every candidate with scored=false has evidence === null (today it carries meta.evidenced 0, band 'wide' and bandDrivers naming all five criteria, all computed from the blank() zero row) -> 0 unscored candidates carry an evidence count, band or drivers",
+        "buildBoard() on the seed: every scored candidate has evidence.evidenced equal to the number of its scores with at least one quote, and evidence.band/evidence.drivers equal bandOf(stored scorecard) - the same values the base tree printed for them",
+        "screeningFact(designer screening column: 4 applicants, none scored) -> 'Nobody here has been read against the rubric yet.' (today stageFact prints '0 of 20 criteria evidenced')",
+        "screeningFact(backend screening column: 6 scored borderline + 1 unscored) -> the 'N of M criteria evidenced' sentence counts only the 6 scored (M = 30, not 35) and appends '1 not read yet'",
+        "dossierRead(role, unscored candidate, slots) -> the object has no criteria_evidenced, confidence or uncertain_because key (today criteria_evidenced is '0 of 5')",
+        "candidateRead(scored candidate) -> confidence and uncertain_because are identical to the base tree's values for every seeded scored candidate",
+        "test/evidence.test.ts carries a // @ts-expect-error line reading candidate.evidence.band without narrowing -> pnpm typecheck fails if the field ever stops being nullable"
+      ],
+      "guard_cases": ["1", "5"],
+      "premise": [
+        "examples/hirelane/lib/board/index.ts:88 - blank() builds a full row of zero scores for an unscored applicant",
+        "examples/hirelane/lib/board/index.ts:106 - bandOf(scores) runs over that blank row, so an unread application gets band 'wide' and every criterion as a driver",
+        "examples/hirelane/lib/board/index.ts:145 - meta.evidenced is counted from the blank row: 0 for every unscored candidate",
+        "examples/hirelane/components/board/columns/facts.tsx:34 - the screening column fact sums meta.evidenced and criteriaCount over ALL candidates, scored or not",
+        "examples/hirelane/components/board/dossier/Verdict.tsx:94 - the dossier prints '{evidenced}/{criteriaCount} evidenced' with no scored guard, beside a 'not scored' fit",
+        "examples/hirelane/components/board/carousel/StageMeta.tsx:31 - the screening slide prints 'N of M criteria evidenced' and all-off pips for an unscored candidate",
+        "examples/hirelane/components/board/tools/read.ts:111 - dossierRead hands the agent criteria_evidenced unconditionally",
+        "examples/hirelane/components/board/model/candidates.ts:4 - the file's stated rule: overall is meaningless unless scored; the evidence facets carry no such rule, so each reader must remember it (Slide.tsx:180 and Verdict.tsx:56 remember, facts.tsx, StageMeta.tsx, Verdict.tsx:94 and read.ts:111 do not)",
+        "examples/hirelane/lib/db.ts:379 - non-borderline screening and every applied applicant are deliberately left unscored, so designer screening is 4 unread applications"
+      ],
+      "rollback": "Revert the series (model type first, then the five readers, then tests); the change is additive in the database (none) and only reshapes the view model, so a revert restores the old fields byte-for-byte.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from the root)",
+        "examples/hirelane: pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "One candidate ordering for board and agent: byScoreDesc (unscored by name), search/roster rank (unscored by waiting days) and readShortlist (overall only, ignores scored, no tie-break) are three comparators for one list.",
+      "body": "## Summary\nThe design law's first rule - the unscored are expressed by absence - is held for `overall` by a flag every reader must remember, and not held at all for the evidence facets. The server fabricates a zero scorecard for every unread applicant and derives an evidence count, a confidence band and a list of 'uncertain because' criteria from it. Four surfaces print those fabricated facts. Make them one nullable sub-object, `evidence: BdEvidence | null`, so the type checker enforces the rule instead of reviewers.\n\n## Description\n`lib/board/index.ts` gives an unscored applicant `blank()` - five zero rows - so the layout stays the same shape, then runs `bandOf` and the `evidenced` count over that row. Result: designer screening (four applications nobody has read) prints '0 of 20 criteria evidenced' in its column head, each slide prints '0 of 5 criteria evidenced' with five dark pips, the dossier's figure band prints '0/5 evidenced' beside 'not scored', and the agent's dossier read says `criteria_evidenced: \"0 of 5\"`. Each of those is a claim that the applicant's writing was checked and contains nothing, which is the exact zero-as-score error the model file says is the worst this domain can do.\n\nThe move: `BdCandidate.evidence: { evidenced, criteriaCount, band, drivers } | null`, built only from a stored scorecard; `band`, `bandDrivers` and `meta.evidenced` leave the flat shape. The column sentence moves out of the `.tsx` into a pure `screeningFact` in the host model (testable under node --test) that counts only the scored and names how many are unread. The four UI readers render the null as absence ('not read against the rubric yet'), and the agent read drops the keys, exactly as it already drops `overall`.\n\n## Flow\n- candidates.ts: add `BdEvidence`, replace the three flat fields\n- lib/board/index.ts + read.ts: build evidence only from `stored`; blank() stays for the score rows the shape needs\n- model/evidence.ts: `screeningFact(candidates)`\n- tools/read.ts: spread evidence keys only when non-null\n- facts.tsx, StageMeta.tsx, Slide.tsx, Verdict.tsx: render the null\n- tests first: board.test.ts seed-wide sweep, evidence.test.ts for screeningFact, dossierRead and the ts-expect-error pin\n\n## Expected impact\nA hiring manager stops seeing 'no evidence' claims about applications nobody read; an agent stops being told an unread applicant evidences 0 of 5. The class closes: a future reader cannot print an evidence fact for an unscored candidate without a type error.\n\n## Evaluation\nClaim: no unscored candidate carries an evidence fact on any surface or in any agent read, enforced by type.\nBefore: 0 of 7 acceptance cases pass (1, 3, 4, 5, 7 fail; 2 and 6 fail only on the new field path)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "lib/board/index.ts:88-95 `const blank = (): CriterionScore[] => criteria.map((c) => ({ ... score: 0, ... evidence: [] }))`; :99 `const scores = stored ?? blank();`; :106 `const { band, drivers } = bandOf(scores);`; :145 `evidenced: scores.filter((s) => s.evidence.length > 0).length`. columns/facts.tsx:34-37 `const evidenced = candidates.reduce((n, c) => n + c.meta.evidenced, 0); const total = candidates.reduce((n, c) => n + c.meta.criteriaCount, 0); return `${evidenced} of ${total} criteria evidenced`;`. Seed: db.ts PIPELINE role_designer screening count 4, BORDERLINE_PER_ROLE role_designer 0, seedHistory returns before the rubric note for non-borderline screening -> 4 unscored x 5 criteria (d_craft, d_research, d_system, d_proto, d_writing) = '0 of 20'. Verdict.tsx:93-96 prints `{candidate.meta.evidenced}/{candidate.meta.criteriaCount}` outside the `candidate.scored ?` guard at :56. tools/read.ts:111 `criteria_evidenced: `${candidate.meta.evidenced} of ${candidate.meta.criteriaCount}`` unconditional, while :47 guards overall/confidence. Not in any backlog: grep of evidenced|blank()|unscored over scan-history, stabilize findings, tiger/backlog.md, docs/BACKLOG.md finds only the unrelated 'emptied group' finding."
+    },
+    {
+      "context": "hirelane-model-and-lib",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Read the exact letter before an irreversible send: preview_message and a gate that shows it",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/lib/manifest.ts",
+        "examples/hirelane/lib/constants.ts",
+        "examples/hirelane/lib/mail.ts",
+        "examples/hirelane/components/board/tools/BoardTools.tsx",
+        "examples/hirelane/components/board/tools/read.ts",
+        "examples/hirelane/components/board/dossier/Gate.tsx",
+        "examples/hirelane/test/tools.test.ts",
+        "examples/hirelane/README.md"
+      ],
+      "new_files": [
+        "examples/hirelane/components/board/tools/preview.ts",
+        "examples/hirelane/test/preview.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/hirelane/components/board/dossier/Gate.tsx is hirelane-board-ui's file (not scouted in this run): it renders previewMessage's subject and body in the armed reject and schedule states",
+        "examples/hirelane/test/tools.test.ts is hirelane-app-and-tests' file (scouted in r5): one row added to its per-tool parameter tables"
+      ],
+      "generated": [],
+      "acceptance": [
+        "previewMessage(board, {applicant_id: <an unscored screening applicant>, kind: 'rejection', template: t}) for each t in REJECTION_TEMPLATES -> {to, subject, body} deep-equals the `mail` returned by the real sendRejection(id, t) on a fresh temp database",
+        "previewMessage(board, {applicant_id: <a seeded interview applicant>, kind: 'scheduling', slot_id: <their bookable slot>}) -> deep-equals sendSchedulingEmail(id, slot).mail on a fresh temp database",
+        "previewMessage for a seeded rejected applicant, kind 'rejection' -> {ok: false, reason: 'decided', why: REFUSAL.decided(person)} and no body - the same words the action refuses with",
+        "previewMessage kind 'scheduling' with a slot held for another applicant -> {ok: false, why: REFUSAL.slot_taken()}; with an Applied applicant -> reason 'too_early'",
+        "CAPABILITIES contains preview_message with reversible true, sideEffects 'none' (AUTO, readOnlyHint, not consequentialHint), parameter `kind` enum ['rejection','scheduling'] and `template` enum REJECTION_TEMPLATES; the register counts derive and stay equal to the manifest",
+        "REJECTION_TEMPLATE_LABEL.encouraging makes no claim the body lacks: today it says 'names the strengths' and rejectionMail(...,'encouraging').body names no criterion and no strength -> the label states what the letter does",
+        "calling previewMessage for every seeded applicant x every kind writes nothing: messages and activity row counts are unchanged",
+        "rejectionMail(..., 'standard').body is byte-identical to the base tree's for the seeded Kestrel applicant (the sent wording does not change)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/hirelane/components/board/dossier/Gate.tsx:104-107 - the armed rejection sentence names the template by its label only; the words that reach the person are never shown before 'Send it'",
+        "examples/hirelane/lib/constants.ts:64 - the encouraging label promises 'names the strengths'",
+        "examples/hirelane/lib/mail.ts:69-76 - the encouraging body names no strength and reads no scorecard: the reviewer approves on a label the letter contradicts",
+        "examples/hirelane/lib/mail.ts:87 - rejectionMail is pure and client-safe (STUDIO from @athena/demo-kit/seed, which tools/read.ts already imports client-side), so the exact letter is computable before the act",
+        "examples/hirelane/lib/manifest.ts:117-138 - send_scheduling_email and send_rejection are the two external, irreversible capabilities; no read in BOARD_CAPABILITIES (manifest.ts:149) returns their effect",
+        "examples/hirelane/components/board/tools/read.ts:82-91 - dossierRead tells the agent send_rejection is enabled, but the approval Athena raises can only quote `template: \"encouraging\"`, not the letter",
+        "examples/hirelane/lib/acts.ts:173 - actsFor already decides who can be sent what, so a preview can refuse with the server's own REFUSAL words"
+      ],
+      "rollback": "Revert the series: the tool, the preview module and the Gate rendering are additive; the label edit is one constant. No schema or stored data changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from the root)",
+        "examples/hirelane: pnpm typecheck && pnpm lint && pnpm test (lint runs design/check-law.mjs and check-contrast.mjs for the Gate change)"
+      ],
+      "runner_up": "A compare read for the arguable six: the board computes criterionMedians for the carousel, but an agent deciding beat 2 must open six dossiers and do the median arithmetic itself.",
+      "body": "## Summary\nThe two acts in Hirelane that reach a person and can never be taken back - a rejection and an interview email - are approved blind. The person picks a wording from a three-item label list and presses Send. Athena's approval card can quote only `template: \"encouraging\"`. Nobody sees the letter until it has gone. The letter is a pure function of data the board already holds. Give it an AUTO read tool and a place in the armed gate, so the reviewer judges the words that will be sent.\n\n## Description\nThis is hitl-approval's oracle-before-gate (law: gate-sees-target) and resume-after-decision ('what runs on approval is not what was shown'). The gate exists, but there is nothing to check it against. A label stands in for the artifact, and here the label is wrong: 'Encouraging - names the strengths' sends a body that names nothing. `components/board/tools/preview.ts` adds `previewMessage(board, {applicant_id, kind, template?, slot_id?})`. It runs `actsFor` first, so a send the action would refuse is refused with the server's own words. Otherwise it composes through the same `rejectionMail` and `schedulingMail` the actions call, with the same arguments (name, email, role title, slot). It is registered as `preview_message` on the board layer: read-only, enums for kind and template, bounded, and well under the 12,000-char result cap. The armed reject state in Gate.tsx renders the subject and body of the selected template, and they change as the select changes. The armed schedule state does the same for the selected slot. The label is corrected to say what the letter does. Making the letter name strengths would change what leaves the building, so that is rehomed.\n\n## Flow\n- tests first: preview.test.ts parity against the real actions on a temp db (tempHome, as actions.test.ts does), refusals, no-write sweep, label truth\n- preview.ts: actsFor gate, then the composer\n- manifest.ts + BoardTools.tsx: the tool row and registration; tools.test.ts tables gain the row\n- read.ts: send acts in dossierRead name `preview_message` as the way to read the letter\n- Gate.tsx: the letter under the select in both armed states\n- constants.ts: truthful encouraging label; README tool table row\n\n## Expected impact\nThe person approving a rejection reads the letter that will go out, and the agent can put the same text in its proposal. A wording mismatch between label and letter can no longer pass review unseen, and the preview cannot drift from the sent letter because a test compares them byte for byte.\n\n## Evaluation\nClaim: every irreversible send is previewable exactly, before the gate, from both surfaces.\nBefore: 0 of 8 acceptance cases (no preview exists; label case fails; 7 and 8 are guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "Gate.tsx:104-107 `Send {candidate.name} a rejection at {candidate.email}, worded{\" \"}{REJECTION_TEMPLATE_LABEL[template]}. It reaches them and cannot be un-sent.` then a <select> of labels and 'Send it' - no body rendered. constants.ts:62-66 `encouraging: \"Encouraging - names the strengths\"`. mail.ts:69-76 encouraging body: 'There was a lot to like in your application, and the decision was not an easy one - but we are not taking it forward this time. Please do not read this as a verdict on your work...' - no criterion, no strength, no scorecard argument (rejectionMail args are applicantName, applicantEmail, roleTitle, template only). app/actions.ts:342-347 sendRejection composes with `rejectionMail({ applicantName: applicant.name, applicantEmail: applicant.email, roleTitle: getRole(applicant.role_id)?.title ?? \"the role\", template })` - all three are on BdCandidate/BdRole. grep 'preview' over examples/hirelane (ts/tsx): 0 hits. ADRs 0017 and 0111 touch the board; neither decides against previewing. Not in any backlog file."
+    }
+  ],
+  "rehomed": [
+    "Make the whole scored state a discriminated union (overall, fit, band, drivers, evidence under one `assessment | null`): the right end state but 11 board-ui readers of .overall/.scored plus host and tests is over 20 files, past the write-set floor; card A is the evidence-facet slice that fits",
+    "readShortlist (tools/roster.ts:175) sorts by overall alone, ignoring scored and with no tie-break, unlike byScoreDesc and rank: S",
+    "Have the encouraging rejection actually name the applicant's strongest criteria from their scorecard: changes what leaves the building (more content off-device), a direction/policy call, kept out of card B",
+    "role_id published as a free string on read_applicants/read_shortlist (manifest.ts:63): already a recorded mcp-tools deviation in .ai/registry-map.json, S",
+    "insightsFor returns the gap by NAME and buildBoard re-joins it to an id by name match (lib/board/index.ts:102): S, impact under 7"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["hitl-approval", "mcp-tools", "status-vocabulary"],
+    "techniques": ["oracle-before-gate", "resume-after-decision", "tool-schema-design"]
+  },
+  "files_read": 34
+}

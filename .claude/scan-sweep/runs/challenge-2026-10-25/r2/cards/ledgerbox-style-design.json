@@ -1,0 +1,125 @@
+{
+  "host": "ledgerbox-style-design",
+  "cards": [
+    {
+      "context": "ledgerbox-style-design",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One colour authority: 52 raw literals become roles, banned and contrast-held",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/ledgerbox/components/lanes/style/base/tokens.css",
+        "examples/ledgerbox/components/lanes/style/base/the-sheet.css",
+        "examples/ledgerbox/components/lanes/style/chrome/mast.css",
+        "examples/ledgerbox/components/lanes/style/chrome/foot.css",
+        "examples/ledgerbox/components/lanes/style/chrome/ticked.css",
+        "examples/ledgerbox/components/lanes/style/chrome/toast.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-3.css",
+        "examples/ledgerbox/components/lanes/style/level1/l1-spread.css",
+        "examples/ledgerbox/components/lanes/style/level1/l1-spread-2.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card-2.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card-3.css",
+        "examples/ledgerbox/test/ledgerbox-style-design.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "raw-literal ban: every part of the sheet except base/tokens.css, comments stripped, scanned for #hex / rgb() / hsl() literals -> [] (today 52 hits in 13 files); the failure message names the role that replaces each literal value it recognises (ban + pointer)",
+        "role completeness: every var(--ln-*) referenced anywhere in the sheet is declared in the token block (population derived from the sheet, not a list) -> [] undeclared",
+        "text-role contrast: every `color:` declaration in the sheet resolves (through var() and color-mix(in srgb, <token> N%, transparent)) to a token-block colour; composited over each of the five Ground steps (and at the opacity the sheet puts on that element, as the existing state-ink test does) it clears 4.5:1 -> [] short (today the test only reaches the five --tone-ink values; #fff and the four white-alpha inks are unheld)",
+        "alpha copies are derived, not re-typed: the scrims (void at 55/58/72/84%), the tip ground (ground at 96%), the presence halos (faint 14%, auto 22%) and the gated-row tint (gate 6%) are written as color-mix() of their base token, so retuning --ln-void, --ln-ground, --ln-faint, --ln-auto or --ln-gate moves every copy: a test that rewrites --ln-void in memory and re-resolves the sheet finds no declaration still at the old rgb(4 7 8)",
+        "the light ladder is closed: the inset top-light and sheen values (white at 2/3/5/7/8/11/30/45%) and the drop shadows (black at 45/80/90%) resolve to named roles of the one light source (tokens.css rule 3), each role referenced at least twice or justified by a comment in the token block -> no role used once without a stated reason",
+        "guard: the five --tone-ink values and the existing state-ink contrast test stay green and unchanged",
+        "guard: every existing test in test/ledgerbox-style-design.test.ts (toast reads the token block, every styled class is drawn, every TS-named token declared, 44px targets, ink-not-swatch) stays green",
+        "guard: the computed value behind each replaced literal is equal to the literal it replaced (role value == old literal) except the three body inks at white 78/80/82%, which consolidate to one --ln-ink-held role at 80% (delta <= 2% alpha, named in the commit)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "examples/ledgerbox/components/lanes/style/base/tokens.css:52 - the token block is the declared live value authority (design/build-tokens.mjs header says so), yet it is not the only place colour is decided",
+        "examples/ledgerbox/components/lanes/style/chrome/mast.css:118 - rgb(69 211 162 / 22%) is a hand copy of --ln-auto (#45d3a2); mast.css:112 rgb(155 178 185 / 14%) is a hand copy of --ln-faint (#9bb2b9)",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:177 - rgb(9 16 18 / 96%) is a hand copy of --ln-ground (#091012)",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card.css:17 - rgb(4 7 8 / 84%) is --ln-void (#040708); the same copy recurs at the-sheet.css:71, l2-the-card-2.css:150, l2-the-card-3.css:103",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card-3.css:234 - rgb(255 143 77 / 6%) is --ln-gate (#ff8f4d), the one hue 'spent on nothing else'",
+        "examples/ledgerbox/components/lanes/style/level1/l1-spread-2.css:53 - body ink written as rgb(255 255 255 / 62%); siblings at 78% (l2-the-card-2.css:128), 80% (l1-spread-2.css:66, l1-spread-2.css:204, l0-swarm-3.css:4), 82% (l2-the-card-2.css:70, l2-the-card-2.css:141): four unnamed greys for one intent",
+        "examples/ledgerbox/components/lanes/style/chrome/mast.css:32 - `color: #fff` is the 'only place white goes fully opaque', but 12 rules across 8 files write #fff",
+        "examples/ledgerbox/test/ledgerbox-style-design.test.ts:88 - the contrast gate reads only the five --tone-ink values; :143 bans token copies in toast.css alone - the precedent this card generalises to the whole sheet",
+        ".ai/registry-map.json - design-tokens verdict for ledgerbox-style-design is `deviation` (2026-10-14): 'raw literals already shadow tokens (mast.css:118 = --ln-auto; l0-swarm-2.css:177 = --ln-ground)'; this card closes that recorded gap rather than rediscovering it"
+      ],
+      "rollback": "Three commits (roles added to tokens.css; call sites rewritten; test gates added). git revert in reverse order restores the literals byte-for-byte; no TypeScript, markup or other context is touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd examples/ledgerbox && pnpm typecheck && pnpm lint && pnpm test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Derive the swarm's row height from the stage (flex-grow by --rows with --ln-lane-min floors, rows read via size-container cqb) instead of 100svh minus a hand-typed --ln-swarm-chrome: 460px that its own comment measures at 268-302px.",
+      "body": "## Summary\nThe Lanes' token block is the declared value authority, but 52 colour literals in 13 other parts of the sheet decide colour on their own: hand copies of --ln-void, --ln-ground, --ln-faint, --ln-auto and --ln-gate at an alpha, four unnamed white-alpha body inks (62/78/80/82%), twelve `#fff`, and an unnamed light/shadow ladder. Give each recurring intent a role in tokens.css, derive alpha variants with color-mix() from their base token, and gate the whole sheet: no raw colour outside the token block, every role referenced is declared, and every text colour clears 4.5:1 on every ground.\n\n## Description\nThe sheet already proved the pattern once: the toast was painted from 'seven hand copies of five tokens' until e51c4db4, and test/ledgerbox-style-design.test.ts:125 now forbids copies in toast.css. The same defect is live everywhere else. Retune --ln-void and the card scrim, the decision-dialog scrim, the foot gradient and the vignette stay at the old near-black; retune --ln-gate and the gated row keeps an orange tint of the old hue. The four body greys are one intent ('white held back') spelled four ways, and none of them is under the contrast gate, which reads only --tone-ink. Following design-tokens/token-taxonomy, roles are minted by recurring intent: --ln-ink-max (#fff), --ln-ink-held (white 80%), --ln-ink-settled (white 62%), --ln-scrim / --ln-scrim-light / --ln-scrim-foot, --ln-tip-ground, --ln-light-1..n (the inset top-light ladder of rule 3), --ln-shadow-lift / --ln-shadow-card, --ln-bath-1..4. Alpha variants are color-mix(in srgb, var(--ln-void) 84%, transparent) so the relationship survives into CSS. Following design-tokens/token-enforcement, the gate is a raw-value ban whose message names the equivalent, plus a contrast floor that recomputes from the token block (gate-sees-target), plus vocabulary membership.\n\n## Flow\n- Add the roles to the token block in tokens.css, each with its intent in one comment line.\n- Rewrite the 52 call sites to the roles; consolidate the 78/80/82% body inks to --ln-ink-held (named in the commit).\n- Extend test/ledgerbox-style-design.test.ts: raw-literal ban over every part but tokens.css; var() membership; a resolver for var()/color-mix() and a contrast check over every `color:` on every Ground step; an in-memory retune of --ln-void that must leave no declaration at the old value.\n- Watch each new case fail on the base tree, then land the CSS.\n\n## Expected impact\nA token retune becomes a rebinding instead of a hunt (the design-tokens golden path's promise), the recorded design-tokens deviation for this context closes, and the contrast floor moves from 5 inks to every text colour on the sheet. Rendered pixels are unchanged except a <= 2% alpha consolidation on three body inks.\n\n## Evaluation\nClaim: the sheet has one colour authority and a gate that holds it.\nBefore: 0 of 5 new acceptance cases pass (52 literals; 4 unheld text inks; 0 derived alphas)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in node --test\nResult: better\nGate: none",
+      "evidence": "grep -rnoE '#[0-9a-fA-F]{3,6}\\b|rgb\\([^)]*\\)' examples/ledgerbox/components/lanes/style --include=*.css | grep -v base/tokens.css | wc -l -> 52, across 13 files; `color: #fff` -> 12 rules. Hand copies: mast.css:112 rgb(155 178 185/14%)=#9bb2b9 --ln-faint; mast.css:118 rgb(69 211 162/22%)=#45d3a2 --ln-auto; l0-swarm-2.css:177 rgb(9 16 18/96%)=#091012 --ln-ground; the-sheet.css:71, l2-the-card.css:17, l2-the-card-2.css:150, l2-the-card-3.css:103 rgb(4 7 8/..)=#040708 --ln-void; l2-the-card-3.css:234 rgb(255 143 77/6%)=#ff8f4d --ln-gate. Body inks rgb(255 255 255/62|78|80|82%) at l1-spread-2.css:53,66,204; l0-swarm-3.css:4; l2-the-card-2.css:70,128,141. registry-map design-tokens state=deviation evaluatedAt 2026-10-14."
+    },
+    {
+      "context": "ledgerbox-style-design",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Forced-colours mode: the swarm keeps state, lateness and now under HC",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/ledgerbox/components/lanes/style/index.css",
+        "examples/ledgerbox/test/ledgerbox-style-design.test.ts"
+      ],
+      "new_files": [
+        "examples/ledgerbox/components/lanes/style/base/forced-colors.css"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "the sheet has a forced-colours part: index.css imports a part whose every rule sits inside @media (forced-colors: active), and it is imported after chrome/ticked.css (last in the cascade, so it beats the heat and ticked rules at equal specificity) -> found, last",
+        "every heat survives the repaint: for each [data-heat] value read off base/heat-in-one-place.css (population from the file), the forced part gives .ln-mark a (system-colour fill, border-style) pair, and the five pairs are pairwise distinct -> 5 distinct pairs (today 0: under forced colours every mark is ButtonFace with border 0, identical to each other and to the Canvas track)",
+        "every meaning painted by background survives: each rule in the sheet whose background/background-image carries --tone, --ln-accent or --ln-alert (derived from the sheet: today .ln-mark, .ln-tail, .ln-now, .ln-axis-now, .ln-lane::before, .ln-node-meter, .ln-legend i, .ln-clock-track i, .ln-clock-now) has a forced-colours override that draws it with a system colour keyword through background-color or a border -> [] uncovered (forced colours drops gradients and forces background-color, so the late-share spine, the now-line and every tail vanish today)",
+        "every state drawn only by box-shadow gets an outline: each selector whose box-shadow is its only state carrier (.ln-mark[data-picked=true], .ln-node[data-picked=true], .ln-mark:hover / [data-open=true], .ln-presence[data-on=true] .ln-presence-dot) has an outline or border in the forced part -> [] (box-shadow computes to none under forced colours, so the `select` working set and the open mark are invisible today)",
+        "the legend keys the same mapping: .ln-legend i under [data-heat=X] gets the same fill/border pair as .ln-mark[data-heat=X] in the forced part -> equal for all five heats",
+        "the forced part uses only CSS system colour keywords (Canvas, CanvasText, LinkText, Highlight, HighlightText, GrayText, Mark, ButtonText, ButtonBorder, AccentColor) and `transparent` - no --ln-* token, hex or rgb - and never `forced-color-adjust: none` on an element that carries text -> [] violations",
+        "guard: no declaration outside @media (forced-colors: active) changes - every existing test in test/ledgerbox-style-design.test.ts stays green, and the 'every class the sheet styles is drawn by some component' test holds the new part to classes that exist"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:52 - a mark's state is `background: var(--tone)` alone; its border is 0 and its top light is a box-shadow. CSS Color Adjust forces background-color to a system colour and box-shadow to none, and the mark is a <button> (components/lanes/swarm/Lane.tsx:220) on a div track (Lane.tsx:181): ButtonFace on Canvas, which share a value in the Windows contrast themes",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:211 - the lane spine (share of the lane already late) is a linear-gradient; forced colours drops non-url background-image, so the spine is gone",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:79 - the now-line is a linear-gradient of --ln-accent: gone under forced colours, and with it the reference every tail runs to",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:145 - the tail ('lateness as physical length', the level's whole claim) is a 1px background: var(--tone): forced to the page ground and invisible",
+        "examples/ledgerbox/components/lanes/style/chrome/ticked.css:17 - `select` draws its working set as a box-shadow ring only; ticked.css:26 the same on the L1 node",
+        "examples/ledgerbox/components/lanes/style/chrome/foot.css:241 - the legend swatch, which is also the filter control's only colour key, is background: var(--tone)",
+        "examples/ledgerbox/components/lanes/style/index.css:35 - ticked.css is the last import; no part of the sheet (and no file in examples/ or packages/) contains `forced-colors` or `prefers-contrast` (grep, 0 hits)",
+        "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:4 - the sheet already honours one platform preference with the rule 'does NOT hide anything'; forced colours is the preference it has not met (accessibility/preference-respect: 'meaning survives the repaint')"
+      ],
+      "rollback": "One commit adds forced-colors.css and its import plus the test cases; reverting it removes the part and the import. Nothing outside @media (forced-colors: active) changes, so the revert is invisible to every other viewer.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd examples/ledgerbox && pnpm typecheck && pnpm lint && pnpm test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A density mode for the Lanes (compact/comfortable re-pointing --ln-s*/--ln-row-*), re-using the retired build-tokens.mjs $modes design - needs a toggle in the lanes-ui context and is a `direction`.",
+      "body": "## Summary\nUnder Windows contrast themes (forced colours) the Lanes lose every encoding except position and width: the state colour of all 124 marks, the late-share spine on each lane, the now-line, every lateness tail, the legend swatches and the `select` ring are all drawn by background colour, gradients or box-shadow, which the platform discards. Add one sheet part, @media (forced-colors: active), that re-carries each meaning with system colours and structure (fill vs outline vs dashed, outlines for rings), so a reader on a contrast theme can read the swarm instead of a field of identical boxes.\n\n## Description\nThe sheet honours reduced motion with the explicit rule that nothing is hidden; forced colours is the preference it never met, and grep finds no `forced-colors` anywhere in examples/ or packages/. By the CSS Color Adjust forced-values list, background-color is forced, background-image gradients are dropped and box-shadow becomes none. On this sheet that means: .ln-mark (a <button>, border 0) paints ButtonFace on a Canvas track; .ln-tail and .ln-now/.ln-axis-now vanish, so the claim of L0 (lateness as length up to now) is gone; .ln-lane::before (the share already late) is a gradient and vanishes; .ln-node-meter, the clock's marks and the legend swatches go the same way; [data-picked] and the open mark are box-shadow rings and vanish. Following accessibility/preference-respect, each colour-borne meaning gets a structural carrier: alert = CanvasText fill, risk = Mark fill, watch = LinkText fill, good = transparent with a solid GrayText border, inert = transparent with a dashed GrayText border (exact mapping the builder's choice, held distinct by the test); tails and spine as background-color: CanvasText / Highlight (system colours are honoured); the now-line as Highlight; picked/open as a 2px Highlight outline with offset; the legend swatch mirrors the mark mapping so the key still keys. Text keeps the platform's colours; forced-color-adjust: none is never set on text.\n\n## Flow\n- Write the acceptance cases in test/ledgerbox-style-design.test.ts using its existing cascade() walker (rules carry their at-rule) and watch them fail.\n- Add style/base/forced-colors.css, every rule inside @media (forced-colors: active), and import it last in style/index.css.\n- Optional, not acceptance: eyeball in Chromium devtools 'Emulate CSS media feature forced-colors: active'.\n\n## Expected impact\nA reader on a Windows contrast theme goes from a swarm of indistinguishable boxes with no now-line and no tails to a readable sheet with five distinguishable states, lateness, the now-line and the working set. Zero change for every other viewer by construction.\n\n## Evaluation\nClaim: every meaning the sheet paints in colour survives the forced-colours repaint.\nBefore: 0 of 6 behaviour cases pass (no forced-colors rule in the sheet)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in node --test\nResult: better\nGate: none",
+      "evidence": "grep -rn 'forced-colors\\|prefers-contrast' examples/ packages/ apps/desktop/src (css, tsx) -> 0 hits. Colour-only carriers: l0-swarm-2.css:52 `.ln-mark { background: var(--tone); border: 0; box-shadow: inset ... }`; l0-swarm-2.css:145 `.ln-tail { background: var(--tone) }`; l0-swarm.css:79 now-line `background: linear-gradient(... var(--ln-accent) ...)`; l0-swarm.css:211 lane spine `background: linear-gradient(var(--ln-alert) 0 calc(var(--late)*100%), var(--ln-rule) ...)`; l1-spread.css:127 clock marks; l1-spread-2.css:84 node meter; foot.css:241 legend swatch; ticked.css:17 and :26 picked rings are box-shadow only. Lane.tsx:181 track is a div, Lane.tsx:220 mark is type=button."
+    }
+  ],
+  "rehomed": [
+    "Delete the retired design pipeline (design/build-tokens.mjs, design/tokens/token.tokens.json, design/lb-scales.css, three pass3 briefs): S effort, and its own header argues it is kept on purpose as the only $modes-capable emitter - a direction call, not a challenge card.",
+    "Name the derivable magic constants in tokens.css (--ln-lane-reading-at 6.7rem, --ln-lane-min 5rem 'measured off the rendered head'): S, and only half of it is derivable in CSS.",
+    "Re-cut the 21 parts by concern instead of by line count (l0-swarm-3.css is 6 lines; level2/l2-the-card-3.css holds the decision dialog): S-M, no user or defect class moves."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["design-tokens", "accessibility", "quality-gates"],
+    "techniques": ["token-taxonomy", "token-enforcement", "preference-respect"]
+  },
+  "files_read": 33
+}

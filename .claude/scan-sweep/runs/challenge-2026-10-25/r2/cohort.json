@@ -1,0 +1,89 @@
+{
+  "cohort": [
+    {
+      "name": "peer-devices",
+      "group": "Daemon and Channels",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "core-gate-and-ledger",
+      "group": "Agent Core",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "demo-kit-template",
+      "group": "Page Bridge and Demo Kit",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "proving-core",
+      "group": "Proving Ground",
+      "files": 14,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "proving-chores-uat",
+          "files": 9
+        }
+      ]
+    },
+    {
+      "name": "desktop-scenes-accounts-apps",
+      "group": "Desktop Companion",
+      "files": 21,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "desktop-connectors-panel",
+          "files": 6
+        }
+      ]
+    },
+    {
+      "name": "hirelane-model-and-lib",
+      "group": "Example Apps",
+      "files": 24,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-scenes-voice-waking",
+      "group": "Desktop Companion",
+      "files": 21,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "tidycrm-domain-lib",
+      "group": "Example Apps",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "ledgerbox-style-design",
+      "group": "Example Apps",
+      "files": 24,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-app-shell-ui",
+      "group": "Desktop Companion",
+      "files": 19,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "desktop-build-config",
+          "files": 8
+        }
+      ]
+    }
+  ]
+}

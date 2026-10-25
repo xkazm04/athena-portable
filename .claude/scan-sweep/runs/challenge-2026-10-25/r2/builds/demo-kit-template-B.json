@@ -1,0 +1,17 @@
+{"card":"demo-kit-template/B","status":"landed","shas":["b2395431"],
+ "tests_added":[
+  "examples/demo-kit/test/template-acts.test.ts::case 1: planning both open records to archived changes both, skips none, and says 'Archived 2 records.'",
+  "examples/demo-kit/test/template-acts.test.ts::case 2: an id already there and an unknown id are skipped with reasons; all skipped is a refusal that logs nothing",
+  "examples/demo-kit/test/template-acts.test.ts::case 3: 51 ids are refused naming the cap; the tool's ids cap and status enum are the one vocabulary",
+  "examples/demo-kit/test/template-acts.test.ts::case 4: setRecordStatus updates the rows and logs exactly one reversible row whose id comes back as undoId",
+  "examples/demo-kit/test/template-acts.test.ts::case 5: undoActivity(undoId) puts every record back at its from status and marks the entry undone",
+  "examples/demo-kit/test/template-acts.test.ts::case 6: guarded undo restores what the act left, leaves a record a later act moved, and names it",
+  "examples/demo-kit/test/template-acts.test.ts::case 7 (guard): set_record_status is AUTO under the kit's rule; the template's other tools stay read-only",
+  "examples/demo-kit/test/template-acts.test.ts::case 8 (guard): an unknown undo kind still throws, and the seed row still refuses as not reversible"],
+ "guard_cases":[7,8],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter @athena/demo-kit typecheck":0,"pnpm --filter @athena/demo-kit test":0,"pnpm typecheck":0,"pnpm lint":0,"tsc --noEmit on a throwaway copy of the template against kit src (changed files only)":0},
+ "files_changed":13,"lines_changed":839,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) setRecordStatus, undoStatus and applyUndo live in lib/db.ts, not lib/acts.ts: they write through the kit's server-only activity module and lib/acts.ts is imported by client components (README rule); acts.ts keeps the pure plan, the guarded-undo plan and the tool spec. applyUndo moved out of the 'use server' actions.ts so it is testable. (2) Seed ids are rec_0001 (rngFor id format), not rec-0001 as the card wrote; tests use the real ids. (3) Built on the r1 kit: the guarded undo returns the kit's UndoVerdict (ADR 0156) - partial naming the record left alone, or refused with blockedBy the later status act when nothing can be put back - and undoAction now passes UndoOptions/returns UndoAnswer fields so ActivityLog's 'Undo #n and this' and the toast's 'Undo both' work. (4) The tool handler resolves a domain refusal {ok:false,error} as an answer, per ADR 0146. (5) Guards 7-8 were red before only because the modules they import (lib/acts.ts, applyUndo export) did not exist; their behaviour premise held. (6) README: line 3 description and the app/actions.ts row corrected, one row appended at the table's end (slot A appends after it).",
+ "notes":"No sibling reds seen. The template itself is outside every workspace typecheck/lint; I typechecked it via a throwaway copy under examples/demo-kit/.tplcheck-r2B (deleted) with paths mapped to kit src - only Levels.tsx's untouched motion/react and zoom/echo imports failed to resolve there. Template eslint (react-hooks rules) not run: no eslint-config-next reachable without touching a sibling app. No browser verification. ADR 0161 claimed under the lock."}

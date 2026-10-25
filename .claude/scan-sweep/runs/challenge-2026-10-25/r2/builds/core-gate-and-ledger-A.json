@@ -1,0 +1,18 @@
+{"card":"core-gate-and-ledger/A","status":"landed","shas":["8da35cd7"],
+ "tests_added":[
+  "tests/core/test_approvals.py::test_a_filed_card_has_exactly_one_filed_event",
+  "tests/core/test_approvals.py::test_declining_an_approval_supersedes_it_and_the_yes_stays_readable",
+  "tests/core/test_approvals.py::test_consume_writes_one_consumed_event_and_a_refused_spend_writes_none",
+  "tests/core/test_approvals.py::test_every_expired_row_has_exactly_one_expired_event",
+  "tests/core/test_approvals.py::test_a_refused_resolve_writes_no_event",
+  "tests/core/test_approvals.py::test_the_lifecycle_is_one_table_and_every_history_folds_to_its_row",
+  "tests/core/test_approvals.py::test_a_brain_from_before_the_event_table_is_backfilled_once_on_open",
+  "tests/core/test_approvals.py::test_the_readers_answer_exactly_as_before_for_the_same_ops"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/core tests/harness tests/lane tests/adopt/test_receipts.py tests/daemon/test_routes.py tests/daemon/test_case_runs.py tests/daemon/test_decisions.py tests/daemon/test_threads.py tests/proving/test_gauntlet.py -m \"not provider and not eval\"":0},
+ "files_changed":4,"lines_changed":616,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of two (backfill rides with the chokepoint; both small and green together). Card listed cases 5 and 8 (index 4, 7) as guards; case 5 calls history(), which did not exist, so it was red before - only case 8 is a true guard. The random-walk test also asserts the walk reached every event kind and at least one supersede, so a degenerate walk cannot pass vacuously. Premise re-verified after r1: 0a42a3b/31c263c changed daemon/server.py and decisions.py only; approvals.py was untouched and its four ad-hoc UPDATEs and the overwriting decline_approved were as the card cites.",
+ "notes":"No gate or audit check weakened: the conditional WHERE clauses are identical (now with consumed_at IS NULL also on pending edges, always true there) and ADR 0038's single-spend race test stays green. .ai/registry-map.json hitl-approval deviation for core-gate-and-ledger is now closed by this commit but not edited (outside write set; the peer .ai session or /conform should re-judge it). Full pytest not run per brief."}

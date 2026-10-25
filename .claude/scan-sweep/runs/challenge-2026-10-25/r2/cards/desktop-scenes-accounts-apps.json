@@ -1,0 +1,146 @@
+{
+  "host": "desktop-scenes-accounts-apps",
+  "cards": [
+    {
+      "context": "desktop-scenes-accounts-apps",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Apps acts return their outcome: per-origin act state replaces console.error",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/modules/browser/model.ts",
+        "apps/desktop/src/modules/browser/index.ts",
+        "apps/desktop/src/modules/browser/fixtures.ts",
+        "apps/desktop/src/modules/browser/model.test.ts",
+        "apps/desktop/src/scenes/apps/model.ts",
+        "apps/desktop/src/scenes/apps/model.test.ts",
+        "apps/desktop/src/scenes/apps/live.tsx",
+        "apps/desktop/src/scenes/apps/view.tsx",
+        "apps/desktop/src/scenes/apps/fixtures.ts",
+        "apps/desktop/src/scenes/apps/interact.test.tsx",
+        "apps/desktop/src/scenes/apps/view.test.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/apps/acts.ts",
+        "apps/desktop/src/scenes/apps/acts.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/modules/browser/{model,index,fixtures,model.test}.ts belong to desktop-modules-registry (not in this sub-run): BrowserActions' register/openApp/setEnabled/forget change from void to Promise<void>"
+      ],
+      "generated": [],
+      "acceptance": [
+        "acts.ts reducer: start(origin,'register') then start(origin,'register') again before settle -> second start is refused synchronously (returns false) and only ONE underlying action call is made; a different origin's start is accepted (scope is the entity, not the collection)",
+        "acts.ts: an action whose promise rejects with Error('origins table did not answer') -> state for that origin becomes {kind:'register', phase:'refused', reason:'origins table did not answer'} verbatim; a later successful start of any kind on that origin clears it",
+        "interact: AppLevel of an open-but-unregistered page, 'Register this app' pressed twice quickly -> actions.register called exactly once (today twice: two origin saves and two tabs)",
+        "interact: Field Register with an action that rejects -> the typed address is still in the box (or restored) and a ProblemNote shows the reason verbatim; with an action that resolves -> the box is empty",
+        "interact: AppLevel 'Yes, forget' with a forget that rejects -> go is NOT called with {root:'apps'}, and the app layer shows the refusal; with a forget that resolves -> go({root:'apps'}) is called once, after resolution",
+        "interact: the 'Athena may act here' PillGroup while a setEnabled for that origin is pending -> disabled with the in-flight word; a rejected setEnabled -> the refusal is shown on the app layer (today the pill silently snaps back)",
+        "modules/browser index (store-faked): register when useOrigins.save rejects -> the returned promise rejects with that reason and no tab is created (row-before-tab order kept)",
+        "guard: interact Forget still takes two presses and Keep takes focus; Enter registers a placeable address and refuses 'about:blank' with the existing disabled reason; every existing apps view.test/interact.test case stays green"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/modules/browser/index.ts:60 - `const report = (what) => (e) => console.error(...)`: every refused act goes to the devtools console, never to the person",
+        "apps/desktop/src/modules/browser/index.ts:66 - register chains save -> create -> onShown and ends in `.catch(report(\"register\"))`: a failure is swallowed",
+        "apps/desktop/src/modules/browser/index.ts:81 - setEnabled and forget (:83) are `void ... .catch(report(...))`: fire-and-forget",
+        "apps/desktop/src/modules/browser/model.ts:82 - `register: (url: string) => void` (also openApp :84, setEnabled :85, forget :87): the contract itself cannot carry an outcome, so no surface can report one",
+        "apps/desktop/src/stores/origins.ts:77 - the store already returns Promise<OriginRow> for save/setEnabled and Promise<void> for forget (:82): the outcome exists and is thrown away one layer up",
+        "apps/desktop/src/scenes/apps/view.tsx:229 - Register clears the typed address before calling onRegister, so a refused register loses what was typed with no word",
+        "apps/desktop/src/scenes/apps/view.tsx:332 - 'Register this app' has no busy state or disarm: a double press runs save+create twice and opens two tabs",
+        "apps/desktop/src/scenes/apps/view.tsx:364 - Forget calls actions.forget then go({root:'apps'}) immediately: a refused forget lands the person on a field where the app is still listed, with no reason",
+        "apps/desktop/src/stores/connectors.ts:595 - the sibling Accounts depth already has the right shape (`act()`: busy per id, refusal verbatim per id, cleared by the next act); Apps is the one trust surface without it"
+      ],
+      "rollback": "Revert the series: acts.ts/acts.test.ts are new files; the BrowserActions return-type change and the view wiring revert together in one commit; no data or store format changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Connector tools carry the daemon's own class and switch-governs flag in the vault view, so model.ts stops mirroring gate.js classify and service.is_write (two hand-kept policy copies, model.ts:108 and :117) - crosses connector-service and desktop-client-lib.",
+      "body": "## Summary\nEvery act the Apps depth offers on an origin - Register and open, Register this app, Show/Open the page, the 'Athena may act here' switch, Forget - is fire-and-forget. A refusal goes to console.error and the person sees nothing: a typed address vanishes, a forget lands on a field still listing the app, the switch snaps back without a word, and a double press opens two tabs. The seam that causes it is the `BrowserActions` contract (void returns). Make the acts return their outcome and give the scene a per-origin act state, as the Accounts depth already has.\n\n## Description\n`stores/origins.ts` already returns a promise per write and queues writes per origin. `modules/browser/index.ts` throws that outcome away (`.catch(report(...))` into console.error), and `BrowserActions` types the four origin acts as `void`, so no view can know whether an act landed. That is the async-ui-states action-busy-states anti-pattern by name: 'fire-and-forget disarms the guard silently'. The move:\n- `BrowserActions.register/openApp/setEnabled/forget` return `Promise<void>` that rejects with the reason. The console line stays, and tab-only acts (open, focus, close, navigate) are unchanged.\n- A new pure `scenes/apps/acts.ts` keeps per-origin act state keyed by entity identity: `{kind, phase: 'busy'|'refused', reason}`. Its `start` disarms synchronously, so a second press inside the same frame is refused before any re-render. A settle clears or records the outcome.\n- `live.tsx` wraps the browser actions through it and puts `acts` on `AppsModel`. The view reads it: Register keeps or restores the address on a refusal; Forget leaves for the field only once the forget resolves; the switch disables while its write is in flight; a refusal shows as a ProblemNote, verbatim, on the app layer and the field.\n\n## Flow\n- write acts.test.ts and the interact cases 3-6 against rejecting/resolving spies; watch them fail\n- change BrowserActions' four return types; index.ts returns the chains and still logs; fixtures/model.test inert actions return resolved promises\n- acts.ts reducer + live.tsx wrapping + AppsModel.acts; view wiring; a 'refused' apps fixture for the preview\n- CHANGELOG line\n\n## Expected impact\nA person who registers, switches or forgets an app while the daemon is down or the table refuses now sees why, and keeps what they typed. A double press on Register this app no longer opens two tabs. A whole class closes: no origin act in Apps can fail silently. Could break: a caller relying on the void type. Today only the Apps scene and the browser fixtures implement or consume BrowserActions.\n\n## Evaluation\nClaim: a refused origin act is shown and a double press is one act\nBefore: 0 of 7 acceptance cases pass (case 8 is a guard, green before)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, jsdom, spies; offline)\nResult: better\nGate: none",
+      "evidence": "modules/browser/index.ts:60 `const report = (what: string) => (e: unknown) => console.error(`[browser] ${what}: ${String(e)}`);` :66-75 `register: (url) => { ... void useOrigins.getState().save(origin, { enabled: true }).then(() => create(url)).then(() => onShown?.(origin)).catch(report(\"register\")); }` :81-83 `setEnabled: ... .catch(report(\"switch\")), forget: (origin) => void useOrigins.getState().forget(origin).catch(report(\"forget\"))`; modules/browser/model.ts:76-88 every act `=> void`; scenes/apps/view.tsx:227-231 `const register = () => { if (!url || !placeable) return; setTyped(\"\"); onRegister(url); }`; :332 `<Button variant=\"secondary\" onClick={() => actions.register(page!.url)}>Register this app</Button>` (no disabledReason); :364 `onForget={() => { actions.forget(app.origin); go({ root: \"apps\" }); }}`; stores/origins.ts:77 `save: (origin, patch) => Promise<OriginRow>`, :82 `forget: (origin) => Promise<void>`; stores/connectors.ts:595-618 act() with mark(id)/fail(id). grep of the three scan-history backlogs, docs/BACKLOG.md and tiger/backlog.md for forget/register/console.error/silently: no hit."
+    },
+    {
+      "context": "desktop-scenes-accounts-apps",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Accounts shows the MCP servers Athena already calls: health, token, tools by class",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/stores/connectors.ts",
+        "apps/desktop/src/stores/connectors.test.ts",
+        "apps/desktop/src/modules/connectors/model.ts",
+        "apps/desktop/src/modules/connectors/model.test.ts",
+        "apps/desktop/src/modules/connectors/fixtures.ts",
+        "apps/desktop/src/modules/connectors/index.ts",
+        "apps/desktop/src/scenes/accounts/view.tsx",
+        "apps/desktop/src/scenes/accounts/view.test.tsx",
+        "apps/desktop/src/scenes/accounts/interact.test.tsx",
+        "apps/desktop/src/scenes/accounts/fixtures.ts",
+        "apps/desktop/src/scenes/accounts/live.tsx",
+        "apps/desktop/src/scenes/accounts/accounts.css"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/lib/api.ts belongs to desktop-client-lib: adds an optional `mcp_servers?: McpServerView[]` to ConnectorPage (additive; an older daemon omits it)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "store: GET /connectors answering {connectors:[gmail,notion], mcp_servers:[{id:'gravitone', origin:'connector:gravitone', kind:'mcp', url:'https://gt.example/api/mcp', token_env:'GT_TOKEN', token_set:true, live:true, health:'healthy', health_detail:'', tools:[{name:'connector.gravitone.gt_read', class:'AUTO'},{name:'connector.gravitone.gt_job', class:'GATED'}]}]} -> useConnectors.servers has one entry with those fields; a list without mcp_servers -> servers is [] (older daemon)",
+        "store: an mcp_servers entry with a malformed field (tools not an array, health not one of healthy/broken/unknown) -> that server is kept with tools [] and health 'unknown', and the list still loads (a foreign shape is never trusted, never fatal)",
+        "model: serverRowOf for token_set:false -> standing 'not-connected', sentence names the variable ('GT_TOKEN is not set, so nothing runs') and never a value; health 'broken' with detail 'HTTP 502' -> standing 'broken' with the detail verbatim; healthy + token set -> 'connected'; unknown + token set -> 'connected' with tone warning and 'not reached yet'",
+        "model: tools split by the daemon's reported class, never by a client-side classify: AUTO -> runs-without-a-card list, GATED -> 'GATED' list; the bare tool name drops the 'connector.<id>.' prefix",
+        "view: field with typical vault rows plus one MCP server -> the server is a card with its id-derived label, standing word and '1 runs without a card, 1 gated' chips; the summary counts it ('3 of 3 connected' when all live)",
+        "view: field with connectors [] and one MCP server (a --no-connectors daemon) -> no 'The daemon lists no connectors.' line; the server card is drawn",
+        "view: accounts/gravitone -> URL, 'token from GT_TOKEN: set', health with age/detail, both tool lists, and the stop sentence 'No switch here: remove gravitone from mcp.json or unset GT_TOKEN, and its tools stop on the next call.'; no writes switch, allow-list or Disconnect is offered (ADR 0144: none applies)",
+        "guard: every existing accounts view.test/interact.test and connectors store/model test stays green (records-notice banner, two-press Disconnect, locked writes before connect, allow-list draft rules)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "src/athena/daemon/connectors.py:60 - GET /connectors already answers `\"mcp_servers\": [service.view() for service in mcp]`",
+        "src/athena/connectors/mcp/service.py:178 - the view carries id, origin, url, token_env, token_set, live, health, health_detail and each tool's daemon-derived `class` - everything a row needs, no new route",
+        "apps/desktop/src/lib/api.ts:191 - ConnectorPage has no mcp_servers field; `grep -rn mcp apps/desktop/src/{modules/connectors,stores/connectors.ts,scenes/accounts}` returns nothing",
+        "apps/desktop/src/stores/connectors.ts:632 - load reads page.connectors and page.records_notice only; the servers are dropped on arrival",
+        "docs/adr/0144-an-mcp-server-is-a-connector-port.md:79 - 'An MCP server's AUTO tools run without a card from the first turn': a service that acts unattended has no surface in the place a person looks for connected services",
+        "docs/adr/0144-an-mcp-server-is-a-connector-port.md:94 - no writes switch or allow-list applies to MCP tools; the stop is the configuration, which the person can only learn by reading an ADR",
+        "apps/desktop/src/scenes/accounts/view.tsx:148 - with --no-connectors and an MCP server configured, the field says 'The daemon lists no connectors.' while Athena is calling one",
+        "apps/desktop/src/art/accounts.tsx:94 - AccountArt falls back to the Plug drawing for an unknown id, so no art file changes"
+      ],
+      "rollback": "Revert the series: the api.ts field is optional and additive, the store's `servers` slice and the model's server rows are new, the view section is new; no daemon change, no stored data.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (the accounts field draws more cards on first paint)",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "An off switch for an MCP server in Accounts (an origins row for connector:<id> that disabledOriginsOf in stores/run.ts forwards to the gate's rule 2) - a policy-tighten that edits desktop-stores; the read-only card is its prerequisite.",
+      "body": "## Summary\nSince ADR 0144 an MCP server written into mcp.json is a connector: its AUTO tools run without a card from the first turn, and `GET /connectors` lists it under `mcp_servers` with health, token variable and each tool's class. The desktop throws that list away. Accounts, the one place a person looks to see what Athena may use, shows Gmail and Notion only. A --no-connectors daemon with a server configured even says 'The daemon lists no connectors.' while Athena calls one. Show each server as an account: its standing, where its token comes from, which tools run unattended and which wait for a card, and how to stop it.\n\n## Description\nUnder connector-catalog/adapter-normalization this is one internal view over two providers. The vault's rows and the MCP servers' rows feed one field, and each adapter maps its own dialect into the shared standing vocabulary (`Standing`, `StandingMark`).\n- `lib/api.ts`: an optional `McpServerView` and `ConnectorPage.mcp_servers?`.\n- `stores/connectors.ts`: a `servers` slice set by `load`. The parse is defensive, so a malformed entry degrades to unknown health with no tools and never fails the list (failure-not-empty-success holds for the list itself).\n- `modules/connectors/model.ts`: `serverRowOf` gives standing, word, sentence and tone from token_set/health/health_detail. Tools are split by the daemon's own `class`, never by a client classify, so no second policy is born (README invariant 3). `ConnectorsModel.servers` is added.\n- `scenes/accounts/view.tsx`: server cards in the field, counted in the summary. `accounts/<id>` resolves a server to its own level: URL, token variable and whether it is set, health and detail, the two tool lists, and the stop sentence. No switch, allow-list or Disconnect is drawn, because ADR 0144 says none applies; saying so is the point. The ids cannot collide: ADR 0144 refuses an MCP id equal to a built-in connector's.\n\n## Flow\n- write cases 1-7 (store with a fake DaemonApi, model pure, view against new fixtures `mcp` and `mcp-only`); watch them fail\n- api type, store slice and parser, model rows, module hook passes servers\n- view field cards + server level + labeller for server ids; fixtures and PLACES entries for preview\n- CHANGELOG line; perf:all for the field's first paint\n\n## Expected impact\nA person can see every service Athena may call from any page, which of its tools act without asking, whether its token is present, and whether it answered, without reading mcp.json or an ADR. The gap closes for every MCP server configured later too. Could break: the field layout with three or more cards (heavy fixture, perf gate).\n\n## Evaluation\nClaim: every connector the daemon lists is shown in Accounts with its standing and tool classes\nBefore: 0 of 7 acceptance cases pass (case 8 is a guard, green before)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, fake DaemonApi, jsdom; offline)\nResult: better\nGate: none",
+      "evidence": "src/athena/daemon/connectors.py:55-65 `\"mcp_servers\": [service.view() for service in mcp]`; src/athena/connectors/mcp/service.py:181-195 view keys id/origin/kind/url/token_env/token_set/live/health/health_detail/tools[{name, class}]; tests/connectors/test_mcp_service.py:296 and tests/e2e/test_mcp_connector.py:50 prove the field ships; apps/desktop/src/lib/api.ts:191-199 ConnectorPage {ok, connectors, records_notice, showing, total, footer}; `grep -rn -i mcp apps/desktop/src/modules/connectors apps/desktop/src/stores/connectors.ts apps/desktop/src/scenes/accounts` -> no output; stores/connectors.ts:637-642 sets items/loaded/problem/recordsNotice only; scenes/accounts/view.tsx:148-149 `model.rows.length === 0 ? \"The daemon lists no connectors.\"`; ADR 0144 :79 'An MCP server's `AUTO` tools run without a card from the first turn', :94 'No vault writes switch or egress allow-list applies to MCP tools'."
+    }
+  ],
+  "rehomed": [
+    "accounts: the OAuth Connect's disabled reason says 'A consent page is open; finish it in the browser first.' for any busy word (saving/probing/disconnecting), view.tsx:634 `consentOpen = busy || waiting`. S.",
+    "apps: Register's placeholder and copy say 'Press Enter to open it' while the button reads 'Register and open', and openApp's failure is the same silent console line; folded into card A. S on its own.",
+    "connectors store: two settings acts on one connector stamp rows at reply time (stores/connectors.ts:567), so an older reply landing last wins; today the view disarms while busy, so it is latent. S."
+  ],
+  "riders": [
+    {
+      "name": "desktop-connectors-panel",
+      "checked": "Read model.ts, model.test.ts, fixtures.ts, index.ts, stores/connectors.ts and its test in full. Traced the class mirror (classify plus switchGoverns against service.is_write), the list/row ordering stamps and the flow poll single-flight. Card B lands mostly in this rider's files; the class-mirror idea is slot A's runner-up because it needs the daemon's vault view."
+    }
+  ],
+  "registry": {
+    "subjects": ["async-ui-states", "connector-catalog", "mcp-tools"],
+    "techniques": ["action-busy-states", "state-model", "adapter-normalization", "client-integration"]
+  },
+  "files_read": 34
+}

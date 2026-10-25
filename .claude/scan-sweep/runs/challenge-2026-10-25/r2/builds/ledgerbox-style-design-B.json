@@ -1,0 +1,15 @@
+{"card":"ledgerbox-style-design/B","status":"landed","shas":["9fd4b303"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::the sheet has a forced-colours part, every rule inside the media query, last in the cascade",
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::under forced colours every heat draws its mark with a distinct system-colour fill and border",
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::every meaning the sheet paints with a background has a system-colour carrier under forced colours",
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::every state the sheet draws only as a box-shadow ring gets an outline or border under forced colours",
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::under forced colours the legend keys the same mapping as the marks",
+  "examples/ledgerbox/test/ledgerbox-style-design.test.ts::the forced part speaks only system colours and never takes text out of the platform's hands"],
+ "guard_cases":[6],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{"examples/ledgerbox: pnpm typecheck":0,"examples/ledgerbox: pnpm lint":0,"examples/ledgerbox: pnpm test (112 tests)":0,"root: pnpm typecheck":0,"root: pnpm lint":0},
+ "files_changed":5,"lines_changed":364,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Shared-surface ADR 0172 added (repo law). The background-carrier population derived from the sheet also caught `.ln-field[data-mode=\"raised\"] .ln-node::after` (the plinth gradient), covered too. The clock track marks reuse the heat mapping (not required). Vocabulary case is stricter than the card: the forced part sets no `color:` at all and no forced-color-adjust value but auto (a `color: CanvasText` would also trip the existing text-contrast test, which resolves every color: through the token block). cascade() helper gained a `part` field. Root `pnpm test` not run: no workspace package imports ledgerbox.",
+ "notes":"Guard case 6 = existing 12 tests, green before and after. Two mutations verified (inert dashed->solid caught by the distinct-pairs case; removing the .ln-tail rule caught by the carrier case). No browser render under forced-colors emulation; Windows theme fidelity of Highlight/LinkText as fills is a judgement recorded in ADR 0172. No sibling reds seen."}

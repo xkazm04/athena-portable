@@ -1,0 +1,134 @@
+{
+  "host": "desktop-app-shell-ui",
+  "cards": [
+    {
+      "context": "desktop-app-shell-ui",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One theme contract: every theme x skin binding set proven complete and legible",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/styles/motion-tokens.test.ts",
+        "apps/desktop/src/styles/skins/loop-tide.css.test.ts",
+        "apps/desktop/src/styles/source-guards.test.ts",
+        "apps/desktop/src/styles/app.css",
+        "apps/desktop/src/athena.tsx",
+        "apps/desktop/src/chrome.tsx",
+        "apps/desktop/src/preview.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/styles/theme-contract.ts",
+        "apps/desktop/src/styles/theme-contract.test.ts",
+        "apps/desktop/src/styles/skins/index.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "theme-contract: the binding sets are derived, not listed: THEMES (stores/shell.ts) x SKINS read against styles/skins/*.css -> exactly [athena/dark, athena/light, loop-tide/dark, loop-tide/light]; a SKINS entry with no sheet, or a sheet with no SKINS entry, fails naming it",
+        "theme-contract over the real app.css + loop-tide.css: every text pair (--foreground and --muted-foreground on --background/--card-bg/--card-raised/--recessed; --accent-text and --primary on --background/--card-bg/--recessed; --primary-fg on --primary; --on-primary on --btn-primary) is >= 4.5:1 and every graphic pair (--status-success/-warning/-error/-info/-pending/-neutral and --focus on --card-bg/--recessed) is >= 3:1 in all four sets -> 0 failures (measured today: 0 of 4 sets fail)",
+        "negative control, one-state binding: a fixture skin sheet whose `:root[data-skin=x]` block sets --status-info and whose light block omits it -> the contract reports `x/light: --status-info takes the skin's dark value` (the light block inherits the skin's dark block at (0,2,0), above the base light block at (0,1,0))",
+        "negative control, floor: a fixture skin light block with --muted-foreground #8a94a6 on --card-bg #f8faff -> the contract reports `x/light --muted-foreground on --card-bg 2.9 < 4.5`",
+        "completeness: every role the base dark block declares resolves through var() chains to a colour in every set; a fixture whose --line points at an undeclared --nope -> reports `--line unresolved in athena/dark`",
+        "zero input is fatal: the contract handed a sheet with no theme block -> throws `no binding set`, never returns an empty, green result",
+        "source-guards: the --accent-as-ink check runs over app.css too (the blanket `if (path.endsWith(\"app.css\")) continue;` is gone) and passes, because app.css spells no `color: var(--accent)`",
+        "entries: athena.tsx, chrome.tsx and preview.tsx import no skin sheet by name; each imports `@/styles/skins`, whose eager import.meta.glob covers every styles/skins/*.css"
+      ],
+      "guard_cases": ["1"],
+      "premise": [
+        "apps/desktop/src/styles/motion-tokens.test.ts:73 - the base themes' only contrast check is --accent-text on three light surfaces; the ratios app.css claims at :37, :85, :90 and :99-100 (status words 4.5:1 on --card-bg) are prose",
+        "apps/desktop/src/styles/skins/loop-tide.css.test.ts:110 - the skin carries its own hand-listed 14 pairs, and :90-101 re-implement the luminance/ratio helpers already at motion-tokens.test.ts:55-66",
+        "apps/desktop/src/styles/skins/loop-tide.css:19 and :58 - the skin's light block sits over its dark block, so a role the light block omits paints the skin's dark value in light; nothing checks per-state completeness",
+        "apps/desktop/src/styles/source-guards.test.ts:26 - app.css is exempted from the --accent ink check wholesale (registry-map: quality-gates deviation at this line)",
+        "apps/desktop/src/athena.tsx:34, apps/desktop/src/chrome.tsx:12, apps/desktop/src/preview.tsx:39 - each entry imports loop-tide.css by name; docs/adr/0142 Consequences says a second skin is 'one more sheet and one more entry in SKINS', but it is also three entry edits and a copied test",
+        "apps/desktop/src/stores/shell.ts:31 - SKINS is the authority the contract reads (import only, no edit)"
+      ],
+      "rollback": "Revert the series: theme-contract.ts/test and skins/index.ts are new files; the two trimmed tests and the source-guards line return with the revert; entry imports go back to the named sheet. No runtime behaviour changes, so nothing to migrate.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (entry imports change; first-paint bytes must stay under the 161,000 B ratchet)"
+      ],
+      "runner_up": "Window roots as one declared table: which stores each window starts (ADR 0026) is hand-listed in athena.tsx and console/root.tsx; derive both from one map with a parity test (needs desktop-console's root.tsx).",
+      "body": "## Summary\nThe colour contract is held in three different shapes: the base themes check one pair, the Loop Tide skin hand-lists fourteen and copies the maths, and the per-state completeness that a layered skin depends on is checked nowhere. Put the contract in one module, derive the binding sets from THEMES x SKINS, and run every set through it.\n\n## Description\n`styles/theme-contract.ts` parses app.css and every sheet in `styles/skins/` (one brace-depth parser, the one loop-tide.css.test.ts already wrote), resolves each binding set through the real cascade (base dark -> base light -> skin dark -> skin light, var() chains followed), and checks one declared pair list: text at 4.5:1, graphics at 3:1 (design-tokens golden path, 'the contrast floor is in the contract': a gate that reads the actual theme definitions and runs on every theme). It also reports a role a skin binds in one state only, which is the defect theme-architecture names ('binding defined in only one state') and which the skin's selector specificity makes silent. The two existing tests drop their copies of the maths. `styles/skins/index.ts` eagerly globs the skin sheets, so the three entries stop naming them and a second skin really is one sheet plus one SKINS entry. The dead app.css exemption in source-guards goes, closing the recorded quality-gates deviation.\n\n## Flow\n- theme-contract.ts: parse -> binding sets from THEMES x SKINS -> resolve -> pairs -> findings\n- theme-contract.test.ts: real sheets pass; three fixture sheets go red (one-state, floor, unresolved); empty input throws\n- motion-tokens.test.ts and loop-tide.css.test.ts keep their non-contrast rules only\n- skins/index.ts + three entry imports\n\n## Expected impact\nEvery claimed ratio in both sheets becomes a checked one; a third skin, or a light-theme edit to Loop Tide, cannot ship an unreadable pair or a dark-only role without a red test. The contract is the place the next appearance axis (BACKLOG's high-contrast theme) attaches.\n\n## Evaluation\nClaim: the contract covers 4 binding sets x 26 pairs from one list and catches the two defect shapes no current test can see\nBefore: 0 of 8 acceptance cases pass (module absent); today 3 base checks + 14 skin checks, 0 per-state completeness checks\nAfter: 8 of 8\nMethod: gate - the acceptance cases, with cases 3-6 as seeded-red negative controls\nResult: better\nGate: none",
+      "evidence": "Scratch measurement over the real sheets (cascade resolved, var() followed): athena dark ok, athena light ok, loop-tide dark ok, loop-tide light ok across the 26 pairs above; skin dark-only roles [] / light-only []; base dark-only [--line, --line-strong, --wash] (var() aliases). grep: `color: var(--accent)` in app.css -> 0 hits, so source-guards.test.ts:26's exemption guards nothing. grep `function ratio|luminance` in tests -> motion-tokens.test.ts and skins/loop-tide.css.test.ts. grep `skins/loop-tide.css` in non-test src -> athena.tsx:34, chrome.tsx:12, preview.tsx:39."
+    },
+    {
+      "context": "desktop-app-shell-ui",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The first frame wears the person's theme, skin, text size and motion",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/vite.config.ts",
+        "apps/desktop/src/chrome.tsx",
+        "apps/desktop/src/athena.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/appearance-boot.ts",
+        "apps/desktop/src/appearance-boot.test.ts",
+        "apps/desktop/src/appearance-follow.ts",
+        "apps/desktop/src/appearance-follow.test.ts",
+        "docs/adr/NNNN-the-first-frame-wears-the-persons-appearance.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-first-frame-wears-the-persons-appearance.md (a second, cached copy of four settings rows in webview storage is a decision a reader could question; the store stays the authority)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "bootAppearance(snapshot {theme:'light', skin:'loop-tide', typeScale:'large', motion:'calm'}, prefersLight=false, prefersReduced=false) -> <html> carries data-theme=light, data-skin=loop-tide, data-type-scale=large, data-motion=calm",
+        "three-state theme: snapshot theme 'system' -> data-theme=light when (prefers-color-scheme: light) matches and dark when it does not; for every ThemeChoice x prefersLight the boot's answer equals stores/settings resolveTheme (gated mirror, not a trusted copy)",
+        "motion parity: for every MotionChoice x prefersReduced the boot's data-motion equals lib/motion resolveMotion; for every skin/type-scale value the boot accepts exactly what isSkin/isTypeScale accept",
+        "no snapshot, corrupt JSON, an unknown skin, or a storage accessor that throws -> boot stamps nothing beyond the HTML's own data-theme=dark and does not throw (today's first frame, unchanged)",
+        "followAppearance: useSettings goes hydrated with theme 'light', skin 'loop-tide', typeScale 'large', motion 'calm' -> storage holds exactly that snapshot (the choice 'system' is stored as 'system', never as its resolution)",
+        "followAppearance before hydration, or after a refused first read (hydrated false, problem set) -> the stored snapshot is untouched, so a default can never overwrite the person's appearance",
+        "the store stays authority: boot stamps light from a stale snapshot, then a hydrate reading theme 'dark' -> data-theme=dark and the snapshot now says dark",
+        "vite plugin transformIndexHtml: chrome.html and athena.html come back with the boot as an inline classic script first in <head>, before any stylesheet or module script; preview.html and halo.html come back unchanged (the harness reads its own ?theme=&skin=)"
+      ],
+      "guard_cases": ["3"],
+      "premise": [
+        "apps/desktop/chrome.html:7 and apps/desktop/athena.html:5 - both documents hard-code data-theme=\"dark\" and set no data-skin, data-type-scale or data-motion",
+        "apps/desktop/src/console/root.tsx:29 - the console's first effect calls startShell(), which paints the store defaults (apps/desktop/src/stores/shell.ts:54-55: theme 'dark', skin 'athena') before anything is read",
+        "apps/desktop/src/stores/settings.ts:256-287 - the person's theme, text size, motion and skin are applied only after ten awaited store reads over IPC (readRows), i.e. after React has committed the stage in the default appearance",
+        "apps/desktop/src-tauri/src/lib.rs:336 - Main is created visible on every launch after the first, so that default frame is on screen",
+        "apps/desktop/src/styles/app.css:149-163 - data-type-scale moves every size under the headings, so a 'large' or 'compact' person sees the chrome reflow when the row lands; apps/desktop/src/styles/skins/loop-tide.css:146 starts a 1.6 s fade that an in-app Calm choice only stops once data-motion arrives",
+        "apps/desktop/src/lib/execute.ts:130 - a localStorage mirror of store-held state already exists as precedent in this webview"
+      ],
+      "rollback": "Revert the series: the boot and follow modules, their tests and the ADR are new; the vite plugin and the two entry calls go with the revert. A leftover storage key is inert (nothing reads it), so no cleanup is required.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (first paint: the inline boot adds well under 1 kB to chrome.html and athena.html)"
+      ],
+      "runner_up": "Preview compare mode: one scene across every fixture x theme x skin in a single grid instead of flipping the ?picker=1 bar one combination at a time (needs desktop-console's console/preview.tsx).",
+      "body": "## Summary\nEvery launch paints Main in dark teal at the default text size and full motion, then snaps to what the person chose once ten IPC reads come back. A light-theme person gets a dark flash, a Loop Tide person a teal one, a large-text person a reflow, and a person who chose Calm a fade they asked not to see. The app already knows the answer from the last session; stamp it before the first paint.\n\n## Description\n`appearance-boot.ts` exports a self-contained `bootAppearance` (no imports, so it can be inlined) that reads one storage key holding the last hydrated choices {theme, skin, typeScale, motion}, resolves `system` against the media queries (theme-architecture: the follow-the-platform state is part of the model and must be stamped before first paint), and sets the four root attributes. A vite plugin in `vite.config.ts` inlines it as the first script in the head of chrome.html and athena.html. `appearance-follow.ts` subscribes to `useSettings` and writes the snapshot only from hydrated state; chrome.tsx and athena.tsx start it. The settings table stays the authority: readRows still applies what it reads, and the snapshot follows. Because the boot is a hand-written mirror of resolveTheme/resolveMotion/isSkin/isTypeScale, parity tests hold it to them (design-tokens cross-language-token-parity: a mirror is gated, never trusted).\n\n## Flow\n- launch -> head script reads snapshot -> four attributes set -> stylesheet paints the right appearance\n- React mounts -> startShell/readRows -> store rows applied (normally identical: no visible change)\n- person changes Theme/Text size/Motion/Style in Look, or the other window does -> hydrated state changes -> snapshot rewritten\n\n## Expected impact\nThe person's appearance holds from the first frame in both windows at every launch; no dark flash for light users, no chrome reflow for large or compact text, Calm honoured before the first animation starts.\n\n## Evaluation\nClaim: the first frame carries the person's last choices, and the store remains the authority\nBefore: 0 of 8 acceptance cases pass (no boot, no snapshot; the first frame is always dark/athena/comfortable/full)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (jsdom with a stubbed matchMedia and storage; the plugin called on the HTML text)\nResult: better\nGate: none",
+      "evidence": "chrome.html:7 `<html lang=\"en\" data-theme=\"dark\">`; athena.html:5 same. console/root.tsx:28-29 `useEffect(() => { startShell(); ...` and shell.ts:53-56 `useShell = create(... theme: \"dark\", skin: DEFAULT_SKIN`. settings.ts:271-287: `await Promise.all([... 10 rows ...])` then `applyTheme(resolveTheme(choice))`, `applyTypeScale(scale)`, `applyMotion(...)`, `applySkin(skin)`. lib.rs:336 `.visible(!first_launch)`. tauri.conf.json:16 `\"csp\": null` (an inline head script is allowed). No ADR in docs/adr mentions a boot snapshot or decides against one (grep flash|first frame|localStorage)."
+    }
+  ],
+  "rehomed": [
+    "Derive CATALOG.md's table from the @catalog tags (catalog.test.ts already enforces parity; S, and a recorded ui-controls deviation)",
+    "Table's selectable mode declares role=grid with row-only focus (recorded registry deviation at Table.tsx:83; fixing it is an S/M a11y change, not a challenge card)",
+    "WindowControls' theme flip writes an explicit light/dark and silently ends a 'system' choice (WindowControls.tsx:47; S)",
+    "bridge-gate.d.ts is a hand transcription of packages/athena-bridge/gate.js with no parity check (S; the shapes are owned by the bridge package)",
+    "Dev inspector presents an innermost library file as the call site when no product ancestor exists (recorded agent-addressable-ui deviation at locate.ts:46; S)"
+  ],
+  "riders": [
+    {
+      "name": "desktop-build-config",
+      "checked": "Read vite.config.ts, eslint.config.js, smoke.mjs, dev-source-loc.mjs, build.rs, inspector.tsx, locate.ts and their tests; first-paint budget and preview-in-bundle are already backlog/owner calls, the inspector gaps are S or recorded deviations, so the rider carries slot B's transformIndexHtml plugin rather than a card of its own."
+    }
+  ],
+  "registry": {
+    "subjects": ["design-tokens", "quality-gates", "test-harness"],
+    "techniques": ["theme-architecture", "token-enforcement", "cross-language-token-parity", "negative-control-tests", "waiver-names-its-finding"]
+  },
+  "files_read": 44
+}

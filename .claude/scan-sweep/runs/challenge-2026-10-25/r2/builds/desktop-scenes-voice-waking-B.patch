@@ -1,0 +1,544 @@
+diff --git a/apps/desktop/src/scenes/waking/interact.test.tsx b/apps/desktop/src/scenes/waking/interact.test.tsx
+index 6f74e9fb..36024d96 100644
+--- a/apps/desktop/src/scenes/waking/interact.test.tsx
++++ b/apps/desktop/src/scenes/waking/interact.test.tsx
+@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+ 
+ import type { AvatarId } from "@/avatar/types";
+ import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
++import { isReady, notReadyBecause } from "@/modules/setup/readiness";
+ 
+ import { fixtures } from "./fixtures";
+ import WakingView from "./view";
+@@ -145,3 +146,65 @@ describe("the face step", () => {
+     expect(host.textContent).toContain("Wake her");
+   });
+ });
++
++describe("the Voice step's door to the studio", () => {
++  it("'Set up her voice in the studio' calls onVoice once", () => {
++    const onVoice = vi.fn();
++    const model: SetupModel = { ...fixtures.ready!, voiceAvailable: false, actions: INERT_ACTIONS };
++    act(() => root.render(<WakingView model={model} onLater={() => {}} initialStep={2} onVoice={onVoice} />));
++    const door = [...host.querySelectorAll("button")].find((b) => b.textContent === "Set up her voice in the studio")!;
++    act(() => void door.dispatchEvent(new MouseEvent("click", { bubbles: true })));
++    expect(onVoice).toHaveBeenCalledTimes(1);
++  });
++});
++
++describe("Wake her is reached by Next from any step, and stays gated (guard)", () => {
++  for (const fixture of ["no-page", "ready", "engine-missing"]) {
++    for (const from of [0, 1, 2] as const) {
++      it(`${fixture}, from step ${from + 1}`, () => {
++        mount(fixture, from);
++        for (let i = from; i < 3; i++) {
++          const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Next:"))!;
++          act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
++        }
++        const wake = [...host.querySelectorAll("button")].find((b) => b.textContent === "Wake her")!;
++        expect(wake).toBeDefined();
++        expect(wake.disabled).toBe(!isReady(fixtures[fixture]!));
++        if (!isReady(fixtures[fixture]!)) expect(host.textContent).toContain(notReadyBecause(fixtures[fixture]!));
++      });
++    }
++  }
++});
++
++describe("the act tells its keeper where the person is", () => {
++  it("a step click and Next each report the step", () => {
++    const onStep = vi.fn();
++    act(() =>
++      root.render(<WakingView model={fixtures.ready!} onLater={() => {}} initialStep={0} onStep={onStep} />),
++    );
++    const voice = [...host.querySelectorAll(".waking__step")].find((b) => b.textContent?.includes("Voice"))!;
++    act(() => void voice.dispatchEvent(new MouseEvent("click", { bubbles: true })));
++    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Next:"))!;
++    act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
++    expect(onStep.mock.calls).toEqual([[2], [3]]);
++  });
++});
++
++describe("the frontier holds once the engine has answered", () => {
++  const draw = (model: SetupModel) => act(() => root.render(<WakingView model={model} onLater={() => {}} />));
++  const ask = () => host.querySelector("#waking-ask")!.textContent;
++
++  it("opening a page on Reach does not move the act out from under the person", () => {
++    draw(fixtures["no-page"]!);
++    expect(ask()).toBe("Where will she work?");
++    draw(fixtures.ready!);
++    expect(ask()).toBe("Where will she work?");
++  });
++
++  it("while the engine is still being looked for, the act follows it to the step still owed", () => {
++    draw({ ...fixtures["no-page"]!, probes: null });
++    expect(ask()).toBe("What will she think with?");
++    draw(fixtures["no-page"]!);
++    expect(ask()).toBe("Where will she work?");
++  });
++});
+diff --git a/apps/desktop/src/scenes/waking/live.test.tsx b/apps/desktop/src/scenes/waking/live.test.tsx
+index ade7b659..be5ac2e8 100644
+--- a/apps/desktop/src/scenes/waking/live.test.tsx
++++ b/apps/desktop/src/scenes/waking/live.test.tsx
+@@ -10,13 +10,18 @@ import { act } from "react";
+ import { createRoot, type Root } from "react-dom/client";
+ import { afterEach, beforeEach, expect, test, vi } from "vitest";
+ 
++import type { SetupModel } from "@/modules/setup/model";
++
+ import { fixtures } from "./fixtures";
+ 
+-vi.mock("@/modules/setup/index", () => ({ useSetupModel: () => fixtures.ready }));
++const current = vi.hoisted(() => ({ model: null as SetupModel | null }));
++vi.mock("@/modules/setup/index", () => ({ useSetupModel: () => current.model ?? fixtures.ready }));
+ 
+ const { Live } = await import("./live");
+ const { useReopened } = await import("./reopen");
+ const { useSettings } = await import("@/stores/settings");
++const { useDepth } = await import("@/depth/store");
++const { INITIAL } = await import("@/depth/model");
+ 
+ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+ 
+@@ -27,6 +32,9 @@ beforeEach(() => {
+   host = document.createElement("div");
+   document.body.append(host);
+   root = createRoot(host);
++  current.model = null;
++  useReopened.setState({ on: false, step: null });
++  useDepth.setState({ ...INITIAL });
+   // No shell here, so the row write rejects; the choice is still shown and the refusal is logged.
+   vi.spyOn(console, "warn").mockImplementation(() => {});
+ });
+@@ -58,3 +66,41 @@ test("a reshown act shows the face already chosen, and a new choice is stored wi
+   expect(useReopened.getState().on).toBe(true);
+   expect(useSettings.getState().onboarded).toBe(true);
+ });
++
++const ask = () => host.querySelector("#waking-ask")!.textContent;
++const stepNamed = (name: string) =>
++  [...host.querySelectorAll(".waking__step")].find((b) => b.textContent?.includes(name))!;
++const remount = () => {
++  act(() => root.unmount());
++  root = createRoot(host);
++  act(() => root.render(<Live />));
++};
++
++test("the act opens on the step still owed, and keeps the step the person was on across Later", () => {
++  useSettings.setState({ hydrated: true, onboarded: false, avatar: "halo" });
++  current.model = fixtures["no-page"]!;
++  act(() => root.render(<Live />));
++  expect(ask()).toBe("Where will she work?");
++
++  click(stepNamed("Voice"));
++  expect(ask()).toBe("Do you want to talk to her?");
++  click([...host.querySelectorAll("button")].find((b) => b.textContent === "Later")!);
++  expect(useDepth.getState().path).toEqual({ root: "apps" });
++
++  remount();
++  expect(ask()).toBe("Do you want to talk to her?");
++});
++
++test("the Voice step's door to the studio keeps the step and goes to the voice studio; coming back lands on Voice", () => {
++  useSettings.setState({ hydrated: true, onboarded: false, avatar: "halo" });
++  current.model = { ...fixtures.ready!, voiceAvailable: false };
++  act(() => root.render(<Live />));
++  click(stepNamed("Voice"));
++  useReopened.setState({ step: null }); // the door, not the step click, must keep the place
++  click([...host.querySelectorAll("button")].find((b) => b.textContent === "Set up her voice in the studio")!);
++  expect(useReopened.getState().step).toBe(2);
++  expect(useDepth.getState().path).toEqual({ root: "voice", item: "studio" });
++
++  remount();
++  expect(ask()).toBe("Do you want to talk to her?");
++});
+diff --git a/apps/desktop/src/scenes/waking/live.tsx b/apps/desktop/src/scenes/waking/live.tsx
+index 62ba59fd..648a2a11 100644
+--- a/apps/desktop/src/scenes/waking/live.tsx
++++ b/apps/desktop/src/scenes/waking/live.tsx
+@@ -3,10 +3,11 @@
+  *
+  * It owns no store and builds no model of its own: the Setup module's own hook supplies the
+  * view-model, so the letter's rules (readiness, the engine's remedy, the failure to start) are the
+- * ones this scene shows. What is new is only that finishing wakes her on the surface, and that
+- * "Later" lets the person look around first.
++ * ones this scene shows. What is new is only that finishing wakes her on the surface, that
++ * "Later" lets the person look around first, and that the step they were on is kept for the
++ * session (ADR 0170).
+  */
+-import { createElement } from "react";
++import { createElement, useState } from "react";
+ 
+ import type { AvatarId } from "@/avatar/types";
+ import { useDepth } from "@/depth/store";
+@@ -14,9 +15,17 @@ import { useSetupModel } from "@/modules/setup/index";
+ import { useSettings } from "@/stores/settings";
+ 
+ import { useReopened } from "./reopen";
++import type { Step } from "./steps";
+ import WakingView from "./view";
+ 
+ const later = () => useDepth.getState().go({ root: "apps" });
++/** The step the person moves to is kept for the session (ADR 0170), so Later and back lands there. */
++const keep = (step: Step) => useReopened.getState().keep(step);
++/** The Voice step's door: keep the Voice step, and go to the studio where her voice is set up. */
++const toStudio = () => {
++  keep(2);
++  useDepth.getState().go({ root: "voice", item: "studio" });
++};
+ /**
+  * Waking her ends on the surface, where the scene is already. It selects no module (ADR 0088); it
+  * only stops showing the act, which matters when it was shown again from the Mind depth.
+@@ -29,5 +38,15 @@ const chooseAvatar = (id: AvatarId) => void useSettings.getState().setAvatar(id)
+ export function Live() {
+   const model = useSetupModel({ afterFinish: done });
+   const avatar = useSettings((s) => s.avatar);
+-  return createElement(WakingView, { model, onLater: later, avatar, onAvatar: chooseAvatar });
++  // Read once: the act holds its own place while it is drawn, and the store only remembers it.
++  const [kept] = useState(() => useReopened.getState().step);
++  return createElement(WakingView, {
++    model,
++    onLater: later,
++    kept,
++    onStep: keep,
++    onVoice: toStudio,
++    avatar,
++    onAvatar: chooseAvatar,
++  });
+ }
+diff --git a/apps/desktop/src/scenes/waking/reopen.ts b/apps/desktop/src/scenes/waking/reopen.ts
+index 2ed7ddea..48343f10 100644
+--- a/apps/desktop/src/scenes/waking/reopen.ts
++++ b/apps/desktop/src/scenes/waking/reopen.ts
+@@ -1,19 +1,30 @@
+ /**
+- * Showing the first act again — README section 3.5, ADR 0085 and 0087.
++ * Showing the first act again — README section 3.5, ADR 0085, 0087 and 0170.
+  *
+  * "Show the welcome again" must put the first act back on the surface **without touching the rows**:
+  * the machine stays set up and onboarded, and the act is only shown. The module bar kept that as
+  * React state inside its own hook; the console needs it where the surface can read it, so it is one
+  * small store. Waking her clears it (`finish`), and nothing else sets it but the Mind depth.
++ *
++ * It also keeps the step the person was on (ADR 0170), so leaving the act (Later, the voice studio)
++ * and coming back lands where they were. Session-only, as the flag is: a restart forgets both.
++ * Showing the act again from Mind walks it from the start, so it puts the step back on Mind.
+  */
+ import { create } from "zustand";
+ 
++import type { Step } from "./steps";
++
+ export interface ReopenState {
+   on: boolean;
+   set: (on: boolean) => void;
++  /** The step the person was last on this session, or null when they have not moved. */
++  step: Step | null;
++  keep: (step: Step) => void;
+ }
+ 
+ export const useReopened = create<ReopenState>((set) => ({
+   on: false,
+-  set: (on) => set({ on }),
++  set: (on) => set(on ? { on, step: 0 } : { on }),
++  step: null,
++  keep: (step) => set({ step }),
+ }));
+diff --git a/apps/desktop/src/scenes/waking/steps.test.ts b/apps/desktop/src/scenes/waking/steps.test.ts
+new file mode 100644
+index 00000000..f5f92f9f
+--- /dev/null
++++ b/apps/desktop/src/scenes/waking/steps.test.ts
+@@ -0,0 +1,43 @@
++/** Tests for where the first act opens — README section 3.5 and the ADR on its frontier. */
++import { afterEach, describe, expect, it } from "vitest";
++
++import { fixtures as setup } from "@/modules/setup/fixtures";
++import type { SetupModel } from "@/modules/setup/model";
++
++import { fixtures } from "./fixtures";
++import { useReopened } from "./reopen";
++import { openingStep } from "./steps";
++
++const granted = (m: SetupModel): SetupModel => ({ ...m, mic: "granted", micDetail: "" });
++
++describe("the act opens on the step she still needs", () => {
++  it("an engine done and no page opens on Reach, with the microphone unasked and no voice", () => {
++    const m: SetupModel = { ...fixtures["no-page"]!, mic: "unknown", voiceAvailable: false };
++    expect(openingStep(m, "halo", null)).toBe(1);
++  });
++  it("a missing engine opens on Mind", () => {
++    expect(openingStep(fixtures["engine-missing"]!, "halo", null)).toBe(0);
++  });
++  it("an engine and a page done, but no microphone and no voice, opens on Voice", () => {
++    const m: SetupModel = { ...setup.onboarding!, mic: "unknown", voiceAvailable: false };
++    expect(openingStep(m, "halo", null)).toBe(2);
++  });
++  it("everything lit opens on Face, where Wake her is", () => {
++    expect(openingStep(granted(fixtures.ready!), "b04-owl", null)).toBe(3);
++  });
++});
++
++describe("a kept position wins over the frontier", () => {
++  afterEach(() => useReopened.setState({ on: false, step: null }));
++
++  it("a kept step is where the act opens, even when an earlier step is still owed", () => {
++    expect(openingStep(fixtures["engine-missing"]!, "halo", 2)).toBe(2);
++  });
++  it("showing the welcome again from Mind clears the kept position to Mind", () => {
++    useReopened.getState().keep(2);
++    expect(useReopened.getState().step).toBe(2);
++    useReopened.getState().set(true);
++    expect(useReopened.getState().step).toBe(0);
++    expect(openingStep(granted(fixtures.ready!), "b04-owl", useReopened.getState().step)).toBe(0);
++  });
++});
+diff --git a/apps/desktop/src/scenes/waking/steps.ts b/apps/desktop/src/scenes/waking/steps.ts
+new file mode 100644
+index 00000000..22ee8e83
+--- /dev/null
++++ b/apps/desktop/src/scenes/waking/steps.ts
+@@ -0,0 +1,52 @@
++/**
++ * The first act's steps and where it opens — README section 3.5, ADR 0170.
++ *
++ * Four steps, each with the fact that says it is done (the same facts that light her tendrils).
++ * The act opens on a step the person kept this session; otherwise on the first step still owed;
++ * with everything lit, on the last, where Wake her is. Pure: it reads the Setup module's own facts
++ * and decides nothing about readiness, so an opening step can never bypass `isReady`.
++ */
++import type { AvatarId } from "@/avatar/types";
++import { engineFact, micFact, pageFact, voiceFact, type Fact } from "@/modules/setup/readiness";
++import type { SetupModel } from "@/modules/setup/model";
++
++export const STEPS = [
++  { key: "mind", name: "Mind", ask: "What will she think with?" },
++  { key: "reach", name: "Reach", ask: "Where will she work?" },
++  { key: "voice", name: "Voice", ask: "Do you want to talk to her?" },
++  { key: "face", name: "Face", ask: "How will she appear?" },
++] as const;
++
++export type Step = 0 | 1 | 2 | 3;
++export const LAST: Step = 3;
++
++/** Which steps are done, in step order. */
++export function litSteps(model: SetupModel, avatar: AvatarId): [boolean, boolean, boolean, boolean] {
++  return [
++    engineFact(model).standing === "done",
++    pageFact(model).standing === "done",
++    micFact(model).standing === "done" || voiceFact(model).standing === "done",
++    avatar !== "halo",
++  ];
++}
++
++/** Where the act opens: the kept step, else the first unlit one, else the last. */
++export function openingStep(model: SetupModel, avatar: AvatarId, kept: Step | null): Step {
++  if (kept !== null) return kept;
++  const first = litSteps(model, avatar).indexOf(false);
++  return first === -1 ? LAST : (first as Step);
++}
++
++const BADGE: Record<Exclude<Fact["standing"], "unknown">, string> = {
++  done: "ready",
++  todo: "not yet",
++  missing: "not ready",
++};
++
++/**
++ * A fact as one line. An unknown fact has no badge: on this act it is a microphone nobody has asked
++ * about ("not asked yet"), and a "checking" badge in front of that said something was running.
++ */
++export function factLine(fact: Fact): string {
++  return fact.standing === "unknown" ? fact.summary : `${BADGE[fact.standing]} · ${fact.summary}`;
++}
+diff --git a/apps/desktop/src/scenes/waking/view.test.tsx b/apps/desktop/src/scenes/waking/view.test.tsx
+index e34fec26..66a3e64b 100644
+--- a/apps/desktop/src/scenes/waking/view.test.tsx
++++ b/apps/desktop/src/scenes/waking/view.test.tsx
+@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
+ import { beforeAll, describe, expect, it, vi } from "vitest";
+ 
+ import type { AvatarId } from "@/avatar/types";
+-import { INERT_ACTIONS } from "@/modules/setup/model";
++import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
++import { isReady, notReadyBecause } from "@/modules/setup/readiness";
+ import { fixtures as setup } from "@/modules/setup/fixtures";
+ 
+ import { INITIAL_STEPS, fixtureIds, fixtures } from "./fixtures";
+@@ -167,3 +168,29 @@ describe("the face", () => {
+     expect(owl).toContain('aria-label="Face, done"');
+   });
+ });
++
++describe("the Voice step is a door to the studio", () => {
++  const voice = (over: Partial<SetupModel>, onVoice?: () => void) =>
++    renderToStaticMarkup(
++      <WakingView model={{ ...fixtures.ready!, ...over }} onLater={vi.fn()} initialStep={2} onVoice={onVoice} />,
++    );
++  it("offers 'Set up her voice in the studio' while her voice is not available", () => {
++    expect(voice({ voiceAvailable: false }, vi.fn())).toContain("Set up her voice in the studio");
++  });
++  it("offers nothing once her voice is available, or where no studio is wired (the preview)", () => {
++    expect(voice({ voiceAvailable: true }, vi.fn())).not.toContain("Set up her voice in the studio");
++    expect(voice({ voiceAvailable: false })).not.toContain("Set up her voice in the studio");
++  });
++});
++
++describe("no opening step bypasses the gate (guard)", () => {
++  it("with no initialStep, a model that is not ready never opens on an ungated Wake her", () => {
++    for (const id of fixtureIds) {
++      const h = renderToStaticMarkup(<WakingView model={fixtures[id]!} onLater={vi.fn()} />);
++      if (h.includes(">Wake her<") && !isReady(fixtures[id]!)) {
++        expect(h).toContain('disabled=""');
++        expect(h).toContain(notReadyBecause(fixtures[id]!));
++      }
++    }
++  });
++});
+diff --git a/apps/desktop/src/scenes/waking/view.tsx b/apps/desktop/src/scenes/waking/view.tsx
+index 122c21da..3075400c 100644
+--- a/apps/desktop/src/scenes/waking/view.tsx
++++ b/apps/desktop/src/scenes/waking/view.tsx
+@@ -20,30 +20,13 @@ import ProblemNote from "@/components/ProblemNote";
+ import { engineLabel } from "@/lib/engines";
+ import { normaliseUrl } from "@/lib/url";
+ import { originOf } from "@/modules/browser/model";
+-import {
+-  engineFact,
+-  isReady,
+-  micFact,
+-  notReadyBecause,
+-  pageFact,
+-  voiceFact,
+-  type Fact,
+-} from "@/modules/setup/readiness";
++import { engineFact, isReady, micFact, notReadyBecause, pageFact, voiceFact } from "@/modules/setup/readiness";
+ import type { SetupModel } from "@/modules/setup/model";
+ import EngineSection from "@/scenes/shared/EngineSection";
+ 
++import { LAST, STEPS, factLine, litSteps, openingStep, type Step } from "./steps";
+ import "./waking.css";
+ 
+-const STEPS = [
+-  { key: "mind", name: "Mind", ask: "What will she think with?" },
+-  { key: "reach", name: "Reach", ask: "Where will she work?" },
+-  { key: "voice", name: "Voice", ask: "Do you want to talk to her?" },
+-  { key: "face", name: "Face", ask: "How will she appear?" },
+-] as const;
+-
+-type Step = 0 | 1 | 2 | 3;
+-const LAST: Step = 3;
+-
+ /** The Face step, in its own chunk: fetched when the step is first drawn (first paint, ADR 0095). */
+ const FaceStep = lazy(() => import("./face-step"));
+ 
+@@ -51,30 +34,43 @@ export interface WakingProps {
+   model: SetupModel;
+   /** Leave the first act for now and look around; the letter is still there from the surface. */
+   onLater: () => void;
+-  /** Open at a step, for the preview and for tests. */
++  /** Open at a step, for the preview and for tests; overrides `kept` and the frontier. */
+   initialStep?: Step;
++  /** The step the person was on this session (ADR 0170); without one the act opens on its frontier. */
++  kept?: Step | null;
++  /** The person moved to a step: the keeper remembers it for the session. */
++  onStep?: (step: Step) => void;
++  /** Leave for the voice studio from the Voice step, while her voice is not available. */
++  onVoice?: () => void;
+   /** How she appears now (the `avatar` setting); the halo when not given. */
+   avatar?: AvatarId;
+   /** Choose how she appears: writes the `avatar` setting. */
+   onAvatar?: (avatar: AvatarId) => void;
+ }
+ 
+-const BADGE: Record<Exclude<Fact["standing"], "unknown">, string> = {
+-  done: "ready",
+-  todo: "not yet",
+-  missing: "not ready",
+-};
+-
+-/**
+- * A fact as one line. An unknown fact has no badge: on this act it is a microphone nobody has asked
+- * about ("not asked yet"), and a "checking" badge in front of that said something was running.
+- */
+-function factLine(fact: Fact): string {
+-  return fact.standing === "unknown" ? fact.summary : `${BADGE[fact.standing]} · ${fact.summary}`;
+-}
+-
+-export default function WakingView({ model, onLater, initialStep = 0, avatar = "halo", onAvatar }: WakingProps) {
+-  const [step, setStep] = useState<Step>(initialStep);
++export default function WakingView({
++  model,
++  onLater,
++  initialStep,
++  kept = null,
++  onStep,
++  onVoice,
++  avatar = "halo",
++  onAvatar,
++}: WakingProps) {
++  // Where the act is: a step given or kept, else the first one still owed (ADR 0170). The frontier
++  // follows the model only until the engine has answered; then it holds, so opening a page on Reach
++  // does not move the act out from under the person.
++  const [chosen, setChosen] = useState<Step | null>(initialStep ?? kept);
++  const opening = openingStep(model, avatar, null);
++  const settled = engineFact(model).standing !== "unknown";
++  const step = chosen ?? opening;
++  // Adjusted while rendering, not in an effect: the value drawn does not change, it only stops moving.
++  if (chosen === null && settled) setChosen(opening);
++  const moveTo = (to: Step) => {
++    setChosen(to);
++    onStep?.(to);
++  };
+   const [url, setUrl] = useState("");
+   // Next on the second step turns into Wake her. When she is not ready that button is a different
+   // element (the reason's focusable wrapper around a disabled button), so the one that was pressed
+@@ -100,18 +96,12 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
+       ? undefined
+       : "That is not an address an app can live at.";
+ 
+-  const engine = engineFact(model);
+   const page = pageFact(model);
+   const mic = micFact(model);
+   const voice = voiceFact(model);
+   const ready = isReady(model);
+ 
+-  const lit = [
+-    engine.standing === "done",
+-    page.standing === "done",
+-    mic.standing === "done" || voice.standing === "done",
+-    avatar !== "halo",
+-  ];
++  const lit = litSteps(model, avatar);
+   const reach = STEPS.map((s, i) => ({ id: s.key, lit: lit[i]! }));
+   const caption = !lit[0]
+     ? "She has no mind yet."
+@@ -139,7 +129,7 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
+                 aria-current={step === i ? "step" : undefined}
+                 aria-label={lit[i] ? `${s.name}, done` : s.name}
+                 data-done={lit[i]}
+-                onClick={() => setStep(i as Step)}
++                onClick={() => moveTo(i as Step)}
+               >
+                 <span className="waking__step-n" aria-hidden="true">
+                   {lit[i] ? "✓" : i + 1}
+@@ -219,6 +209,11 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
+             <p className="waking__fact" data-standing={voice.standing}>
+               Her voice: {voice.summary}
+             </p>
++            {onVoice && !model.voiceAvailable && (
++              <Button size="sm" onClick={onVoice}>
++                Set up her voice in the studio
++              </Button>
++            )}
+           </>
+         )}
+ 
+@@ -234,7 +229,7 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
+               variant="primary"
+               onClick={() => {
+                 forward.current = true;
+-                setStep((step + 1) as Step);
++                moveTo((step + 1) as Step);
+               }}
+             >
+               Next: {STEPS[step + 1].name}

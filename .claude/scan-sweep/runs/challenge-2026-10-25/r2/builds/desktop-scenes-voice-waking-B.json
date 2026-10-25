@@ -1,0 +1,20 @@
+{"card":"desktop-scenes-voice-waking/B","status":"demoted","shas":[],
+ "tests_added":[
+  "apps/desktop/src/scenes/waking/steps.test.ts::the act opens on the step she still needs (4 rows)",
+  "apps/desktop/src/scenes/waking/steps.test.ts::a kept position wins over the frontier (2 rows)",
+  "apps/desktop/src/scenes/waking/live.test.tsx::the act opens on the step still owed, and keeps the step the person was on across Later",
+  "apps/desktop/src/scenes/waking/live.test.tsx::the Voice step's door to the studio keeps the step and goes to the voice studio; coming back lands on Voice",
+  "apps/desktop/src/scenes/waking/view.test.tsx::the Voice step is a door to the studio (2)",
+  "apps/desktop/src/scenes/waking/view.test.tsx::no opening step bypasses the gate (guard)",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::'Set up her voice in the studio' calls onVoice once",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::Wake her is reached by Next from any step, and stays gated (guard, 9 rows)",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::a step click and Next each report the step",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::the frontier holds once the engine has answered (2)"
+ ],
+ "guard_cases":[4,5,6],
+ "cases_total":7,"cases_red_before":4,"cases_green_after":7,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint (scoped eslint src/scenes/waking; whole-tree red only on sibling voice/studio.tsx)":0,"cd apps/desktop && pnpm test":1},
+ "files_changed":0,"lines_changed":0,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Not landed. The build was complete and green on its own tests (61/61 in scenes/waking, typecheck 0, eslint on waking 0), but scripts/first-paint.test.ts failed: the first-paint ceiling is 165,412 B gzipped and HEAD measures 165,358 B (54 B headroom); the full card measures 165,552 B, OVERSHOOT 140 B (my diff adds ~196 B gz, all in the root chunk, since scenes/waking/view.tsx, live.tsx and reopen.ts are all in the first frame). Tried: (1) the Voice step body as a lazy chunk like face-step -> 166,295 B (+883 over): a lazy chunk importing readiness/Button makes rolldown split readiness, engines and react out of the root chunk; (2) the same chunk with zero runtime imports (facts and Button passed as props) -> 165,769 B (+357 over): its jsx-runtime import alone reshuffles the react chunks; (3) the core only, without the Voice door and without the frontier-hold -> 165,514 B, still 102 B over. No lazy seam or trim fits 54 B, so per the brief I return demoted and did not raise the ceiling. All my work is reverted; the full, tested diff is saved as builds/desktop-scenes-voice-waking-B.patch (git apply from the repo root; it adds steps.ts and steps.test.ts). Had it landed it would have needed ADR 0170 (or next free) and a CHANGELOG line, not written since nothing landed. Minor card deviations inside the patch: the click parts of acceptance case 3 sit in interact.test/live.test (view.test is static markup); factLine moved into steps.ts; added a render-time 'frontier holds once the engine has answered' rule so opening a page on Reach does not move the act out from under the person (with 2 tests).",
+ "notes":"Owner decision needed: raising the first-paint ceiling by 140 B (to ~165,552 B) lands this card as patched. The 102 B core-only variant would also need a raise. Sibling reds seen: pnpm lint red on apps/desktop/src/scenes/voice/studio.tsx:314 ('kokoro' unused) and, earlier, typecheck red on voice keys.test/view.test (acts not exported) - both slot A's in-flight work, not mine. HEAD's first-paint figure (165,358 B) was measured with the sibling's voice-studio edits in the tree; voice studio is a lazy depth, so it does not affect the first frame. Did not run pnpm perf:*."}

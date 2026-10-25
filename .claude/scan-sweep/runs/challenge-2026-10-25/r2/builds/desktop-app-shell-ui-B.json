@@ -1,0 +1,17 @@
+{"card":"desktop-app-shell-ui/B","status":"landed","shas":["f871909a"],
+ "tests_added":[
+  "apps/desktop/src/appearance-boot.test.ts::case 1: stamps the four root attributes from the snapshot",
+  "apps/desktop/src/appearance-boot.test.ts::case 2: three-state theme resolves system against the media query, as resolveTheme does",
+  "apps/desktop/src/appearance-boot.test.ts::case 3: motion, skin and type-scale parity with resolveMotion, isSkin, isTypeScale and the choice guards",
+  "apps/desktop/src/appearance-boot.test.ts::case 4 (guard): no snapshot, corrupt JSON, an unknown skin or a throwing storage stamps nothing",
+  "apps/desktop/src/appearance-follow.test.ts::case 5: a hydrated store is written as the snapshot, and system stays system",
+  "apps/desktop/src/appearance-follow.test.ts::case 6: before hydration, or after a refused first read, the snapshot is untouched",
+  "apps/desktop/src/appearance-follow.test.ts::case 7: the store stays authority: a stale snapshot paints, then the hydrate corrects screen and snapshot",
+  "apps/desktop/src/appearance-boot.test.ts::case 8: chrome.html and athena.html carry the boot first in <head>; preview and halo are unchanged"],
+ "guard_cases":[3],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck (before sibling break)":0,"cd apps/desktop && pnpm typecheck (final, sibling e2e/connectors.e2e.test.ts INERT_ACTIONS)":2,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":1,"vitest appearance-boot + appearance-follow":0},
+ "files_changed":8,"lines_changed":391,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"chrome.tsx not changed: followAppearance is started in athena.tsx only, because the first-paint ceiling had 7 B left and any follower in Main (even behind a lazy import) costs more. Both webviews share the default data directory and origin, so one storage; her window is built at every launch and re-reads settings on Main's store:changed, so a Main choice still reaches the snapshot. ADR 0165 records this and the fallback (a stale snapshot is corrected by the store after hydration). vite.config.ts imports ./src/appearance-boot.ts with an explicit extension under a described @ts-expect-error (TS5097), because the extensionless form makes Vite print a native-config-loader warning on every run and tsconfig is outside the write set. Cases 1-4 and 8 red-before were module-absent failures (the card's own 'module absent' baseline).",
+ "notes":"First paint: my change adds 0 B to Main's first-frame JS (165,448 B with and without athena.tsx's change on the same tree; the shared chunk's 154 exports identical). The inline boot adds 476 B gzip (972 B raw) to chrome.html and athena.html, which first-paint.mjs does not count (it counts module chunks); stated here so the owner sees it. pnpm test red only on scripts/first-paint.test.ts: 165,448 B vs the 165,412 B ceiling, the +43 B over the 165,405 B baseline coming from a sibling's uncommitted apps/desktop/src/lib/api.ts, modules/connectors/*, stores/connectors.ts (desktop-scenes-accounts-apps/B); re-run after ~60 s, still red, not mine. Final pnpm typecheck red on e2e/connectors.e2e.test.ts (INERT_ACTIONS missing from the sibling's in-flight connectors model); the earlier typecheck on the same tree with my change was 0. 2260 other desktop tests passed. Coordinator: please run pnpm perf:all (I touched the first frame's HTML and data-motion timing)."}

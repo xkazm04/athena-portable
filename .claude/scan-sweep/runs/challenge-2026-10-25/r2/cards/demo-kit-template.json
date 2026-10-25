@@ -1,0 +1,129 @@
+{
+  "host": "demo-kit-template",
+  "cards": [
+    {
+      "context": "demo-kit-template",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Adoption is a seven-step hand edit; make it one transactional, stamped command",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/demo-kit/template/lib/constants.ts",
+        "examples/demo-kit/template/components/Shell.tsx",
+        "examples/demo-kit/template/app/layout.tsx",
+        "examples/demo-kit/template/README.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/adopt.ts",
+        "examples/demo-kit/test/template-adopt.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/demo-kit/template/README.md (also named by this context's slot B card: one table row each, sequence A then B)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "adopt({ name: 'parcelbay', port: 3008, design: 'ink' }) into a tmp examples root -> package.json name 'parcelbay' and dev script '--port 3008'; lib/constants.ts APP_ID 'parcelbay', VARIANT 'ink'; app/globals.css carries [data-variant=\"ink\"] and no [data-variant=\"plain\"]",
+        "bare-environment leak test: after adoption, scanning every payload file of the instance for 'demo-app', 'Demo app', 'copy me' and 'plain' -> zero hits (today the parameter surface is spread over 6 literals in 5 files)",
+        "readiness: port 3001 with a ledgerbox sibling whose package.json says '--port 3001' -> { ok: false, prerequisite: 'port', error naming ledgerbox and the first free port }, and the target directory does not exist afterwards; the sibling ports are read from examples/*/package.json, not a hand list",
+        "readiness: name 'ledgerbox' (existing dir) and name 'Bad Name' (not a package name) -> each refused with its own named prerequisite and remedy, nothing written",
+        "transaction: an injected failure after the third file is written -> neither the target directory nor any staging directory remains under the examples root",
+        "determinism and stamp: the same answers adopted into two tmp roots -> byte-identical trees; the instance's .template.json records { template, digest, answers }, where digest is sha256 over the sorted payload files, and the digest changes when one template file changes",
+        "preview: adopt({ ..., dryRun: true }) -> returns the list of { file, before, after } edits, equal to what the real adoption then writes, and writes nothing",
+        "guard: the template's own app name has one authority - no 'Demo app' literal in any .ts/.tsx outside lib/constants.ts (Shell.tsx and layout.tsx read APP_NAME/TAGLINE), and every existing test in examples/demo-kit/test/demo-kit-template.test.ts stays green"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "examples/demo-kit/template/README.md:29 - 'Then edit, in this order:' followed by seven hand edits across package.json, constants.ts, types.ts, db.ts, layout.tsx, Shell.tsx, globals.css, HostCapabilities.tsx, actions.ts",
+        "examples/demo-kit/template/package.json:2 - \"name\": \"demo-app\" duplicates examples/demo-kit/template/lib/constants.ts:2 APP_ID = \"demo-app\" (two hand-kept copies of one identity)",
+        "examples/demo-kit/template/components/Shell.tsx:11 - appName=\"Demo app\" and examples/demo-kit/template/app/layout.tsx:9 - title: \"Demo app\": a third and fourth copy of the name, not derived from constants",
+        "examples/demo-kit/template/package.json:7 - 'next dev --port 3000'; README.md:55 tells the adopter to pick a distinct port by hand; siblings already hold 3001/3002/3004/3006",
+        "examples/demo-kit/template/README.md:11 - promises scripts/check-template.mjs; the file does not exist (stabilize-2026-10-16 backlog: 'Nothing typechecks the template; its README promises a script that never existed')",
+        "examples/demo-kit/template/app/globals.css:17 - [data-variant=\"plain\"] must be renamed by hand in step 5 together with lib/constants.ts:10 VARIANT"
+      ],
+      "rollback": "Three commits (constants as the one name authority; adopt.ts + its test; README rewrite). git revert of the series restores the hand procedure; no instance, schema or kit API depends on adopt.ts.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; @athena/demo-kit runs node --test test/*.test.ts)"
+      ],
+      "runner_up": "Lift Levels' scene geometry (poseFor/resolveGroup, STEP, ZOOM, BANDS) into a pure module tested against the kit's zoomAt, closing the wheel-opens-the-wrong-owner backlog item (S/M, under the effort floor alone).",
+      "body": "## Summary\nThe template is adopted by hand: a README lists seven edits across nine files, and the app's identity lives in six literals (package name, APP_ID, appName, tagline, metadata title, variant) plus a port the adopter must pick against siblings by eye. Replace that with `node examples/demo-kit/adopt.ts <name> --port N --design D [--dry-run]`: one interview, one deterministic mapping, a readiness gate, a transactional copy and a provenance stamp.\n\n## Description\nThe templates-scaffolding golden path calls a template a contract whose author is absent at adoption, so everything the author would ask must be carried as data. Here the parameter surface is prose. The move: (1) make lib/constants.ts the one authority for the name (APP_ID, APP_NAME, TAGLINE, VARIANT) and have Shell.tsx and layout.tsx read it, so the TS side of the surface is one file; (2) a pure `adopt(answers, { root, dryRun, failAfter })` in examples/demo-kit/adopt.ts that maps answers to file edits (package.json name and port, constants, the globals.css variant block), checks readiness first (package-name rule, directory free, port free against ports derived from examples/*/package.json, Node >= 22.5) with each refusal naming its prerequisite and remedy, stages the copy in a sibling temp directory and renames it into place only when every edit landed, and writes `.template.json` with the template digest and the answers (the divorce stamp: no live coupling, forensics only). The root package.json `dev:<app>` line is printed as the next step, not edited, so the script touches no shared file. The steps that are genuinely domain work (types, seed, capabilities, actions) stay in the README, now as what to do after adoption.\n\n## Flow\n- node examples/demo-kit/adopt.ts parcelbay --port 3008 --design ink --dry-run -> the edit list\n- same without --dry-run -> readiness gate -> stage -> map -> rename -> stamp -> prints the pnpm commands and the dev:<app> line\n- any refusal -> named prerequisite + remedy, nothing on disk\n\n## Expected impact\nThe next app author runs one command instead of seven hand edits; the classes 'instance still says Demo app', 'two apps on one port', 'half-copied instance' and 'nobody knows which template version this app came from' close by construction. The adopted-instance digest also gives the missing check-template step a target.\n\n## Evaluation\nClaim: adoption becomes one deterministic, gated, transactional command that leaks no template identity.\nBefore: 0 of 7 behaviour cases pass (no adopter exists); case 8 is a guard.\nAfter: 8 of 8\nMethod: gate - the acceptance cases, node --test in examples/demo-kit/test\nResult: better\nGate: none (executes the template's own documented copy-and-rename procedure; changes no shared file)\nTechniques: templates-scaffolding/adoption-lifecycle (deterministic mapping, preview renders the mapped result, adoption is a transaction, divorce with a stamp), readiness-prerequisites (named blocked verdict before commit), template-portability (bare-environment leak test), template-anatomy (one authority per vocabulary).",
+      "evidence": "README.md:29-44 seven numbered edits; package.json:2 \"name\": \"demo-app\"; constants.ts:2 APP_ID = \"demo-app\"; Shell.tsx:11-12 appName=\"Demo app\" tagline=\"Template - copy me, rename me, give me a domain\"; layout.tsx:9 title: \"Demo app\"; package.json:7 --port 3000; sibling ports from examples/*/package.json: ledgerbox 3001, hirelane 3002, tidycrm 3004, atlas 3006; `cat scripts/check-template.mjs` -> No such file or directory; stabilize-2026-10-16 findings/demo-kit-template.jsonl lane B 'Nothing typechecks the template; its README promises a script that never existed'."
+    },
+    {
+      "context": "demo-kit-template",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The template acts on nothing: ship a bulk status act with toast Undo and guarded undo",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/demo-kit/template/lib/types.ts",
+        "examples/demo-kit/template/lib/db.ts",
+        "examples/demo-kit/template/app/actions.ts",
+        "examples/demo-kit/template/components/RecordsTable.tsx",
+        "examples/demo-kit/template/app/[id]/page.tsx",
+        "examples/demo-kit/template/app/activity/page.tsx",
+        "examples/demo-kit/template/app/globals.css",
+        "examples/demo-kit/template/README.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/template/lib/acts.ts",
+        "examples/demo-kit/template/components/StatusAction.tsx",
+        "examples/demo-kit/test/template-acts.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/demo-kit/template/README.md (also named by slot A: the 'What is already wired' table, sequence A then B)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "planStatusChange(rows, ['rec-0001','rec-0002'], 'archived') with both open -> changes [{ id, from: 'open', to: 'archived' } x2], skipped [], summary 'Archived 2 records.'",
+        "planStatusChange with one id already archived and one unknown -> that id skipped with 'already archived', the unknown with 'no record <id>'; when every id is skipped -> { ok: false, error } and no activity row is written (a refusal, not an empty success)",
+        "51 ids -> refused naming the cap of 50, nothing written; the set_record_status spec declares ids maxItems 50 and status enum equal to STATUSES, the same list types.ts and the records CHECK constraint derive from",
+        "setRecordStatus on an in-memory db (kit src via a server-only resolve hook) -> rows updated, exactly one activity row with reversible = 1 and undo { kind: 'status', changes }, and the result carries undoId equal to that row's id (ADR 0111: a reversible write hands back its undo)",
+        "undoActivity(undoId) -> every changed record is back at its from status, the entry is marked undone, in one transaction",
+        "guarded undo: archive rec-0001 and rec-0002, then reopen rec-0001 by a second act, then undo the first -> rec-0002 restored, rec-0001 left open, and the undo's log line names the record it left alone",
+        "the set_record_status spec classifies AUTO under the kit's rule (reversible true, sideEffects 'data' -> wire 'internal'); navigate, read_current_view and read_selection specs are unchanged",
+        "guard: an undo payload of unknown kind still throws 'no undo strategy for <action>', and undoActivity on the seed row still refuses as not reversible"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/demo-kit/template/README.md:3 - 'one registered action plus one readable', but every registered tool is read-only: HostCapabilities.tsx:39 and :54 and RecordsTable.tsx:22 all sideEffects \"none\"; no mutating capability exists",
+        "examples/demo-kit/template/app/actions.ts:14 - applyUndo restores records.status, yet nothing in the template ever writes a status or logs a reversible row: an undo strategy with no producer",
+        "examples/demo-kit/template/app/actions.ts:15 - the restore is unconditional; hirelane learned the hard way to restore only if the row is still where the act left it (examples/hirelane/app/actions.ts:391)",
+        "examples/demo-kit/template/components/RecordsTable.tsx:39 - the caption reports '<n> selected' and offers nothing to do with the selection",
+        "examples/demo-kit/template/app/[id]/page.tsx:17 - status is reported as a field, not something the reader can change",
+        "examples/demo-kit/template/app/activity/page.tsx:17 - ActivityLog is wired to Undo, but the only row the template ever logs is the irreversible seed (lib/db.ts:47-54)",
+        "docs/adr/0111-every-reversible-act-on-the-board-offers-its-undo.md - hirelane had to retrofit toast Undo and undoId because the starting point had no reversible act; stabilize finding (ledgerbox-app-shell) 'Acts are AUTO because they are reversible, and ledgerbox offers no way to reverse them'",
+        "examples/demo-kit/src/ui/Toast.tsx:24 - the kit's ToastAction already exists, so the toast Undo needs no kit change"
+      ],
+      "rollback": "Two commits (lib/acts.ts + server action + guarded applyUndo + test; the surfaces: table bulk bar, detail StatusAction, tool registration, CSS, README). Reverting both returns the template to read-only; no kit file or schema changes (the CHECK list is the same two values, now derived).",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; @athena/demo-kit runs node --test test/*.test.ts)"
+      ],
+      "runner_up": "Detail view as an L2 you can step through: prev/next over the list's sorted order with the Levels overlay, so reading 24 records is not 24 round trips to the list (no logic module richer than an index walk; impact under the floor).",
+      "body": "## Summary\nThe template a new app starts from shows status everywhere and changes it nowhere. The selection is counted and inert, the activity page has an Undo that nothing can ever light, and applyUndo is a strategy with no producer. Ship one reversible act end to end: select rows, Archive/Reopen in one move, a toast with Undo, a durable Undo on the activity page, and the same act offered to an agent as an AUTO WebMCP tool.\n\n## Description\nA new pure module, lib/acts.ts, owns the act: `planStatusChange(rows, ids, to)` returns per-id changes and per-id skips with reasons, and refuses when nothing would change or the cap is exceeded; `setRecordStatus(db, ids, to, actor)` applies the plan and logs one reversible activity row with `undo: { kind: 'status', changes }` in one transaction, returning `undoId` (ADR 0111 decision 1); `undoStatus(tx, entry)` restores each record only if it still holds the act's `to` status and names the ones it left alone (the hirelane lesson, now in the starting point). STATUSES moves into lib/types.ts as the one vocabulary that the type, the SQL CHECK, the tool enum and the buttons all derive from. app/actions.ts gains `setStatusAction` and routes applyUndo by kind. RecordsTable gets a bulk bar when the selection is non-empty ('Archive 3' / 'Reopen 1', counted from the plan, so it never offers a no-op) and registers `set_record_status` (ids maxItems 50, status enum, reversible, sideEffects 'data'). StatusAction on the detail page does the single-record case. Each success toasts with the kit's existing Undo action; the activity page copy stops saying only the seed is there.\n\n## Flow\n- tick 3 rows -> bar reads 'Archive 3' -> press -> rows flip, toast 'Archived 3 records.' [Undo]\n- Undo (toast, 4 s) or the activity row (durable) -> records return, unless a later act moved one, which is named\n- an agent calls set_record_status({ ids, status }) -> same module, same log row, same undo; AUTO by the kit's rule\n\n## Expected impact\nThe person using any app copied from the template can act on what they selected and take it back; the app author inherits a correct reversible write (logged, undoable, guarded, AUTO-classified honestly) instead of re-deriving it, which is the defect hirelane needed an ADR to retrofit and ledgerbox still carries.\n\n## Evaluation\nClaim: the template gains a bulk, undoable act whose logic is pinned offline.\nBefore: 0 of 6 behaviour cases pass (no act exists); cases 7-8 are guards.\nAfter: 8 of 8\nMethod: gate - the acceptance cases, node --test in examples/demo-kit/test with a server-only resolve hook as db-scratch.test.ts already does\nResult: better\nGate: none (the context's description names actions and host capabilities; an AUTO reversible data write is the class the README's own rule describes)",
+      "evidence": "grep sideEffects examples/demo-kit/template -> HostCapabilities.tsx:39 \"none\", :54 \"none\", RecordsTable.tsx:22 \"none\" (3 tools, 0 mutating); actions.ts:12-19 applyUndo with UPDATE records SET status, and no INSERT/UPDATE of records anywhere else in the template except the seed (lib/db.ts:31); RecordsTable.tsx:39 caption `${rows.length} records · ${selected.length} selected`; Toast.tsx:24 `export interface ToastAction`; hirelane/app/actions.ts:391-393 'Restore the stage only if the applicant is still where this action left them'; ADR 0111 Context: 'no component called undoAction'."
+    }
+  ],
+  "rehomed": [
+    "Realize the missing scripts/check-template.mjs (copy, borrow node_modules, tsc) - already a stabilize-2026-10-16 lane B backlog item and its instrument touches root scripts/ plus a sibling app's node_modules; folded into slot A only as the digest/leak test, not re-proposed",
+    "Lift Levels' poseFor/resolveGroup into a pure module tested against zoomAt - stabilize backlog item, S/M, effort under the floor on its own",
+    "On-screen way back up from L1/L2 in Levels - stabilize backlog item, S",
+    "Seed gives most owners one record so L1 is a one-row list - stabilize backlog item, S",
+    "Template pins @types/react 19.2.18 against the workspace - stabilize backlog item, S"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["templates-scaffolding", "demo-data-plane"],
+    "techniques": ["adoption-lifecycle", "readiness-prerequisites", "template-portability", "template-anatomy"]
+  },
+  "files_read": 31
+}

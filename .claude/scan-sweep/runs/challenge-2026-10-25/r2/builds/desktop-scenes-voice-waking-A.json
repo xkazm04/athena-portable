@@ -1,0 +1,17 @@
+{"card":"desktop-scenes-voice-waking/A","status":"landed","shas":["f87e9ac2"],
+ "tests_added":[
+  "apps/desktop/src/scenes/voice/keys.test.ts::one act table > record_start is refused with the listener's sentence on hear-muted, record_stop runs while recording, and perform obeys",
+  "apps/desktop/src/scenes/voice/keys.test.ts::one act table > primary is refused with the dock's own reason, and perform says it did nothing",
+  "apps/desktop/src/scenes/voice/keys.test.ts::table parity > the table has one entry per act the module's keys can name",
+  "apps/desktop/src/scenes/voice/keys.test.ts::table parity > <fixture> > <act> (every fixtureId x 9 acts)",
+  "apps/desktop/src/scenes/voice/view.test.tsx::the studio > pick without Kokoro: Play, the hero's quiet line and settings' Play say one sentence, from acts()",
+  "apps/desktop/src/scenes/voice/interact.test.tsx::the studio's document keys > a refused Space on hear-muted opens no microphone, is not swallowed, and says why",
+  "apps/desktop/src/scenes/voice/interact.test.tsx::the studio's document keys > a refused Enter on the hear step with no pick runs nothing, is not swallowed, and says the dock's reason"
+ ],
+ "guard_cases":[5,6],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{"apps/desktop pnpm typecheck":0,"apps/desktop pnpm lint":0,"apps/desktop pnpm test":1,"apps/desktop vitest run src/scenes/voice":0},
+ "files_changed":7,"lines_changed":303,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"parts.tsx untouched (Hero/HoldButton API unchanged; the idle sentence is computed in studio.tsx from acts()). The Hold button maps to holdAct(model): record_start, or record_stop while a take records, so the table and the pressed button agree mid-take. The Kokoro-missing sentence is 'Her voice is not installed yet. Install Kokoro first.' (both old sentences kept as substrings). A refusal is announced on key press only, never on release (Space keyup on hear-muted would otherwise overwrite the reason with 'No take is recording.'). No ADR: the card names CHANGELOG only and the change follows keys.ts's existing design. Existing view.test 'output: ... Play' assertion now reads acts(bare).toggle_preview.reason instead of the literal 'Install Kokoro first.'.",
+ "notes":"pnpm test red on ONE test only: scripts/first-paint.test.ts 'first paint is 165.6 kB gzipped, over the 165.4 kB ceiling', re-run once, still red. Not mine: a production build into my scratch dir puts this card's strings in the lazy view-*.js chunk, while the sibling's waking text ('Set up her voice in the studio') is in the first-paint root-*.js chunk (scenes/waking/live.tsx and reopen.ts are statically imported by console). All other 2465 desktop tests green. Follow-up out of write set: modules/voice/pieces.tsx:49 (Tone control's 'Hear Halo') still says 'Install Kokoro first.' on its own - a separate act (tone preview) not in this table. Mutation check done: a take button deciding its own reason turns 2 parity rows red."}

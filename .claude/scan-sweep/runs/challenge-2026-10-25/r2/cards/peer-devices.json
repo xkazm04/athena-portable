@@ -1,0 +1,135 @@
+{
+  "host": "peer-devices",
+  "cards": [
+    {
+      "context": "peer-devices",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One link state per peer, from named evidence, not three separate verdicts",
+      "size": "M",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/peer/presence.py",
+        "src/athena/peer/replicate.py",
+        "src/athena/peer/devices.py",
+        "tests/peer/test_presence.py",
+        "tests/peer/test_replicate.py",
+        "tests/peer/test_devices.py"
+      ],
+      "new_files": [
+        "src/athena/peer/link.py",
+        "tests/peer/test_link.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0140-one-athena-pairs-devices-over-a-private-overlay.md (append a 'Link state' section: the evidence vocabulary, 401 = removed_there, the additive `link` field on GET /devices)",
+        "apps/desktop/src/lib/fleet.ts (NOT edited here: the field is additive and null-safe; the constellation can adopt `link` later from desktop-mind-devices-sleep)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "link.derive(row=pc, key=None, hello=None, overlay=None) -> state 'awaiting_key' with evidence {'key': false}. Today the row shows presence null, the same as 'not probed yet', with no reason",
+        "PresenceProbe.probe_all() where the authorized hello answers 401 and the overlay lists the peer's address -> view(peer)['link']['state'] == 'removed_there' and presence is null. Today presence == 'asleep' (presence.py:96 drops the status, presence.py:228 asks the overlay)",
+        "Puller.pull() where the manifest answers 401 -> PassResult.state == 'removed_there'; where it answers 403 grant_missing -> 'not_shared'. Today both are 'not_shared' (replicate.py:522)",
+        "A hello that answered 200 at T, then no probe pass for 3 x PRESENCE_EVERY_S -> link.state == 'stale' with since == T. Today presence stays 'online' for as long as nothing replaces it",
+        "GET /devices -> every peer row carries link {state, since, evidence}, every key present and null for absent. Revoking the row removes its link with it",
+        "A probe pass that moves a peer to 'removed_there' publishes peer.changed exactly once. The next identical pass publishes nothing",
+        "guard: a phone row -> link.state 'phone', presence null, and nothing is dialled",
+        "guard: hello unreached + overlay lists the address -> presence 'asleep'; hello unreached + overlay does not -> 'unreachable'; hello 200 -> 'online' with vitals kept (the existing vocabulary and the existing tests stay green)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/peer/presence.py:96 - authorized_hello returns None for every non-200, so a 401 (the other PC revoked this one) looks the same as a timeout",
+        "src/athena/peer/presence.py:224-228 - a hello that came back None is 'asleep' whenever the overlay lists the address, so a device that removed this PC shows as asleep forever",
+        "tests/peer/test_presence.py:238-240 - the suite pins that dishonest state: a refused token -> presence 'asleep'",
+        "src/athena/peer/replicate.py:522-523 - manifest 401 and 403 are both recorded as 'not_shared'",
+        "src/athena/peer/presence.py:209-214 - a PC with a row but no key (pair-back not delivered) is skipped, so its presence is null, which GET /devices documents as 'not probed yet'",
+        "src/athena/peer/listener.py:580-586 - revoke drops the row and the key on this side only, and nothing tells the other side, so the other side relies on reading the 401",
+        "src/athena/peer/devices.py:315-322 - a peer row is assembled from three independent sources (row.view, memory_view, presence.view), each with its own vocabulary",
+        "docs/adr/0140-one-athena-pairs-devices-over-a-private-overlay.md:366-368 - a restart leaves a row nobody holds the token to, and nothing on the surface says which rows are like that",
+        "../ai-registry p2p-networking technique peer-state-honesty: every state is earned by named evidence with a freshness, and a weak claim is never promoted to a strong one"
+      ],
+      "rollback": "Two commits: (1) link.py and its unit tests; (2) presence/replicate observations, the devices field and the ADR/CHANGELOG lines. Reverting (2) restores the old verdicts byte for byte. (1) is then dead code and reverts cleanly. Nothing on disk changes: link state is held in memory only.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Reach a peer by identity, not by a frozen IP: reach.json stores the address seen at pairing forever. Re-resolve it from `tailscale status` by the peer's node id when the hello is unreached (p2p resilience-and-reconnection: cached endpoints are hints with a shelf life).",
+      "body": "## Summary\nThree modules each judge a paired PC in their own words: presence (online/asleep/unreachable/null), replication (ok/not_shared/unreachable) and the keys (held or not). None of them keeps the evidence. So a PC that was removed on the other side shows as 'asleep' forever, a half-paired PC looks the same as one not probed yet, and a frozen 'online' never ages. This card makes one pure derivation, `peer/link.py`, the single place a link's state is decided, from named evidence.\n\n## Description\n`link.derive(row, keyed, hello_obs, overlay_seen, memory_obs, now)` returns `{state, since, evidence}`. The states are `phone`, `awaiting_key`, `online`, `stale`, `asleep`, `unreachable` and `removed_there`. The presence probe stops collapsing the hello to body-or-None and records `(status, at)`. The puller records 401 apart from 403. GET /devices gains an additive `link` per peer row. The existing `presence` and `memory.state` keep their vocabularies, except that a 401 no longer earns 'asleep': presence becomes null and `link` says why. Derivation is a pure function of the observations it holds, so recomputing it gives the same answer (derivation-names-recomputation).\n\n## Flow\n- Write tests/peer/test_link.py (cases 1, 4, 7, 8) against a pure derive() and watch it fail.\n- presence.py: the hello returns (status, body). The pass stores the observation, derives the link and publishes on a change of link state.\n- replicate.py: 401 -> 'removed_there', 403 -> 'not_shared'.\n- devices.py: add `link` to each peer row.\n- Update test_presence.py:238-240 to the honest state, append to ADR 0140 and add a CHANGELOG line.\n\n## Expected impact\nThe person stops being told that a computer which removed this one is merely asleep, and can see which PCs are waiting on a key that never arrived. The class 'state shown without evidence' closes for peer rows, and the Devices constellation gets one field to draw from instead of three.\n\n## Evaluation\nClaim: every peer-row state is earned by named, fresh evidence, and a revoked link is distinguishable from a sleeping one.\nBefore: 0 of 6 behaviour cases pass (cases 1-6). Guards 7-8 are green.\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "presence.py:92-96 `answer = call(base_url, \"GET\", \"/peer/hello\", token=token, timeout=HELLO_TIMEOUT_S)` / `return answer.body if answer.status == 200 else None`. presence.py:225-228 `if body is None: ... verdict = \"asleep\" if seen else \"unreachable\"`. tests/peer/test_presence.py:238-240 `host.keys.keep(peer_id, ..., mint_token())  # now refused` then `assert ...[\"presence\"] == \"asleep\"`. replicate.py:522-523 `if answer.status in (401, 403): return \"not_shared\"`. presence.py:209-214 skips a PC unless `url and token`. devices.py:315-322 merges row.view(), memory_view(), presence.view(). No backlog, ADR or stabilize finding names peer-state honesty or 401-as-asleep (grep of the five backlog files and the stabilize findings for peer|presence|revok returned nothing relevant)."
+    },
+    {
+      "context": "peer-devices",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The phone follows a turn to its end: resume by from=n, across signing and reloads",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/peer/mobile/app.js",
+        "src/athena/peer/phone.py",
+        "tests/peer/test_phone.py"
+      ],
+      "new_files": [
+        "src/athena/peer/mobile/turn.js",
+        "tests/peer/phone/turn.test.mjs",
+        "tests/peer/test_phone_turn.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0140-one-athena-pairs-devices-over-a-private-overlay.md (one line under 'Phone and setup': the page resumes a turn with from=n and re-attaches after a reload)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "followTurn over a fake fetch whose first stream yields events id 0..2 and then ends with no remote.closed (the beacon's 15 s quiet) -> a second request to /peer/turns/<id>?from=3, events 3..4 then remote.closed{reason:'finished'} delivered, each event exactly once, final state 'finished'. Today app.js:548 says 'The answer stopped before it finished.' and reads nothing more",
+        "A turn waiting on a card: the stream goes quiet, the phone signs the card (decision.resolved), the continuation's text.delta arrives on the resumed stream -> one 'her' message holding the continuation's text. Today the continuation is never shown on the phone",
+        "A resume that answers 404 not_found (the turn expired on the beacon) -> state 'expired' and the message 'That conversation ended on <beacon> before it finished', not a stream error",
+        "A resume that throws (unreachable) -> state 'reconnecting', retries at 1 s, 2 s, 4 s and then every 15 s, and gives up after TURN_TTL_S (600 s) with state 'lost'. Every retry carries the same from=n",
+        "A resume that answers 401 -> state 'revoked' (the page forgets the token, as common() already does)",
+        "Reload mid-turn: {request_id, next} is kept in sessionStorage as the turn advances. On start() with no claim and a token, the page re-attaches to /peer/turns/<id>?from=<next> instead of dropping the turn",
+        "guard: a stream that ends with remote.closed on the first connection -> exactly one fetch, state 'finished'",
+        "guard: a data: line that is not JSON is skipped and the next frame is still delivered (the existing sse() behaviour)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/peer/remote.py:352-368 - frames() returns after STREAM_QUIET_S (remote.py:142, 15 s) of quiet with no remote.closed. The reader is expected to come back with from",
+        "src/athena/peer/remote.py:42-44 - a run that finished with a card waiting leaves the turn open, and the turn after the card is answered continues it: a quiet gap while the person reads the card is the normal case",
+        "docs/adr/0140-one-athena-pairs-devices-over-a-private-overlay.md:225-227 - 'a stream quiet for 15 s ends (ADR 0011) and the reader resumes with from'",
+        "src/athena/peer/mobile/app.js:499-549 - follow() opens the turn once. When the reader ends without turn.finished it says 'The answer stopped before it finished.' (app.js:548) and never asks again",
+        "src/athena/peer/mobile/app.js:533 - on decision.requested the phone says 'She needs your OK... It is above.' The answer the person then signs continues a turn the phone has stopped reading",
+        "src/athena/peer/mobile/app.js:126-154 - sse() drops the `id:` line the beacon sends (remote.py:364), so the page cannot know its from=n",
+        "src/athena/peer/mobile/app.js:634-648 - start() has no path back into an open turn after a reload",
+        "src/athena/peer/phone.py:577-584 - FILES is the one served list, so turn.js must be added there. scripts/build-sidecar.py:102 globs peer/mobile/*, so the sidecar needs no edit",
+        "../ai-registry streaming-output (run-attribution, cancellation-and-finalization) and p2p-networking resilience-and-reconnection: transfers resume after a gap, they do not restart or end"
+      ],
+      "rollback": "One feature commit. Reverting it restores app.js's single-shot follow() and the six-entry FILES table. turn.js and its tests go with it, and no server route or stored format changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Unpair once, on one computer: DELETE /devices/<peer> first tells the peer (POST /peer/unpair with this device's key), which drops its row and key and publishes 'removed by <name>'. A peer that is out of reach is told from memory on later ticks for 15 min. Today removing a PC means walking to both machines.",
+      "body": "## Summary\nThe phone is mainly for answering what Athena asks while you are away, and that path is broken. When a turn waits on a card, the beacon's turn stream goes quiet and ends after 15 s, as ADR 0011 requires. The page then says 'The answer stopped before it finished.' and never reads the continuation that the person's own signature started. This card moves turn-following into a small pure module that resumes with from=n across quiet windows, signing, network drops and reloads.\n\n## Description\n`mobile/turn.js` exports `followTurn({fetch, token, requestId, from, onEvent, onState, sleep, store})`. It parses frames with their `id:`, counts delivered events, and reconnects with `?from=<next>` whenever a stream ends without `remote.closed`. Its states are `streaming`, `reconnecting`, `finished`, `error`, `expired`, `lost` and `revoked`. Retries back off 1-2-4-15 s inside the beacon's 600 s TURN_TTL_S. After each event it writes `{request_id, next}` to sessionStorage, so a reload re-attaches. app.js keeps rendering, so the bubble, steps and cards are unchanged, and asks turn.js for the events. After the person signs on the phone, the resumed stream carries `decision.resolved` and the continuation into the same conversation. No server change: the beacon already serves `from` (remote.py:412-413).\n\n## Flow\n- Write tests/peer/phone/turn.test.mjs (node:test, a fake fetch yielding scripted SSE bodies) and the pytest wrapper test_phone_turn.py that runs `node --test` on it (skipped only where node is absent; the repo requires node >= 22.5). Watch it fail.\n- Write turn.js and add it to phone.py FILES. test_phone.py's parametrised header test covers it automatically.\n- app.js: follow() delegates to followTurn, and start() re-attaches to a stored open turn.\n- Add the ADR 0140 line and the CHANGELOG line.\n\n## Expected impact\nA person who signs a card on the phone sees what Athena then did, instead of an error. A phone that briefly loses the overlay, or a page that is reloaded mid-answer, picks the answer up where it stopped. The 'stopped before it finished' message stops appearing on turns that did finish.\n\n## Evaluation\nClaim: the phone shows every event of a turn exactly once, through quiet windows, a signature, a drop and a reload.\nBefore: 0 of 6 behaviour cases pass (cases 1-6; no resume path exists). Guards 7-8 are green by design.\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "remote.py:361-362 `if not batch and closed is None: return` (the quiet end, STREAM_QUIET_S = 15.0 at remote.py:142). remote.py:364 `yield f\"id: {index + offset}\\n{event_frame(payload)}\"`. app.js:141-142 parses only `event:` and `data:`. app.js:548 `if (!ended) say(\"trouble\", \"The answer stopped before it finished.\");`. app.js:502 fetches `/peer/turns/${...}` with no from. app.js:634-648 start() goes claim -> waiting -> ready -> instructions, with no open-turn path. No backlog, ADR or stabilize finding mentions the phone page's turn resume (grep for phone|app.js|mobile in the five backlog files and the stabilize findings returned nothing)."
+    }
+  ],
+  "rehomed": [
+    "The lifecycle tick does blocking network calls (pair-back deliver and join polls, 5 s timeout each, in sequence) on the thread that reaps and reconciles (listener.py:540-554). It is real, but authenticate() already checks expiry and windows sweep lazily, so impact is < 7.",
+    "Persist unclaimed approvals so a restart does not leave an orphan row nobody holds the token to. ADR 0140:366-368 accepted this as a consequence. The honest-display half is folded into card A (awaiting_key).",
+    "Phone cards show every pending decision on the beacon, not only this phone's turns. That is by design (ADR 0140 'Approvals': a peer granted approve sees the inbox), so it is not a defect."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["p2p-networking", "device-pairing", "streaming-output"],
+    "techniques": ["peer-state-honesty", "resilience-and-reconnection", "revocation-and-expiry", "run-attribution", "cancellation-and-finalization"]
+  },
+  "files_read": 34
+}

@@ -1,0 +1,121 @@
+{
+  "host": "desktop-scenes-voice-waking",
+  "cards": [
+    {
+      "context": "desktop-scenes-voice-waking",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One studio act table: keys, chips, buttons and the hero line read one guard",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/scenes/voice/keys.ts",
+        "apps/desktop/src/scenes/voice/keys.test.ts",
+        "apps/desktop/src/scenes/voice/studio.tsx",
+        "apps/desktop/src/scenes/voice/settings.tsx",
+        "apps/desktop/src/scenes/voice/parts.tsx",
+        "apps/desktop/src/scenes/voice/interact.test.tsx",
+        "apps/desktop/src/scenes/voice/view.test.tsx"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "keys.test: acts(fixtures['hear-muted']).record_start -> {enabled:false, reason:'No listener is ready yet — install a Whisper model or add a key below.'}; acts(fixtures.recording).record_stop -> {enabled:true}; perform(model, 'record_start') on hear-muted -> false and recordStart not called",
+        "keys.test (table parity): for every fixture id in fixtureIds and every act in acts(model), the studio rendered on that fixture shows the matching control disabled with title === acts(model)[act].reason exactly when enabled is false (Hold button, Play, both 'Use this one' buttons, the Enter chip) - one row per (fixture, act), no control decides on its own",
+        "view.test: the pick step with Kokoro not installed -> the Play button's title, the hero's quiet line and the settings Output Play button's title all carry the same sentence from acts().toggle_preview.reason (today studio says 'Her voice is not installed yet.' and settings says 'Install Kokoro first.')",
+        "interact.test: on hear-muted, Space keydown on the body -> recordStart not called, the event is NOT defaultPrevented, and the studio's polite live region announces the refusal reason (today the key is swallowed by studio.tsx:66 and nothing is said)",
+        "interact.test: on the hear step with no listener picked, Enter keydown on the body -> the primary is not run, the event is not defaultPrevented, and the live region says the dock's primaryDisabledReason",
+        "keys.test (guard): every keyAction row in the existing 'B and S', '1 and 2', 'Space' and 'who owns a key' cases still holds - the module's keyAction table is read, not changed",
+        "interact.test (guard): 'every fixture at rest asks for no frame' and 'a recording take runs one loop' stay green - the act table adds no frame loop"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "apps/desktop/src/scenes/voice/keys.ts:64 - record_start guard `model.hear.recording || !model.columns.some((c) => c.ready)` is written here",
+        "apps/desktop/src/scenes/voice/studio.tsx:330 - the same predicate again as `anyReady` for the Hold button's disabledReason (studio.tsx:336)",
+        "apps/desktop/src/scenes/voice/studio.tsx:95 - and a third time as `canHear` for the hero's idle line (studio.tsx:134)",
+        "apps/desktop/src/scenes/voice/keys.ts:60 - toggle_preview guard `model.voice && kokoro ready`; studio.tsx:96 `canPlay`, studio.tsx:293 `notReady`, settings.tsx:149 'Install Kokoro first.' - four copies, two different sentences for one fact",
+        "apps/desktop/src/scenes/voice/keys.ts:76 - pick_stt guard `col?.ready`; studio.tsx:369 the button's own `col.ready` copy with its reason",
+        "apps/desktop/src/scenes/voice/studio.tsx:66 - `e.preventDefault()` runs before `perform`, whose boolean (keys.ts:59 primary always returns true) is ignored: a refused key is swallowed silently",
+        "git log: fa499bd6 'Space on the hear step opens the microphone only when a listener can hear the take, and the hero names Space only when it acts' and 8037f927 'the studio's Hold to talk, focused, holds on the Space it shows' - two shipped fixes of exactly this key/control disagreement",
+        "registry wizard-flows/step-state-model 'Validity is a predicate, not a flag': the indicator's clickability and the keyboard shortcut's guard call the same one function"
+      ],
+      "rollback": "Single feature commit confined to scenes/voice; git revert restores the inline guards. No store, module or contract is touched.",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"],
+      "runner_up": "One place-audio lease: the take and the preview both end with the place (useTakeEndsWithPlace grows to stop a preview on unmount and blur).",
+      "body": "## Summary\nThe studio decides whether each act may run in three to four places (the document key handler, the card's button, the dock chip, the hero's quiet line) and they have already drifted twice. Derive every act's availability once, in keys.ts, as `acts(model)` -> {enabled, reason, run}, and make every surface read it.\n\n## Description\nkeys.ts already owns `perform`; it grows a pure `acts(model): Record<Exclude<KeyAction,null>, {enabled: boolean; reason?: string}>` built from the model's own facts (dock.canBack/canSkip/primaryDisabledReason from the module, columns' readiness and reasons, Kokoro's state, hear.recording). `perform` checks `acts()` and returns false when refused; the studio's document handler calls preventDefault only when perform acted, and puts a refused act's reason into the existing polite live region. The Hold button, Play (studio and settings Output), the two 'Use this one' buttons, the dock chips and the hero's idle line take their disabledReason / wording from the same entry. The module's keyAction table is read, never edited. Technique: wizard-flows/step-state-model (one predicate for the control's courtesy copy and the transition's guarantee copy).\n\n## Flow\n- keys.ts: add `acts(model)`; `perform` consults it.\n- studio.tsx: drop `canHear`, `canPlay`, `notReady`, `anyReady` and the inline `col.ready` reason; read acts(). The key handler honours perform's result and announces refusals.\n- settings.tsx: Output's Play reads acts(model).toggle_preview.reason.\n- parts.tsx: Hero/HoldButton unchanged in API; only the idle sentence source moves.\n- Tests first: the table-parity case over every fixture, then the refusal-announce cases.\n\n## Expected impact\nA key and the control it mirrors can no longer disagree (the defect class behind fa499bd6 and 8037f927 closes by construction), one fact gets one sentence across studio and settings, and a refused key says why instead of being swallowed.\n\n## Evaluation\nClaim: every studio act's availability and refusal reason come from one table, and a refused key is announced.\nBefore: 0 of 5 new acceptance cases pass (cases 0-4; 5 and 6 are guards, green before)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "keys.ts:64 `if (model.hear.recording || !model.columns.some((c) => c.ready)) return false;` | studio.tsx:95 `const canHear = model.columns.some((c) => c.ready);` | studio.tsx:330 `const anyReady = columns.some((c) => c.ready);` | keys.ts:60-63 toggle_preview `if (!model.voice || model.kokoro?.state !== \"ready\") return false;` | studio.tsx:96 `const canPlay = model.voice !== null && model.kokoro?.state === \"ready\";` | studio.tsx:293 `\"Her voice is not installed yet.\"` vs settings.tsx:149 `\"Install Kokoro first.\"` | studio.tsx:66-67 `e.preventDefault(); perform(latest.current, act);` | keys.ts:57-59 `case \"primary\": primary(model)(); return true;` (primary() itself no-ops when dock.primaryDisabledReason, pieces.tsx:73)"
+    },
+    {
+      "context": "desktop-scenes-voice-waking",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The first act opens on the step she still needs and keeps your place",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/scenes/waking/reopen.ts",
+        "apps/desktop/src/scenes/waking/view.tsx",
+        "apps/desktop/src/scenes/waking/live.tsx",
+        "apps/desktop/src/scenes/waking/fixtures.ts",
+        "apps/desktop/src/scenes/waking/index.tsx",
+        "apps/desktop/src/scenes/waking/view.test.tsx",
+        "apps/desktop/src/scenes/waking/interact.test.tsx",
+        "apps/desktop/src/scenes/waking/live.test.tsx",
+        "apps/desktop/src/scenes/waking/waking.css"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/waking/steps.ts",
+        "apps/desktop/src/scenes/waking/steps.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-first-act-opens-on-its-frontier-and-keeps-its-place-for-the-session.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "steps.test: openingStep({engine done, page todo, mic unknown, voice off}, avatar 'halo', kept null) -> 1 (Reach); engine missing -> 0; engine and page done, mic and voice not -> 2 (Voice); everything lit -> 3 (Face, where Wake her is)",
+        "steps.test: a kept position wins over the frontier: openingStep(engine missing, kept 2) -> 2; the reshow from Mind (useReopened.set(true)) clears the kept position to 0 so 'Show the welcome again' walks it from Mind",
+        "live.test: mount Live on a model with the engine ready and no page -> the act asks 'Where will she work?'; click step 'Voice', press Later (go to apps), unmount, remount Live -> the act asks 'Do you want to talk to her?' (today it reopens at 'What will she think with?')",
+        "view.test: on step 2 with voiceAvailable false, the Voice step offers 'Set up her voice in the studio' which calls the onVoice prop once; live.tsx's onVoice keeps position 2 and goes to {root:'voice', item:'studio'}; remounting after the detour lands on Voice",
+        "view.test: Wake her is reached by Next from any step and stays gated by isReady/notReadyBecause exactly as before (no derived opening step ever bypasses the gate)",
+        "interact.test (guard): 'Next into a step whose Wake her is not ready lands on Wake her and its reason' and 'keeps the same button focused' stay green with an explicit initialStep",
+        "view.test (guard): every fixture in fixtureIds renders; the preview harness still opens each fixture on its INITIAL_STEPS story step"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        "apps/desktop/src/scenes/waking/view.tsx:77 - the position is `useState<Step>(initialStep)`, screen-local, and dies on unmount",
+        "apps/desktop/src/scenes/waking/view.tsx:76 - `initialStep = 0`; apps/desktop/src/scenes/waking/live.tsx:32 never passes one, so every arrival opens at Mind even when the engine is done",
+        "apps/desktop/src/scenes/waking/live.tsx:19 - Later goes to {root:'apps'}; apps/desktop/src/console/Console.tsx:71 redraws the act on the surface, remounting WakingView at step 0",
+        "apps/desktop/src/scenes/waking/view.tsx:109 - `lit` already derives which steps are done from the model; the frontier is computable from it but only drives tendrils",
+        "apps/desktop/src/scenes/waking/view.tsx:220 - the Voice step reports 'Her voice: {voice.summary}' and offers nothing to act on it; setup lives in voice/studio",
+        "apps/desktop/src/scenes/waking/fixtures.ts:21 - INITIAL_STEPS hand-lists the step each story opens on, the same judgement openingStep would derive",
+        "apps/desktop/src/scenes/waking/reopen.ts:16 - the act's flag already lives in a session store (ADR 0094: 'a reopened act survives navigating away and back, and a restart forgets it')",
+        "registry wizard-flows/step-state-model 'What may stay local': if losing it on unmount loses anything resume needs, it goes in the model; voice-io/voice-setup-experience §2 'a resumable step'"
+      ],
+      "rollback": "One feature commit plus its ADR; git revert restores the useState position and the opening-at-Mind behaviour. reopen.ts keeps `on`/`set(on)` as is (Console.tsx and mind/live.tsx read only those), so no other context sees a shape change.",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test", "cd apps/desktop && pnpm perf:all"],
+      "runner_up": "The studio's ready step offers a live end-to-end try (hold Ctrl+Shift+Space, she answers) before Finish, so the person hears the whole loop once inside setup.",
+      "body": "## Summary\nA first-run person who presses Later to look around (often to open the app the Reach step asks for) comes back to the act at step 1, Mind, already done, and walks Next three times to reach Wake her. The act should open where she still needs something and remember where the person was for the session, and its Voice step should be a door to the studio, not just a status line.\n\n## Description\nA pure `steps.ts` declares the four steps with a done predicate each (the same facts view.tsx:109 already computes for the tendrils) and exports `openingStep(model, avatar, kept)`: a kept position wins; otherwise the first unlit step; everything lit opens on the last step with Wake her. `reopen.ts` keeps one more session field, `step: Step | null`, with `keep(step)`; `set(true)` (the Mind reshow) resets it to 0 so a reshow walks from the start. WakingView takes `kept`/`onStep` (live.tsx wires the store) and an `onVoice` prop: on the Voice step, while voice is not available, a 'Set up her voice in the studio' button keeps the position and goes to voice/studio. `initialStep` stays as the preview and test override and INITIAL_STEPS stays for the stories. Nothing is stored on disk; a restart forgets the position, as ADR 0094 forgets the flag. Techniques: wizard-flows/step-state-model, wizard-flows/progress-communication, voice-io/voice-setup-experience (resumable step).\n\n## Flow\n- steps.ts + steps.test.ts first (the frontier table).\n- reopen.ts: `step` and `keep`; set(true) clears to 0.\n- view.tsx: position from openingStep; step clicks and Next call onStep; Voice step gains the studio door.\n- live.tsx: wire useReopened and useDepth for onVoice.\n- ADR: the act opens on its frontier and keeps its place for the session.\n\n## Expected impact\nEvery first-run person who leaves the act and returns lands on the step still owed (often directly on Wake her), and a person who wants her voice reaches the studio from the question that asks for it and comes back to the same step.\n\n## Evaluation\nClaim: the act opens on its frontier, keeps its place across Later and a Voice detour, and never bypasses the readiness gate.\nBefore: 0 of 4 new acceptance cases pass (cases 0-3; 4-6 are guards, green before)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "view.tsx:76-77 `export default function WakingView({ model, onLater, initialStep = 0, ... }) { const [step, setStep] = useState<Step>(initialStep);` | live.tsx:19 `const later = () => useDepth.getState().go({ root: \"apps\" });` | live.tsx:32 `createElement(WakingView, { model, onLater: later, avatar, onAvatar: chooseAvatar })` (no initialStep) | view.tsx:219-221 `<p className=\"waking__fact\" ...>Her voice: {voice.summary}</p>` (no action) | fixtures.ts:21-26 INITIAL_STEPS {engine-missing:0, no-page:1, ready:3, no-mic:2} | reopen.ts:16-19 `create<ReopenState>((set) => ({ on: false, set: (on) => set({ on }) }))` | grep useReopened outside waking: console/Console.tsx:59 (reads s.on), scenes/mind/live.tsx:78 (set(true)) only"
+    }
+  ],
+  "rehomed": [
+    "Her preview keeps speaking after the Voice place is left (stopPreview on unmount) - S, already filed by stabilize-2026-10-16 (error-handler); void here",
+    "Voice says hold Ctrl+Shift+Space even when hotkeys.rs failed to register it - needs a Rust IPC command outside this context; already filed (state-coverage)",
+    "Settings' Play and studio's Play give two sentences for one fact - S on its own; absorbed into card A",
+    "Reopening a finished studio resets its state instead of resuming the done steps - decided by ADR 0092 (consequence accepted); void"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["voice-io", "wizard-flows"],
+    "techniques": ["step-state-model", "progress-communication", "snapshot-and-resume", "voice-setup-experience"]
+  },
+  "files_read": 34
+}

@@ -1,0 +1,80 @@
+{"host":"tidycrm-domain-lib","cards":[
+{"context":"tidycrm-domain-lib","slot":"A","lens":"architecture-challenger",
+ "title":"One field-write door: every contact write logs its revision and restamps its flags",
+ "size":"M","effort":6,"impact":7,"risk":5,
+ "write_set":["examples/tidycrm/lib/mutations.ts","examples/tidycrm/lib/db.ts","examples/tidycrm/lib/summary.ts","examples/tidycrm/test/mutations.test.ts","examples/tidycrm/test/domain-lib.test.ts"],
+ "new_files":["examples/tidycrm/lib/flags.ts","examples/tidycrm/test/flag-drift.test.ts"],
+ "shared_surfaces":["CHANGELOG.md"],
+ "generated":[],
+ "acceptance":[
+  "flagDrift() on a freshly seeded db -> [] (the seed's stamping and the derivation are the same functions)",
+  "raw SQL sets phone_ok=1 on a contact whose phone is '(415) 555-0134' -> flagDrift() returns exactly [{id, flag:'phone_ok', stored:1, derived:0}]; same for in_open_pair forced to 1 on a contact in no open pair",
+  "seeded random walk (3 seeds x 150 steps) over normalizeFields / flagStale / resolveCompany / mergeContacts / deleteContacts / resolvePair / undoWrite with ids drawn from live rows and the activity log -> flagDrift() === [] after every step",
+  "mergeContacts on a pair whose keep has an invalid phone and drop a valid one -> listRevisions(keep_id) carries a 'phone' row with old_value = keep's old phone, new_value = drop's phone, rules = 'merge_contacts'; and a 'last_activity_at' row when the drop's date was newer",
+  "exportSummary('all').normalized_fields and .normalized are identical before and after that merge (a merge adoption is not a normalisation)",
+  "source guard: no `UPDATE contacts SET` naming phone_ok, is_stale, conflict or in_open_pair appears in lib/mutations.ts or lib/db.ts; lib/flags.ts is the only file that writes them",
+  "normalize a phone, then undoWrite that entry -> phone and phone_ok are both back to the seed values, revision reverted=1 (unchanged behaviour)",
+  "mergeContacts refusals (swapped orientation, already merged, invented ids, self-merge) return the same error strings as today"
+ ],
+ "guard_cases":["4","6","7"],
+ "premise":[
+  "examples/tidycrm/lib/mutations.ts:159 normalizeFields restamps phone_ok by hand after a phone write",
+  "examples/tidycrm/lib/mutations.ts:387 mergeContacts restamps phone_ok = 1 by hand, a second copy of the phone rule",
+  "examples/tidycrm/lib/mutations.ts:392 mergeContacts restamps is_stale by hand (added late by fix b135dbb4)",
+  "examples/tidycrm/lib/mutations.ts:540 applyUndo restamps phone_ok by hand, a third copy",
+  "examples/tidycrm/lib/mutations.ts:385 merge adoptions UPDATE the survivor's phone and last_activity_at with no revisions row, so the survivor's history cannot say why its phone changed",
+  "examples/tidycrm/lib/mutations.ts:394 and :429 zero in_open_pair inline while refreshPairFlag (:76) derives it elsewhere",
+  "examples/tidycrm/lib/db.ts:31 the flags are stored, indexed caches of rules (isE164, isStaleAt, spelling count, open-pair count) with no check that cache equals rule",
+  "examples/tidycrm/lib/summary.ts:61 normalised figures are `rules <> COMPANY_RULE`, so a new revision tag must be excluded explicitly"
+ ],
+ "rollback":"Three commits (flags.ts + drift oracle and its tests; writes routed through the door; merge adoptions as revisions + summary filter), each reverted with git revert in reverse order; no schema change, no data migration - a revision row written by the third commit stays a valid row if it is reverted.",
+ "gate":"none",
+ "gates_to_run":["pnpm typecheck && pnpm lint && pnpm test (workspace root; tidycrm runs node --test test/**/*.test.ts)"],
+ "runner_up":"The liveness predicate is written five ways (LIVE/WORKING/SEGMENT_WHERE/WORKABLE_PAIR in db.ts, live() and refreshConflict in mutations.ts): one predicate module both the reads and the writes compose.",
+ "body":"## Summary\nThe four stored defect flags (phone_ok, is_stale, conflict, in_open_pair) are caches of four rules, and every write path restamps the ones it remembers by hand. Route every contact field write through one door in a new lib/flags.ts that records the revision, applies the value and restamps exactly the flags that field feeds; add flagDrift(), an oracle that recomputes every flag from its rule and reports any row where the cache disagrees; pin it under a seeded random walk of every mutation and undo.\n\n## Description\nThe pattern is read-models-and-projections (data-access): a stored count is a cache, and a cache needs the rule it caches beside it plus a check. Today phone_ok is restamped in three places (mutations.ts:159, :387, :540), is_stale in one that arrived only after a bug (b135dbb4), conflict through refreshConflict which a fix had to correct (7e9209d2), and in_open_pair both derived (refreshPairFlag) and zeroed inline (:394, :429). The class has already produced two shipped defects. The audit half is write-chokepoint (audit-logging): merge is the one write that changes field values without a revisions row (:385), so the survivor's phone silently becomes the drop's. Through the door, a merge adoption writes a revision tagged merge_contacts, which exportSummary excludes from the normalised figures exactly as it excludes resolve_company.\n\n## Flow\n- lib/flags.ts: deriveFlags(row, ctx) and restamp(tx, {ids, domains}) - the only writer of the four flags; seed() stamps through deriveFlags too\n- writeField(tx, id, field, value, rule) -> INSERT revision, UPDATE field, restamp what the field feeds; restoreField for applyUndo\n- normalizeFields, resolveCompany, mergeContacts (adoptions), applyUndo call the door; deleteContacts and merge's merged_into/deleted_at writes call restamp\n- flagDrift(): recompute over the working list, return [{id, flag, stored, derived}]\n- test/flag-drift.test.ts: corruption detection + seeded random walk\n\n## Expected impact\nA new write path cannot forget a flag, and if one ever does the drift oracle names the row and the flag in the test run instead of a reviewer finding a stuck segment count. The survivor of a merge carries the history of what the merge changed on it. Could break: the sheet's 'changed' figure now counts merge adoptions on the survivor (correct, but visible); campaign.test.ts summary figures must stay put, which case 5 pins. Interacts with this host's slot B card in mergeContacts; whichever lands second rebases onto the door.\n\n## Evaluation\nClaim: quality - the stored flags provably equal their rules after any sequence of writes, and every field write leaves a revision\nBefore: 0 of 8 acceptance cases pass as written (flagDrift and lib/flags.ts do not exist; merge writes no revision); 4 flag-writing sites outside any single module (grep)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+ "evidence":"grep -n 'UPDATE contacts SET' examples/tidycrm/lib/mutations.ts | grep -E 'phone_ok|is_stale|conflict|in_open_pair' ->\n81  in_open_pair = ? (refreshPairFlag)\n97  conflict = ? (refreshConflict)\n159 phone_ok = ? (normalizeFields)\n387 phone_ok = 1 (mergeContacts)\n392 is_stale = ? (mergeContacts)\n394 merged_into = ?, in_open_pair = 0\n429 deleted_at = ?, in_open_pair = 0\n540 phone_ok = ? (applyUndo)\nmutations.ts:385 `for (const a of taken) tx.run(`UPDATE contacts SET ${a.field} = ? WHERE id = ?`, [a.value, keep.id]);` - no INSERT INTO revisions in mergeContacts.\nPrior defects of this class: b135dbb4 (merge did not restamp is_stale), 7e9209d2 (conflict counted merged-away rows)."
+},
+{"context":"tidycrm-domain-lib","slot":"B","lens":"ux-elevation",
+ "title":"preview_merge shows what the irreversible merge will write, from the write's planner",
+ "size":"M","effort":5,"impact":7,"risk":4,
+ "write_set":["examples/tidycrm/lib/mutations.ts","examples/tidycrm/lib/types.ts","examples/tidycrm/app/actions.ts","examples/tidycrm/test/mutations.test.ts"],
+ "new_files":["examples/tidycrm/test/merge-plan.test.ts"],
+ "shared_surfaces":["CHANGELOG.md","examples/tidycrm/components/shell/HostCapabilities.tsx (optional one-line description update for preview_merge; owned by tidycrm-spatial-model-tools - the card works without it because the tool returns the preview object verbatim)"],
+ "generated":[],
+ "acceptance":[
+  "previewMergeAction(pair) where keep.phone_ok=0 and drop.phone_ok=1 -> result.outcome.adopts contains {field:'phone', from: keep.phone, to: drop.phone}; where drop.last_activity_at is newer -> contains the last_activity_at adoption",
+  "a pair whose drop stands in a second open pair -> outcome.closes lists that second pair's id; after mergeAction the second pair's status is 'skipped' and the set of pairs that changed status equals {settled pair} + outcome.closes",
+  "a pair whose drop holds its domain's last odd company spelling -> outcome.restamps contains {flag:'conflict', domain, from:1, to:0}; a drop newer than the stale cutoff on a stale keep -> {flag:'is_stale', id:keep_id, from:1, to:0}",
+  "parity walk: for the first 10 open pairs in turn, plan then merge -> the survivor's stored phone, last_activity_at, phone_ok and is_stale equal outcome.survivor field for field, and countSegment('all') drops by exactly 1 each time",
+  "preview of a pair whose drop was merged by an earlier pair -> outcome.refusal is the exact error string mergeContacts returns for the same ids, and outcome.adopts/closes are empty",
+  "previewMergeAction still returns pair, keep, drop and conflicts with the same values as before (existing callers and the preview_merge tool keep their fields)",
+  "mergeContacts' refusals and activity summary text are unchanged for the seed's first pair"
+ ],
+ "guard_cases":["5","6"],
+ "premise":[
+  "examples/tidycrm/lib/mutations.ts:349 mergeContacts is GATED and not reversible",
+  "examples/tidycrm/lib/mutations.ts:340 adoptions() decides what the survivor takes, and nothing outside mergeContacts calls it",
+  "examples/tidycrm/lib/mutations.ts:397 closeDependentPairs silently closes every other open pair the drop stood in",
+  "examples/tidycrm/lib/mutations.ts:400 refreshConflict may clear the drop's domain from the conflicts segment",
+  "examples/tidycrm/lib/db.ts:350 previewPair returns the two rows and their disagreements only - no adoption, no closed pair, no flag change",
+  "examples/tidycrm/app/actions.ts:116 previewMergeAction is previewPair verbatim; it is what the preview_merge tool returns (components/shell/HostCapabilities.tsx:285)",
+  "examples/tidycrm/lib/mutations.ts:125 and :257 planNormalize and planCompany already follow plan-then-write from one planner; merge is the only write without one"
+ ],
+ "rollback":"Two commits (planMerge + outcome on the preview; mergeContacts executing the plan), reverted in reverse order; the outcome field is additive, so reverting the first leaves every existing caller's fields intact.",
+ "gate":"none",
+ "gates_to_run":["pnpm typecheck && pnpm lint && pnpm test (workspace root; tidycrm runs node --test test/**/*.test.ts)"],
+ "runner_up":"Per-field survivor picks on merge (keep/drop per disagreeing field, carried into the plan and the activity line) - the CRM merge wizard; needs a tool schema change in HostCapabilities, another context's file.",
+ "body":"## Summary\nThe only irreversible, gated act in TidyCRM is approved blind. preview_merge shows the two records and where they disagree, but not what the merge will do: which values the survivor takes, which other open pairs it closes as skipped, which flags and segments it clears. The app computes all of it - inside mergeContacts, after the approval. Extract planMerge(keep, drop) as the single planner both the preview and the write run, and attach its outcome to the preview.\n\n## Description\nThis is blast-radius-computation (entity-lifecycle): the preview and the execution share one implementation, and the consequences are enumerated before the ask. planNormalize and planCompany already follow plan-then-write; merge is the one write that does not, and it is the irreversible one. outcome carries {refusal?, adopts[], closes[], restamps[], survivor}. mergeContacts becomes: plan, refuse with plan.refusal, apply plan. Because the preview_merge tool returns the preview object as is, the agent and the person reading the approval card see the outcome without a tool change. The gate class is untouched (merge stays reversible:false, GATED, per ADR 0004).\n\n## Flow\n- read_pairs -> pair_007\n- preview_merge(pair_007) -> conflicts as today + outcome: 'survivor takes phone +14155550134 and last activity 2026-03-02; closes pair_031 (skipped); clears acme.example from Company conflicts; survivor no longer stale'\n- the person approves the merge card knowing what it writes -> merge_contacts executes that exact plan\n- if anything moved between preview and approval, the write re-plans and the refusal is the planner's own string\n\n## Expected impact\nThe reviewer approving an irreversible merge sees its consequences, including the silent closure of other pairs that today is discovered only as a vanished queue entry. A whole class of preview/write drift closes because there is one planner. Could break: callers that deep-equal the preview object (case 6 pins the existing fields). Shares mergeContacts with this host's slot A card; whichever lands second rebases.\n\n## Evaluation\nClaim: user - the merge preview states what the merge will write, and the write does exactly that\nBefore: 0 of 7 cases pass as written (no outcome field; adopts/closes/restamps computed only inside the write)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+ "evidence":"lib/db.ts:350-357 previewPair -> { pair, keep, drop, conflicts: conflictsBetween(keep, drop) } - nothing else.\nlib/mutations.ts:382 `const taken = adoptions(keep, drop);` computed after the precondition checks, inside the gated write; :397 `closeDependentPairs(tx, drop.id);` closes other open pairs as 'skipped'; :400 `refreshConflict(tx, drop.domain);`.\nHostCapabilities.tsx:285-287 preview_merge handler: `const preview = await previewMergeAction(String(pair_id)); return preview ?? ...` - returns the object verbatim, so an added field reaches the agent."
+}
+],
+"rehomed":[
+ "Actor provenance - every write logs actor 'user' even when Athena made it (stabilize backlog, L): the fix carries caller identity from the WebMCP transport through demo-kit and every app, outside this host's write set.",
+ "Reversible merge/delete via snapshot inverses: flipping the manifest's reversible flag would reclassify the tools AUTO under ADR 0004 - a policy loosen; keeping them GATED but undoable is a direction call for the deck.",
+ "Bulk-merge every confident pair in one gated act: one card authorising up to 43 irreversible merges weakens per-act consent - policy-loosen risk.",
+ "Export summary counts tidies on records since deleted (stabilize backlog): S, effort 2, gate direction.",
+ "Context description names 'CSV import' but no import exists (registry: import-normalization not-applicable): building one is a direction, not a fix."
+],
+"riders":[],
+"registry":{"subjects":["data-access","audit-logging","entity-lifecycle","table"],"techniques":["read-models-and-projections","repo-testing","write-chokepoint","blast-radius-computation"]},
+"files_read":34}

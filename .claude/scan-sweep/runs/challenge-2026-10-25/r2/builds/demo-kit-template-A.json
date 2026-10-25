@@ -1,0 +1,17 @@
+{"card":"demo-kit-template/A","status":"landed","shas":["190820a9","5cce135b"],
+ "tests_added":[
+  "examples/demo-kit/test/template-adopt.test.ts::case 1: adopting parcelbay on 3008 with design ink writes the name, the port, the ids and the variant block",
+  "examples/demo-kit/test/template-adopt.test.ts::case 2: an adopted instance carries none of the template's identity tokens in any file",
+  "examples/demo-kit/test/template-adopt.test.ts::case 3: a port a sibling holds is refused naming that sibling and the first free port, and nothing is written",
+  "examples/demo-kit/test/template-adopt.test.ts::case 4: an existing directory and a name that is not a package name are each refused with their own prerequisite",
+  "examples/demo-kit/test/template-adopt.test.ts::case 5: a failure after the third file leaves neither the target nor a staging directory",
+  "examples/demo-kit/test/template-adopt.test.ts::case 6: the same answers make byte-identical trees, stamped with the template digest and the answers",
+  "examples/demo-kit/test/template-adopt.test.ts::case 7: a dry run returns the edits the real adoption then writes, and writes nothing",
+  "examples/demo-kit/test/template-adopt.test.ts::case 8 (guard): the template's app name has one authority, lib/constants.ts"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter @athena/demo-kit typecheck":0,"pnpm --filter @athena/demo-kit test":0,"pnpm --filter @athena/demo-kit lint":0,"pnpm typecheck (root, re-run after sibling red)":0,"pnpm lint (root)":0,"tsc -p <throwaway tsconfig extending the kit's, include adopt.ts + test>":0},
+ "files_changed":8,"lines_changed":669,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Revision applied: case 2 scans for demo-app, Demo app, copy me, \"plain\" and data-variant=\"plain\" only. Case 8 (guard) was red before too: Shell.tsx and layout.tsx held the 'Demo app' literal, which is what the card's own premise says. Red-before for cases 1-7 was taken against a throwing stub adopt.ts (no adopter existed). Case 1 also asserts slot B's lib/acts.ts, lib/db.ts and components/StatusAction.tsx are carried byte for byte. Layout's metadata description left as is (no identity token). Two commits instead of three: the README rewrite rides with adopt.ts under the lock. The README's false promise of scripts/check-template.mjs is left (rehomed backlog item); the ADR names it.",
+ "notes":"First root pnpm typecheck was red only in apps/desktop/src/scenes/voice/studio.tsx (TS6133 pickActs, sibling desktop-scenes-voice-waking in flight); re-run after my commits exited 0. adopt.ts lives outside the kit's tsconfig include (src only), so the kit's tsc does not reach it; checked by hand with a throwaway tsconfig, and tsconfig.json was not changed (outside the write set). ADR 0170 claimed under the lock; README row appended at the end of the 'What is already wired' table after slot B's row."}

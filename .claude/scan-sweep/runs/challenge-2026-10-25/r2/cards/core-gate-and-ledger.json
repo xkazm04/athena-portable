@@ -1,0 +1,115 @@
+{
+  "host": "core-gate-and-ledger",
+  "cards": [
+    {
+      "context": "core-gate-and-ledger",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Approvals: one declared transition table, every verdict an append-only event",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/core/approvals.py",
+        "tests/core/test_approvals.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-an-approval-verdict-is-superseded-never-rewritten.md (amends 0005, 0038, 0060)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "create(...) -> Approvals.history(id) is exactly one event (kind 'filed', status_after 'pending', at == created_at)",
+        "resolve(id,'approve',now=t1) then decline_approved(id,'decline',now=t2) -> get(id).status == 'declined'; history kinds == ['filed','approved','declined']; the 'approved' event still carries choice 'approve' and at == iso(t1); the 'declined' event's supersedes == the 'approved' event's seq (today the row's choice/resolved_at are overwritten and t1 is unrecoverable)",
+        "two consume(id) calls on one approved row -> exactly one True and exactly one 'consumed' event; consume on a pending/declined/expired row -> False and no event",
+        "expire_due(T) over 3 due rows -> each has exactly one 'expired' event with reason 'expired' and at == iso(T); a late resolve() that self-expires a row also leaves exactly one 'expired' event, not two",
+        "resolve with a token the card never offered, on a non-pending row, or on an unknown id -> ApprovalError as today and history(id) unchanged (no event written)",
+        "APPROVAL_TRANSITIONS equals the five lifecycle edges of the module docstring; a randomized sequence of 200 create/resolve/expire/consume/decline_approved ops over 10 rows -> for every row, folding history(id) yields exactly get(id).status, choice and consumed_at (every write goes through the one chokepoint, in the same transaction as its event)",
+        "a brain whose companion_approval was created without the event table (rows pending, approved+consumed, declined, expired) opens via Approvals(brain) -> each row's history is non-empty, marked backfilled, and its fold equals the row",
+        "pending(limit) order, total and footer, of_turns(...) totals/by_status/consumed, spent_recently(...) and describe(...) return exactly what they return today for the same op sequence"
+      ],
+      "guard_cases": ["4", "7"],
+      "premise": [
+        "src/athena/core/approvals.py:5 - the lifecycle (five edges) is stated only in a docstring; no table in code declares it",
+        "src/athena/core/approvals.py:563 - decline_approved UPDATEs status, choice and resolved_at in place: the user's original 'approve' and its timestamp are destroyed",
+        "src/athena/core/approvals.py:495 - resolve, :519 expire_due, :538 consume, :563 decline_approved are four hand-written conditional UPDATEs each restating its own 'from' status literal; nothing records a transition beyond the last one",
+        "src/athena/core/approvals.py:130 - the row has one choice/answer/reason/resolved_at slot, so any second verdict must overwrite the first",
+        ".ai/registry-map.json core-gate-and-ledger / hitl-approval: state deviation, evidence 'approvals.py:494 Declining an unspent approval overwrites its original verdict and decision timestamp instead of preserving an immutable superseding record'",
+        "docs/BACKLOG.md:18 B6 - the Record must answer 'what did she do' with resolved decisions persisted; today an approved-then-declined card reads as a plain decline"
+      ],
+      "rollback": "Two commits (event table + chokepoint, then backfill); reverting both leaves the additive companion_approval_event table unread in existing brains, which CREATE TABLE IF NOT EXISTS tolerates; companion_approval's schema and every public method signature are unchanged, so no caller needs reverting.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Pin each connector tool's contract in the core and tighten a re-merge that changes a description or loosens a class to GATED (the mcp-tools deviation at catalog.py:511 for connector origins, which ADR 0100's desktop pin does not cover) - needs a brain table plus wiring and lane acceptance, outside this context.",
+      "body": "## Summary\nThe approval table's lifecycle lives in a docstring and four ad-hoc UPDATEs; the one late edge (approved -> declined, ADR 0060) overwrites the user's original verdict. Make the lifecycle a declared transition table, route every write through one chokepoint that applies the conditional UPDATE and appends an immutable event in the same transaction, and expose history(id).\n\n## Description\nA new `companion_approval_event` table (seq AUTOINCREMENT, approval_id, kind, status_after, choice, answer, reason, supersedes, at) beside `companion_approval`, created with the same IF NOT EXISTS idiom and absent from INDEX_TABLES so a reconcile keeps it (ADR 0005). `APPROVAL_TRANSITIONS: Mapping[tuple[from_status, kind], to_status]` states the five edges; `_transition(con, id, kind, ...)` is the only writer: it derives the WHERE from the table, and inserts the event only when rowcount == 1, so racing writers still split exactly as ADR 0038 requires. `companion_approval` stays the projection every reader already uses (pending, of_turns, spent_recently, describe are untouched). `decline_approved` writes a 'declined' event whose `supersedes` names the 'approved' event, so the trail reads approved at T1, declined at T2 (hitl-approval/decision-records: append-only, superseded not edited; audit-logging/write-chokepoint). On open, rows with no events are backfilled once from their own columns, marked `backfilled`. The rows' `choice`/`resolved_at` keep meaning 'the effective verdict' (the head of the chain).\n\n## Flow\n- create -> INSERT row + 'filed' event, one txn\n- resolve / expire_due / consume / decline_approved -> _transition: conditional UPDATE from the table's from-status; on rowcount 1, INSERT event\n- history(id) -> events oldest first, bounded like pending()\n\n## Expected impact\nA whole class closes: no verdict can be rewritten or lost, a new edge cannot be added without the table naming it, and the Record (BACKLOG B6) gains a source that answers 'approved, then declined' truthfully. Closes the recorded hitl-approval deviation.\n\n## Evaluation\nClaim: every approval transition is declared once and leaves an immutable event; a superseded verdict stays readable.\nBefore: 0 of 8 acceptance cases pass (cases 5 and 8 are guards and pass by design once history() exists; cases 1-4, 6, 7 fail - there is no history and decline_approved erases t1)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in tests/core/test_approvals.py\nResult: better\nGate: none",
+      "evidence": "approvals.py:563-566: `UPDATE companion_approval SET status = 'declined', choice = ?, resolved_at = ? WHERE id = ? AND status = 'approved' AND consumed_at IS NULL` - the approve choice and its resolved_at are replaced. approvals.py:5-9 lifecycle is a docstring diagram only. grep 'companion_approval_event|history' src/athena/core/approvals.py -> 0 hits. Registry-map hitl-approval pair: state deviation, evaluatedRevision 22 == revision 22 (not stale). decline_approved callers: src/athena/lane/browser_lane.py only, signature unchanged by this card."
+    },
+    {
+      "context": "core-gate-and-ledger",
+      "slot": "B-architecture (no UI surface)",
+      "lens": "architecture-challenger",
+      "title": "Capabilities block degrades detail by tier instead of cutting addressable names",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/core/catalog.py",
+        "tests/core/test_catalog.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-capabilities-block-sheds-detail-before-names.md (amends 0070)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "core + invoices + 3 x _wide_manifest(8) (today: names cut, 'did not fit') -> every addressable name appears as `name` in the block, len(block.text) <= CAPABILITIES_CHARS, block.shown == block.total, and no 'did not fit' sentence",
+        "the same fixture -> entries that did not fit at full detail render at the next tier (name and parameter line, no description), and a fixed sentence says '<k> names are listed without their descriptions'; entries that still do not fit render name-only, grouped one line per origin, with their own count sentence",
+        "only when even the name-only roster overflows (200 origins of the nine hands, ADR 0070's 1,803-name case) -> the residual prefix cut and '(showing N of M)' footer remain, N counting every name listed at any tier, and the block stays <= CAPABILITIES_CHARS",
+        "degradation order is by tier, not by origin: no entry is shown at a lower tier while an entry later in the block's class/name order is shown at a higher one (the block stays a pure function of the registry)",
+        "two catalogs built from the same registry in different merge orders -> byte-identical block text when degraded (hash stability, as test_identical_registries_render_identical_text_when_cut)",
+        "a block under the bound is byte for byte what it is today (test_a_core_entry_renders_byte_for_byte_as_before, test_a_block_under_the_bound_says_nothing_about_a_cut stay green); every core entry is always at full detail",
+        "a degraded or name-only entry keeps its class and registration: classify() and validate() answer exactly as before for every entry (as test_a_cut_never_changes_a_class_or_a_registration)",
+        "a name-only foreign entry is still neutralised: its name is a slug by the _TOOL_NAME rule and no description text, enum or parameter label of it reaches the block"
+      ],
+      "guard_cases": ["4", "5", "6", "7"],
+      "premise": [
+        "src/athena/core/catalog.py:660 - the render loop keeps an entry at full detail or not at all; once one entry fails to fit, `full = True` cuts it and every later entry",
+        "src/athena/core/catalog.py:627 - the same block tells the model 'A name that is not listed here does not exist; asking for it is a dropped call', while the cut names are registered and the gate accepts them (catalog.py:615, test_catalog.py:569)",
+        "src/athena/daemon/routes.py:793 - only the delegated-task path switches host origins off; a normal turn renders every held host origin, and ADR 0070 Consequences says an origin late in the sort 'which may be the tab the user is on, can lose its names from the prompt'",
+        ".ai/registry-map.json core-gate-and-ledger / prompt-assembly: state deviation, evidence 'catalog.py:522 Capability overflow removes still-registered tools from the documented roster instead of preserving every active name and purpose while reducing detail'",
+        "../ai-registry prompt-assembly/techniques/capability-documentation: 'the roster of operation names and one-line purposes is the floor (dispatchability requires at least that), extended detail is elastic'"
+      ],
+      "rollback": "One commit confined to Catalog.render_capabilities and its helpers plus tests; reverting restores ADR 0070's prefix cut exactly. No registry, class, contract or wire change, so nothing else reverts.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Add a READ core.describe_tool pointer so a degraded entry's full contract can be pulled on demand (capability-documentation's overflow move) - a new core name, so an ADR 0004 amendment and a lane prompt change; this card is its prerequisite.",
+      "body": "## Summary\nWhen the capabilities block overflows its 12,000-character bound, the catalog drops whole foreign entries in a prefix cut, and the same block tells the model that any unlisted name does not exist. Shed detail before names: full line, then name and parameters, then name only grouped per origin, and cut only if the bare roster itself cannot fit.\n\n## Description\nrender_capabilities keeps its reservation arithmetic and class/name order. It precomputes three renderings per foreign entry (full, signature, bare). A pure tiering pass finds the highest uniform-by-order split that fits: entries keep full detail in order until the next would pass the bound at the cost of keeping the rest at the signature tier, and so on, so the tier is monotone along the block's order and a function of the registry alone. Each degraded tier gets a fixed, count-bearing sentence, and the existing cut sentence and footer survive only for the residual overflow. Core entries are always full. Foreign text stays neutralised exactly as ADR 0068 requires; a bare entry carries only its slug name. prompt.py and BUDGETS are untouched; the block is still static and nonce-free, so its hash holds.\n\n## Flow\n- collect addressable entries (lane, exclude_origins) as today\n- reserve header, headings, tier sentences, footer at their longest\n- assign tiers monotone in block order until the bound; residual prefix cut only if the bare roster overflows\n- render groups by class; bare names one line per origin\n\n## Expected impact\nAt 4 to roughly 40 held origins the model is told every tool it can call, including the tab the user is on, instead of being told those tools do not exist. Closes the recorded prompt-assembly deviation.\n\n## Evaluation\nClaim: every addressable name is listed whenever the name-only roster fits the bound.\nBefore: 0 of 4 behaviour cases pass (cases 1-4 fail: the fixture cuts names); the 4 guard cases pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases in tests/core/test_catalog.py\nResult: better\nGate: none",
+      "evidence": "catalog.py:660-671: `for entry in ordered: ... if full or used + cost > CAPABILITIES_CHARS: full = True; continue` - no intermediate detail level. catalog.py:627-628: 'A name that is not listed here does not exist; asking for it is a dropped call, not an action.' test_catalog.py:550-566 asserts 'did not fit' for core+invoices+3 wide manifests of 8 tools. ADR 0070 chose a prefix over best fit for predictability; tiers monotone in the same order keep that property and the ADR did not consider shedding detail. routes.py:785-793 disables host origins only for delegated tasks."
+    }
+  ],
+  "rehomed": [
+    "StaticBlocks.constitution_version is documented as what 'the ledger can say which law a turn ran under' (core/prompt.py:172) but companion_turn has no column and no caller passes it - S, and the write is in the harness, not this context.",
+    "Mark unattached core tools (_unattached, catalog.py:193) in the capabilities block so a never-wired service is not offered with full confidence (companion-identity deviation) - S in render; a real exercised/broken ledger needs the gate hook outside this context.",
+    "Approval-card precedent ('you approved this action 4 times, declined once') from companion_approval history - the UX leap, but needs a DecisionRequested contract change and desktop rendering in other contexts; it becomes cheap after slot A lands."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["hitl-approval", "prompt-assembly", "audit-logging", "mcp-tools"],
+    "techniques": ["decision-records", "gate-state-machines", "write-chokepoint", "append-only-design", "capability-documentation", "context-budgeting"]
+  },
+  "files_read": 22
+}

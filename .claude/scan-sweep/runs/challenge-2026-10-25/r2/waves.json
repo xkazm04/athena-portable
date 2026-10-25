@@ -1,0 +1,145 @@
+[
+  [
+    {
+      "key": "demo-kit-template/B",
+      "host": "demo-kit-template",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "hirelane-model-and-lib/B",
+      "host": "hirelane-model-and-lib",
+      "slot": "B",
+      "revise": "Case 6: state it mechanically: REJECTION_TEMPLATE_LABEL.encouraging no longer contains 'strengths' (or any criterion word) unless rejectionMail(...,'encouraging').body contains it.",
+      "py": false
+    },
+    {
+      "key": "proving-core/B",
+      "host": "proving-core",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "tidycrm-domain-lib/A",
+      "host": "tidycrm-domain-lib",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-scenes-accounts-apps/B",
+      "host": "desktop-scenes-accounts-apps",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "peer-devices/B",
+      "host": "peer-devices",
+      "slot": "B",
+      "revise": "Add src/athena/peer/mobile/sw.js to the write set and put turn.js in its precache FILES list (with a test that sw.js FILES equals phone.py FILES), so the offline shell does not lack the module app.js now imports.",
+      "py": true
+    },
+    {
+      "key": "core-gate-and-ledger/A",
+      "host": "core-gate-and-ledger",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-app-shell-ui/B",
+      "host": "desktop-app-shell-ui",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "hirelane-model-and-lib/A",
+      "host": "hirelane-model-and-lib",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-style-design/A",
+      "host": "ledgerbox-style-design",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "peer-devices/A",
+      "host": "peer-devices",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "tidycrm-domain-lib/B",
+      "host": "tidycrm-domain-lib",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "core-gate-and-ledger/B",
+      "host": "core-gate-and-ledger",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "demo-kit-template/A",
+      "host": "demo-kit-template",
+      "slot": "A",
+      "revise": "Case 2: scan for the identity tokens only ('demo-app', 'Demo app', 'copy me' and the quoted variant \"plain\" / data-variant=\"plain\"), not the bare substring 'plain'.",
+      "py": false
+    },
+    {
+      "key": "desktop-scenes-voice-waking/A",
+      "host": "desktop-scenes-voice-waking",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-scenes-voice-waking/B",
+      "host": "desktop-scenes-voice-waking",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "proving-core/A",
+      "host": "proving-core",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-app-shell-ui/A",
+      "host": "desktop-app-shell-ui",
+      "slot": "A",
+      "revise": "Case 1: DEFAULT_SKIN ('athena') is bound by app.css and is exempt from the sheet requirement; only non-default SKINS entries must have a styles/skins/<id>.css.",
+      "py": false
+    },
+    {
+      "key": "ledgerbox-style-design/B",
+      "host": "ledgerbox-style-design",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ]
+]

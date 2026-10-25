@@ -1,0 +1,133 @@
+{
+  "host": "proving-core",
+  "cards": [
+    {
+      "context": "proving-core",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One spend reader in the run log: chores-uat stops re-implementing the core's money rules",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "src/athena/proving/runlog.py",
+        "src/athena/proving/chores_uat/rig.py",
+        "src/athena/proving/chores_uat/run.py",
+        "src/athena/proving/chores_uat/report.py",
+        "src/athena/proving/chores_uat/__main__.py",
+        "tests/proving/test_roles_and_budget.py",
+        "tests/proving/chores_uat/test_run.py",
+        "tests/proving/chores_uat/test_report.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0122-an-unpriced-call-weighs-against-the-cap-at-a-stated-default.md (one 'Amended by / applies to' line: the chores-uat --cap-usd now weighs unpriced legs too)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "runlog.spend(rows, assume_usd=0.50) over rows [{cost_usd:0.10},{cost_usd absent, is_error:true},{cost_usd:0.20}] -> Spend(spent_usd=0.30, calls=3, unpriced_calls=1, enforced_usd=0.80)",
+        "RunLog.read(path) over a ledger.jsonl holding one torn line and two rows -> the two rows, the torn line skipped (one reader replaces run.ledger_spent and report._ledger_rows)",
+        "run_pairs with a fake transport whose legs all fail unpriced (no cost_usd) and cap_usd=1.00 -> scheduling stops once 2+ unpriced legs are booked (0.50 each); today every pair is scheduled because rig.spent_usd() stays 0.0",
+        "a resumed run whose ledger.jsonl already holds 3 unpriced rows and cap_usd=1.00 -> 'cap:' line before the first job is scheduled (spent_before carries unpriced weight, not only known cost)",
+        "a pair whose every leg came back unpriced -> its dump has no cost_usd key (absent, never 0.0) and carries unpriced_legs=N; a pair with priced legs keeps cost_usd as the known sum",
+        "report_md over a run with 4 priced rows ($1.00) and 2 unpriced rows -> the header reads '$1.00 known, 2 unpriced legs' and never prints a bare $0.00 for a run whose rows are all unpriced",
+        "write_report over a dump whose judge voice holds a lone surrogate ('\\ud83d') -> report.md and findings.json are written (\\uXXXX escaped, TEXT_ERRORS), no UnicodeEncodeError",
+        "guard: test_the_cap_stops_scheduling_new_pairs (priced fake legs, cap 0.0005) still stops after the first pair with '2 pairs not scheduled'; Budget.summary() and its unpriced test are unchanged"
+      ],
+      "guard_cases": ["1", "7"],
+      "premise": [
+        "src/athena/proving/chores_uat/rig.py:95 - the cap's reading: sum(float(r.get(\"cost_usd\") or 0.0)), an unpriced leg is free",
+        "src/athena/proving/chores_uat/run.py:641 - run_pairs compares that sum with cap_usd before scheduling each pair",
+        "src/athena/proving/chores_uat/run.py:689 - ledger_spent (resume) repeats the same 'or 0.0' rule",
+        "src/athena/proving/chores_uat/report.py:158 - _ledger_rows repeats it a third time for the report header",
+        "src/athena/proving/chores_uat/run.py:355 - _cost repeats it a fourth time for each dump; run.py:334 seeds cost_usd 0.0",
+        "src/athena/proving/budget.py:94 - the core's own rule (ADR 0122): enforced = known spend + unpriced * UNPRICED_CALL_USD",
+        "src/athena/proving/budget.py:42 - UNPRICED_CALL_USD = {nemotron: 0.02, claude: 0.50}",
+        "src/athena/proving/report.py:72 - the core writes report.md with errors=TEXT_ERRORS; src/athena/proving/chores_uat/report.py:308 writes it with plain utf-8",
+        "src/athena/proving/report.py:1 - module rule: an absent value is omitted, never written as 0"
+      ],
+      "rollback": "Three commits (runlog.spend + RunLog.read with tests; chores-uat cap/resume/dump on it; report header + TEXT_ERRORS). Each reverts on its own; reverting the first requires the other two reverted first. No data migration: old dumps with cost_usd 0.0 still read.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\" tests/proving"
+      ],
+      "runner_up": "World observes the gate by monkeypatching gate.run_tool and brain.write_fact (world.py:372, 387); make it an observer port on GateHook so the instrument cannot silently miss a second door - but that edits the harness context.",
+      "body": "## Summary\nThe chores-uat rider re-implements the proving core's money rules four times (cap, resume, dump, report) and gets ADR 0122 wrong in all four: an unpriced leg costs $0, so `--cap-usd` never binds on a run of failing legs, a resumed run forgets them, and a dump or report prints $0.00 for spend nobody priced. Move the reading into the core's run log once and make the rider use it.\n\n## Description\n`runlog.py` gains `Spend` (spent_usd, calls, unpriced_calls, enforced_usd) and `spend(rows, assume_usd)`, plus `RunLog.read(path)`, the one tolerant JSONL reader. `Rig.spent()` returns a Spend over its rows with `assume_usd=UNPRICED_CALL_USD[CLAUDE]` (the chores legs run on the claude CLI); `run_pairs` stops scheduling on `spent_before.enforced_usd + rig.spent().enforced_usd >= cap_usd`; `ledger_spent` becomes `spend(RunLog.read(path))`. A dump's cost is the known sum or absent, with `unpriced_legs` beside it. The report header says known spend and the unpriced count, and the files go out with TEXT_ERRORS like the core's `write_report`. Technique: cost-metering/budget-enforcement (every path that starts spend points at the same check) and the core's own 'absent is omitted, never 0' rule.\n\n## Flow\n- leg finishes -> TapLedger row (cost_usd may be None) -> RunLog\n- scheduler asks rig.spent() -> Spend.enforced_usd counts unpriced at $0.50 -> cap compared\n- resume -> RunLog.read(ledger.jsonl) -> spend() -> spent_before (Spend, not float)\n- dump/report -> Spend.spent_usd (known) + unpriced_calls, never a coerced 0\n\n## Expected impact\nA $400 subscription run whose CLI starts timing out stops at the cap instead of burning every remaining pair; the report a person reads no longer calls unpriced spend free; a lone surrogate in a judge's voice can no longer lose the report of a paid run. The bench's open twin finding (playbooks bench cap ignores unpriced turns) gets a reader it can adopt.\n\n## Evaluation\nClaim: the chores-uat cap, resume, dumps and report follow ADR 0122 and the absent-not-0 rule through one core reader.\nBefore: 0 of 7 non-guard acceptance cases pass (cases 3-7 fail on today's code; 1-2 have no function)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: policy-tighten",
+      "evidence": "grep -n 'cost_usd\") or 0' src/athena/proving/chores_uat/*.py -> report.py:158, rig.py:95, run.py:355, run.py:530, run.py:689 (five sites, one rule, none weighs unpriced). budget.py:94-97 _enforced = spent + unpriced*UNPRICED_CALL_USD (ADR 0122: '1000 unpriced charges: can_spend True, spent 0.0' was the bug it fixed for roles). chores_uat/report.py:308 md.write_text(report_md(...), encoding=\"utf-8\") vs core report.py:72 errors=TEXT_ERRORS, and test_roles_and_budget.py:282 pins the core's surrogate case. Stabilize 2026-10-16 built 'An unpriced or failed role call costs nothing in the purse' for Budget only (675b36f); the rider (added later, ADR 0132) never got it."
+    },
+    {
+      "context": "proving-chores-uat",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "chores-uat report --against: a recertify delta the tool computes, instrument moves flagged",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "src/athena/proving/chores_uat/__main__.py",
+        "src/athena/proving/chores_uat/report.py",
+        "tests/proving/chores_uat/test_report.py"
+      ],
+      "new_files": [
+        "src/athena/proving/chores_uat/compare.py",
+        "tests/proving/chores_uat/test_compare.py"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "compare(base, head) over two runs sharing pair a--rosa whose criterion 1 went False->True and criterion 2 True->False -> matched n=1, criteria pass/fail/not-evaluable before 1/1/0 after 1/1/0, and the pair listed with flips ['+1', '-2'] (no net change hides the two flips)",
+        "pairs present in only one run -> excluded from every delta and named: only_in_base=['b--tom'], only_in_head=['c--tom']; the deltas state 'over N matched pairs'",
+        "run.json instruments differing in judge_system -> compare.instrument_moved == ['judge_system'] and every judge-derived delta (criteria, adopt, findings) carries mixed=true; differing only in git_head -> instrument_moved == [] and mixed=false",
+        "a run with no run.json -> instrument 'unknown', mixed=true (an unknown instrument is never read as unchanged)",
+        "criterion null->True counts in became_evaluable, not as a fail->pass flip; True->null counts in became_unevaluable",
+        "adopt per matched pair: base yes/maybe/no 0/17/3 vs head 0/19/1 -> the shift table, plus the pairs whose adopt changed listed by id",
+        "brief metrics read off onboarding.brief_md (judge-independent, so never mixed): lines tagged '(my guess)' and briefs with a 'Dates that matter' section, before and after on matched pairs",
+        "main(['report','--run-id',HEAD,'--against',BASE,'--base',tmp]) -> writes compare.md and compare.json in HEAD's run dir, exit 0; '--against' a run with no pairs/ -> exit 2 naming it; 'report' without --against -> report.md byte-identical to today"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "uat/runs/2026-10-23-chores/recertify.md:21 - the recertify delta table (criteria 27/71/23 -> 52/44/25, adopt, '(my guess)' 36 -> 12) was assembled by hand from two lc-reports",
+        "uat/runs/2026-10-23-chores/recertify.md:11 - 'The judge instrument changed ... so the criteria deltas mix a product change and an instrument change' - stated in prose, not computed",
+        "docs/BACKLOG.md:53 - every B-C fix item is 'done only after recertify re-runs the touched pairs': a compare is the acceptance step of the whole fix wave",
+        "src/athena/proving/chores_uat/run.py:154 - instrument() already hashes every prompt and tier into run.json; src/athena/proving/chores_uat/__main__.py:59 _IDENTITY already names which keys decide comparability",
+        "src/athena/proving/chores_uat/__main__.py:265 - that identity is used only to refuse a resume, never to qualify a comparison",
+        "src/athena/proving/chores_uat/report.py:305 - write_report reads exactly one run directory; nothing reads two",
+        "src/athena/adopt/loop.py:21 - the brief's provenance markers '(my guess)' and the 'Dates that matter' section the recertify counted by hand"
+      ],
+      "rollback": "Two commits (compare.py + tests; the --against flag in __main__ and the shared count helper lifted out of report.py). Reverting both leaves report.md unchanged; compare.md/compare.json are new files in gitignored proving-runs/.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\" tests/proving/chores_uat"
+      ],
+      "runner_up": "--dry estimates from hard-coded COST_MEDIANS (run.py:93) while every earlier run's dumps hold measured per-stage cost; estimate from the latest comparable runs' medians with n shown.",
+      "body": "## Summary\nThe chores UAT exists to certify a fix wave, and its verdict is a before/after. Today the operator compiles that delta by hand from two report.md files and has to remember, in prose, that the judge instrument moved underneath it. Add `report --against <run-id>`: the tool matches pairs, computes the deltas, lists the flips, and marks every judge-derived number as mixed when an identity key of the instrument moved.\n\n## Description\nNew `chores_uat/compare.py`: `compare(base_dir, head_dir)` loads both runs' dumps and run.json, matches on pair id, and answers a document: matched n, only-in-each lists, criteria pass/fail/not-evaluable before/after with per-pair flips (null transitions counted apart, never as passes), adopt shift and changed pairs, findings by type/dimension before/after, judge-independent brief metrics ('(my guess)' lines, 'Dates that matter' sections), known cost each side, and `instrument_moved` from the same `_IDENTITY` keys the resume refusal uses (git_head informational; an absent run.json is 'unknown' and mixed). `compare_md` renders it worst-flip first. `__main__` gains `report --against`. Techniques: eval-harness/comparison-modes ('every plotted point carries its instrument versions, and any instrument change is a marked discontinuity') and eval-harness/measurement-revision (a re-run is a second sample: name n and the matched set).\n\n## Flow\n- operator lands a fix, runs `run --pairs <touched>` into a new run id\n- `report --run-id HEAD --against BASE` -> compare.md: header 'over 20 matched pairs; instrument moved: judge_system -> judge deltas mixed'\n- flips table: pairs that lost a criterion first, then gains; adopt changes; brief metrics (not mixed)\n- the B-C item's acceptance is read off compare.json instead of a hand table\n\n## Expected impact\nThe recertify step every BACKLOG B-C item waits on goes from a hand-built table to one command, and a delta confounded by an instrument change can no longer be read as a product gain (it is labelled at the number, not in a paragraph). Losses hidden inside an unchanged total (one criterion up, one down) become visible per pair.\n\n## Evaluation\nClaim: two chores-uat runs can be compared by the tool, over matched pairs, with instrument confounds marked.\nBefore: 0 of 7 non-guard acceptance cases pass (no compare exists)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "recertify.md:19-27 'Metric deltas (same 20 pairs)' table: criteria 27/71/23 -> 52/44/25, number-honesty 2/26 -> 14/11, '(my guess)' 36 -> 12, dates 0 -> 18, adopt 0/17/3 -> 0/19/1 - all hand-computed; recertify.md:11 'The judge instrument changed ... the criteria deltas mix a product change and an instrument change'. grep -rn 'compar|baseline|delta' src/athena/proving/chores_uat/ -> only numbers.comparable_runs (bench history), nothing across runs. __main__.py:59-68 _IDENTITY (8 keys) used once, at :265, to refuse a resume."
+    }
+  ],
+  "rehomed": [
+    "judge.py VOICE_WORDS = (60, 260) while JUDGE_SYSTEM and the check's message both say 80-200 words: one constant drives both (S)",
+    "chores_uat report.md written without TEXT_ERRORS (surrogate loses a paid run's report): S alone, folded into card A as case 7",
+    "extract_json scans every opener over the whole answer (open stabilize finding, ~2 s per 32 kB): S, already on the backlog",
+    "JUDGE_TIER runs at medium because contracts.adopt.Effort admits no 'high' (judge.py:417): a contract change with no measured need yet"
+  ],
+  "riders": [
+    {
+      "name": "proving-chores-uat",
+      "checked": "Read all 9 files (cases, cast, judge, numbers, report, rig, run, __main__, __init__) and test_report/test_run; traced the cap (rig.spent_usd -> run_pairs), resume (instrument/_IDENTITY, plan_jobs, ledger_spent) and report paths; both cards land here (A shares runlog.py with the host)."
+    }
+  ],
+  "registry": {
+    "subjects": ["eval-harness", "cost-metering"],
+    "techniques": ["comparison-modes", "measurement-revision", "budget-enforcement"]
+  },
+  "files_read": 27
+}

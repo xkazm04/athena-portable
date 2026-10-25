@@ -1,0 +1,16 @@
+{"card":"proving-core/A","status":"landed","shas":["46b6d9f7"],
+ "tests_added":[
+  "tests/proving/test_roles_and_budget.py::test_spend_weighs_an_unpriced_row_for_the_cap_and_never_books_it",
+  "tests/proving/test_roles_and_budget.py::test_runlog_read_skips_a_torn_line_and_keeps_the_rows",
+  "tests/proving/chores_uat/test_run.py::test_the_cap_binds_on_legs_that_all_come_back_unpriced",
+  "tests/proving/chores_uat/test_run.py::test_a_resumed_run_counts_its_unpriced_rows_before_the_first_job",
+  "tests/proving/chores_uat/test_run.py::test_a_pair_whose_every_leg_is_unpriced_has_no_cost_and_counts_its_legs",
+  "tests/proving/chores_uat/test_report.py::test_the_header_names_known_spend_and_unpriced_legs_never_a_bare_zero",
+  "tests/proving/chores_uat/test_report.py::test_a_lone_surrogate_in_a_judge_voice_still_writes_the_report"],
+ "guard_cases":[8],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,"uv run pytest -m \"not provider and not eval\" tests/proving":0},
+ "files_changed":9,"lines_changed":418,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of the three the rollback note sketches (allowed by the brief). __main__.py not edited: ledger_spent keeps its name and now returns a Spend, which run_pairs accepts. Added rig.ledger_spend/spend_words/UNPRICED_LEG_USD as the rider's one binding of the core reader. A dump with zero legs (cast failure) keeps cost_usd 0.0 (a known nothing); absent only when legs ran and all were unpriced. Card's guard_cases [\"1\",\"7\"] read as the 8th case (0-indexed 7); case 1 is not a guard here (spend did not exist, so it was red).",
+ "notes":"Red-before: cases 1-2 by ImportError/AttributeError (no spend/RunLog.read), 3 no cap line, 4 float has no spent_usd, 5 cost_usd present, 6 header text, 7 UnicodeEncodeError. Guard case 8 green before and after. Slot B (950b048) tests green. No sibling reds seen. Git Bash heredocs ate backslashes on this machine; fixed with Edit before commit."}

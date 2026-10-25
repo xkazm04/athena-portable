@@ -1,0 +1,18 @@
+{"card":"desktop-app-shell-ui/A","status":"landed","shas":["2780d7ee"],
+ "tests_added":[
+  "apps/desktop/src/styles/theme-contract.test.ts::binding sets are derived from THEMES x SKINS against the sheets, and a gap fails naming it",
+  "apps/desktop/src/styles/theme-contract.test.ts::every text pair clears 4.5:1 and every graphic pair 3:1 in all four sets of the real sheets",
+  "apps/desktop/src/styles/theme-contract.test.ts::negative control: a role the skin binds in its dark block only is reported as taking the dark value in light",
+  "apps/desktop/src/styles/theme-contract.test.ts::negative control: a light pair under the floor is reported with its ratio",
+  "apps/desktop/src/styles/theme-contract.test.ts::negative control: a role whose var() chain ends at an undeclared property is unresolved",
+  "apps/desktop/src/styles/theme-contract.test.ts::zero input is fatal: a sheet with no theme block throws, never a green empty answer",
+  "apps/desktop/src/styles/source-guards.test.ts::text is never coloured with --accent, which is 3.2:1 on the light theme; --accent-text is the ink (now asserts app.css is swept)",
+  "apps/desktop/src/styles/theme-contract.test.ts::the entries name no skin sheet: each imports @/styles/skins, whose eager glob covers every sheet"
+ ],
+ "guard_cases":[1],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":10,"lines_changed":424,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Revision applied: DEFAULT_SKIN needs no sheet. Pair list grew past the card's: --muted on --background (4.5, the skin test held it) and the six status roles on --card-bg at 4.5 (app.css claims status words clear 4.5 on the card; measured true in all four sets), on top of the card's 3:1 graphic pairs. No ADR: the card names none and the change implements ADR 0142's stated consequence. Red-before for cases 1-6 and 8 is the module/test absent (file failed to load); case 7 was red via the new 'app.css is swept' assertion while the exemption stood. Case 1 (index 1, real sheets pass) is the guard. The --accent-text dark-alias assertion stays in motion-tokens.test.ts as its own test.",
+ "notes":"First paint: entries' import changed to @/styles/skins (eager glob). Production build measured Main's first frame at 165,355 B gzip vs ceiling 165,412 B (57 B headroom); first-paint.test passed inside pnpm test. loop-tide rules confirmed present in chrome/athena/preview built CSS. Coordinator may run perf:all. No sibling reds seen; desktop suite 178 files / 2448 tests green."}

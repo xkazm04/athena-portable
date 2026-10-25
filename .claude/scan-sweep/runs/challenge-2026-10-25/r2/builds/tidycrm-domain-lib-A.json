@@ -1,0 +1,17 @@
+{"card":"tidycrm-domain-lib/A","status":"landed","shas":["f1e082f4"],
+ "tests_added":[
+  "examples/tidycrm/test/flag-drift.test.ts::flagDrift on a freshly seeded database is empty: the seed stamps through the rules",
+  "examples/tidycrm/test/flag-drift.test.ts::flagDrift names a row whose stored flag a raw write corrupted, and only that row",
+  "examples/tidycrm/test/flag-drift.test.ts::a seeded random walk over every write and undo never leaves a flag drifted from its rule",
+  "examples/tidycrm/test/mutations.test.ts::a merge that adopts the drop's phone and date records both as revisions on the survivor",
+  "examples/tidycrm/test/mutations.test.ts::a merge adoption is not a normalisation: the export's normalised figures do not move",
+  "examples/tidycrm/test/flag-drift.test.ts::source guard: lib/flags.ts is the only file that writes a stored flag",
+  "examples/tidycrm/test/mutations.test.ts::normalising a phone and undoing it puts the phone and its flag back, and marks the revision reverted",
+  "examples/tidycrm/test/mutations.test.ts::merge refusals keep their exact words"],
+ "guard_cases":[4,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{"pnpm --filter tidycrm typecheck":0,"pnpm --filter tidycrm lint":0,"pnpm --filter tidycrm test (148/148)":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":8,"lines_changed":662,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of three. flagDrift takes the db handle as an argument (flagDrift(db())), because flags.ts imports nothing from db.ts: db.ts's seed stamps through flags.restamp, and the other way would be a module cycle. flagDrift checks every row, merged and deleted ones included, not only the working list (stricter). The four flags are restamped from their rules over a scope of rows and domains, not per flag: a row whose inputs did not move gets no write. isStaleAt and WORKING moved to flags.ts and are re-exported from db.ts. Case 2 corrupts a row from the phone-format segment, since the seed has no '(415) 555-0134' phone. Case 5 is its own test on a second pair (guard), not part of case 4. domain-lib.test.ts was not changed. guard_cases are 0-based card indexes (summary, undo, refusals).",
+ "notes":"Premise re-verified after 2a5569b and 4af740b: the hand restamps and the merge with no revision were still there (line numbers had moved). Red before: cases 0,1,2 (lib/flags missing), 3 (no merge revision), 5 (source guard found mutations.ts). Mutation check by hand: taking out the phone, company or resolvePair restamp fails the walk within 20 steps; taking out the last_activity_at feed is covered by merge's closing restamp, so the walk cannot see it. The walk takes about 9 s. Slot B (preview_merge/planMerge) should rebase onto writeField/MERGE_RULE in mergeContacts: adoptions are now writeField calls tagged merge_contacts, and the closing restamp(ids:[keep,drop], domains:[drop.domain]) replaces the hand restamps. ADR 0163 taken under the lock. No sibling reds seen."}
