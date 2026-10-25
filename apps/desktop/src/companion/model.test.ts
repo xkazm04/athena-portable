@@ -345,6 +345,15 @@ test("every list carries shown-of-total, and a decision row names the app, the t
   expect(decisionRow({ id: "b", action: "a", origin: "", result: "refused", reason: "foreign_origin", at: "" }).result).toBe("refused");
 });
 
+test("a decision answered elsewhere says how on its Record row: by voice, on a peer; one with no via reads as today", () => {
+  const base = { id: "apr_v", action: "host.ledgerbox.pay", origin: "host:ledgerbox", result: "approved" as const, reason: null, at: "2026-10-01 10:08:07" };
+  const spoken = view({ decisions: [{ ...base, via: "voice" }] });
+  expect(spoken.session[0].result).toBe("approved by voice");
+  expect(decisionRow({ ...base, via: "Pixel 8" }).result).toBe("approved on Pixel 8");
+  expect(decisionRow({ ...base, result: "user_denied", reason: "user_denied", via: "Pixel 8" }).result).toBe("declined on Pixel 8");
+  expect(decisionRow(base).result).toBe("approved");
+});
+
 test("a decision kept from an earlier window reads back with its site, tool, outcome and when", () => {
   const row = activityRow(
     { id: 9, ts: "2026-10-01 09:00:00", tab_id: null, origin: "host:ledgerbox", tool: "host.ledgerbox.chase", tier: 1, class: "GATED", outcome: "approved", ms: 0, reason: null, approval_id: "apr_old" },

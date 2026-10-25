@@ -355,6 +355,28 @@ describe("a spoken turn", () => {
     expect(useRun.getState().cards).toEqual([]);
   });
 
+  it("a spoken approve writes an answered row via voice in the same write that drops the card", async () => {
+    const { socket } = wire();
+    await startVoice();
+    await useVoice.getState().say("pay invoice 3");
+    await socket.emit(
+      { kind: "decision.requested", id: "apr_1", decision_kind: "approve", action: "host.ledgerbox.pay", params: { invoice: "3" }, rationale: "", options: [{ id: "approve", label: "approve" }, { id: "decline", label: "decline" }], expires_at: "", origin: "host:ledgerbox", surface: "voice", capture_id: null },
+      finished("Card filed."),
+    );
+    expect(useRun.getState().cards.map((c) => c.id)).toEqual(["apr_1"]);
+    // the first write that drops the card already carries the row: no frame sees one without the other
+    let atDrop: unknown = "never dropped";
+    const off = useRun.subscribe((s, prev) => {
+      if (atDrop === "never dropped" && prev.cards.some((c) => c.id === "apr_1") && !s.cards.some((c) => c.id === "apr_1")) {
+        atDrop = s.answered[0] ?? null;
+      }
+    });
+    await socket.emit({ kind: "decision.resolved", id: "apr_1", choice: "approve", by: "user", at: "" });
+    off();
+    expect(atDrop).toMatchObject({ id: "apr_1", action: "host.ledgerbox.pay", origin: "host:ledgerbox", result: "approved", via: "voice" });
+    expect(useRun.getState().answered.filter((a) => a.id === "apr_1")).toHaveLength(1);
+  });
+
   it("answers the daemon with a hand's result at tier 2", async () => {
     const { socket } = wire({ call: async () => ({ ok: true, output: "the page", tier: 2 }) });
     await startVoice();

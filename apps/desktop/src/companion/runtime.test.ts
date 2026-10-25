@@ -15,7 +15,9 @@ import { SETTLE_MS, SHRINK_MS } from "./machine";
 import { choiceFor, createRuntime, lineOf, LINE_MAX, typingIn, UNSETTLED, VISIBLE_MS, type RuntimeDeps } from "./runtime";
 import { CARDS } from "./fixtures";
 
-function harness(opts: { visible?: boolean; hang?: boolean; returns?: () => Promise<unknown> } = {}) {
+function harness(
+  opts: { visible?: boolean; hang?: boolean; returns?: () => Promise<unknown>; departed?: RuntimeDeps["departed"] } = {},
+) {
   let now = 0;
   let next = 0;
   const timers = new Map<number, { at: number; run: () => void }>();
@@ -48,6 +50,7 @@ function harness(opts: { visible?: boolean; hang?: boolean; returns?: () => Prom
     focus: (target) => log.push(`focus ${target}`),
     visible: opts.hang ? () => new Promise<boolean>(() => {}) : async () => opts.visible ?? true,
     focusIn: () => false,
+    ...(opts.departed ? { departed: opts.departed } : {}),
   };
   const rt = createRuntime(deps);
   rt.dispatch({ t: "init", onboarded: true, cards: 0 });
@@ -262,4 +265,36 @@ test("a window that never says whether it is on screen does not hold every card 
   h.rt.cardsChanged([]);
   await settled();
   expect(h.rt.getSnapshot().machine.cards).toBe(0);
+});
+
+// An answer made elsewhere: the runtime notices which card left, asks why, and plays the stamp.
+
+const departing = (departed: RuntimeDeps["departed"]) => harness({ departed });
+
+test("the head card leaves answered on a peer: it is held and stamped by the peer until settle, then the next card heads", async () => {
+  const h = departing((id) => (id === CARDS[0].id ? { kind: "approve", by: "peer", where: "Pixel 8" } : null));
+  await h.setCards([CARDS[0], CARDS[1]]);
+  expect(h.rt.getSnapshot().machine.form).toBe("slip");
+  await h.setCards([CARDS[1]]);
+  expect(h.rt.getSnapshot().held?.id).toBe(CARDS[0].id);
+  expect(h.rt.getSnapshot().machine.decided).toMatchObject({ by: "peer", sending: false, dropped: true });
+  expect(h.rt.getSnapshot().machine.say.text).toBe("Approved on Pixel 8. Stamped and sent to the record.");
+  h.advance(SETTLE_MS);
+  expect(h.rt.getSnapshot().held).toBeNull();
+  expect(h.rt.getSnapshot().machine.decided).toBeNull();
+  expect(h.rt.getSnapshot().machine.form).toBe("slip");
+  expect(h.rt.getSnapshot().machine.cards).toBe(1);
+  // nothing was sent: the peer had answered it
+  expect(h.log.some((l) => l.startsWith("answer"))).toBe(false);
+});
+
+test("the head card leaves with no answer anywhere (expired, reconciled away): no stamp, one sentence, the next slip as today", async () => {
+  const h = departing(() => null);
+  await h.setCards([CARDS[0], CARDS[1]]);
+  await h.setCards([CARDS[1]]);
+  expect(h.rt.getSnapshot().held).toBeNull();
+  expect(h.rt.getSnapshot().machine.decided).toBeNull();
+  expect(h.rt.getSnapshot().machine.say.text).toBe("That decision is no longer waiting.");
+  expect(h.rt.getSnapshot().machine.form).toBe("slip");
+  expect(h.rt.getSnapshot().machine.cards).toBe(1);
 });

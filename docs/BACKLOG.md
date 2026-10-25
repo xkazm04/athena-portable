@@ -40,7 +40,7 @@ A shipped item is not done at merge: it re-enters `/uat recertify` against the o
 
 ### Declined, with reasons
 - **A third, high-contrast theme** (ana): the contrast failures are the resting dim and the composer border, not the paper pair (4.89:1 and up). Revisit if an L2 under Windows high-contrast shows otherwise.
-- **Voice-answered cards get a stamp**: needs a voice backend, an accepted gap. Re-enters with a backend.
+- **Voice-answered cards get a stamp**: needs a voice backend, an accepted gap. Re-enters with a backend. **Taken up (ADR 0188):** the backend exists (`src/athena/channels/voice`) and its `decision.resolved` reaches `stores/voice.ts`; a spoken or phone answer now stamps and lands on the Record.
 - **Product change to shorten the model's recovery from a wrong id**: the model recovered honestly; the cause is B11.
 
 ### Guardrails (do not break while building the above)

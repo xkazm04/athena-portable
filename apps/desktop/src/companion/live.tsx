@@ -105,6 +105,14 @@ function liveDeps(): RuntimeDeps {
     // The tray may have hidden her without telling the page, so a card asks the window.
     visible: () => (shell ? getCurrentWindow().isVisible() : Promise.resolve(true)),
     focusIn: () => document.querySelector(".aw")?.contains(document.activeElement) ?? false,
+    // A card answered by voice or on a paired device was written to `answered` with how, in the same
+    // write that dropped it; her own answers carry no `via` and never come back here as a departure.
+    departed: (id) => {
+      const row = useRun.getState().answered.find((a) => a.id === id && a.via !== undefined);
+      if (!row?.via || row.result === "refused") return null;
+      const kind = row.result === "approved" ? "approve" : "decline";
+      return row.via === "voice" ? { kind, by: "voice" } : { kind, by: "peer", where: row.via };
+    },
   };
 }
 

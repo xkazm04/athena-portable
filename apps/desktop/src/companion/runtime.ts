@@ -23,7 +23,7 @@ import type { DecisionRequested } from "@/lib/events";
 import type { Settled } from "@/stores/run";
 
 import { createDriver, REAL_CLOCK, type Clock, type Driver } from "./driver";
-import { INITIAL, type Choice, type Effect, type Event, type MachineState } from "./machine";
+import { INITIAL, type By, type Choice, type Effect, type Event, type MachineState } from "./machine";
 import type { LedgerSnapshot } from "./model";
 
 export interface RuntimeDeps {
@@ -47,6 +47,19 @@ export interface RuntimeDeps {
   visible: () => Promise<boolean>;
   /** Is the keyboard focus inside her? A peek stays open while it is. */
   focusIn: () => boolean;
+  /**
+   * The head card left without her own answer: was it answered somewhere else (by voice, on a paired
+   * device), and how? `null` when it was answered nowhere (expired, reconciled away). Absent, a
+   * departure is only a lower count, as it was before answers made elsewhere were stamped.
+   */
+  departed?: (id: string) => Departure | null;
+}
+
+/** How a card that left was answered somewhere else. `where` names a peer's device. */
+export interface Departure {
+  kind: Choice;
+  by: By;
+  where?: string;
 }
 
 export interface Snapshot {
@@ -74,6 +87,8 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
   let ledger: LedgerSnapshot | null = null;
   let snapshot: Snapshot = { machine: INITIAL, held, ledger };
   let chain: Promise<void> = Promise.resolve();
+  /** The card that headed the stack at the last applied change: the one the slip was drawing. */
+  let head: DecisionRequested | null = null;
 
   const publish = (machine: MachineState) => {
     snapshot = { machine, held, ledger };
@@ -173,6 +188,19 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
     cardsChanged: (cards) => {
       chain = chain.then(async () => {
         const n = cards.length;
+        const was = head;
+        head = cards[0] ?? null;
+        if (was && deps.departed && !driver.get().decided && !cards.some((c) => c.id === was.id)) {
+          // Answered elsewhere: hold the card so the stamp lands on it, then let the count fall.
+          const how = deps.departed(was.id);
+          if (how) {
+            held = was;
+            driver.dispatch({ t: "resolved", kind: how.kind, by: how.by, where: how.where });
+            if (!driver.get().decided) held = null;
+          } else {
+            driver.dispatch({ t: "gone" });
+          }
+        }
         if (n > driver.get().cards) {
           const visible = await askVisible();
           // Unknown (the window did not answer in time): what the page knows of her decides.

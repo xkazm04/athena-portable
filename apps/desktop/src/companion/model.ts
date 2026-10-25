@@ -360,6 +360,8 @@ export interface SessionDecision {
   reason: string | null;
   /** UTC stamp. */
   at: string;
+  /** Answered somewhere else: `"voice"`, or the paired device's name. Absent for her own buttons. */
+  via?: string;
 }
 
 /** The two lists of the Record, and whether together they are everything. */
@@ -1170,7 +1172,8 @@ export function decisionRow(d: SessionDecision): RecordRow {
     tool: d.action,
     app: appOf(d.origin) || "unknown app",
     cls: "GATED",
-    result: wordOf(d.result),
+    // How it was answered, when not by her buttons: "approved by voice", "approved on Pixel 8".
+    result: d.via ? `${wordOf(d.result)} ${d.via === "voice" ? "by voice" : `on ${d.via}`}` : wordOf(d.result),
     clock: d.at ? clockOf(d.at) : "",
     at: d.at,
   };

@@ -579,3 +579,55 @@ test("a descent asked for outside the ledger opens nothing", () => {
   r.d.dispatch({ t: "descend", id: "t1" });
   expect(r.s().depth).toBeNull();
 });
+
+// An answer made elsewhere (by voice, on a paired phone) gets the stamp a click gets (BACKLOG
+// "Voice-answered cards get a stamp", taken up; README section 3.1).
+
+test("resolved by voice on an open slip: the stamp plays with nothing sent, tears and settles home, and says so", () => {
+  const r = rig();
+  r.d.dispatch({ t: "cards", n: 1 });
+  expect(r.s().form).toBe("slip");
+  r.d.dispatch({ t: "resolved", kind: "approve", by: "voice" });
+  r.d.dispatch({ t: "cards", n: 0 });
+  expect(r.s().form).toBe("slip");
+  expect(r.s().decided).toMatchObject({ kind: "approve", by: "voice", sending: false });
+  expect(r.s().say.text).toBe("Approved by voice. Stamped and sent to the record.");
+  // nothing goes to the daemon: the answer was already made
+  expect(r.of("answer")).toHaveLength(0);
+  r.advance(TEAR_MS);
+  expect(r.s().decided?.tearing).toBe(true);
+  r.advance(SETTLE_MS - TEAR_MS);
+  expect(r.s().decided).toBeNull();
+  expect(r.s().form).toBe("seal");
+});
+
+test("resolved on a peer while the slip is put away or she is hidden: no slip opens, one sentence names the device", () => {
+  const snoozed = rig();
+  snoozed.d.dispatch({ t: "cards", n: 1 });
+  snoozed.d.dispatch({ t: "esc" });
+  expect(snoozed.s().form).toBe("seal");
+  snoozed.d.dispatch({ t: "resolved", kind: "approve", by: "peer", where: "Pixel 8" });
+  expect(snoozed.s().decided).toBeNull();
+  expect(snoozed.s().form).toBe("seal");
+  expect(snoozed.s().say.text).toBe("A decision was approved on Pixel 8.");
+
+  const hidden = rig();
+  hidden.d.dispatch({ t: "cards", n: 1 });
+  hidden.d.dispatch({ t: "hide" });
+  const form = hidden.s().form;
+  hidden.d.dispatch({ t: "resolved", kind: "approve", by: "peer", where: "Pixel 8" });
+  expect(hidden.s().decided).toBeNull();
+  expect(hidden.s().form).toBe(form);
+  expect(hidden.s().say.text).toBe("A decision was approved on Pixel 8.");
+});
+
+test("guard: a click answer in flight and then a resolved event for the same card: one stamp, the click's, no second say", () => {
+  const r = rig();
+  r.d.dispatch({ t: "cards", n: 1 });
+  r.d.dispatch({ t: "decide", kind: "approve", by: "click" });
+  const said = r.s().say;
+  r.d.dispatch({ t: "resolved", kind: "approve", by: "voice" });
+  expect(r.s().decided).toMatchObject({ by: "click", sending: true });
+  expect(r.s().say).toEqual(said);
+  expect(r.of("answer")).toHaveLength(1);
+});

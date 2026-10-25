@@ -28,7 +28,8 @@ export type Dock = "left" | "right";
 export type LedgerTab = "talk" | "record" | "origins";
 /** `auto` is whatever the facts say; `ledger` and `welcome` are chosen and sticky. */
 export type Mode = "auto" | "ledger" | "welcome";
-export type By = "click" | "key" | "voice" | "chord";
+/** How an answer was made: here (click, key, chord), by voice, or on a paired device (`peer`). */
+export type By = "click" | "key" | "voice" | "chord" | "peer";
 export type Choice = "approve" | "decline";
 
 /** The attention pulse on a new card, then a steady ring (ms). */
@@ -58,6 +59,8 @@ export interface Decided {
   tearing: boolean;
   /** The store has already dropped the card; it is still drawn until the slip has torn away. */
   dropped: boolean;
+  /** The device a `peer` answer was made on, as the peer names itself. */
+  where?: string;
 }
 
 export interface MachineState {
@@ -115,6 +118,13 @@ export type Event =
   | { t: "talk"; on: boolean }
   | { t: "avatar"; id: AvatarId }
   | { t: "decide"; kind: Choice; by: By }
+  /**
+   * The card was answered somewhere else (by voice, on a paired device): the daemon already has the
+   * answer, so the stamp plays with nothing sent, and only over a slip the person is looking at.
+   */
+  | { t: "resolved"; kind: Choice; by: By; where?: string }
+  /** The head card left with no answer anywhere (expired, reconciled away). */
+  | { t: "gone" }
   /** The daemon's verdict on the answer. `text` is what a screen reader is told when it was refused. */
   | { t: "sent"; ok: boolean; text?: string }
   | { t: "seal" }
@@ -367,6 +377,29 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
           ? "Approved. Stamped and sent to the record."
           : "Declined. Nothing was sent.",
       );
+      return;
+    }
+    case "resolved": {
+      // Her own answer is already on its way or stamped: one card, one stamp (a click and a spoken
+      // answer that race end in the click's).
+      if (s.decided) return;
+      const how = event.by === "peer" ? `on ${event.where || "another device"}` : `by ${event.by}`;
+      const verb = event.kind === "approve" ? "approved" : "declined";
+      if (prev.form !== "slip") {
+        // Not drawn over the person's work: an answer on the phone never pops a slip up here.
+        say(s, `A decision was ${verb} ${how}.`);
+        return;
+      }
+      s.decided = { kind: event.kind, by: event.by, sending: false, tearing: false, dropped: false };
+      if (event.where) s.decided.where = event.where;
+      schedule(fx, "tear", TEAR_MS, { t: "tear" });
+      schedule(fx, "settle", SETTLE_MS, { t: "settle" });
+      const lead = `${verb[0].toUpperCase()}${verb.slice(1)} ${how}.`;
+      say(s, event.kind === "approve" ? `${lead} Stamped and sent to the record.` : `${lead} Nothing was sent.`);
+      return;
+    }
+    case "gone": {
+      if (!s.decided && prev.form === "slip") say(s, "That decision is no longer waiting.");
       return;
     }
     case "tear": {

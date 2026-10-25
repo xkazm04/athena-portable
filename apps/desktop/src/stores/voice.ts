@@ -55,6 +55,7 @@ import {
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
 import {
+  answeredElsewhere,
   captureOf,
   caseOf,
   disabledOriginsOf,
@@ -310,9 +311,16 @@ export const useVoice = create<VoiceState>((set, get) => {
       case "decision.resolved": {
         // A spoken answer is an answer to the card, as the panel's button is: the "may have run"
         // hold on its tool has done its job (ADR 0101), and the call it approves runs next.
-        const card = useRun.getState().cards.find((c) => c.id === event.id);
-        if (card && event.by === "user") forgetUnsure(card.action);
-        useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
+        // It lands on the Record as a click's does, in the same write that drops the card. The voice
+        // gateway says this only of an answer it made itself, so a click that raced it was refused.
+        const run = useRun.getState();
+        const card = run.cards.find((c) => c.id === event.id);
+        let answered = run.answered;
+        if (card && event.by === "user") {
+          forgetUnsure(card.action);
+          answered = [answeredElsewhere(card, event.choice === "approve"), ...answered];
+        }
+        useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id), answered }));
         break;
       }
       case "turn.summary":

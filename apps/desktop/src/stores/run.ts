@@ -156,6 +156,11 @@ export interface AnsweredDecision {
   /** The closed-set reason: `user_denied`, or what the daemon refused with. `null` when approved. */
   reason: string | null;
   at: string;
+  /**
+   * Answered somewhere other than her buttons: `"voice"` (a spoken answer, ADR 0027) or the paired
+   * device's name (`remote.decided`, ADR 0140). Absent for an answer made in this window.
+   */
+  via?: string;
 }
 
 /** One row for the shell's `activity` table. `approval_id` is the card, `tool` its action. */
@@ -1063,6 +1068,22 @@ export function scheduleMark(project: ActivePlaybook | null): { trigger?: "sched
 export function stampOf(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
+
+/** The `answered` row of a card answered somewhere other than her buttons; `via` says where. */
+export const answeredElsewhere = (
+  card: DecisionRequested,
+  approved: boolean,
+  via = "voice",
+  at = new Date(),
+): AnsweredDecision => ({
+  id: card.id,
+  action: card.action,
+  origin: card.origin,
+  result: approved ? "approved" : "user_denied",
+  reason: approved ? null : "user_denied",
+  at: stampOf(at),
+  via,
+});
 
 /**
  * A card from a `GET /decisions` row. A pending row may lack what the stream carried (the rationale,
@@ -2011,17 +2032,7 @@ export const useRun = create<RunState>((set, get) => {
       set((s) => ({
         cards: s.cards.filter((c) => c.id !== event.approval_id),
         taskCards: without(s.taskCards, event.approval_id),
-        answered: [
-          {
-            id: event.approval_id,
-            action: card.action,
-            origin: card.origin,
-            result: approved ? "approved" : "user_denied",
-            reason: approved ? null : "user_denied",
-            at: now(),
-          },
-          ...s.answered,
-        ],
+        answered: [answeredElsewhere(card, approved, event.peer_name, deps.now?.()), ...s.answered],
       }));
       const verb = approved ? "approved" : "declined";
       push({ id: `${event.approval_id}_by`, kind: "tool", text: `${verb} on ${event.peer_name}: ${card.action}`, ok: approved }, false);
