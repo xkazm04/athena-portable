@@ -2,8 +2,8 @@
 
 .bk-root {
   min-block-size: 100svh;
-  background: var(--bk-vellum);
-  color: var(--bk-graphite);
+  background: var(--bk-ground-raised);
+  color: var(--bk-ink);
   font-family: var(--bk-font-draft);
   font-size: var(--bk-text-base);
   line-height: var(--bk-leading-normal);
@@ -32,7 +32,7 @@
 }
 
 .bk-root :where(button, select, input, a, [tabindex]):focus-visible {
-  outline: var(--bk-rule-2) solid var(--bk-redline);
+  outline: var(--bk-rule-2) solid var(--bk-focus);
   outline-offset: var(--bk-s0);
 }
 
@@ -45,8 +45,8 @@
   position: relative;
   max-inline-size: 1600px;
   margin-inline: auto;
-  background: var(--bk-sheet);
-  border: var(--bk-rule-2) solid var(--bk-graphite);
+  background: var(--bk-ground);
+  border: var(--bk-rule-2) solid var(--bk-line-strong);
   padding: var(--bk-s4);
   display: grid;
   gap: var(--bk-s5);
@@ -66,10 +66,11 @@
 }
 
 /* Every scroll surface, in the print's own ink. A default scrollbar on vellum
-   is a blue-grey rail from another operating system. */
+   is a blue-grey rail from another operating system. The title block rebinds
+   --bk-ink-faint, so its scrollbar inverts with it and needs no rule here. */
 .bk-root :where(*) {
   scrollbar-width: thin;
-  scrollbar-color: var(--bk-graphite-4) transparent;
+  scrollbar-color: var(--bk-ink-faint) transparent;
 }
 
 .bk-root ::-webkit-scrollbar {
@@ -78,24 +79,19 @@
 }
 
 .bk-root ::-webkit-scrollbar-track {
-  background: var(--bk-vellum);
+  background: var(--bk-ground-raised);
 }
 
 .bk-root ::-webkit-scrollbar-thumb {
-  background: var(--bk-graphite-4);
-  border: 3px solid var(--bk-vellum);
+  background: var(--bk-ink-faint);
+  border: 3px solid var(--bk-ground-raised);
   border-radius: 999px;
   background-clip: content-box;
 }
 
 .bk-root ::-webkit-scrollbar-thumb:hover {
-  background: var(--bk-graphite-3);
+  background: var(--bk-ink-mark);
   background-clip: content-box;
-}
-
-/* The title block inverts, so its scrollbar inverts with it. */
-.bk-title-block :where(*) {
-  scrollbar-color: var(--bk-graphite-3) transparent;
 }
 
 /*
@@ -118,6 +114,6 @@
 
 .bk-lettering[data-ink="1"] {
   font-weight: 600;
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
 }
 

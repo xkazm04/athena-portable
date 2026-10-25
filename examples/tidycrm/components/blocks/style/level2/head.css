@@ -5,8 +5,8 @@
   display: grid;
   gap: var(--bk-s2);
   padding: var(--bk-s4) var(--bk-s5);
-  background: var(--bk-vellum);
-  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+  background: var(--bk-ground-raised);
+  border-block-end: var(--bk-rule-2) solid var(--bk-line-strong);
 }
 
 .bk-dossier-top {
@@ -33,10 +33,10 @@
   place-items: center;
   min-inline-size: var(--bk-s7);
   min-block-size: var(--bk-s7);
-  background: var(--bk-sheet);
-  border: var(--bk-rule-1) solid var(--bk-graphite);
+  background: var(--bk-ground);
+  border: var(--bk-rule-1) solid var(--bk-line-strong);
   border-radius: var(--bk-radius-0);
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
   cursor: pointer;
   /* The foot's buttons ease their inversion over --bk-dur-1; this one cut it. */
   transition:
@@ -45,8 +45,8 @@
 }
 
 .bk-close:hover {
-  background: var(--bk-graphite);
-  color: var(--bk-sheet);
+  background: var(--bk-ink);
+  color: var(--bk-ground);
 }
 
 /* The verdict: arrangement only. The figures are `.bk-stat`s at the sheet's one figure scale —
@@ -54,6 +54,6 @@
    depending on which of the three depths the reader was standing at. */
 .bk-verdict {
   padding: var(--bk-s3) 0;
-  border-block: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block: var(--bk-rule-1) solid var(--bk-line);
 }
 

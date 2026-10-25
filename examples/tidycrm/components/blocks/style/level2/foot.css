@@ -6,8 +6,8 @@
   display: grid;
   gap: var(--bk-s3);
   padding: var(--bk-s4) var(--bk-s5);
-  background: var(--bk-vellum);
-  border-block-start: var(--bk-rule-2) solid var(--bk-graphite);
+  background: var(--bk-ground-raised);
+  border-block-start: var(--bk-rule-2) solid var(--bk-line-strong);
 }
 
 .bk-actions {
@@ -17,24 +17,31 @@
   align-items: center;
 }
 
+/*
+ * One button, on either ground. It reads roles, so the title block's rebinding draws it inverted
+ * with no rule of its own: at rest it is the scope's ink on the scope's ground, edged in the
+ * scope's strong line, and on hover the two swap. On the stock that is graphite on the sheet
+ * turning sheet on graphite; in the gate, sheet on graphite turning graphite on sheet.
+ */
 .bk-btn {
   min-block-size: var(--bk-s7);
   padding: var(--bk-s2) var(--bk-s4);
-  background: var(--bk-sheet);
-  border: var(--bk-rule-1) solid var(--bk-graphite);
+  background: var(--bk-ground);
+  border: var(--bk-rule-1) solid var(--bk-line-strong);
   border-radius: var(--bk-radius-0);
   font-family: var(--bk-font-draft);
   /* These are the consequential controls, the gate among them. Read, not
      glanced at: one step under the body's reading size and no further. */
   font-size: var(--bk-text-sm);
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
   cursor: pointer;
   transition: background var(--bk-dur-1) var(--bk-ease);
 }
 
 .bk-btn:hover:not(:disabled) {
-  background: var(--bk-graphite);
-  color: var(--bk-sheet);
+  background: var(--bk-ink);
+  color: var(--bk-ground);
+  border-color: var(--bk-ink);
 }
 
 .bk-btn:active:not(:disabled) {
@@ -46,8 +53,27 @@
   cursor: default;
 }
 
-.bk-btn[data-auto="true"] {
+/* The AUTO stripe is the class, so it survives the hover's edge colour, which would repaint it. */
+.bk-btn[data-auto="true"],
+.bk-btn[data-auto="true"]:hover:not(:disabled) {
   border-inline-start: var(--bk-rule-3) solid var(--bk-greenline);
+}
+
+/*
+ * The armed confirm: already swapped, so the act that cannot be undone reads as pressed before
+ * the pointer reaches it. Only while the pointer is on it does it take a colour, redline, the
+ * fired state of a gated action - and redline does not invert, so its figure has its own role.
+ */
+.bk-btn[data-fire="true"] {
+  background: var(--bk-ink);
+  color: var(--bk-ground);
+  border-color: var(--bk-ink);
+}
+
+.bk-btn[data-fire="true"]:hover:not(:disabled) {
+  background: var(--bk-redline);
+  color: var(--bk-ink-on-redline);
+  border-color: var(--bk-redline);
 }
 
 /*
@@ -56,15 +82,21 @@
  * no colour of its own — it is a physically separate region drawn differently
  * from the drawing, and a print is not issued until it is signed there.
  * Greyscale the sheet and this is still the only inverted box on it.
+ *
+ * It is a SCOPE: base/tokens.css rebinds every colour role on it, and this rule paints the block
+ * from its own roles, so its ground is the scope's ground. Everything inside - the band, its
+ * lettering and clause, the buttons, the armed confirm, the focus ring (the sheet's colour, 15:1,
+ * where the stock redline ring is 2.6:1), the scrollbar - is drawn by its ordinary rule. No rule
+ * here reaches into the block to repaint a component.
  */
 .bk-title-block {
   flex: none;
   display: grid;
   gap: var(--bk-s3);
   padding: var(--bk-s4) var(--bk-s5);
-  background: var(--bk-graphite);
-  color: var(--bk-sheet);
-  border-block-start: var(--bk-rule-3) solid var(--bk-graphite);
+  background: var(--bk-ground);
+  color: var(--bk-ink);
+  border-block-start: var(--bk-rule-3) solid var(--bk-ground);
 }
 
 /*
@@ -87,59 +119,12 @@
   gap: var(--bk-s2);
 }
 
-.bk-title-block .bk-band-head {
-  border-block-end-color: var(--bk-sheet);
-}
-
-/*
- * The ring inverts with the ground. The sheet's ring is redline, 5.8:1 on the stock and 2.6:1 on
- * --bk-graphite, which is under the 3:1 a focus indicator needs, on the only controls on the card
- * that cannot be undone. Drawn in the sheet's colour it is 15:1. Same weight as the base ring in
- * base/the-sheet.css and later in the cascade, so it wins without !important.
- */
-.bk-title-block :where(button, select, input, a, [tabindex]):focus-visible {
-  outline-color: var(--bk-sheet);
-}
-
-.bk-title-block .bk-lettering,
-.bk-title-block .bk-lettering[data-ink="1"] {
-  color: var(--bk-sheet);
-}
-
-.bk-title-block .bk-band-note {
-  /* 6.9:1 on --bk-graphite: the clause is quieter than the class name, and still read. */
-  color: var(--bk-graphite-4);
-}
-
-.bk-title-block .bk-btn {
-  background: none;
-  border-color: var(--bk-graphite-3);
-  color: var(--bk-sheet);
-}
-
-.bk-title-block .bk-btn:hover:not(:disabled) {
-  background: var(--bk-sheet);
-  color: var(--bk-graphite);
-  border-color: var(--bk-sheet);
-}
-
-.bk-title-block .bk-btn[data-fire="true"] {
-  background: var(--bk-sheet);
-  color: var(--bk-graphite);
-  border-color: var(--bk-sheet);
-}
-
-.bk-title-block .bk-btn[data-fire="true"]:hover:not(:disabled) {
-  background: var(--bk-redline);
-  color: var(--bk-sheet);
-  border-color: var(--bk-redline);
-}
-
+/* The armed question's frame, drawn in the ink of the block it stands in. */
 .bk-arm {
   display: grid;
   gap: var(--bk-s3);
   padding: var(--bk-s3) var(--bk-s4);
-  border: var(--bk-rule-2) solid var(--bk-sheet);
+  border: var(--bk-rule-2) solid var(--bk-ink);
 }
 
 .bk-arm-q {

@@ -37,7 +37,8 @@
   justify-content: space-between;
   gap: var(--bk-s3);
   padding-block: var(--bk-s2);
-  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+  /* The band's rule is drawn in its lettering's ink, so it inverts with the lettering. */
+  border-block-end: var(--bk-rule-2) solid var(--bk-ink);
   margin-block-start: var(--bk-s5);
 }
 
@@ -51,7 +52,7 @@
 .bk-band-note {
   font-family: var(--bk-font-note);
   font-size: var(--bk-text-xs);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
 }
 
 /* The four checks, passed and failed. Listing both is what a check print IS:
@@ -67,7 +68,7 @@
   gap: var(--bk-s3);
   align-items: baseline;
   padding-block: var(--bk-s3);
-  border-block-end: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block-end: var(--bk-rule-1) solid var(--bk-line);
   font-size: var(--bk-text-sm);
 }
 
@@ -99,7 +100,7 @@
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
   letter-spacing: var(--bk-track-wide);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
   white-space: nowrap;
 }
 
@@ -127,7 +128,7 @@
   max-block-size: min(20rem, 34svh);
   overflow: auto;
   overscroll-behavior: contain;
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border: var(--bk-rule-1) solid var(--bk-line);
 }
 
 .bk-table {
@@ -141,7 +142,7 @@
 .bk-table td {
   padding: var(--bk-s2) var(--bk-s3);
   text-align: start;
-  border-block-end: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block-end: var(--bk-rule-1) solid var(--bk-line);
   white-space: nowrap;
 }
 
@@ -149,14 +150,14 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
-  background: var(--bk-vellum);
+  background: var(--bk-ground-raised);
   /* Column names are labels, so they are THE label: sentence case, 13px, --bk-graphite-2. */
   font-family: var(--bk-font-draft);
   font-size: var(--bk-label-size);
   font-weight: 600;
   letter-spacing: var(--bk-track-label);
-  color: var(--bk-graphite-2);
-  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+  color: var(--bk-ink-quiet);
+  border-block-end: var(--bk-rule-2) solid var(--bk-line-strong);
 }
 
 .bk-table tbody tr:last-child td {

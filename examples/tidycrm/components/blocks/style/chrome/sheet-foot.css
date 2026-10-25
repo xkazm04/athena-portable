@@ -4,7 +4,7 @@
   display: grid;
   gap: var(--bk-s3);
   padding-block-start: var(--bk-s4);
-  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block-start: var(--bk-rule-1) solid var(--bk-line);
 }
 
 .bk-crumbs {
@@ -13,17 +13,17 @@
   align-items: center;
   gap: var(--bk-s3);
   font-size: var(--bk-text-xs);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
 }
 
 .bk-crumb b {
   font-weight: 500;
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
 }
 
 .bk-crumb i {
   font-style: normal;
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
   margin-inline-start: var(--bk-s2);
 }
 
@@ -34,17 +34,17 @@
   min-block-size: var(--bk-s7);
   padding: var(--bk-s2) var(--bk-s3);
   background: none;
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border: var(--bk-rule-1) solid var(--bk-line);
   border-radius: var(--bk-radius-0);
   font-size: var(--bk-text-xs);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
   cursor: pointer;
 }
 
 .bk-back kbd {
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border: var(--bk-rule-1) solid var(--bk-line);
   padding: 0 var(--bk-s1);
 }
 
@@ -83,7 +83,7 @@
 }
 
 .bk-legend span[data-tone="ink"] {
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
 }
 
 /* The one legend entry that is not about a dot: its swatch is the cell's own

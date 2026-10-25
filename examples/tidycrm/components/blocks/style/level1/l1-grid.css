@@ -11,7 +11,7 @@
   align-items: baseline;
   gap: var(--bk-s3) var(--bk-s4);
   padding-block-end: var(--bk-s3);
-  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+  border-block-end: var(--bk-rule-2) solid var(--bk-line-strong);
 }
 
 .bk-grid-title {
@@ -23,7 +23,7 @@
 .bk-grid-verdict {
   grid-column: 1 / -1;
   padding-block-start: var(--bk-s3);
-  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block-start: var(--bk-rule-1) solid var(--bk-line);
 }
 
 .bk-db-strip {
@@ -39,11 +39,11 @@
 }
 
 .bk-db-jump:hover {
-  border-color: var(--bk-graphite);
+  border-color: var(--bk-line-strong);
 }
 
 .bk-db-jump[aria-pressed="true"] {
-  border-inline-start: var(--bk-rule-3) solid var(--bk-graphite);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-line-strong);
 }
 
 /* A chip that is also a TARGET. The box is `.bk-chip`; this is the 44px floor and the pressed
@@ -56,8 +56,8 @@
 }
 
 .bk-chip:where(button)[aria-pressed="true"] {
-  border-color: var(--bk-graphite);
-  color: var(--bk-graphite);
+  border-color: var(--bk-line-strong);
+  color: var(--bk-ink);
 }
 
 /* A code, standing beside the name it belongs to rather than above it. Quieter than the name by
@@ -66,7 +66,7 @@
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
   letter-spacing: var(--bk-track-wide);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
 }
 
 /* ------------------------------------------- the ink waits for the box */

@@ -177,8 +177,23 @@ preference has broken the app.
 `blocks` binds `--dk-auto` to greenline and answers the gated role with **a place rather than a
 hue**: the two irreversible acts live in the inverted title block, bottom-right, and `--dk-gated` is
 graphite. Only the fired control takes a colour, and only while the pointer is on it
-(`components/blocks/style/level2/foot.css:92-95`). That is a declared reading of the rule, not an
-exemption from it — the role still means one thing and is still spent on nothing else.
+(`.bk-btn[data-fire="true"]:hover` in `components/blocks/style/level2/foot.css`). That is a declared
+reading of the rule, not an exemption from it — the role still means one thing and is still spent on
+nothing else.
+
+**Colour roles, and the title block as a scope.** Component sheets read colour ROLES, never a step
+of the ramp: `--bk-ground` and `--bk-ground-raised` (the print and its vellum board), `--bk-ink`,
+`--bk-ink-quiet`, `--bk-ink-mark` (3:1, a mark that carries meaning), `--bk-ink-faint` (a mark that
+recedes), `--bk-ink-on-redline`, `--bk-line`, `--bk-line-strong`, `--bk-focus`, `--bk-label-ink` and
+`--bk-goldline-ink`, all bound in `base/tokens.css`. A step means one thing on the stock and another
+on the inverted title block; a role means the same thing on both. The title block REBINDS the whole
+set for its subtree (the last rule of the token file), so the gate's band, buttons, armed confirm,
+focus ring and scrollbar are drawn by their ordinary rules, and no rule reaches into the block to
+repaint a component. `test/tidycrm-style.test.ts` holds the two sets equal, measures every text
+role at 4.5:1 and the focus and mark roles at 3:1 on each scope's grounds, and ratchets ramp reads:
+none in the component sheets that were migrated, no more than today in the six small parts that
+were not, and `chrome/toast.css` exempt because the toast stack mounts outside the wrapper the roles
+are declared on (ADR 0198).
 
 ---
 

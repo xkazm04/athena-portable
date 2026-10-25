@@ -144,6 +144,36 @@
    */
   --bk-goldline-ink: color-mix(in srgb, var(--bk-goldline) 80%, var(--bk-graphite));
 
+  /*
+   * THE COLOUR ROLES. Component sheets read these, never a step of the ramp: a step means one
+   * thing on the stock and another on the inverted title block, and a role means the same thing
+   * on both. Each role is bound here for the stock and REBOUND, the whole set, by the title-block
+   * scope at the end of this file, so the gate is drawn by the same rules as everything else and
+   * no component is forked for it. --bk-label-ink and --bk-goldline-ink above are roles too.
+   *
+   *   ground, ground-raised   the surface a figure stands on: the print, and the vellum board
+   *   ink                     a figure, a word, a pressed fill: 4.5:1 on both grounds
+   *   ink-quiet               a word one step back (notes, captions, a bar): 4.5:1
+   *   ink-mark                a mark that carries meaning (an index box, a control's edge): 3:1
+   *   ink-faint               a mark that recedes (a resting scrollbar thumb); no floor
+   *   ink-on-redline          a figure on a redline fill, which does not invert
+   *   line, line-strong       a hairline rule, and the rule that bounds a region or a control
+   *   focus                   the focus ring: 3:1 on both grounds
+   *
+   * Every set of these must be complete: a role bound in one scope only inherits the stock value
+   * into the other. `test/tidycrm-style.test.ts` holds the two sets equal and measures each pair.
+   */
+  --bk-ground: var(--bk-sheet);
+  --bk-ground-raised: var(--bk-vellum);
+  --bk-ink: var(--bk-graphite);
+  --bk-ink-quiet: var(--bk-graphite-2);
+  --bk-ink-mark: var(--bk-graphite-3);
+  --bk-ink-faint: var(--bk-graphite-4);
+  --bk-ink-on-redline: var(--bk-sheet);
+  --bk-line: var(--bk-rule-ink);
+  --bk-line-strong: var(--bk-graphite);
+  --bk-focus: var(--bk-redline);
+
   /* --- Motion. law's durations and easings verbatim. --- */
   --bk-dur-1: 90ms;
   --bk-dur-2: 160ms;
@@ -218,3 +248,31 @@
   --dk-auto: var(--bk-greenline);
 }
 
+
+/*
+ * THE TITLE BLOCK IS A SCOPE. The gate inverts the ground, so it rebinds every colour role above
+ * for its subtree, and the controls inside it - the band, its lettering, the buttons, the armed
+ * confirm, the focus ring, the scrollbar - are drawn by their ordinary rules reading those roles.
+ * Nothing reaches into the block to repaint a component: the inversion is a binding, not a stack
+ * of overrides that win by cascade position.
+ *
+ * The values are the ones the overrides painted: the sheet's colour for every figure and for the
+ * ring (15:1 on graphite, where the stock redline ring is 2.6:1), --bk-graphite-4 for the quiet
+ * clause (6.9:1), --bk-graphite-3 for a control's edge and the scrollbar (3.9:1). The block has
+ * one ground, so both grounds bind graphite. Gold as text is taken toward the sheet here instead
+ * of toward graphite, so it reads on the dark ground at 7.7:1.
+ */
+[data-variant="blocks"] .bk-title-block {
+  --bk-ground: var(--bk-graphite);
+  --bk-ground-raised: var(--bk-graphite);
+  --bk-ink: var(--bk-sheet);
+  --bk-ink-quiet: var(--bk-graphite-4);
+  --bk-ink-mark: var(--bk-graphite-3);
+  --bk-ink-faint: var(--bk-graphite-3);
+  --bk-ink-on-redline: var(--bk-sheet);
+  --bk-line: var(--bk-graphite-2);
+  --bk-line-strong: var(--bk-graphite-3);
+  --bk-focus: var(--bk-sheet);
+  --bk-label-ink: var(--bk-sheet);
+  --bk-goldline-ink: color-mix(in srgb, var(--bk-goldline) 50%, var(--bk-sheet));
+}

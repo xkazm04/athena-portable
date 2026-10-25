@@ -69,19 +69,33 @@ function rulesOf(css: string): Rule[] {
 
 const RULES = rulesOf(SHEET);
 
-/** Every `--bk-*` the token file declares, by name. */
+/** A rule that rebinds the colour roles for the subtree under it: the title block, wherever declared. */
+const isScopeRule = (r: Rule): boolean =>
+  /(^|\s)\.bk-title-block$/.test(r.selector) && [...r.decls.keys()].some((k) => k.startsWith("--bk-"));
+
+/** Every `--bk-*` the token file declares on the stock sheet, by name (the title block's rebinding excluded). */
 const TOKENS = new Map(
-  [...strip(read(`${STYLE}/base/tokens.css`)).matchAll(/(--bk-[a-z0-9-]+)\s*:\s*([^;]+);/g)].map(
-    (m) => [m[1]!, m[2]!.trim()] as const,
-  ),
+  rulesOf(strip(read(`${STYLE}/base/tokens.css`)))
+    .filter((r) => !isScopeRule(r))
+    .flatMap((r) => [...r.decls].filter(([k]) => k.startsWith("--bk-"))),
 );
 
-/** A value with every `var(--bk-*)` replaced by what it resolves to. */
-function resolve(value: string): string {
+/** The inverted scope's rebindings: what the title block declares over the stock roles. */
+const SCOPE_RULE = RULES.find(isScopeRule);
+const INVERTED_BINDINGS = new Map(
+  [...(SCOPE_RULE?.decls ?? new Map<string, string>())].filter(([k]) => k.startsWith("--bk-")),
+);
+
+type Scope = "stock" | "inverted";
+const SCOPES: Scope[] = ["stock", "inverted"];
+
+/** A value with every `var(--bk-*)` replaced by what it resolves to, in the scope it is read in. */
+function resolve(value: string, scope: Scope = "stock"): string {
+  const table = scope === "inverted" ? new Map([...TOKENS, ...INVERTED_BINDINGS]) : TOKENS;
   let out = value;
   for (let n = 0; n < 10 && /var\(--bk-/.test(out); n += 1) {
     out = out.replace(/var\((--bk-[a-z0-9-]+)\)/g, (_, name: string) => {
-      const token = TOKENS.get(name);
+      const token = table.get(name);
       assert.ok(token, `${name} is read and not declared in base/tokens.css`);
       return token;
     });
@@ -124,37 +138,65 @@ function ratio(a: string, b: string): number {
 }
 
 const SHEET_GROUNDS = ["var(--bk-sheet)", "var(--bk-vellum)"];
-const INVERTED = "var(--bk-graphite)";
 
 /** The colour an `outline` shorthand draws in: its last token, which is how this sheet writes it. */
 const outlineColour = (outline: string): string => outline.split(/\s+(?![^(]*\))/).at(-1)!;
 
+/** A rule's selector list, split at its top-level commas only (`:where(a, b)` stays whole). */
+const partsOf = (r: Rule): string[] => r.selector.split(/,(?![^(]*\))/).map((s) => s.trim());
+
+/**
+ * What one rule declares for a colour property, reading a shorthand where the longhand is absent:
+ * `border-block-end-color` from `border-block-end`, `border-block-color`, `border-block`,
+ * `border-color` or `border`; `outline-color` from `outline`; `background` from `background-color`.
+ */
+function declOf(rule: Rule, prop: string): string | undefined {
+  if (prop === "background") return rule.decls.get("background") ?? rule.decls.get("background-color");
+  const side = /^(border|outline)((?:-[a-z]+)*)-color$/.exec(prop);
+  if (!side) return rule.decls.get(prop);
+  const steps = side[2]!.split("-").filter(Boolean);
+  for (let n = steps.length; n >= 0; n -= 1) {
+    const stem = [side[1], ...steps.slice(0, n)].join("-");
+    const longhand = rule.decls.get(`${stem}-color`);
+    if (longhand) return longhand;
+    const shorthand = rule.decls.get(stem);
+    if (shorthand) return outlineColour(shorthand);
+  }
+  return undefined;
+}
+
+/**
+ * The value a property resolves to on an element matching `key`, in a scope: the last top-level
+ * rule, in cascade order, that names `key` (bare or under `.bk-root`) or - in the inverted scope -
+ * names it under `.bk-title-block`, resolved against that scope's role bindings. This is the
+ * paint a reader sees, whether it comes from an override rule or from a role.
+ */
+function paint(key: string, prop: string, scope: Scope): string {
+  const names = new Set([key, `.bk-root ${key}`, ...(scope === "inverted" ? [`.bk-title-block ${key}`] : [])]);
+  const hits = RULES.filter(
+    (r) => r.at === "" && partsOf(r).some((s) => names.has(s)) && declOf(r, prop) !== undefined,
+  );
+  assert.ok(hits.length > 0, `nothing paints ${prop} on ${key}`);
+  return resolve(declOf(hits.at(-1)!, prop)!, scope).toLowerCase();
+}
+
+/** A scope's grounds, read off the surfaces that paint them: the print and its board, or the title block. */
+const groundsOf = (scope: Scope): string[] =>
+  scope === "inverted"
+    ? [paint(".bk-title-block", "background", "inverted")]
+    : [paint(".bk-sheet", "background", "stock"), paint(".bk-root", "background", "stock")];
+
+const FOCUS = ":where(button, select, input, a, [tabindex]):focus-visible";
+
 test("every focus ring clears 3:1 against the ground it is drawn on, the title block's included", () => {
   // The base ring is drawn on every control under `.bk-root`; the title block is the one region
-  // that inverts the ground under it, and it holds the only irreversible acts on the card.
-  const base = RULES.find((r) => r.selector.startsWith(".bk-root :where(") && /:focus-visible$/.test(r.selector));
-  assert.ok(base, "the sheet declares no base focus ring");
-  const baseInk = outlineColour(base.decls.get("outline")!);
-  for (const ground of SHEET_GROUNDS) {
-    assert.ok(ratio(baseInk, ground) >= 3, `the base ring is ${ratio(baseInk, ground).toFixed(2)}:1 on ${ground}`);
-  }
-
-  const inverted = RULES.filter(
-    (r) => r.selector.startsWith(".bk-title-block ") && /:focus-visible$/.test(r.selector),
-  );
-  assert.ok(
-    inverted.length > 0,
-    `nothing redraws the ring inside the title block, so its controls take the base ring at ${ratio(baseInk, INVERTED).toFixed(2)}:1 on --bk-graphite`,
-  );
-  for (const rule of inverted) {
-    const ink = rule.decls.get("outline-color") ?? outlineColour(rule.decls.get("outline") ?? "");
-    assert.ok(
-      ratio(ink, INVERTED) >= 3,
-      `${rule.selector} draws its ring at ${ratio(ink, INVERTED).toFixed(2)}:1 on --bk-graphite`,
-    );
-    // It has to win: the same weight as the base ring and later in the cascade.
-    assert.ok(rule.order > base.order, `${rule.selector} comes before the base ring it overrides`);
-    assert.match(rule.selector, /^\.bk-title-block :where\([^)]*\):focus-visible$/);
+  // that inverts the ground under it, and it holds the only irreversible acts on the card. Its
+  // ring is whatever the cascade resolves there: a role rebound by the scope, or an override.
+  for (const scope of SCOPES) {
+    const ink = paint(FOCUS, "outline-color", scope);
+    for (const ground of groundsOf(scope)) {
+      assert.ok(ratio(ink, ground) >= 3, `the ${scope} ring is ${ratio(ink, ground).toFixed(2)}:1 on ${ground}`);
+    }
   }
 });
 
@@ -289,20 +331,30 @@ test("every word and figure the sheet sets clears 4.5:1 on its ground", () => {
   // base/tokens.css: "anything a reader reads stops at --bk-graphite-2". --bk-graphite-3 (3.8:1
   // on the sheet, 3.3:1 on the vellum) and --bk-graphite-4 are rule and mark tones. A disabled
   // control is the one exemption the floor allows.
+  //
+  // A rule is measured in every scope it can paint in, on that scope's grounds: a rule that reads
+  // only roles the title block rebinds is correct by construction in both, so it is measured in
+  // both; a rule that reads a ramp step or a hue is pinned to the stock ground; a rule written
+  // under `.bk-title-block` is in the inverted scope only. No selector spelling decides a ground.
   const low: string[] = [];
   for (const rule of RULES) {
     const colour = rule.decls.get("color");
     if (!colour || /currentColor|inherit/.test(colour) || /:disabled/.test(rule.selector)) continue;
     const own = rule.decls.get("background") ?? rule.decls.get("background-color");
-    const grounds =
-      own && own !== "none"
-        ? [own]
-        : rule.selector.startsWith(".bk-title-block")
-          ? [INVERTED]
-          : SHEET_GROUNDS;
-    for (const ground of grounds) {
-      const r = ratio(colour, ground);
-      if (r < 4.5) low.push(`${rule.selector} on ${ground}: ${r.toFixed(2)}:1`);
+    const painted = [colour, own ?? ""].join(" ");
+    const reads = [...painted.matchAll(/var\((--bk-[a-z0-9-]+)\)/g)].map((m) => m[1]!);
+    const portable = reads.length > 0 && reads.every((name) => INVERTED_BINDINGS.has(name));
+    const scopes: Scope[] = rule.selector.startsWith(".bk-title-block")
+      ? ["inverted"]
+      : portable
+        ? SCOPES
+        : ["stock"];
+    for (const scope of scopes) {
+      const grounds = own && own !== "none" ? [resolve(own, scope)] : groundsOf(scope);
+      for (const ground of grounds) {
+        const r = ratio(resolve(colour, scope), ground);
+        if (r < 4.5) low.push(`${rule.selector} (${scope}) on ${ground}: ${r.toFixed(2)}:1`);
+      }
     }
   }
   assert.deepEqual(low, [], `text under 4.5:1:\n  ${low.join("\n  ")}`);
@@ -355,4 +407,149 @@ test("every hover state eases, as its siblings do", () => {
     if (!eased(key)) cut.push(`${p} (nothing transitions ${key})`);
   }
   assert.deepEqual(cut, []);
+});
+
+/* --- The colour roles, and the title block as a scope that rebinds them. ------------------- */
+
+/** The wrapper rule every role is declared on. */
+const WRAPPER = RULES.find((r) => r.selector === '[data-variant="blocks"]');
+
+/** A `--bk-*` binding is a colour role when its value reads the ramp or a hue, or is a colour. */
+const COLOUR_VALUE =
+  /var\(--bk-(vellum|sheet|graphite(-[234])?|rule-ink|redline|greenline|goldline)\)|#[0-9a-f]{3,8}\b|color-mix\(/i;
+const rolesOf = (rule: Rule | undefined): string[] =>
+  [...(rule?.decls ?? new Map<string, string>())]
+    .filter(([k, v]) => k.startsWith("--bk-") && COLOUR_VALUE.test(v))
+    .map(([k]) => k)
+    .sort();
+
+const NAMED_ROLES = [
+  "--bk-ground",
+  "--bk-ground-raised",
+  "--bk-ink",
+  "--bk-ink-quiet",
+  "--bk-ink-mark",
+  "--bk-line",
+  "--bk-line-strong",
+  "--bk-focus",
+  "--bk-label-ink",
+  "--bk-goldline-ink",
+];
+
+test("role completeness: every colour role on the wrapper is rebound on the title block, and no other", () => {
+  // A role bound in one scope only is a binding defined in one state: it inherits the stock value
+  // into the inverted block. --bk-label-ink is computed at the wrapper from --bk-graphite-2, so
+  // the block has to re-declare it, not inherit it.
+  const stock = rolesOf(WRAPPER);
+  for (const name of NAMED_ROLES) assert.ok(stock.includes(name), `the wrapper declares no ${name}`);
+  assert.ok(SCOPE_RULE, "no rule rebinds the roles on .bk-title-block");
+  assert.deepEqual(rolesOf(SCOPE_RULE), stock, "the title block rebinds a different set of roles from the wrapper's");
+});
+
+test("pairs with obligations: in each scope, text roles clear 4.5:1 and the focus and mark roles 3:1 on its grounds", () => {
+  // Measured from the role table itself: the grounds are the scope's --bk-ground and
+  // --bk-ground-raised, so a scope that rebinds its ground is measured on the ground it declares.
+  const text = ["--bk-ink", "--bk-ink-quiet", "--bk-label-ink", "--bk-goldline-ink"];
+  const marks = ["--bk-focus", "--bk-ink-mark"];
+  const low: string[] = [];
+  for (const scope of SCOPES) {
+    const table = scope === "inverted" ? INVERTED_BINDINGS : TOKENS;
+    for (const ground of ["--bk-ground", "--bk-ground-raised"]) {
+      assert.ok(table.has(ground), `the ${scope} scope binds no ${ground}`);
+      for (const [roles, floor] of [
+        [text, 4.5],
+        [marks, 3],
+      ] as const) {
+        for (const role of roles) {
+          assert.ok(table.has(role), `the ${scope} scope binds no ${role}`);
+          const r = ratio(resolve(`var(${role})`, scope), resolve(`var(${ground})`, scope));
+          if (r < floor) low.push(`${scope} ${role} on ${ground}: ${r.toFixed(2)}:1 (floor ${floor})`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(low, []);
+});
+
+test("no component forks on the inverted ground: nothing under .bk-title-block repaints a colour", () => {
+  // The block is a scope. A rule that reaches INTO it to repaint one component wins only by
+  // cascade position, and the next control added to the gate needs one more of them.
+  const colour = /^(color|background|background-color|border(-[a-z]+)*-color|outline-color|scrollbar-color)$/;
+  const forks = RULES.filter(
+    (r) =>
+      partsOf(r).some((s) => s.startsWith(".bk-title-block ")) &&
+      [...r.decls.keys()].some((k) => colour.test(k)),
+  ).map((r) => r.selector);
+  assert.deepEqual(forks, [], "rules repaint a component inside the title block");
+});
+
+test("ratchet: the migrated sheets read no ramp step, and no other part reads more than it did", () => {
+  // Component sheets read roles; a ramp step means a different thing on each ground. The eight
+  // migrated parts read none; six small parts keep their counts as a ceiling; the toast stack is
+  // exempt by name because it mounts outside the wrapper the roles are declared on.
+  const ramp = /var\(--bk-(graphite(-[234])?|sheet|vellum|rule-ink)\)/g;
+  const ceiling: Record<string, number> = {
+    "chrome/rail-and-bar.css": 3,
+    "chrome/the-sheet-head.css": 4,
+    "level1/l1-cells.css": 3,
+    "level1/l1-dress.css": 2,
+    "level2/body-2.css": 1,
+    "level2/l2-dossier.css": 3,
+  };
+  const exempt = new Set(["base/tokens.css", "chrome/toast.css"]);
+  const over: string[] = [];
+  for (const part of PARTS) {
+    if (exempt.has(part)) continue;
+    const count = (strip(read(`${STYLE}/${part}`)).match(ramp) ?? []).length;
+    const limit = ceiling[part] ?? 0;
+    if (count > limit) over.push(`${part}: ${count} ramp reads, ceiling ${limit}`);
+  }
+  assert.ok(PARTS.includes("level2/foot.css") && PARTS.includes("level0/l0.css"), "the parts moved; revisit this");
+  assert.deepEqual(over, []);
+});
+
+test("guard: the title block's paints do not move", () => {
+  const inv = (key: string, prop: string): string => paint(key, prop, "inverted");
+  const ground = inv(".bk-title-block", "background");
+  assert.equal(ground, "#1d1c1a");
+  assert.equal(inv(".bk-title-block", "color"), "#f4f1e9");
+  // At rest the gate's button is drawn on the block's own ground: no fill, or a fill of exactly it.
+  const rest = inv(".bk-btn", "background");
+  assert.ok(rest === "none" || rest === ground, `the gate's button rests on ${rest}`);
+  assert.equal(inv(".bk-btn", "color"), "#f4f1e9");
+  assert.equal(inv(".bk-btn", "border-color"), "#7e7a72");
+  assert.equal(inv(".bk-btn:hover:not(:disabled)", "background"), "#f4f1e9");
+  assert.equal(inv(".bk-btn:hover:not(:disabled)", "color"), "#1d1c1a");
+  assert.equal(inv(".bk-btn:hover:not(:disabled)", "border-color"), "#f4f1e9");
+  assert.equal(inv('.bk-btn[data-fire="true"]', "background"), "#f4f1e9");
+  assert.equal(inv('.bk-btn[data-fire="true"]', "color"), "#1d1c1a");
+  assert.equal(inv('.bk-btn[data-fire="true"]:hover:not(:disabled)', "background"), "#b3261e");
+  assert.equal(inv('.bk-btn[data-fire="true"]:hover:not(:disabled)', "color"), "#f4f1e9");
+  assert.equal(inv(FOCUS, "outline-color"), "#f4f1e9");
+  assert.equal(inv(".bk-band-note", "color"), "#a8a49a");
+  assert.equal(inv(".bk-band-head", "border-block-end-color"), "#f4f1e9");
+  assert.equal(inv(".bk-lettering", "color"), "#f4f1e9");
+  assert.equal(inv('.bk-lettering[data-ink="1"]', "color"), "#f4f1e9");
+  assert.equal(inv(".bk-arm", "border-color"), "#f4f1e9");
+  assert.equal(inv(":where(*)", "scrollbar-color"), "#7e7a72 transparent");
+});
+
+test("guard: the stock sheet's paints do not move", () => {
+  const stock = (key: string, prop: string): string => paint(key, prop, "stock");
+  assert.equal(stock(FOCUS, "outline-color"), "#b3261e");
+  assert.equal(stock('.bk-seg-option[aria-pressed="true"]', "background"), "#1d1c1a");
+  assert.equal(stock('.bk-seg-option[aria-pressed="true"]', "color"), "#f4f1e9");
+  assert.equal(stock('.bk-db-key[data-fill="fault"]', "border-inline-start-color"), "#b3261e");
+  assert.equal(stock(".bk-btn", "background"), "#f4f1e9");
+  assert.equal(stock(".bk-btn", "border-color"), "#1d1c1a");
+  assert.equal(stock(".bk-btn", "color"), "#1d1c1a");
+  assert.equal(stock(".bk-btn:hover:not(:disabled)", "background"), "#1d1c1a");
+  assert.equal(stock(".bk-btn:hover:not(:disabled)", "color"), "#f4f1e9");
+  assert.equal(stock('.bk-btn[data-auto="true"]', "border-inline-start-color"), "#2e6b40");
+  assert.equal(stock(".bk-band-head", "border-block-end-color"), "#1d1c1a");
+  assert.equal(stock(".bk-band-note", "color"), "#4f4d48");
+  assert.equal(stock(".bk-lettering", "color"), "#4f4d48");
+  assert.equal(stock(":where(*)", "scrollbar-color"), "#a8a49a transparent");
+  assert.equal(stock(".bk-root", "background"), "#e7e2d6");
+  assert.equal(stock(".bk-sheet", "background"), "#f4f1e9");
 });

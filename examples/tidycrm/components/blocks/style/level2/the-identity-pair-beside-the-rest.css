@@ -7,8 +7,8 @@
   gap: 0;
   align-content: start;
   padding: var(--bk-s4);
-  background: var(--bk-vellum);
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  background: var(--bk-ground-raised);
+  border: var(--bk-rule-1) solid var(--bk-line);
   border-inline-start: var(--bk-rule-3) solid var(--bk-goldline);
   min-inline-size: 0;
 }
@@ -18,7 +18,7 @@
   font-family: var(--bk-font-note);
   font-size: var(--bk-text-sm);
   line-height: var(--bk-leading-relaxed);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
 }
 
 /* The pair picker: the L1 database strip's arrangement, and the chip is the same button chip. */
@@ -54,9 +54,9 @@
   font-size: var(--bk-label-size);
   font-weight: 600;
   letter-spacing: var(--bk-track-label);
-  color: var(--bk-graphite);
+  color: var(--bk-ink);
   padding-block-end: var(--bk-s1);
-  border-block-end: var(--bk-rule-1) solid var(--bk-graphite);
+  border-block-end: var(--bk-rule-1) solid var(--bk-line-strong);
 }
 
 .bk-field {
@@ -92,24 +92,24 @@
   gap: var(--bk-s3);
   align-items: baseline;
   padding-block: var(--bk-s2);
-  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-block-start: var(--bk-rule-1) solid var(--bk-line);
   font-size: var(--bk-text-xs);
 }
 
 .bk-evidence li[data-total="true"] {
-  border-block-start: var(--bk-rule-2) solid var(--bk-graphite);
+  border-block-start: var(--bk-rule-2) solid var(--bk-line-strong);
   font-weight: 500;
 }
 
 .bk-evidence-weight {
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
 }
 
 .bk-evidence-detail {
   font-family: var(--bk-font-note);
-  color: var(--bk-graphite-2);
+  color: var(--bk-ink-quiet);
   overflow-wrap: anywhere;
 }
 
