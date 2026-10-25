@@ -334,7 +334,7 @@ describe("one live scene at any moment", () => {
     });
     // The still is not first-frame code: the stage fetches it once drawn. Let that land.
     await act(async () => {
-      await import("./still");
+      await import("./places"); // the still comes with the stage's memory of places
     });
     return host;
   }
@@ -410,5 +410,212 @@ describe("one live scene at any moment", () => {
     expect(h.querySelector(".stage__layer")!.getAttribute("data-phase")).toBe("rest");
     expect(h.querySelector("[data-still]")).toBeNull();
     expect([...live]).toEqual(["#/apps"]);
+  });
+});
+
+/**
+ * Rise lands where you left (`places.ts`): an up move restores the place's scroll and the element
+ * you left it from; a dive and an across move start fresh, as they always did.
+ */
+describe("rise lands where you left", () => {
+  /** How tall each scroller's content is: jsdom lays nothing out, so a scene says it with data-h. */
+  let heights: Map<string, number>;
+  let observed: (() => void)[] = [];
+  let showItem5 = true;
+
+  beforeEach(() => {
+    heights = new Map();
+    observed = [];
+    showItem5 = true;
+    Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
+      configurable: true,
+      get(this: HTMLElement) {
+        const at = this.getAttribute("data-scroller");
+        return at === null ? 0 : (heights.get(at) ?? 2000);
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.hasAttribute("data-scroller") ? 300 : 0;
+      },
+    });
+  });
+
+  afterEach(() => {
+    delete (HTMLElement.prototype as { scrollHeight?: number }).scrollHeight;
+    delete (HTMLElement.prototype as { clientHeight?: number }).clientHeight;
+    delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+  });
+
+  /** A ResizeObserver that fires when the test says the content grew. */
+  function stubResizeObserver() {
+    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+      constructor(private readonly cb: () => void) {
+        observed.push(() => this.cb());
+      }
+      observe() {}
+      disconnect() {
+        observed = observed.filter(() => false);
+      }
+    };
+  }
+
+  function Scene({ path }: { path: Path }) {
+    const at = formatHash(path);
+    const items = [...Array(10).keys()].filter((i) => i !== 5 || showItem5);
+    return (
+      <div data-scroller={at} style={{ overflow: "auto" }}>
+        <h2>{at}</h2>
+        {path.item === undefined &&
+          items.map((i) => (
+            <button key={i} type="button" onClick={() => useDepth.getState().go({ root: path.root!, item: `item-${i}` })}>
+              item-{i}
+            </button>
+          ))}
+      </div>
+    );
+  }
+
+  function Wiring({ calm = false }: { calm?: boolean }) {
+    const s = useDepth();
+    return (
+      <Stage
+        state={{ path: s.path, from: s.from, move: s.move, seq: s.seq }}
+        calm={calm}
+        renderScene={(p) => <Scene path={p} />}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
+        onGo={s.go}
+        onRise={s.rise}
+        onSurface={s.surface}
+        onSettle={s.settle}
+      />
+    );
+  }
+
+  async function mountAt(hash: string, calm = false): Promise<HTMLElement> {
+    window.history.replaceState(null, "", hash);
+    host = document.createElement("div");
+    document.body.append(host);
+    root = createRoot(host);
+    act(() => root!.render(<Wiring calm={calm} />));
+    act(() => {
+      stopDepth = startDepth();
+    });
+    await act(async () => {
+      await import("./places");
+    });
+    return host;
+  }
+
+  const topLayer = (h: HTMLElement) => [...h.querySelectorAll<HTMLElement>(".stage__scenes > section")].at(-1)!;
+  const scrollerOf = (h: HTMLElement) => topLayer(h).querySelector<HTMLElement>("[data-scroller]")!;
+  const button = (h: HTMLElement, text: string) =>
+    [...topLayer(h).querySelectorAll("button")].find((b) => b.textContent === text)!;
+  const go = (to: Path) => act(() => useDepth.getState().go(to));
+  const escape = () =>
+    act(() => {
+      document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    });
+  /** Scroll the top layer's scroller to 400, focus item-5 and press it: the dive. */
+  function diveFromItem5(h: HTMLElement) {
+    scrollerOf(h).scrollTop = 400;
+    const b = button(h, "item-5");
+    b.focus();
+    act(() => b.click());
+    expect(formatHash(useDepth.getState().path)).toBe("#/apps/item-5");
+  }
+
+  it("a scroller scrolled to 400 is back at 400 once the arriving layer is drawn after a rise", async () => {
+    const h = await mountAt("#/apps");
+    scrollerOf(h).scrollTop = 400;
+    go({ root: "apps", item: "item-2" });
+    act(() => useDepth.getState().rise());
+    expect(formatHash(useDepth.getState().path)).toBe("#/apps");
+    expect(scrollerOf(h).getAttribute("data-scroller")).toBe("#/apps");
+    expect(scrollerOf(h).scrollTop).toBe(400);
+  });
+
+  it("Escape after diving from item-5 puts focus back on the re-rendered item-5 button, not the layer", async () => {
+    const h = await mountAt("#/apps");
+    diveFromItem5(h);
+    escape();
+    expect(formatHash(useDepth.getState().path)).toBe("#/apps");
+    const again = button(h, "item-5");
+    expect(document.activeElement).toBe(again);
+    expect(again.isConnected).toBe(true);
+    expect(topLayer(h).contains(again)).toBe(true);
+  });
+
+  it("a returning scene that draws short is scrolled once it grows, and a wheel first abandons the restore", async () => {
+    stubResizeObserver();
+    const h = await mountAt("#/apps");
+    diveFromItem5(h);
+    heights.set("#/apps", 200); // the scene's data has not landed: nothing to scroll yet
+    escape();
+    expect(scrollerOf(h).scrollTop).toBe(0);
+    heights.set("#/apps", 2000);
+    act(() => observed.forEach((fire) => fire()));
+    expect(scrollerOf(h).scrollTop).toBe(400);
+
+    // Again, but the person scrolls before the content lands: the restore is theirs to lose.
+    diveFromItem5(h);
+    heights.set("#/apps", 200);
+    escape();
+    act(() => {
+      window.dispatchEvent(new WheelEvent("wheel", { bubbles: true }));
+    });
+    heights.set("#/apps", 2000);
+    act(() => observed.forEach((fire) => fire()));
+    expect(scrollerOf(h).scrollTop).toBe(0);
+  });
+
+  it("when the remembered row is gone on return, focus falls back to the layer and nothing throws", async () => {
+    const h = await mountAt("#/apps");
+    diveFromItem5(h);
+    showItem5 = false;
+    expect(() => escape()).not.toThrow();
+    expect(formatHash(useDepth.getState().path)).toBe("#/apps");
+    expect(scrollerOf(h).scrollTop).toBe(400); // the place came back; only the row did not
+    expect(document.activeElement).toBe(topLayer(h));
+  });
+
+  it("under calm, where a move replaces the layer and plays no still, a rise lands where you left too", async () => {
+    const h = await mountAt("#/apps", true);
+    diveFromItem5(h);
+    escape();
+    expect(scrollerOf(h).scrollTop).toBe(400);
+    expect(document.activeElement).toBe(button(h, "item-5"));
+  });
+
+  it("guard: a dive to a place recorded earlier starts at the top with focus on the layer", async () => {
+    const h = await mountAt("#/apps");
+    diveFromItem5(h); // #/apps is recorded at 400 with item-5
+    act(() => useDepth.getState().surface());
+    go({ root: "apps" }); // down, from the surface
+    expect(scrollerOf(h).scrollTop).toBe(0);
+    expect(document.activeElement).toBe(topLayer(h));
+  });
+
+  it("guard: an across move through a dock root focuses the arriving layer", async () => {
+    const h = await mountAt("#/apps");
+    scrollerOf(h).scrollTop = 400;
+    button(h, "item-5").focus();
+    go({ root: "mind" });
+    go({ root: "apps" });
+    expect(scrollerOf(h).scrollTop).toBe(0);
+    expect(document.activeElement).toBe(topLayer(h));
+  });
+
+  it("guard: the page shape records nothing and calls no focus", async () => {
+    const { places } = await import("./places");
+    const h = await mountAt("#/apps/host-1");
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    go({ root: "apps", item: "host-1", sub: { kind: "page" } });
+    expect(h.querySelector(".stage")!.getAttribute("data-shape")).toBe("page");
+    expect(focus).not.toHaveBeenCalled();
+    go({ root: "apps", item: "host-2", sub: { kind: "page" } });
+    expect(places.keys()).not.toContain("#/apps/host-1/page");
+    expect(focus).not.toHaveBeenCalled();
   });
 });

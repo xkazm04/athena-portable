@@ -67,10 +67,12 @@ export interface StageProps {
 }
 
 /**
- * How a leaving layer's still is taken (ADR 0193). Not first-frame code: it is fetched once the stage
- * has drawn, long before a person's first move. A move before it lands leaves its layer empty.
+ * How a leaving layer's still is taken (ADR 0193) and where each place was left (`places.ts`). Not
+ * first-frame code: it is fetched once the stage has drawn, long before a person's first move. A
+ * move before it lands leaves its layer empty and moves no focus (the window's first frame, a reload
+ * at a depth, keeps the focus where the browser put it).
  */
-let stills: typeof import("./still") | null = null;
+let stills: typeof import("./places") | null = null;
 
 /** A move that never ends (a hidden window plays no animation events) is settled after this. */
 const SAFETY_MS = 900;
@@ -93,14 +95,21 @@ export default function Stage(props: StageProps) {
   // ---- layers: derived during render so a new move never shows a frame of the old one
   const [layers, dispatch] = useReducer(reduceLayers, undefined, () => initLayers(state.path, state.seq));
   const [seen, setSeen] = useState(state.seq);
+  const top = useRef<HTMLElement>(null);
   if (seen !== state.seq) {
     setSeen(state.seq);
+    // The place being left, read while its DOM is untouched: its scroll and focus, for a rise back.
+    // Read here, in the render that derives the move, because it is the last moment before the commit
+    // unmounts the scene (or, under calm, replaces the layer); an effect would read the new place.
+    // It only reads the DOM and writes the memory in `places.ts`, so a render replayed is harmless.
+    // eslint-disable-next-line react-hooks/refs
+    stills?.record(top.current, layers);
     dispatch({ type: "move", seq: state.seq, path: state.path, move: state.move, calm });
   }
 
   const settled = isSettled(layers);
   useEffect(() => {
-    void import("./still").then((m) => (stills = m));
+    void import("./places").then((m) => (stills = m));
   }, []);
   useEffect(() => {
     if (settled && state.from !== null) onSettle(state.seq);
@@ -127,10 +136,12 @@ export default function Stage(props: StageProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onRise]);
 
-  // ---- focus follows the move, so a keyboard user is never left on a layer that went away
-  const top = useRef<HTMLElement>(null);
+  // ---- focus follows the move, so a keyboard user is never left on a layer that went away. An up
+  // move to a place left before lands where it was left: its scroll and the element you left from.
   useEffect(() => {
-    if (state.seq > 0 && shape === "scene") top.current?.focus({ preventScroll: true });
+    if (state.seq > 0 && shape === "scene") return stills?.land(top.current, state);
+    // Once per move: `state` changes with `seq`, and a settle (move back to "none") must not refocus.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.seq, shape]);
 
   const trail = crumbs(state.path, label);
@@ -292,13 +303,13 @@ class SceneLayer extends Component<LayerProps> {
 
   override getSnapshotBeforeUpdate(prev: LayerProps): Still | null {
     const el = this.self.current;
-    return stills && el && isLive(prev.layer) && !isLive(this.props.layer) ? stills.captureStill(el) : null;
+    return stills && el && isLive(prev.layer) && !isLive(this.props.layer) ? stills.capture(el) : null;
   }
 
   override componentDidUpdate(_prev: LayerProps, _state: unknown, still: Still | null) {
     const el = this.self.current;
     if (!still || !el || !stills) return;
-    stills.showStill(el, still);
+    stills.show(el, still);
   }
 
   private readonly attach = (el: HTMLElement | null) => {
