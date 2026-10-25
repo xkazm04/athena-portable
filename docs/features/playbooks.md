@@ -101,6 +101,18 @@ dollars the cards filed and the value found, and agrees when it equals either wi
 card can already contain the dispute cards beside it, and registration cards carry no amount). The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
+Every missed item and every filed trap also says whether she saw it (`attribution.py`). The
+transcript keeps each read's name and params; the page is pure over the world, so each read is
+replayed and the rows she was shown are compared with the truth, outside the page (which never
+knows the truth) and outside the score (the score, the verdict, `SCORER_VERSION` and the
+comparability key do not move). The bench prints one line a missed item, `missed K - seen on
+<tool>, not filed` (a judgement failure: the prompt or the model) or `missed K - never surfaced
+(page 2 of 2 of <tool> not read)` (a coverage failure: the page, the search, the pagination; fix the
+playbook). A filed trap names the read that showed it, so it is told apart from an unfounded guess.
+`report.json` carries `attribution` (`missed`, `traps`, both counts) and `bench.json` carries
+`missed_seen`, `missed_unseen` and `by_item`; the headline and history lines are unchanged. A rescore
+rebuilds it for a report saved before it existed.
+
 ## The ninety-five playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |

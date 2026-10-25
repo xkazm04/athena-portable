@@ -75,6 +75,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from athena.core.catalog import READ_CAP
+from athena.proving.playbooks.attribution import lines as attribution_lines
 from athena.proving.playbooks.bench import (
     BenchConfig,
     WorldFactory,
@@ -391,6 +392,8 @@ def bench(
             flush=True,
         )
         print(f"verdict: {v['word']}" + (f" - {'; '.join(v['reasons'])}" if v["reasons"] else ""))
+        for line in attribution_lines(report.get("attribution")):
+            print(line, flush=True)
         receipt = report.get("case_receipt")
         if isinstance(receipt, dict):
             # What the chore page would show for this run (ADR 0127), beside the bench's own cost.
@@ -454,6 +457,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         name = f"report.rescored-{str(again['rescored_at']).replace(':', '').replace('-', '')}.json"
         target = write_bench(book, again, source.parent, note=args.note, report_name=name)
         print(f"rescored {source.as_posix()} -> {target.as_posix()}: {again['verdict']['word']}")
+        for line in attribution_lines(again.get("attribution")):
+            print(line)
         return 1 if again["verdict"]["word"] == "short" else 0
     if args.runs < 1:
         print(f"refused: --runs must be 1 or more, not {args.runs}", file=sys.stderr)

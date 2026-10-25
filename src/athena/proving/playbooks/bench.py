@@ -39,6 +39,7 @@ from athena.contracts import ids
 from athena.contracts.channel import now_iso
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks import ledger
+from athena.proving.playbooks.attribution import attribute, summary_block
 from athena.proving.playbooks.ledger import HISTORY, comparable_runs, headline
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
@@ -248,6 +249,10 @@ def run_bench(
         world.close()
     wall = round(time.monotonic() - started, 1)
     report = _report(playbook, config, run, portals, wall, score(playbook, run.cards))
+    # After the score and outside it: whether she saw each item she missed (attribution.py).
+    attributed = attribute(playbook, report)
+    if attributed is not None:
+        report["attribution"] = attributed
     if receipt is not None:
         report["case_receipt"] = receipt
     return report
@@ -956,6 +961,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "score": keep,
             "cards": cards,
             "missed": scored.get("missed", []),
+            "attribution": summary_block(report.get("attribution")),
             "closing_words": str(last_said)[:900],
             "prose_audit": prose_audit(
                 str(last_said), scored.get("filed_usd"), scored.get("value_found_usd")
@@ -1051,6 +1057,9 @@ def rescore(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     again.setdefault("portals", {app.app_id: app.name for app in playbook.apps})
     again["score"] = score(playbook, cards_of(report))
     again["verdict"] = verdict(playbook, again)
+    attributed = attribute(playbook, again)
+    if attributed is not None:
+        again["attribution"] = attributed
     again["rescored_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     again["comparable"] = comparability_key(
         content_digest(playbook.root),
