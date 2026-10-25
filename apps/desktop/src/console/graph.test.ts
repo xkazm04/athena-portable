@@ -102,6 +102,12 @@ describe("what the console loads when Main opens", () => {
     expect([...lazy].filter((f) => loaded.has(f))).toEqual([]);
   });
 
+  it("fetches the finder and its corpus only when summoned, never in the first frame", () => {
+    expect(loaded).not.toContain("console/finder.tsx");
+    expect(loaded).not.toContain("console/places.ts");
+    expect(lazy).toContain("console/finder.tsx");
+  });
+
   it("carries no file of a depth beyond its live part and the few the first frame shares", () => {
     const allowed = new Set([...ROOTS.map((root) => `scenes/${root}/live.tsx`), ...SHARED_DEPTH_FILES]);
     const depths = new RegExp(`^scenes/(${ROOTS.join("|")})/`);

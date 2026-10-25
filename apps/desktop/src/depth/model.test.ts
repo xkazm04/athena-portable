@@ -10,6 +10,7 @@ import {
   depthOf,
   formatHash,
   isValid,
+  itemsOf,
   parentOf,
   parseHash,
   reduce,
@@ -247,5 +248,18 @@ describe("crumbs and the Rise button", () => {
     expect(riseLabel({ root: "apps" })).toBe("Athena");
     expect(riseLabel({ root: "apps", item: "a" })).toBe("Apps");
     expect(riseLabel({ root: "apps", item: "a", sub: { kind: "page" } })).toBe("a");
+  });
+});
+
+describe("itemsOf", () => {
+  it("gives every fixed item a root offers, each a legal place, and none for an open root", () => {
+    expect(itemsOf("voice")).toEqual(["studio", "settings"]);
+    expect(itemsOf("mind")).toContain("devices");
+    for (const root of ROOTS) {
+      for (const item of itemsOf(root)) expect(isValid({ root, item }), `${root}/${item}`).toBe(true);
+    }
+    expect(itemsOf("apps")).toEqual([]);
+    expect(itemsOf("chores")).toEqual([]);
+    expect(itemsOf("accounts")).toEqual([]);
   });
 });

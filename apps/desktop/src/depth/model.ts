@@ -68,6 +68,12 @@ export function isRoot(value: unknown): value is Root {
   return typeof value === "string" && (ROOTS as readonly string[]).includes(value);
 }
 
+/** The fixed items a root offers, in the grammar's order; none for a root whose ids are open. */
+export function itemsOf(root: Root): readonly string[] {
+  const items = GRAMMAR[root].items;
+  return items === "open" ? [] : items;
+}
+
 /** How many moves from the surface: 0 to 3. */
 export function depthOf(path: Path): 0 | 1 | 2 | 3 {
   if (path.root === null) return 0;
