@@ -1140,3 +1140,164 @@ def test_a_distilled_memory_inside_its_excerpt_carries_no_mark(tmp_path: Path) -
         brain.write_fact("short", "Acme pays late", sources=[source], every_turn=True)
 
         assert _rendered_line(recall(brain, "").block(ALWAYS_BLOCK)) == "Acme pays late"
+
+
+# -- the value model ranks both distilled lanes (ADR 0143 decision 7, amended) -----------------
+
+
+def _fade(brain: Brain, node_id: str, steps: int) -> None:
+    with brain.write_txn() as con:
+        con.execute(
+            "INSERT INTO companion_fade (node_id, steps, at) VALUES (?, ?, '2026-01-01')",
+            (node_id, steps),
+        )
+
+
+def test_a_faded_exact_match_is_not_hidden_behind_six_unfaded_weak_matches(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("we talked about billing", role="user").id
+        words = ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot")
+        for word in words:
+            brain.write_fact(f"note {word}", f"invoice note {word}", sources=[source])
+        exact = brain.write_fact(
+            "late invoices", "an overdue invoice carries a penalty", sources=[source]
+        )
+        _fade(brain, exact.id, 1)
+
+        keyword = recall(brain, "invoice overdue penalty", keyword_slots=6).block(KEYWORD_BLOCK)
+
+        ids = [memory.id for memory in keyword.items]
+        assert len(ids) == 6
+        assert exact.id in ids, "a fade ranks a memory, it never hides it"
+        assert ids[0] == exact.id
+        assert keyword.total == 7
+
+
+@pytest.mark.parametrize("sure_first", [True, False])
+def test_the_more_confident_of_two_equal_matches_ranks_first(
+    tmp_path: Path, sure_first: bool
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("Acme terms", role="user").id
+        order = (0.9, 0.3) if sure_first else (0.3, 0.9)
+        refs = {
+            confidence: brain.write_fact(
+                f"acme terms {confidence}",
+                "Acme pays on net thirty terms",
+                sources=[source],
+                confidence=confidence,
+            )
+            for confidence in order
+        }
+
+        keyword = recall(brain, "Acme terms").block(KEYWORD_BLOCK)
+
+        assert [memory.id for memory in keyword.items] == [refs[0.9].id, refs[0.3].id]
+
+
+def test_the_always_tier_drops_its_lowest_valued_memory(tmp_path: Path) -> None:
+    from athena.core.brain import value
+
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("rules of the house", role="user").id
+        refs = [
+            brain.write_fact(
+                f"rule {n}", f"house rule number {n}", sources=[source], every_turn=True
+            )
+            for n in range(ALWAYS_FACTS - 1)
+        ]
+        faded = refs[0]
+        _fade(brain, faded.id, 2)
+        unsure = brain.write_fact(
+            "rule unsure", "an unsure house rule", sources=[source], every_turn=True, confidence=0.1
+        )
+        refs.append(unsure)
+        refs.append(
+            brain.write_fact("rule last", "the last house rule", sources=[source], every_turn=True)
+        )
+        assert len(refs) == ALWAYS_FACTS + 1
+        values = {
+            ref.id: value.score(
+                confidence=0.1 if ref is unsure else 0.7,
+                steps=2 if ref is faded else 0,
+                kind="fact",
+            )
+            for ref in refs
+        }
+        lowest = min(values, key=lambda node_id: values[node_id])
+        assert lowest == unsure.id
+
+        always = recall(brain, "").block(ALWAYS_BLOCK)
+
+        shown = {memory.id for memory in always.items}
+        assert {ref.id for ref in refs} - shown == {lowest}
+        assert faded.id in shown
+        assert always.footer() == f"(showing {ALWAYS_FACTS} of {ALWAYS_FACTS + 1})"
+
+
+def test_superseded_and_retired_memories_stay_out_of_both_lanes_and_out_of_m(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("Acme history", role="user").id
+        always_old = brain.write_fact(
+            "acme office", "Acme office is in Brno", sources=[source], every_turn=True
+        )
+        brain.write_fact(
+            "acme office",
+            "Acme office is in Prague",
+            sources=[source],
+            every_turn=True,
+            supersedes=[always_old.id],
+        )
+        old = brain.write_fact("acme owner", "Acme owner is Jana", sources=[source])
+        new = brain.write_fact(
+            "acme owner", "Acme owner is Petr", sources=[source], supersedes=[old.id]
+        )
+        gone = brain.write_fact("acme secret", "Acme secret plan", sources=[source], retired=True)
+        live = brain.write_fact("acme bank", "Acme bank is Fio", sources=[source])
+        _fade(brain, live.id, 3)
+
+        trace = recall(brain, "Acme")
+
+        served = {memory.id for memory in trace.items}
+        assert not served & {always_old.id, old.id, gone.id}
+        keyword = trace.block(KEYWORD_BLOCK)
+        assert {memory.id for memory in keyword.items} == {new.id, live.id}
+        assert keyword.total == 2
+
+
+def test_the_keyword_lane_reads_one_bounded_candidate_page(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from athena.core.brain import value
+
+    slots = KEYWORD_SLOTS
+    page = slots * value.CANDIDATE_FACTOR
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("many invoices", role="user").id
+        for n in range(page + 12):
+            brain.write_fact(f"invoice {n}", f"invoice number {n} was sent", sources=[source])
+
+        statements: list[str] = []
+        opened = brain.read_connection
+
+        def traced() -> sqlite3.Connection:
+            con = opened()
+            con.set_trace_callback(statements.append)
+            return con
+
+        monkeypatch.setattr(brain, "read_connection", traced)
+        keyword = recall(brain, "invoice", keyword_slots=slots).block(KEYWORD_BLOCK)
+
+    assert keyword.shown == slots
+    assert keyword.total == page + 12
+    reads = [
+        sql
+        for sql in statements
+        if "bm25(companion_fts)" in sql and "n.kind IN" in sql and "COUNT(*)" not in sql
+    ]
+    assert len(reads) == 1
+    assert re.search(rf"LIMIT\s+{page}\b", reads[0]), reads[0]

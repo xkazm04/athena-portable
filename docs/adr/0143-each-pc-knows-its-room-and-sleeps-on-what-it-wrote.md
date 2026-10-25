@@ -211,9 +211,26 @@ thresholds. It adapts the cycle to markdown-is-truth and to write-once replicati
    superseded id. Replication carries both keys, because they are ordinary frontmatter on
    write-once files.
 7. **Fade ranks memories and never hides them.** Once per 30 days of disuse, a live memory older
-   than 30 days fades one step, to at most 3. Recall in both distilled lanes ranks by
-   `importance - steps`. A recall hit records `companion_recall_seen` and deletes the fade row,
-   using a write that waits at most 0.25 s for the lock and otherwise drops the hit.
+   than 30 days fades one step, to at most 3. Recall in both distilled lanes ranks by the value
+   model, whose decay axis is the fade step. A recall hit records `companion_recall_seen` and
+   deletes the fade row, using a write that waits at most 0.25 s for the lock and otherwise drops
+   the hit.
+   **The value model** (amended 2026-10-25 after `/conform` recorded that the keyword lane ranked
+   by fade before match and never read confidence). Ranking by `importance - steps` first and BM25
+   second broke the promise above: with any-word matching (ADR 0042), six unfaded memories sharing
+   one common word with the question filled the six slots ahead of a memory faded one step that
+   answered every word of it, so the memory asked about was hidden. `athena.core.brain.value.score`
+   is now the one ranking, pure and clock-free: match x confidence x decay x use. Match is BM25
+   against the best row of a bounded candidate page (`slots x 8` rows), floored at 0.4; the always
+   tier passes 1. Confidence is the stored 0-1, unknown read as the 0.7 default. Decay halves per
+   fade step for a fact and per two for a procedural. Use is a log bonus of at most +25%, so hits
+   never overturn a confidence gap. The 0.4 floor sits between one and two fact half-lives: a best
+   match faded once still outranks a bare match, so a fade never hides it, and faded twice it
+   ranks below, so a fade still ranks. Importance decides the population (served above 0, every
+   turn at 4 and above) and is no longer a ranking axis. Each promise is held by a test in
+   `tests/core/test_recall.py` and `tests/core/test_brain_value.py`. Forgetting's own predicate
+   (`forget_candidates`) may adopt the same function later; the janitor imports the read path's
+   model, never the reverse.
 8. **Forgetting and contradictions are proposals and are never applied by a cycle.** A fully faded
    fact at no more than the default importance is offered once as a `forget` proposal. At most 20
    proposals are open at once; they expire after 14 days and are dismissed when their memory is

@@ -31,8 +31,10 @@ which is what keeps them from fading. It never waits long and never fails a reca
 
 **What the sleep cycle closed or faded** (ADR 0143). A memory another one supersedes is never
 served - its successor is - and a retired one is at importance 0, so both lanes already pass it
-by. A faded memory is still served: both distilled lanes rank by importance minus its fade steps,
-so it sinks below the memories in use, and a fade never hides anything.
+by. A faded memory is still served: both distilled lanes rank by the value model
+(:mod:`athena.core.brain.value`: match x confidence x decay of its fade steps x a bounded use
+bonus), so it sinks below the memories in use, and one step of fade never costs a best match more
+than the gap to a bare one - a fade ranks, it never hides.
 
 **A store that cannot be read says so** (ADR 0076). The first ``sqlite3.Error`` ends the recall:
 no further statement runs, every block is empty and renders ``memory could not be read: ...``
@@ -52,6 +54,7 @@ from typing import Any
 
 from athena.contracts.harness import PromptBlock
 from athena.core import fence
+from athena.core.brain import value
 from athena.core.brain.store import ALWAYS_IMPORTANCE, Brain
 from athena.core.brain.text import EXCERPT_BYTES, excerpt, fts_match, fts_terms
 from athena.core.catalog import canonical_line, neutralise_text
@@ -88,8 +91,18 @@ DISTILLED_KINDS: tuple[str, ...] = ("fact", "procedural")
 
 #: The SQL that keeps a superseded memory out of a lane (ADR 0143), for ``n`` a ``companion_node``.
 NOT_SUPERSEDED = "n.id NOT IN (SELECT superseded_id FROM companion_supersede)"
-#: A distilled memory's rank: its importance less its fade steps (``fd``, ``companion_fade``).
-FADED_RANK = "(n.importance - COALESCE(fd.steps, 0))"
+#: The joins that bring a distilled ``n`` its value-model axes (:mod:`athena.core.brain.value`):
+#: fade steps (``fd``), the stored confidence of a fact (``cf``) or procedural (``cp``), and hits.
+VALUE_JOINS = """LEFT JOIN companion_fade fd ON fd.node_id = n.id
+    LEFT JOIN companion_fact cf ON cf.id = n.id
+    LEFT JOIN companion_procedural cp ON cp.id = n.id
+    LEFT JOIN companion_recall_seen rs ON rs.node_id = n.id"""
+#: Those axes as columns, in :func:`_value` order: confidence (NULL when unknown), steps, hits.
+VALUE_COLUMNS = (
+    "COALESCE(cf.confidence, cp.confidence), COALESCE(fd.steps, 0), COALESCE(rs.hits, 0)"
+)
+#: Fade steps the always tier's SQL pre-rank spells out; the sleep cycle fades to at most 3.
+_PRERANK_STEPS = 8
 
 #: What every block of a recall that could not read the store says, before SQLite's own message.
 UNAVAILABLE_PREFIX = "memory could not be read: "
@@ -538,8 +551,38 @@ def _memory(row: tuple[Any, ...], lane: str, score: float = 0.0) -> Memory:
     )
 
 
+def _value(row: tuple[Any, ...], at: int, match: float = 1.0) -> float:
+    """The value-model score of a distilled row whose :data:`VALUE_COLUMNS` start at ``at``."""
+    confidence = row[at]
+    return value.score(
+        match=match,
+        confidence=None if confidence is None else float(confidence),
+        steps=int(row[at + 1] or 0),
+        hits=int(row[at + 2] or 0),
+        kind=str(row[1]),
+    )
+
+
+def _prerank(kind: str) -> str:
+    """The value model with ``match = 1`` and no use bonus, as SQL, to pick a bounded page.
+
+    Built from :func:`~athena.core.brain.value.decay` and the default confidence, so it is the
+    same model and not a second one; the use bonus (at most ``1 + USAGE_MAX_BONUS``) is applied
+    when the page is re-ranked.
+    """
+    arms = " ".join(f"WHEN {s} THEN {value.decay(s, kind)!r}" for s in range(1, _PRERANK_STEPS))
+    last = value.decay(_PRERANK_STEPS, kind)
+    fade = f"CASE MAX(COALESCE(fd.steps, 0), 0) WHEN 0 THEN 1.0 {arms} ELSE {last!r} END"
+    trust = f"COALESCE(cf.confidence, cp.confidence, {value.DEFAULT_CONFIDENCE!r})"
+    return f"({trust} * {fade})"
+
+
 def _always_block(con: sqlite3.Connection) -> RecallBlock:
-    """The query-independent tier: high-importance facts and rules, each capped on its own."""
+    """The query-independent tier: high-importance facts and rules, each capped on its own.
+
+    Each kind reads a page of ``cap * CANDIDATE_FACTOR`` rows by the model's SQL pre-rank and
+    re-ranks it with :func:`~athena.core.brain.value.score` (``match = 1``), newer first on a tie.
+    """
     marks = ",".join("?" for _ in DISTILLED_KINDS)
     total = _count(
         con,
@@ -549,18 +592,18 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
     )
     items: list[Memory] = []
     for kind, cap in (("fact", ALWAYS_FACTS), ("procedural", ALWAYS_PROCEDURALS)):
-        items.extend(
-            _memory(_cut(row), ALWAYS_BLOCK, score=float(row[6]))
-            for row in _rows(
-                con,
-                f"""{_BODY_SELECT}, n.importance
-                    FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
-                    LEFT JOIN companion_fade fd ON fd.node_id = n.id
-                    WHERE n.importance >= ? AND n.kind = ? AND {NOT_SUPERSEDED}
-                    ORDER BY {FADED_RANK} DESC, n.created_at DESC LIMIT ?""",
-                (ALWAYS_IMPORTANCE_FLOOR, kind, cap),
-            )
+        rows = _rows(
+            con,
+            f"""{_BODY_SELECT}, n.importance, {VALUE_COLUMNS}
+                FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
+                {VALUE_JOINS}
+                WHERE n.importance >= ? AND n.kind = ? AND {NOT_SUPERSEDED}
+                ORDER BY {_prerank(kind)} DESC, n.created_at DESC, n.id DESC LIMIT ?""",
+            (ALWAYS_IMPORTANCE_FLOOR, kind, cap * value.CANDIDATE_FACTOR),
         )
+        # Stable: rows the model values equally keep the page's newer-first order.
+        rows.sort(key=lambda row: -_value(row, 7))
+        items.extend(_memory(_cut(row), ALWAYS_BLOCK, score=float(row[6])) for row in rows[:cap])
     return RecallBlock(ALWAYS_BLOCK, tuple(items), total)
 
 
@@ -571,6 +614,12 @@ def _keyword_block(
 
     ``exclude`` is subtracted from the population as well as from the results, so this block's M
     is "matches you have not already read above" and not a number the block could never reach.
+
+    One candidate page of ``slots * CANDIDATE_FACTOR`` rows is read by BM25 and re-ranked by
+    :func:`~athena.core.brain.value.score`, its match strength taken against the page's best row.
+    Fade is one axis of that score, not a bucket ahead of the match, so unfaded memories that
+    share one word with the query no longer bury a faded one that answers all of it. Equal values
+    keep BM25 order, then newer first.
     """
     match = _body_match(query)
     if not match or slots <= 0:
@@ -589,17 +638,19 @@ def _keyword_block(
     )
     rows = _rows(
         con,
-        f"""{_BODY_SELECT}, bm25(companion_fts)
+        f"""{_BODY_SELECT}, bm25(companion_fts), {VALUE_COLUMNS}
             FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
-            LEFT JOIN companion_fade fd ON fd.node_id = n.id
+            {VALUE_JOINS}
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
               AND n.id NOT IN ({skip_marks}) AND {NOT_SUPERSEDED}
-            ORDER BY {FADED_RANK} DESC, bm25(companion_fts) ASC LIMIT ?""",
-        (*params, slots),
+            ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC LIMIT ?""",
+        (*params, slots * value.CANDIDATE_FACTOR),
     )
+    best = float(rows[0][6]) if rows else 0.0
+    rows.sort(key=lambda row: -_value(row, 7, value.match_strength(float(row[6]), best)))
     return RecallBlock(
         KEYWORD_BLOCK,
-        tuple(_memory(_cut(row), KEYWORD_BLOCK, float(row[6])) for row in rows),
+        tuple(_memory(_cut(row), KEYWORD_BLOCK, float(row[6])) for row in rows[:slots]),
         total,
     )
 
