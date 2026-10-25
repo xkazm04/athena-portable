@@ -10,6 +10,9 @@
  * her first content-bearing one (anything but where_am_i, app_map and go_to) — and whether she
  * ever named a tool that does not exist.
  *
+ * When out/ holds an earlier run, the report opens with its verdict against it (better, worse or
+ * same) and a per-case table of deltas (`comparePilot`, ADR 0218).
+ *
  * A case fails only when the page never navigated (except a case marked `stays`), a call errored on an unknown tool, or no
  * final answer arrived.
  *
@@ -24,7 +27,16 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { resetRunForTests, useRun } from "@/stores/run";
 import type { Daemon } from "../support/daemon";
-import { liveFetch, orientationOf, pilotMarkdown, type CaseReport, type PilotCase } from "../support/pilot";
+import {
+  comparePilot,
+  liveFetch,
+  orientationOf,
+  pilotMarkdown,
+  previousReport,
+  type CaseReport,
+  type PilotCase,
+  type PilotRun,
+} from "../support/pilot";
 
 import { startLiveDaemon } from "./support/athena";
 import { launchBrowser, openConsole, type ConsolePage } from "./support/browser";
@@ -72,15 +84,22 @@ describe.skipIf(!LIVE || missing.length > 0)("Athena drives Shadowrunr (live pil
   let realBefore = "";
   const reports: CaseReport[] = [];
 
+  /** The newest earlier run in out/, found once in beforeAll; null on a first run. */
+  let baseline: PilotRun | null = null;
+
   const flush = () => {
-    writeFileSync(join(outDir, "report.json"), JSON.stringify({ stamp, cases: reports }, null, 2), "utf-8");
-    writeFileSync(join(outDir, "report.md"), pilotMarkdown(`Athena drives Shadowrunr: live pilot ${stamp}`, reports), "utf-8");
+    // Recomputed on every flush, so a run cut short still says how far it got against the last one.
+    const comparison = baseline ? comparePilot(baseline, reports) : null;
+    const body = comparison ? { stamp, cases: reports, comparison } : { stamp, cases: reports };
+    writeFileSync(join(outDir, "report.json"), JSON.stringify(body, null, 2), "utf-8");
+    writeFileSync(join(outDir, "report.md"), pilotMarkdown(`Athena drives Shadowrunr: live pilot ${stamp}`, reports, comparison), "utf-8");
   };
 
   beforeAll(async () => {
     realBefore = treeDigest(join(OVERLORD, "characters"));
     stamp = new Date().toISOString().replace(/[:.]/g, "-");
     outDir = join(HERE, "out", stamp);
+    baseline = previousReport(join(HERE, "out"), stamp);
     mkdirSync(outDir, { recursive: true });
     scratch = makeScratch();
     shadow = await startShadowDaemon(scratch);
