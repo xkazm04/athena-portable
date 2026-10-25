@@ -195,6 +195,20 @@ none in the component sheets that were migrated, no more than today in the six s
 were not, and `chrome/toast.css` exempt because the toast stack mounts outside the wrapper the roles
 are declared on (ADR 0198).
 
+**Forced colors: meaning that survives the repaint.** A Windows contrast theme repaints every hue
+and ground to the user's system palette, and everything above is decided by hue or ground. So
+`base/forced-colors.css`, imported last, gives each state that colour alone carries a structural
+carrier the sheet already owns: a key in fault draws a doubled 6px verdict edge against quiet's
+plain 3px one; a pressed chip takes the database jump's 3px inline-start edge; the pressed camera
+pose is a selected item and underlined; the field that differs between duplicates and the spelling
+that deviates take the bad cell's wavy underline; Athena's presence dot and the measure bars leave
+the repaint. The title block leaves it too (`forced-color-adjust: none`) and inverts itself in
+`CanvasText` / `Canvas`; as a scope it rebinds every colour role to a system colour, and redline to
+`Highlight`, so its buttons, the armed confirm (also a doubled edge), its ring and its band follow
+with no rule of their own. Every colour in that block is a system keyword, never a `--bk-*` value.
+`test/tidycrm-style.test.ts` derives the obligation from the sheet: any rule whose selector carries
+a state attribute and declares only colours needs a forced counterpart with a carrier (ADR 0201).
+
 ---
 
 ## 3. Typography Rules

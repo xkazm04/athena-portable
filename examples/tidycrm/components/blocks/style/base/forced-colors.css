@@ -1,0 +1,122 @@
+/* ---------------------------------------------------------- forced colors */
+
+/*
+ * A Windows contrast theme (forced colors) repaints color, background and every border, outline
+ * and fill colour to the user's system palette. Everything this sheet decides by hue or by ground
+ * is gone after that repaint: a key in fault looks quiet, the field that tells two duplicates
+ * apart reads like its neighbours, the pressed camera pose looks like the other four, and the
+ * title block - a place only by its inverted ground - repaints to the same Canvas as the
+ * reversible actions above it.
+ *
+ * So every state that colour alone carries gets a structural carrier here, and the carriers are
+ * the sheet's own: the database jump's 3px pressed edge (level1/l1-grid.css) and the bad cell's
+ * wavy underline (level2/body.css). Where an inversion IS the meaning - the gate, the presence
+ * dot, the measure bars - the element leaves the repaint (`forced-color-adjust: none`) and is
+ * drawn in system colours. Every colour in this block is a system keyword, never a `--bk-*`
+ * palette value: the author's ink beside the user's CanvasText is the contrast the theme exists
+ * to replace. No :hover rule lives here; a hover eases over a state already drawn at rest.
+ *
+ * `test/tidycrm-style.test.ts` derives the list from the sheet: any rule whose selector carries a
+ * state attribute and declares only colours needs a counterpart below.
+ */
+@media (forced-colors: active) {
+  /* Athena's presence: the filled dot is a background, which the repaint discards. */
+  .bk-presence[data-on="true"] {
+    font-weight: 600;
+  }
+
+  .bk-presence[data-on="true"]::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+
+  /* The pressed camera pose: a selected item, and underlined so it survives a theme whose
+     selection colour sits close to its Canvas. */
+  .bk-seg-option[aria-pressed="true"] {
+    background: SelectedItem;
+    color: SelectedItemText;
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--bk-rule-2);
+    text-underline-offset: 0.3em;
+  }
+
+  /* The verdict stripe: fault is a doubled edge twice the weight, quiet the plain 3px edge. */
+  .bk-db-key[data-fill="fault"] {
+    border-inline-start: calc(2 * var(--bk-rule-3)) double CanvasText;
+  }
+
+  .bk-db-key[data-fill="quiet"] {
+    border-inline-start: var(--bk-rule-3) solid CanvasText;
+  }
+
+  /* The key being read: its far edge takes the weight, so the verdict edge stays the verdict. */
+  .bk-db-key[data-on="true"] {
+    border-inline-end: var(--bk-rule-3) solid Highlight;
+  }
+
+  .bk-db-index-on {
+    forced-color-adjust: none;
+    fill: GrayText;
+  }
+
+  .bk-db-key[data-on="true"] .bk-db-index-on {
+    forced-color-adjust: none;
+    fill: Highlight;
+  }
+
+  /* The measure is a filled bar: a background, so it would vanish. The verdict is on the edge. */
+  .bk-db-key-measure i,
+  .bk-db-key[data-on="true"] .bk-db-key-measure i,
+  .bk-db-key[data-fill="fault"] .bk-db-key-measure i,
+  .bk-db-key[data-fill="quiet"] .bk-db-key-measure i {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  /* A pressed chip: the database jump's 3px inline-start edge, on every chip that is a button. */
+  .bk-chip:where(button)[aria-pressed="true"] {
+    border-inline-start: var(--bk-rule-3) solid Highlight;
+  }
+
+  /* What differs, marked the way a bad cell already is. */
+  .bk-field[data-differs="true"],
+  .bk-spellings .bk-chip > b[data-tone="redline"] {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /*
+   * The gate. It leaves the repaint and inverts itself in system colours, and - being the scope
+   * base/tokens.css makes it - rebinds every colour role, so its band, buttons, armed confirm,
+   * focus ring and scrollbar follow with no rule of their own. Redline is rebound too: the fired
+   * state is the selection colour here, the one hue a contrast theme guarantees.
+   */
+  [data-variant="blocks"] .bk-title-block {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+    border-block-start-color: CanvasText;
+    --bk-ground: CanvasText;
+    --bk-ground-raised: CanvasText;
+    --bk-ink: Canvas;
+    --bk-ink-quiet: Canvas;
+    --bk-ink-mark: Canvas;
+    --bk-ink-faint: Canvas;
+    --bk-ink-on-redline: HighlightText;
+    --bk-line: Canvas;
+    --bk-line-strong: Canvas;
+    --bk-focus: Highlight;
+    --bk-label-ink: Canvas;
+    --bk-goldline-ink: Canvas;
+    --bk-redline: Highlight;
+  }
+
+  /* The armed confirm is already swapped at rest; it is also a heavier, doubled edge. */
+  .bk-btn[data-fire="true"] {
+    border-style: double;
+    border-width: var(--bk-rule-3);
+  }
+}

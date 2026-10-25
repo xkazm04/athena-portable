@@ -67,7 +67,14 @@ function rulesOf(css: string): Rule[] {
   return out;
 }
 
-const RULES = rulesOf(SHEET);
+/** The forced-colors mode's block: its values are system colour keywords, which no sRGB walk can read. */
+const FORCED_AT = /@media \(forced-colors: active\)/;
+
+/** Every rule of the painted palette. The forced-colors block is read on its own, by its own tests. */
+const RULES = rulesOf(SHEET).filter((r) => !FORCED_AT.test(r.at));
+
+/** The rules that apply only under a forced (high-contrast) palette. */
+const FORCED = rulesOf(SHEET).filter((r) => FORCED_AT.test(r.at));
 
 /** A rule that rebinds the colour roles for the subtree under it: the title block, wherever declared. */
 const isScopeRule = (r: Rule): boolean =>
@@ -552,4 +559,231 @@ test("guard: the stock sheet's paints do not move", () => {
   assert.equal(stock(":where(*)", "scrollbar-color"), "#a8a49a transparent");
   assert.equal(stock(".bk-root", "background"), "#e7e2d6");
   assert.equal(stock(".bk-sheet", "background"), "#f4f1e9");
+});
+
+/* --- The forced-colors mode: meaning that survives the platform's repaint. ----------------- */
+
+/*
+ * Under a Windows contrast theme the platform repaints color, background and every border and
+ * outline colour to its own system palette. A state this sheet draws by colour alone - the
+ * pressed camera pose, a key in fault against a quiet one, the field that differs between two
+ * duplicates, the armed confirm, the inverted gate itself - is gone after that repaint. These
+ * cases hold base/forced-colors.css to a structural carrier for each, in system colours only.
+ */
+
+const SYSTEM_COLOURS = new Set(
+  [
+    "Canvas",
+    "CanvasText",
+    "LinkText",
+    "ButtonFace",
+    "ButtonText",
+    "ButtonBorder",
+    "Highlight",
+    "HighlightText",
+    "SelectedItem",
+    "SelectedItemText",
+    "Mark",
+    "MarkText",
+    "GrayText",
+  ].map((k) => k.toLowerCase()),
+);
+const isSystemColour = (token: string): boolean => SYSTEM_COLOURS.has(token.toLowerCase());
+
+/** The forced rules that name `key` as one of their selector parts. */
+const forcedFor = (key: string): Rule[] => FORCED.filter((r) => partsOf(r).includes(key));
+
+const BORDER_STYLES = /^(none|hidden|solid|double|dashed|dotted|groove|ridge|inset|outset)$/;
+
+/** A value's space-separated tokens, a function call (nested ones included) kept whole. */
+function tokensOf(value: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const ch of value.trim()) {
+    if (ch === "(") depth += 1;
+    else if (ch === ")") depth -= 1;
+    if (/\s/.test(ch) && depth === 0) {
+      if (current) out.push(current);
+      current = "";
+    } else current += ch;
+  }
+  if (current) out.push(current);
+  return out;
+}
+
+/** A declaration that carries a state without colour: an edge's weight or style, a line, a weight. */
+function carries(prop: string, value: string): boolean {
+  if (prop === "forced-color-adjust") return value === "none";
+  if (/^border(-[a-z]+)*-(width|style)$/.test(prop)) return true;
+  if (/^border(-[a-z]+)*$/.test(prop) && !prop.endsWith("-color")) {
+    return value.split(/\s+/).some((t) => BORDER_STYLES.test(t));
+  }
+  if (/^outline(-style|-width)?$/.test(prop)) return true;
+  if (prop === "text-decoration-line" || prop === "text-decoration") return /underline|overline|line-through/.test(value);
+  return prop === "font-weight";
+}
+
+test("forced colors: index.css imports base/forced-colors.css last, as one @media (forced-colors: active) block", () => {
+  assert.equal(PARTS.at(-1), "base/forced-colors.css", `the last part is ${PARTS.at(-1)}`);
+  const part = strip(read(`${STYLE}/base/forced-colors.css`)).trim();
+  assert.match(part, /^@media \(forced-colors: active\) \{/);
+  // One top-level block: the depth returns to zero exactly once, at the end of the file.
+  let depth = 0;
+  let closes = 0;
+  for (const ch of part) {
+    if (ch === "{") depth += 1;
+    else if (ch === "}" && --depth === 0) closes += 1;
+  }
+  assert.equal(closes, 1, "the part holds more than the one forced-colors block");
+  assert.ok(part.endsWith("}"));
+});
+
+test("forced colors: every state the sheet draws by colour alone has a structural counterpart", () => {
+  // Derived from the sheet, not listed: a rule whose selector carries a state attribute and which
+  // declares nothing but colours is a state that vanishes in the repaint, so the forced block has
+  // to give that same selector a carrier - an edge's width or style, an outline, a line under the
+  // text, a weight - or take the element out of the repaint (`forced-color-adjust: none`). A hover
+  // is pointer feedback over a state already drawn at rest, so a part with :hover is not counted.
+  const state = /\[(aria-pressed="true"|data-fill="[^"]*"|data-differs="true"|data-fire="true"|data-on="true")\]/;
+  const colourOnly = /^(color|fill|background(-[a-z]+)*|border(-[a-z]+)*-color)$/;
+  const bare: string[] = [];
+  for (const rule of RULES) {
+    const props = [...rule.decls.keys()];
+    if (props.length === 0 || !props.every((p) => colourOnly.test(p))) continue;
+    for (const part of partsOf(rule)) {
+      if (!state.test(part) || /:hover/.test(part)) continue;
+      const carried = forcedFor(part).some((f) => [...f.decls].some(([p, v]) => carries(p, v)));
+      if (!carried) bare.push(part);
+    }
+  }
+  assert.deepEqual(bare, [], `states carried by colour alone, with no forced-colors carrier:\n  ${bare.join("\n  ")}`);
+});
+
+/** An edge as the forced block draws it: width and style, read off a shorthand or its longhands. */
+function forcedEdge(key: string, side: string): { width: string; style: string } {
+  const edge = { width: "", style: "" };
+  for (const rule of forcedFor(key)) {
+    for (const stem of ["border", `border-${side.split("-")[0]}`, `border-${side}`]) {
+      const shorthand = rule.decls.get(stem);
+      if (shorthand) {
+        for (const t of tokensOf(shorthand)) {
+          if (BORDER_STYLES.test(t)) edge.style = t;
+          else if (!isSystemColour(t)) edge.width = t;
+        }
+      }
+      edge.width = rule.decls.get(`${stem}-width`) ?? edge.width;
+      edge.style = rule.decls.get(`${stem}-style`) ?? edge.style;
+    }
+  }
+  return edge;
+}
+
+test("forced colors: a key in fault and a quiet key are told apart by their edge, not its colour", () => {
+  // Every key draws a 3px solid inline-start edge (level0/l0.css); fault and quiet differ only in
+  // its colour, which the repaint makes one colour. Under forced colors the edge itself differs.
+  const fault = forcedEdge('.bk-db-key[data-fill="fault"]', "inline-start");
+  const quiet = forcedEdge('.bk-db-key[data-fill="quiet"]', "inline-start");
+  assert.ok(fault.style && quiet.style, "the forced block draws no inline-start edge style for fault and quiet");
+  assert.ok(fault.width && quiet.width, "the forced block draws no inline-start edge width for fault and quiet");
+  assert.notDeepEqual(fault, quiet, `fault ${JSON.stringify(fault)} and quiet ${JSON.stringify(quiet)} draw the same edge`);
+});
+
+test("forced colors: the differing field and the deviant spelling carry the bad cell's wavy underline", () => {
+  // The carrier already exists: `.bk-table td[data-bad]` (level2/body.css) is redline AND a wavy
+  // underline. The field that tells two duplicates apart and the spelling that deviates from the
+  // company's name are redline only.
+  const bad = RULES.find((r) => r.selector === '.bk-table td[data-bad="true"]');
+  assert.equal(bad?.decls.get("text-decoration-style"), "wavy", "the bad cell's carrier moved; revisit this");
+  for (const key of ['.bk-field[data-differs="true"]', '.bk-spellings .bk-chip > b[data-tone="redline"]']) {
+    const rules = forcedFor(key);
+    const line = rules.map((r) => r.decls.get("text-decoration-line") ?? r.decls.get("text-decoration")).find(Boolean);
+    const style = rules.map((r) => r.decls.get("text-decoration-style")).find(Boolean);
+    assert.match(line ?? "", /underline/, `${key} is not underlined under forced colors`);
+    assert.equal(style, "wavy", `${key} is not underlined wavy under forced colors`);
+  }
+});
+
+test("forced colors: the gate stays a separate place, drawn in system colours only", () => {
+  // The title block is a place only by its inverted ground, and the repaint discards grounds: the
+  // two acts that destroy a record would sit on the same Canvas as the reversible ones. So the
+  // block leaves the repaint and inverts itself in system colours, and - being a scope - rebinds
+  // every colour role to one, so the button, the armed confirm, its hover, the ring, the band and
+  // the scrollbar inside it are system colours with no rule of their own.
+  const block = FORCED.find((r) => partsOf(r).some((s) => /(^|\s)\.bk-title-block$/.test(s)));
+  assert.ok(block, "the forced block does not draw the title block");
+  assert.equal(block.decls.get("forced-color-adjust"), "none");
+  assert.equal(block.decls.get("background"), "CanvasText");
+  assert.equal(block.decls.get("color"), "Canvas");
+  const bindings = new Map([...block.decls].filter(([k]) => k.startsWith("--bk-")));
+  const missing = rolesOf(WRAPPER).filter((role) => !bindings.has(role));
+  assert.deepEqual(missing, [], "roles the gate does not rebind under forced colors");
+
+  const table = new Map([...TOKENS, ...INVERTED_BINDINGS, ...bindings]);
+  const resolveForced = (value: string): string => {
+    let out = value;
+    for (let n = 0; n < 10 && /var\(--bk-/.test(out); n += 1) {
+      out = out.replace(/var\((--bk-[a-z0-9-]+)\)/g, (_, name: string) => table.get(name) ?? name);
+    }
+    return out;
+  };
+  const sites: [string, string][] = [
+    [".bk-btn", "background"],
+    [".bk-btn", "color"],
+    [".bk-btn", "border-color"],
+    [".bk-btn:hover:not(:disabled)", "background"],
+    [".bk-btn:hover:not(:disabled)", "color"],
+    [".bk-btn:hover:not(:disabled)", "border-color"],
+    ['.bk-btn[data-fire="true"]', "background"],
+    ['.bk-btn[data-fire="true"]', "color"],
+    ['.bk-btn[data-fire="true"]', "border-color"],
+    ['.bk-btn[data-fire="true"]:hover:not(:disabled)', "background"],
+    ['.bk-btn[data-fire="true"]:hover:not(:disabled)', "color"],
+    ['.bk-btn[data-fire="true"]:hover:not(:disabled)', "border-color"],
+    [FOCUS, "outline-color"],
+    [".bk-band-note", "color"],
+    [".bk-band-head", "border-block-end-color"],
+    [".bk-lettering", "color"],
+    [".bk-arm", "border-color"],
+    [":where(*)", "scrollbar-color"],
+  ];
+  const painted: string[] = [];
+  for (const [key, prop] of sites) {
+    const names = new Set([key, `.bk-root ${key}`, `.bk-title-block ${key}`]);
+    const hits = [...RULES.filter((r) => r.at === ""), ...FORCED].filter(
+      (r) => partsOf(r).some((s) => names.has(s)) && declOf(r, prop) !== undefined,
+    );
+    assert.ok(hits.length > 0, `nothing paints ${prop} on ${key}`);
+    const value = resolveForced(declOf(hits.at(-1)!, prop)!);
+    const colours = value.split(/\s+/).filter((t) => t !== "transparent");
+    if (!colours.every(isSystemColour)) painted.push(`${key} ${prop}: ${value}`);
+  }
+  assert.deepEqual(painted, [], `the gate paints with something other than a system colour:\n  ${painted.join("\n  ")}`);
+  // The armed confirm is already swapped at rest, like a hover: under forced colors it is also a
+  // heavier, doubled edge, so armed and resting differ by more than which colour is ground.
+  const fire = forcedFor('.bk-btn[data-fire="true"]');
+  assert.ok(
+    fire.some((r) => [...r.decls].some(([p, v]) => carries(p, v) && p !== "forced-color-adjust")),
+    "the armed confirm has no structural mark under forced colors",
+  );
+});
+
+test("forced colors: every colour in the block is a system colour keyword, never a --bk-* token", () => {
+  // A palette token under forced colors is the author's colour on the user's palette: a sheet
+  // ground beside a CanvasText figure is exactly the contrast the theme exists to replace.
+  assert.ok(FORCED.length > 0, "there is no forced-colors block to read");
+  const pure = /^(color|fill|stroke|background-color|scrollbar-color|--bk-[a-z0-9-]+|[a-z-]+-color)$/;
+  const shorthand = /^(background|border(-[a-z]+)*|outline|text-decoration)$/;
+  const keep = (t: string): boolean =>
+    !BORDER_STYLES.test(t) &&
+    !/^(transparent|currentColor|underline|overline|line-through|wavy|-?\d|calc\(|var\(--bk-(rule-|s)\d\))/.test(t);
+  const off: string[] = [];
+  for (const rule of FORCED) {
+    for (const [prop, value] of rule.decls) {
+      if (!pure.test(prop) && !shorthand.test(prop)) continue;
+      const tokens = tokensOf(value).filter((t) => (pure.test(prop) ? t !== "transparent" : keep(t)));
+      if (tokens.some((t) => !isSystemColour(t))) off.push(`${rule.selector} { ${prop}: ${value} }`);
+    }
+  }
+  assert.deepEqual(off, [], `colours in the forced block that are not system keywords:\n  ${off.join("\n  ")}`);
 });
