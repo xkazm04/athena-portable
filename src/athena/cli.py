@@ -25,6 +25,9 @@ Three verbs, because three are what this build has a person do from a terminal.
     and ``-shm`` files), never deleted, and a fresh index is rebuilt (ADR 0081). The approvals and
     ledger rows in that file were never on disk and are not rebuilt. Deleting the index by hand
     still works. It exits non-zero when it skipped a file, as its report's ``ok`` does.
+    ``--check`` previews the drift between tree and index (unindexed, edited, moved, orphaned,
+    duplicate) and writes nothing; ``--repair`` re-indexes only what drifted, so every other
+    memory keeps its rows. Both exit non-zero while drift remains.
 
 Every command prints one JSON object on stdout and nothing else, so a shell, a test and the
 desktop shell all read the same answer. It is ASCII-escaped, so a path the pipe's code page cannot
@@ -128,21 +131,25 @@ def _brain_stage(root: str | Path | None) -> tuple[Stage, Any]:
 
 
 def _index_stage(brain: Any) -> Stage:
-    """Is the index consistent with the tree, and can it be rebuilt from it?
+    """Is the index consistent with the tree, in both directions and by content?
 
-    A row whose markdown is gone is a ``warn`` and not a ``fail``: disk is truth, the index is
-    derivable, and ``athena brain reconcile`` is the fix. Athena runs meanwhile.
+    Drift is a ``warn`` and not a ``fail``: disk is truth, the index is derivable, and
+    ``athena brain reconcile --repair`` is the fix. Athena runs meanwhile. The silent direction -
+    a memory on disk the index never saw, or one edited since - is named as loudly as a row whose
+    file is gone, and a walk that ran out of budget says so rather than calling the index clean.
     """
     from athena.core.brain import reconcile
 
-    missing = reconcile.missing_files(brain)
-    if missing:
+    found = reconcile.drift(brain)
+    if not found.clean:
         return Stage(
             "index",
             "warn",
-            f"{len(missing)} indexed row(s) have no file; run `athena brain reconcile`",
+            "; ".join(found.sentences())
+            + "; preview with `athena brain reconcile --check`, fix with"
+            " `athena brain reconcile --repair`",
         )
-    return Stage("index", "ok", "every indexed row has its file on disk")
+    return Stage("index", "ok", f"{found.files} files on disk match the index")
 
 
 def _constitution_stage() -> Stage:
@@ -279,10 +286,23 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
     from athena.core.brain import paths, reconcile
     from athena.core.brain.store import Brain, IndexDamagedError
 
+    # ``getattr``: a caller that builds its own Namespace (a test) asks for the plain rebuild.
+    check = bool(getattr(args, "check", False))
+    repair = bool(getattr(args, "repair", False))
     set_aside: list[Path] = []
     try:
         brain = Brain(args.brain, session_id="cli")
     except IndexDamagedError:
+        if check or repair:
+            # A preview never renames anything, and a targeted repair has no index to target.
+            _emit(
+                {
+                    "ok": False,
+                    "brain": str(paths.brain_root(args.brain)),
+                    "error": "the index is damaged; run `athena brain reconcile` to rebuild it",
+                }
+            )
+            return 1
         try:
             reconcile.set_aside_index(paths.index_path(args.brain), set_aside)
         except OSError as exc:
@@ -297,6 +317,8 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
             return 1
         brain = Brain(args.brain, session_id="cli")
     with brain:
+        if check or repair:
+            return _targeted(brain, repair=repair)
         stats = reconcile.reconcile_from_disk(brain)
         report: dict[str, Any] = {
             "ok": not stats.skipped,
@@ -312,6 +334,36 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
                 "they were never on disk"
             )
         _emit(report)
+    return 0 if report["ok"] else 1
+
+
+def _targeted(brain: Any, *, repair: bool) -> int:
+    """``--check`` previews the drift and writes nothing; ``--repair`` applies only the drift.
+
+    Both exit 1 while drift remains (a check that found some, a repair that could not finish), so
+    a script reading the exit code hears what the report says. A drift that was not computed is
+    never repaired and never clean.
+    """
+    from athena.core.brain import reconcile
+
+    found = reconcile.drift(brain)
+    report: dict[str, Any] = {
+        "ok": found.clean,
+        "brain": str(brain.root),
+        "drift": found.as_dict(),
+        "summary": "; ".join(found.sentences()) or "no drift",
+    }
+    if repair and not found.clean:
+        if found.budget_hit:
+            report["error"] = "the drift was not computed; nothing repaired"
+        else:
+            report["repaired"] = reconcile.repair(brain, found).as_dict()
+            after = reconcile.drift(brain)
+            report["remaining"] = after.as_dict()
+            report["ok"] = after.clean
+    elif repair:
+        report["repaired"] = reconcile.Repaired().as_dict()
+    _emit(report)
     return 0 if report["ok"] else 1
 
 
@@ -346,6 +398,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rebuild.add_argument(
         "--brain", default=None, help="the brain directory (default: $ATHENA_HOME)"
+    )
+    mode = rebuild.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--check",
+        action="store_true",
+        help="preview drift between the tree and the index; write nothing; exit 1 on drift",
+    )
+    mode.add_argument(
+        "--repair",
+        action="store_true",
+        help="re-index only what drifted, instead of rebuilding every row",
     )
     rebuild.set_defaults(func=cmd_reconcile)
     brain.set_defaults(parser=brain)

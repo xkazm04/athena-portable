@@ -303,6 +303,112 @@ def test_reconcile_stops_when_the_damaged_index_cannot_be_renamed(
     assert (root / "index.sqlite").read_bytes() == b"not a database " * 300
 
 
+def _brain_with_an_unindexed_fact(root: Path) -> str:
+    """A fact file whose rows were lost: the crash between the file write and the index write."""
+    with Brain(root) as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        fact = brain.write_fact(
+            "client/northwind", "pays late", scope="world", sources=[episode.id]
+        )
+        with brain.write_txn() as con:
+            ((rowid,),) = con.execute(
+                "SELECT rowid FROM companion_node WHERE id = ?", (fact.id,)
+            ).fetchall()
+            con.execute("DELETE FROM companion_fts WHERE rowid = ?", (rowid,))
+            for table, column in (
+                ("companion_node", "id"),
+                ("companion_fact", "id"),
+                ("companion_provenance", "node_id"),
+            ):
+                con.execute(f"DELETE FROM {table} WHERE {column} = ?", (fact.id,))
+    return fact.path
+
+
+def _fingerprint(root: Path) -> list[Any]:
+    from athena.core.brain import index_fingerprint
+
+    with Brain(root) as brain:
+        return index_fingerprint(brain)
+
+
+def test_doctor_warns_about_a_memory_on_disk_the_index_never_saw(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = tmp_path / "brain"
+    _brain_with_an_unindexed_fact(root)
+
+    code, report = _run(capsys, "doctor", "--brain", str(root))
+
+    assert code == 0
+    index = next(stage for stage in report["stages"] if stage["name"] == "index")
+    assert index["status"] == "warn"
+    assert "1 memory on disk is not indexed" in index["detail"]
+    assert "athena brain reconcile" in index["detail"]
+
+
+def test_reconcile_check_previews_drift_and_writes_nothing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = tmp_path / "brain"
+    rel = _brain_with_an_unindexed_fact(root)
+    before = _fingerprint(root)
+
+    code, report = _run(capsys, "brain", "reconcile", "--check", "--brain", str(root))
+
+    assert code == 1
+    assert report["ok"] is False
+    assert report["drift"]["unindexed"] == [rel]
+    assert report["drift"]["budget_hit"] is False
+    assert _fingerprint(root) == before
+
+
+def test_reconcile_check_on_a_clean_brain_exits_zero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        brain.append_episode("nothing drifted", role="user")
+
+    code, report = _run(capsys, "brain", "reconcile", "--check", "--brain", str(root))
+
+    assert code == 0
+    assert report["ok"] is True
+    assert report["drift"]["unindexed"] == []
+
+
+def test_reconcile_repair_applies_only_the_drift_and_says_what_it_touched(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = tmp_path / "brain"
+    rel = _brain_with_an_unindexed_fact(root)
+    with Brain(root) as brain, brain.read_connection() as con:
+        kept = con.execute("SELECT rowid, id FROM companion_node").fetchall()
+
+    code, report = _run(capsys, "brain", "reconcile", "--repair", "--brain", str(root))
+
+    assert code == 0
+    assert report["ok"] is True
+    assert report["repaired"]["indexed"] == [rel]
+    assert report["repaired"]["dropped"] == []
+    with Brain(root) as brain:
+        with brain.read_connection() as con:
+            for rowid, node_id in kept:
+                assert con.execute(
+                    "SELECT rowid FROM companion_node WHERE id = ?", (node_id,)
+                ).fetchone() == (rowid,)
+        assert brain.counts() == {"episode": 1, "fact": 1}
+    code, report = _run(capsys, "brain", "reconcile", "--check", "--brain", str(root))
+    assert code == 0
+
+
+def test_check_and_repair_cannot_be_asked_together(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as stop:
+        main(["brain", "reconcile", "--check", "--repair", "--brain", str(tmp_path / "b")])
+    assert stop.value.code == 2
+
+
 def _only_fact(brain: Brain) -> str:
     with brain.read_connection() as con:
         row = con.execute("SELECT id FROM companion_node WHERE kind = 'fact'").fetchone()
