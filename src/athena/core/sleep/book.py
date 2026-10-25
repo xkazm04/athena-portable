@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from contextlib import closing
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -121,9 +121,11 @@ class ProposalRow:
     created_at: str
     decided_at: str | None = None
 
-    def view(self) -> dict[str, Any]:
-        """``ProposalView`` (``lib/sleep.ts``)."""
-        return {
+    def view(self, memories: Mapping[str, dict[str, Any]] | None = None) -> dict[str, Any]:
+        """``ProposalView`` (``lib/sleep.ts``). Given what :meth:`SleepBook.proposal_memories`
+        read, ``memories`` rides beside the other keys: one ``ProposalMemory`` per node id, in
+        ``node_ids`` order, so a person compares two memories by their words, not their ids."""
+        view: dict[str, Any] = {
             "id": self.id,
             "cycle_id": self.cycle_id,
             "kind": self.kind,
@@ -132,6 +134,9 @@ class ProposalRow:
             "status": self.status,
             "created_at": self.created_at,
         }
+        if memories is not None:
+            view["memories"] = [memories.get(n) or _unknown_memory(n) for n in self.node_ids]
+        return view
 
 
 @dataclass(frozen=True)
@@ -414,6 +419,76 @@ class SleepBook:
         )
         return [_proposal(row) for row in (*open_rows, *closed)]
 
+    def proposal_memories(self, rows: Sequence[ProposalRow]) -> dict[str, dict[str, Any]]:
+        """``ProposalMemory`` (``lib/sleep.ts``) for every node the ``rows`` name, keyed by id, read
+        on one connection: the words the person compares, where they came from and how they were
+        used. A memory superseded since (forgotten, replaced) is ``live: false`` with no text and
+        no quote - it is not offered for comparison - and a node that was never indexed reads the
+        same. No confidence figure is carried: it is the distiller's guess, not a measurement.
+
+        The quote is read for an open proposal's memories only: it is what a decision still to be
+        made is checked against, and a decided one needs none, which keeps the whole answer
+        bounded (20 open and 20 decided stay under 64 KB)."""
+        wanted = list(dict.fromkeys(n for row in rows for n in row.node_ids))
+        quoted = {n for row in rows if row.status == "open" for n in row.node_ids}
+        found: dict[str, dict[str, Any]] = {}
+        if not wanted:
+            return found
+        with closing(self.brain.read_connection()) as con:
+            for start in range(0, len(wanted), 400):
+                batch = wanted[start : start + 400]
+                marks = ",".join("?" * len(batch))
+                for row in con.execute(
+                    f"""SELECT n.id, n.kind, COALESCE(fc.fact_key, pr.trigger_pattern),
+                               n.body_excerpt, COALESCE(fc.scope, pr.scope), n.created_at,
+                               CASE WHEN {_LIVE} THEN 1 ELSE 0 END, rs.last_at,
+                               COALESCE(fd.steps, 0)
+                        FROM companion_node n
+                        LEFT JOIN companion_fact fc ON fc.id = n.id
+                        LEFT JOIN companion_procedural pr ON pr.id = n.id
+                        LEFT JOIN companion_recall_seen rs ON rs.node_id = n.id
+                        LEFT JOIN companion_fade fd ON fd.node_id = n.id
+                        WHERE n.id IN ({marks})""",
+                    tuple(batch),
+                ).fetchall():
+                    live = bool(row[6])
+                    found[str(row[0])] = {
+                        "id": str(row[0]),
+                        "kind": str(row[1]),
+                        "key": None if row[2] is None else str(row[2]),
+                        "text": _excerpt(str(row[3] or "")) if live else None,
+                        "scope": None if row[4] is None else str(row[4]),
+                        "created_at": str(row[5]),
+                        "sources": 0,
+                        "recalled_at": None if row[7] is None else str(row[7]),
+                        "faded": int(row[8]),
+                        "quote": None,
+                        "live": live,
+                    }
+                # Sources in ``Brain.sources_of`` order; the quote is the first that is live.
+                for node_id, episode_body, episode_live in con.execute(
+                    f"""SELECT p.node_id, e.body_excerpt,
+                               CASE WHEN e.kind = 'episode' AND e.importance > 0
+                                    THEN 1 ELSE 0 END
+                        FROM companion_provenance p
+                        LEFT JOIN companion_node e ON e.id = p.source_id
+                        WHERE p.node_id IN ({marks})
+                        ORDER BY p.node_id, p.source_id""",
+                    tuple(batch),
+                ).fetchall():
+                    memory = found.get(str(node_id))
+                    if memory is None:
+                        continue
+                    memory["sources"] += 1
+                    if (
+                        memory["live"]
+                        and memory["quote"] is None
+                        and episode_live
+                        and memory["id"] in quoted
+                    ):
+                        memory["quote"] = _excerpt(str(episode_body or "")) or None
+        return found
+
     def open_count(self) -> int:
         row = self._one("SELECT COUNT(*) FROM companion_proposal WHERE status = 'open'")
         return int(row[0]) if row else 0
@@ -627,6 +702,23 @@ class SleepBook:
             (DEFAULT_IMPORTANCE, FADE_MAX),
         )
         return [Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or ""))) for r in rows]
+
+
+def _unknown_memory(node_id: str) -> dict[str, Any]:
+    """A ``ProposalMemory`` for a node this index does not hold: not live, nothing to show."""
+    return {
+        "id": node_id,
+        "kind": None,
+        "key": None,
+        "text": None,
+        "scope": None,
+        "created_at": None,
+        "sources": 0,
+        "recalled_at": None,
+        "faded": 0,
+        "quote": None,
+        "live": False,
+    }
 
 
 def _live_ids(con: sqlite3.Connection, node_ids: list[str]) -> set[str]:

@@ -11,7 +11,8 @@ Routes (``lib/sleep.ts`` reads them):
   waiting, the admission verdict now, the newest cycle and how many proposals are open;
 - ``GET /sleep/cycles?limit=20`` -> ``{"cycles": [CycleView]}``, newest first;
 - ``GET /sleep/cycles/<id>`` -> ``{"cycle": CycleView, "journal": str | null}``;
-- ``GET /sleep/proposals`` -> ``{"proposals": [ProposalView]}``, the open ones first;
+- ``GET /sleep/proposals`` -> ``{"proposals": [ProposalView]}``, the open ones first, each with
+  the ``memories`` it names: their words, the sentence they came from, and how they were used;
 - ``POST /sleep/run {"force": bool}`` -> ``{"admitted", "reason", "text", "cycle_id"}``. A refusal
   is an answer, not an error (200): "not admitted: a turn is live" is a fact a person reads;
 - ``POST /sleep/proposals/<id> {"action": "keep"|"forget", "node_id": str|null}`` ->
@@ -375,7 +376,9 @@ class SleepService:
         return 200, {"ok": True, "cycle": row.view(), "journal": self.journal(cycle_id)}
 
     def _proposals(self, request: Request) -> Reply:
-        return 200, {"ok": True, "proposals": [row.view() for row in self.book.proposals()]}
+        rows = self.book.proposals()
+        memories = self.book.proposal_memories(rows)
+        return 200, {"ok": True, "proposals": [row.view(memories) for row in rows]}
 
     def _run(self, request: Request) -> Reply:
         force = request.body.get("force", False)
@@ -398,7 +401,7 @@ class SleepService:
         except ProposalRefused as exc:
             return error(exc.status, exc.reason, str(exc))
         self._changed()
-        return 200, {"ok": True, "proposal": row.view()}
+        return 200, {"ok": True, "proposal": row.view(self.book.proposal_memories([row]))}
 
 
 def _answer(verdict: Verdict, cycle_id: str | None) -> dict[str, Any]:

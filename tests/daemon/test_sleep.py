@@ -208,14 +208,16 @@ def test_a_proposal_is_decided_and_said_on_the_bus(rig: Rig) -> None:
     assert proposal is not None
     _, listing = rig.call("GET", "/sleep/proposals")
     assert [p["id"] for p in listing["proposals"]] == [proposal.id]
-    assert set(listing["proposals"][0]) == {
-        "id",
-        "cycle_id",
-        "kind",
-        "node_ids",
-        "summary",
-        "status",
-        "created_at",
+    # Every key the view had before is there, unchanged; ``memories`` rides beside them.
+    view = listing["proposals"][0]
+    assert {k: v for k, v in view.items() if k != "memories"} == {
+        "id": proposal.id,
+        "cycle_id": "cyc_000000000000",
+        "kind": "forget",
+        "node_ids": [fact.id],
+        "summary": "Forget it?",
+        "status": "open",
+        "created_at": "2026-10-24T00:00:00+00:00",
     }
     status, body = rig.call(
         "POST", f"/sleep/proposals/{proposal.id}", {"action": "forget", "node_id": None}
@@ -350,3 +352,85 @@ def test_the_routes_are_the_wire_contract(rig: Rig) -> None:
         "POST /sleep/proposals/<id>",
     ]
     assert all(isinstance(route, Route) for route in rig.service.routes())
+
+
+def test_a_proposal_shows_both_memories_words_and_their_source(rig: Rig) -> None:
+    net30_ep, net45_ep = _episodes(rig.brain, 2)
+    net30 = rig.brain.write_fact("acme terms", "Acme pays at 30 days.", sources=[net30_ep])
+    net45 = rig.brain.write_fact("acme terms", "Acme pays at 45 days.", sources=[net45_ep])
+    proposal = rig.service.book.open_proposal(
+        "cyc_000000000000",
+        "contradiction",
+        [net45.id, net30.id],
+        "Which?",
+        now="2026-10-24T00:00:00+00:00",
+    )
+    assert proposal is not None
+    status, listing = rig.call("GET", "/sleep/proposals")
+    assert status == 200
+    (view,) = listing["proposals"]
+    memories = view["memories"]
+    assert [m["id"] for m in memories] == [net45.id, net30.id]
+    assert [m["text"] for m in memories] == ["Acme pays at 45 days.", "Acme pays at 30 days."]
+    assert memories[0]["quote"].startswith("turn 1 ") and memories[1]["quote"].startswith("turn 0 ")
+    assert all(m["live"] is True and m["sources"] == 1 for m in memories)
+
+    # The answer to a decision carries them too, so a card that renders it shows the same.
+    status, body = rig.call(
+        "POST", f"/sleep/proposals/{proposal.id}", {"action": "forget", "node_id": net30.id}
+    )
+    assert status == 200
+    decided = body["proposal"]["memories"]
+    assert decided[0]["live"] is True and decided[1]["live"] is False
+    assert decided[1]["text"] is None
+
+
+def test_the_proposals_answer_is_bounded_and_read_on_one_connection(
+    rig: Rig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    book = rig.service.book
+    episodes = _episodes(rig.brain, 80, chars=600)
+    facts = [
+        rig.brain.write_fact(
+            f"key {i} " + "k" * 60,
+            f"value {i} " + "v" * 600,
+            sources=[episodes[i]],
+            confidence=0.93,
+        ).id
+        for i in range(80)
+    ]
+    # The cap holds 20 open at once: 20 opened and kept, then 20 more left open.
+    for i in range(40):
+        row = book.open_proposal(
+            "cyc_000000000000",
+            "contradiction",
+            [facts[2 * i], facts[2 * i + 1]],
+            "s" * 160,
+            now=f"2026-10-24T00:00:{i:02d}+00:00",
+        )
+        assert row is not None
+        if i < 20:
+            assert book.decide(row.id, "kept", now="2026-10-24T01:00:00+00:00")
+
+    rows = book.proposals()
+    opens: list[int] = []
+    real = rig.brain.read_connection
+
+    def counted() -> Any:
+        opens.append(1)
+        return real()
+
+    monkeypatch.setattr(rig.brain, "read_connection", counted)
+    book.proposal_memories(rows)
+    assert len(opens) == 1, "every memory of every proposal on one read connection"
+    monkeypatch.undo()
+
+    status, listing = rig.call("GET", "/sleep/proposals")
+    assert status == 200 and len(listing["proposals"]) == 40
+    assert all(len(p["memories"]) == 2 for p in listing["proposals"])
+    size = len(json.dumps(listing).encode("utf-8"))
+    assert size < 64 * 1024, size
+    for p in listing["proposals"]:
+        for memory in p["memories"]:
+            assert "confidence" not in memory
+            assert "0.93" not in json.dumps(memory)
