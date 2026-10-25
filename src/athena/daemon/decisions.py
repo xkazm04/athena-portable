@@ -47,6 +47,11 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     ``execute`` instruction — a host tool the page runs, carrying the parameters off the *row* and
     not off this request — or the result of a core tool that ran here. The conversation comes off
     the row too, so a card filed under a project is answered and recorded under that project.
+
+    The answer holds its card's lock (:meth:`AthenaDaemon.card`, ADR 0152) and never the daemon's
+    write lock: a core or connector card runs its executor inside the replay, an outbound call of
+    up to twenty seconds, and no manifest, other card or spoken answer waits on it. The lock covers
+    resolve through spend, so two answers to one card still run one after the other.
     """
     choice = str(request.body.get("choice", "")).strip()
     if not choice:
@@ -74,7 +79,7 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     case_id = daemon.case_turns.case_of(row.turn_id) if row and row.turn_id else None
     if case_id is not None:
         ctx = replace(ctx, case_id=case_id)
-    with daemon.writing():
+    with daemon.card(approval_id):
         stamped = stamp_case_turn(daemon, ctx)
         try:
             resolution = daemon.lane.answer_decision(approval_id, choice, ctx)

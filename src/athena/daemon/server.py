@@ -15,8 +15,10 @@ them.
 (:class:`ThreadLocks`) for its length, and nothing else: two conversations run side by side, and a
 second ``POST /run`` into a conversation whose turn is running is refused ``thread_busy`` before
 a single SSE header is written. :meth:`AthenaDaemon.writing` is now the *short* write lock, taken
-around a merge, an answer to a card or a connector act, and never for a turn's length, so a card
-is answered while another thread's turn runs.
+around a merge or a connector act, and never for a turn's length. An answer to a card takes that
+card's own lock instead (:meth:`AthenaDaemon.card`, ADR 0152), because a connector card's action is
+an outbound call of up to twenty seconds, so a card is answered while another thread's turn runs
+and while another card's action does.
 
 **One request per connection.** HTTP/1.1 keep-alive on a single-threaded server let one browser
 tab starve every other client: after answering, the handler blocked reading the *same* socket, so
@@ -127,6 +129,7 @@ __all__ = [
     "BodyCap",
     "DaemonConfig",
     "DaemonServer",
+    "KeyedLocks",
     "SocketFn",
     "SocketTable",
     "ThreadLease",
@@ -202,7 +205,8 @@ class SocketTable:
 
 
 class ThreadLease:
-    """One conversation's turn lock, held (ADR 0141). :meth:`release` gives it back, once.
+    """One key's lock, held (ADR 0141): a conversation's turn lock, or a card's answer lock.
+    :meth:`release` gives it back, once.
 
     A lease outlives the route that took it: ``POST /run`` takes the lock before it answers, so a
     busy thread is refused while the answer can still be JSON, and the stream that follows gives
@@ -210,8 +214,9 @@ class ThreadLease:
     ends, and the handler when a stream never started - and the second does nothing.
     """
 
-    def __init__(self, locks: ThreadLocks, conversation: str) -> None:
-        self.conversation = conversation
+    def __init__(self, locks: KeyedLocks, key: str) -> None:
+        #: The key held: a conversation id for a turn, an approval id for an answer.
+        self.conversation = key
         self._locks = locks
         self._mutex = threading.Lock()
         self._released = False
@@ -224,91 +229,101 @@ class ThreadLease:
         self._locks._release(self.conversation)
 
 
-class ThreadLocks:
-    """One lock per conversation, held by the turn running in it (ADR 0141).
+class KeyedLocks:
+    """One lock per key, held by whoever is acting on that one entity (ADR 0141, ADR 0152).
 
-    The map holds a conversation only while a turn holds its lock or waits for it: an entry counts
-    its users and goes when the last one leaves, so a daemon that has talked in a thousand
-    conversations holds no lock for any that is quiet. The guard is only ever held around the map,
-    never while a lock is waited for.
+    The daemon keeps two: :attr:`AthenaDaemon.threads`, keyed by conversation and held by the turn
+    running in it, and :attr:`AthenaDaemon.cards`, keyed by approval id and held by the answer to
+    that card for its whole length - resolve, replay, executor and spend - so two answers to one
+    card run one after the other while answers to different cards never wait on each other.
 
-    The sleep cycle asks two more things of it (ADR 0143), because a cycle never starts beside a
-    live turn: whether any conversation's turn runs now (:meth:`busy_any`), and when the last one
-    ended (:meth:`last_released`), so it can wait out a quiet spell after it.
+    The map holds a key only while someone holds its lock or waits for it: an entry counts its
+    users and goes when the last one leaves, so a daemon that has talked in a thousand
+    conversations, or answered a thousand cards, holds no lock for any that is quiet. The guard is
+    only ever held around the map, never while a lock is waited for.
+
+    The sleep cycle asks two more things of the conversations' map (ADR 0143), because a cycle
+    never starts beside a live turn: whether any conversation's turn runs now (:meth:`busy_any`),
+    and when the last one ended (:meth:`last_released`), so it can wait out a quiet spell after it.
     """
 
     def __init__(self) -> None:
         self._guard = threading.Lock()
-        #: conversation -> (its lock, how many holders and waiters it has)
-        self._by_conversation: dict[str, tuple[threading.Lock, int]] = {}
-        #: ``time.monotonic()`` when a turn last gave its lock back; ``None`` before the first.
+        #: key -> (its lock, how many holders and waiters it has)
+        self._by_key: dict[str, tuple[threading.Lock, int]] = {}
+        #: ``time.monotonic()`` when a holder last gave its lock back; ``None`` before the first.
         self._last_released: float | None = None
 
     def __len__(self) -> int:
         with self._guard:
-            return len(self._by_conversation)
+            return len(self._by_key)
 
-    def busy(self, conversation: str) -> bool:
-        """Whether a turn holds ``conversation`` now. A snapshot; :meth:`try_take` is the test."""
+    def busy(self, key: str) -> bool:
+        """Whether someone holds ``key`` now. A snapshot; :meth:`try_take` is the test."""
         with self._guard:
-            entry = self._by_conversation.get(conversation)
+            entry = self._by_key.get(key)
             return entry is not None and entry[0].locked()
 
     def busy_any(self) -> bool:
-        """Whether a turn holds any conversation now. A snapshot, like :meth:`busy`."""
+        """Whether someone holds any key now. A snapshot, like :meth:`busy`."""
         with self._guard:
-            return any(lock.locked() for lock, _ in self._by_conversation.values())
+            return any(lock.locked() for lock, _ in self._by_key.values())
 
     def last_released(self) -> float | None:
-        """``time.monotonic()`` when a turn last ended here, or ``None`` when none has."""
+        """``time.monotonic()`` when a holder last let go here, or ``None`` when none has."""
         with self._guard:
             return self._last_released
 
-    def try_take(self, conversation: str) -> ThreadLease | None:
-        """The conversation's lock if it is free now, or ``None`` when a turn holds it."""
+    def try_take(self, key: str) -> ThreadLease | None:
+        """The key's lock if it is free now, or ``None`` when someone holds it."""
         with self._guard:
-            lock, users = self._by_conversation.get(conversation, (threading.Lock(), 0))
+            lock, users = self._by_key.get(key, (threading.Lock(), 0))
             if not lock.acquire(blocking=False):
                 return None
-            self._by_conversation[conversation] = (lock, users + 1)
-        return ThreadLease(self, conversation)
+            self._by_key[key] = (lock, users + 1)
+        return ThreadLease(self, key)
 
     @contextmanager
-    def take(self, conversation: str) -> Iterator[ThreadLease]:
-        """The conversation's lock, waited for: a spoken turn queues behind a typed one in the same
-        conversation, as every turn once queued behind every other (ADR 0011)."""
+    def take(self, key: str) -> Iterator[ThreadLease]:
+        """The key's lock, waited for: a spoken turn queues behind a typed one in the same
+        conversation, as every turn once queued behind every other (ADR 0011), and a second answer
+        to one card queues behind the first."""
         with self._guard:
-            lock, users = self._by_conversation.get(conversation, (threading.Lock(), 0))
-            self._by_conversation[conversation] = (lock, users + 1)
+            lock, users = self._by_key.get(key, (threading.Lock(), 0))
+            self._by_key[key] = (lock, users + 1)
         try:
             lock.acquire()
         except BaseException:
-            self._leave(conversation)
+            self._leave(key)
             raise
-        lease = ThreadLease(self, conversation)
+        lease = ThreadLease(self, key)
         try:
             yield lease
         finally:
             lease.release()
 
-    def _release(self, conversation: str) -> None:
+    def _release(self, key: str) -> None:
         with self._guard:
-            entry = self._by_conversation.get(conversation)
+            entry = self._by_key.get(key)
             self._last_released = time.monotonic()
         if entry is not None:
             entry[0].release()
-        self._leave(conversation)
+        self._leave(key)
 
-    def _leave(self, conversation: str) -> None:
+    def _leave(self, key: str) -> None:
         with self._guard:
-            entry = self._by_conversation.get(conversation)
+            entry = self._by_key.get(key)
             if entry is None:
                 return
             lock, users = entry
             if users <= 1:
-                del self._by_conversation[conversation]
+                del self._by_key[key]
             else:
-                self._by_conversation[conversation] = (lock, users - 1)
+                self._by_key[key] = (lock, users - 1)
+
+
+#: The conversations' map (ADR 0141), by the name the turn code and its tests already use.
+ThreadLocks = KeyedLocks
 
 
 def new_token() -> str:
@@ -359,11 +374,12 @@ class BodyCap:
 class AthenaDaemon:
     """One Athena, behind a socket: the brain, the catalog, the gate, the lane and the ledger.
 
-    Every route runs against this object. Two locks serialise them (ADR 0141): a turn holds its
-    conversation's lock in :attr:`threads` for its length, the right to be the one turn *in that
-    conversation*; a route that changes shared state takes :attr:`lock` through :meth:`writing`
-    for the few milliseconds the change takes. Neither is the brain's own lock, which guards one
-    write at a time and is taken inside both.
+    Every route runs against this object. Three locks serialise them (ADR 0141, ADR 0152): a turn
+    holds its conversation's lock in :attr:`threads` for its length, the right to be the one turn
+    *in that conversation*; an answer to a card holds that card's lock in :attr:`cards` for its
+    length, executor included; a route that changes shared state takes :attr:`lock` through
+    :meth:`writing` for the few milliseconds the change takes. None is the brain's own lock, which
+    guards one write at a time and is taken inside each.
 
     The gate is held by name as well as through the lane because one route changes it: a merged
     manifest pins its app to the origin it was published from (policy rule 3), and a pin is a fact
@@ -387,7 +403,10 @@ class AthenaDaemon:
     #: never for a turn's length (ADR 0141): a turn holds its conversation's lock instead.
     lock: threading.Lock = field(default_factory=threading.Lock)
     #: One lock per conversation, held by the turn running in it (ADR 0141).
-    threads: ThreadLocks = field(default_factory=ThreadLocks)
+    threads: KeyedLocks = field(default_factory=KeyedLocks)
+    #: One lock per card, held by the answer to it from resolve to spend (ADR 0152). Never the
+    #: write lock: a card's action may be a twenty-second send, and nothing else waits on it.
+    cards: KeyedLocks = field(default_factory=KeyedLocks)
     #: The delegated tasks (ADR 0141), or ``None`` for a daemon built without them. Wiring builds
     #: the table on this brain and adds its routes; ``POST /run`` reads it for ``task_id``.
     tasks: Tasks | None = None
@@ -539,11 +558,20 @@ class AthenaDaemon:
             yield lease
 
     @contextmanager
+    def card(self, approval_id: str) -> Iterator[ThreadLease]:
+        """``approval_id``'s answer lock, waited for (ADR 0152). Held across the whole answer -
+        resolve, replay, the executor and the spend - so a second answer to the same card runs
+        after the first and reads its settled row; an answer to any other card never waits."""
+        with self.cards.take(approval_id) as lease:
+            yield lease
+
+    @contextmanager
     def writing(self) -> Iterator[Brain]:
         """The short write lock, around one route that changes something (ADR 0141).
 
-        Reads do not come through here, and neither does a turn: a turn holds its conversation's
-        lock, so a merge or an answer to a card waits for another write and never for a turn.
+        Reads do not come through here, and neither does a turn nor an answer to a card: a turn
+        holds its conversation's lock and an answer holds its card's (ADR 0152), so a merge waits
+        for another write and never for a turn or for a card's outbound call.
         ``GET /health`` answers while this is held, off its own read-only connection, which is the
         property ``tests/daemon/test_server.py`` asserts against a real socket.
         """

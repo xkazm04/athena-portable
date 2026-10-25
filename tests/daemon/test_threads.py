@@ -14,10 +14,16 @@ import asyncio
 import json
 import threading
 import time
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncIterator, Iterator, Sequence
+from dataclasses import replace
+from typing import Any
 
 import pytest
 
+from athena.contracts.manifest import HostTool
+from athena.contracts.registry import ExecResult
+from athena.daemon import routes
+from athena.daemon.routes import Request
 from athena.daemon.server import AthenaDaemon, ThreadLocks
 from athena.harness.transports import CliRequest, ScriptedTransport
 
@@ -29,6 +35,7 @@ from .conftest import (
     Live,
     Response,
     claude_round,
+    manifest_body,
     op,
 )
 
@@ -291,3 +298,286 @@ def test_a_waiting_taker_gets_the_lock_when_the_holder_lets_go() -> None:
     assert got.wait(5)
     waiter.join(5)
     assert len(locks) == 0
+
+
+# -- an answer holds its card's lock, never the daemon's write lock -------------------------------
+
+#: How long the fake connector's call takes unless the test lets it go sooner: the length of one
+#: outbound send, which every other route used to wait out behind ``daemon.writing()``.
+SLOW_S = 3.0
+#: An answer that did not wait on another card's action. Well under ``SLOW_S``.
+QUICK_S = 1.0
+RECIPIENT = "ana@example.com"
+SEND = "connector.gmail.send_mail"
+
+
+class SlowMail:
+    """A connector whose send takes ``SLOW_S`` seconds, as a Gmail send or an MCP ``tools/call``
+    can take its whole request timeout. Counts its calls, which is the executor's run count."""
+
+    def __init__(self) -> None:
+        self.entered = threading.Event()
+        self.release = threading.Event()
+        self.fail = False
+        self._guard = threading.Lock()
+        self.calls = 0
+
+    def list_tools(self) -> Sequence[HostTool]:
+        return [
+            HostTool(
+                name="send_mail",
+                description="Send a message.",
+                params_schema={"type": "object", "properties": {"to": {"type": "string"}}},
+                reversible=True,
+                side_effects="external",
+            )
+        ]
+
+    def call(self, name: str, params: dict[str, Any]) -> ExecResult:
+        with self._guard:
+            self.calls += 1
+        self.entered.set()
+        if self.fail:
+            raise RuntimeError("the provider fell over")
+        self.release.wait(SLOW_S)
+        return ExecResult(ok=True, output=f"sent to {params.get('to', '')}", tier=3)
+
+
+class _AlwaysLive:
+    def is_live(self, connector_id: str) -> bool:
+        return True
+
+
+@pytest.fixture
+def mail(live: Live, daemon: AthenaDaemon) -> Iterator[SlowMail]:
+    """The page registered, and a slow Gmail connected and live."""
+    assert live.register().status == 200
+    port = SlowMail()
+    daemon.catalog.merge_connector("gmail", port)
+    daemon.gate.policy = replace(daemon.gate.policy, connectors=_AlwaysLive())
+    yield port
+    port.release.set()
+
+
+def _filed(live: Live, call: str) -> str:
+    live.script(claude_round("That needs your approval.\n" + call))
+    cards = [p for kind, p in live.run("do it").frames() if kind == "decision.requested"]
+    assert len(cards) == 1, "the turn did not file exactly one card"
+    return str(cards[0]["id"])
+
+
+def _mail_card(live: Live) -> str:
+    return _filed(live, op(SEND, to=RECIPIENT))
+
+
+def _pay_card(live: Live, invoice: str = "7") -> str:
+    return _filed(live, op("host.invoices.pay", invoice=invoice))
+
+
+def _answer(live: Live, approval_id: str, choice: str) -> Response:
+    return live.request(
+        f"/decisions/{approval_id}",
+        method="POST",
+        json_body={"choice": choice},
+        timeout=SLOW_S * 4,
+    )
+
+
+def _in_process(daemon: AthenaDaemon, approval_id: str, choice: str) -> routes.Reply:
+    """An answer through ``routes.decide``, the voice gateway's door for a spoken yes or no."""
+    request = Request(method="POST", path=f"/decisions/{approval_id}", body={"choice": choice})
+    return routes.decide(daemon, request, approval_id)
+
+
+def _slow_approval(live: Live, mail: SlowMail) -> tuple[threading.Thread, list[Response]]:
+    """A connector card approved, its send in flight when this returns."""
+    card = _mail_card(live)
+    out: list[Response] = []
+    thread = threading.Thread(
+        target=lambda: out.append(_answer(live, card, "approve")),
+        name="approval-under-test",
+        daemon=True,
+    )
+    thread.start()
+    assert mail.entered.wait(10), "the approved card never reached its executor"
+    return thread, out
+
+
+def _finish(mail: SlowMail, approving: threading.Thread, out: list[Response]) -> None:
+    mail.release.set()
+    approving.join(SLOW_S * 4)
+    assert out and out[0].status == 200
+    assert out[0].body["output"] == f"sent to {RECIPIENT}"
+
+
+def _race(*answers: tuple[Live, str, str]) -> list[tuple[str, Response]]:
+    """Answers sent at the same instant from their own threads, as two surfaces would."""
+    start = threading.Barrier(len(answers))
+    replies: list[tuple[str, Response]] = []
+    guard = threading.Lock()
+
+    def send(live: Live, approval_id: str, choice: str) -> None:
+        start.wait(5)
+        reply = _answer(live, approval_id, choice)
+        with guard:
+            replies.append((choice, reply))
+
+    racers = [threading.Thread(target=send, args=answer, daemon=True) for answer in answers]
+    for racer in racers:
+        racer.start()
+    for racer in racers:
+        racer.join(SLOW_S * 4)
+    return replies
+
+
+def _decision_episodes(daemon: AthenaDaemon) -> list[str]:
+    with daemon.brain.read_connection() as con:
+        node_ids = [
+            str(row[0])
+            for row in con.execute(
+                "SELECT id FROM companion_node WHERE kind = 'episode' ORDER BY created_at, id"
+            ).fetchall()
+        ]
+    bodies = [daemon.brain.read_body(node_id) for node_id in node_ids]
+    return [body for body in bodies if "[decision] the user" in body and SEND in body]
+
+
+def test_a_manifest_merges_while_a_slow_connector_card_is_approved(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    approving, out = _slow_approval(live, mail)
+
+    began = time.monotonic()
+    merged = live.register("ledger", "https://ledger.example")
+    elapsed = time.monotonic() - began
+
+    assert merged.status == 200
+    assert elapsed < QUICK_S, f"the manifest waited {elapsed:.1f}s on another card's send"
+    assert approving.is_alive(), "the send ended before the manifest was tested"
+    _finish(mail, approving, out)
+
+
+def test_another_card_is_declined_while_a_slow_connector_card_is_approved(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    other = _pay_card(live)
+    approving, out = _slow_approval(live, mail)
+
+    began = time.monotonic()
+    declined = _answer(live, other, "decline")
+    elapsed = time.monotonic() - began
+
+    assert declined.status == 200
+    assert declined.body["status"] == "declined"
+    assert elapsed < QUICK_S, f"the decline waited {elapsed:.1f}s on another card's send"
+    assert approving.is_alive(), "the send ended before the decline was tested"
+    _finish(mail, approving, out)
+
+
+def test_the_voice_door_answers_a_third_card_while_a_slow_card_is_approved(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    third = _pay_card(live, invoice="9")
+    approving, out = _slow_approval(live, mail)
+
+    began = time.monotonic()
+    status, body = _in_process(daemon, third, "decline")
+    elapsed = time.monotonic() - began
+
+    assert status == 200
+    assert body["status"] == "declined"
+    assert elapsed < QUICK_S, f"the spoken answer waited {elapsed:.1f}s on another card's send"
+    assert approving.is_alive(), "the send ended before the spoken answer was tested"
+    _finish(mail, approving, out)
+
+
+def test_two_approvals_of_one_card_run_its_action_once(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    card = _mail_card(live)
+    mail.release.set()
+
+    replies = _race((live, card, "approve"), (live, card, "approve"))
+
+    assert sorted(reply.status for _, reply in replies) == [200, 409]
+    won = next(reply for _, reply in replies if reply.status == 200)
+    lost = next(reply for _, reply in replies if reply.status == 409)
+    assert won.body["output"] == f"sent to {RECIPIENT}"
+    assert lost.body["reason"] in ("pending_approval", "approval_spent")
+    assert mail.calls == 1
+
+
+def test_an_approve_and_a_decline_racing_on_one_card_land_once(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    card = _mail_card(live)
+    mail.release.set()
+
+    replies = _race((live, card, "approve"), (live, card, "decline"))
+
+    landed = [choice for choice, reply in replies if reply.status == 200]
+    assert len(landed) == 1, [(choice, reply.status) for choice, reply in replies]
+    approved = landed == ["approve"]
+    assert mail.calls == (1 if approved else 0)
+    assert daemon.approvals.describe(card).status == ("approved" if approved else "declined")
+    # One record of the answer: one decision episode, and one ledger row for a decline. An
+    # approval that ran writes none (the lane ledgers refusals only; its turn already was).
+    assert len(_decision_episodes(daemon)) == 1
+    denied = [
+        row
+        for row in daemon.ledger.recent(20).rows
+        if row.trigger == "decision" and row.error_reason == "user_denied"
+    ]
+    assert len(denied) == (0 if approved else 1)
+
+
+def test_the_card_lock_map_is_empty_after_every_answer_even_a_failed_one(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    approving, out = _slow_approval(live, mail)
+    assert _in_process(daemon, _pay_card(live), "decline")[0] == 200
+    _finish(mail, approving, out)
+
+    mail.fail = True
+    failing = _mail_card(live)
+    with pytest.raises(RuntimeError, match="fell over"):
+        _in_process(daemon, failing, "approve")
+
+    assert len(daemon.cards) == 0, "an answered card still holds a lock entry"
+
+
+def test_health_answers_while_a_slow_connector_card_is_approved(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    approving, out = _slow_approval(live, mail)
+
+    began = time.monotonic()
+    health = live.request("/health")
+    elapsed = time.monotonic() - began
+
+    assert health.status == 200
+    assert elapsed < QUICK_S
+    _finish(mail, approving, out)
+
+
+def test_a_refused_manifest_during_a_slow_approval_changes_nothing(
+    live: Live, daemon: AthenaDaemon, mail: SlowMail
+) -> None:
+    approving, out = _slow_approval(live, mail)
+    names = daemon.catalog.names()
+    pins = dict(daemon.gate.policy.pinned_origins)
+    sessions = len(daemon.sessions)
+
+    refused = live.request(
+        "/manifest",
+        method="POST",
+        json_body=manifest_body("gmail", "https://evil.example", origin_kind="connector"),
+        timeout=SLOW_S * 4,
+    )
+
+    assert refused.status == 400
+    assert refused.body["reason"] == "manifest_invalid"
+    assert daemon.catalog.names() == names
+    assert dict(daemon.gate.policy.pinned_origins) == pins
+    assert len(daemon.sessions) == sessions
+    _finish(mail, approving, out)
