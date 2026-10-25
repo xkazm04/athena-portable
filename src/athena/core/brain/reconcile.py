@@ -14,6 +14,8 @@ The one exception is a fact whose file says ``every_turn: true``, the user's app
 rides every turn: it comes back at ``ALWAYS_IMPORTANCE`` (ADR 0071). Supersedence is on disk too
 (ADR 0143): a fact or procedural whose file says ``supersedes: [ids]`` writes its
 ``companion_supersede`` rows back, and one that says ``retired: true`` comes back at importance 0.
+The memory wall is on disk as well (ADR 0225): a file's ``space:`` stamp is its row's ``space``, so
+deleting the index and rebuilding it gives every project back exactly the memories it had.
 """
 
 from __future__ import annotations
@@ -39,6 +41,7 @@ from athena.core.brain.store import (
     SUPERSEDES_KEY,
     Brain,
     sha256,
+    space_of,
 )
 
 #: Which directory yields which kind, walked in this order. A directory absent from this table is
@@ -262,7 +265,9 @@ def index_file(
     Public because :meth:`Brain.receive_file <athena.core.brain.store.Brain.receive_file>` indexes a
     memory another device wrote with it (ADR 0140): one insert path, so a rebuild over a merged
     tree cannot disagree with the rows replication wrote. The ``device:`` stamp is not read here;
-    it is a disk-only key.
+    it is a disk-only key. The ``space:`` stamp is (ADR 0225): it becomes ``companion_node.space``,
+    so a rebuild restores the wall exactly as the writers drew it, and a stamp that is not a space
+    id reads as one no space can be (fail closed).
     """
     body = body.strip()
     created_at = str(meta.get("created") or "")
@@ -291,6 +296,7 @@ def index_file(
         machine=machine,
         tags=tags,
         fts_tags=fts_tags,
+        space=space_of(meta),
     )
     if kind == "fact":
         con.execute(
@@ -339,7 +345,7 @@ def index_fingerprint(brain: Brain) -> list[tuple[Any, ...]]:
             tuple(row)
             for row in con.execute(
                 """SELECT id, kind, file_path, content_hash, importance, body_excerpt,
-                          tags_json, machine, session_id, created_at, updated_at
+                          tags_json, machine, session_id, created_at, updated_at, space
                    FROM companion_node ORDER BY id"""
             )
         )

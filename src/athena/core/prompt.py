@@ -125,7 +125,10 @@ STATIC_NAMES: tuple[str, ...] = ("constitution", "identity", "capabilities", "me
 
 #: ``core.recall``'s block names mapped onto this module's, with the heading each one renders
 #: under. The always tier is the one recall lane that is conversation-scoped rather than
-#: message-scoped, so it is the one that lands in the system prompt. ``tests/core/test_prompt.py``
+#: message-scoped, so it is the one that lands in the system prompt - and so it is core's alone: a
+#: recall in a project hands back core's always tier here and its own in ``frame.space`` (ADR
+#: 0225), because a system prompt a resumed conversation keeps must not carry one project's
+#: memory into a turn in another. ``tests/core/test_prompt.py``
 #: asserts these keys against ``core.recall``'s own constants rather than trusting the spelling.
 RECALL_BLOCKS: Mapping[str, tuple[str, str]] = {
     "recall.always": ("memory.always", "## What I always carry"),
@@ -140,7 +143,7 @@ BUDGETS: Mapping[str, int] = {
     "capabilities": 12_000,
     "memory.always": 12_000,
     "frame.project": 2_000,
-    "frame.space": 6_000,
+    "frame.space": 8_000,
     "frame.fleet": 1_200,
     "frame.host_state": 8_000,
     "frame.tools": 12_000,

@@ -391,7 +391,7 @@ def test_a_version_1_index_is_rekeyed_by_node_rowid_when_opened(tmp_path: Path) 
         assert index_fingerprint(brain) == fingerprint, "the re-keyed index is the rebuilt one"
 
     pairs, orphans, version = _fts_keys(db)
-    assert version == str(SCHEMA_VERSION) == "2"
+    assert version == str(SCHEMA_VERSION) == "3"
     assert orphans == 0
     assert len(pairs) == 8 and all(node == fts for node, fts in pairs)
     assert after == before

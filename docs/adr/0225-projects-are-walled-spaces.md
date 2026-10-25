@@ -133,3 +133,97 @@ vocabulary.
 - The space-stamped memory, the recall filter and the sleep partition land in a second work
   package; until then `spaces/memory.py`'s seams answer zero counts, an empty memory page, nothing
   to make core's and nothing to erase, which is the truth while nothing carries a stamp.
+
+## Memory wall
+
+Date: 2026-10-25 (second work package). Registry: `agent-memory` / owner-and-counterpart scope -
+the scope is stamped once, at write, by the path that captured the memory; recall applies the
+request's view and never a value the memory chose for itself; moving a memory across scopes is an
+explicit act, never a query that happens to span them.
+
+**The stamp.** `Brain.append_episode`, `write_fact` and `write_procedural` take `space` (`""` or a
+`spc_` id, anything else `ValueError`) and write `space: "spc_…"` after every other key but
+`device`, so a core file and a file from a PC that never paired keep their bytes.
+`companion_node.space` is filled from it by the writers, by `receive_file` and by the rebuild's
+per-file step, which reads a `space:` value that is not a space id as `?` - a stamp no view
+contains (fail closed, never core). The index is `companion_node_by_space (space, kind,
+importance)`: the contract's `(space, kind)` with `importance` third, because recall's population
+counts ask `importance > 0` (or `>= 4`) inside the wall and without it each count read every row
+of its kind (0.09 ms to 1.7 ms over 5,000 nodes, most of a measured 10% recall regression; with it
+the regression is under 3%).
+
+**Upgrading an index (schema 2 to 3).** Not a rebuild. On first open the brain adds
+`companion_node.space` and `companion_proposal.space` (`ADD COLUMN ... DEFAULT ''`: every row reads
+core), creates the index, and - because a v2 build may have received a stamped file from a paired
+device - reads the header of every indexed episode, fact and procedural file once and sets the
+column for each stamped one, in the same transaction as the stamp. Index-only values (a demotion,
+fade, use) survive, which a rebuild would reset. A file the scan cannot read keeps its row, as a
+rebuild would skip it. A build older than this one opening a v3 index leaves the stamp at 3 and
+writes `''` for its own rows, which is right: it stamps nothing.
+
+**What crosses the wall at write, and what is refused.** A fact or procedural written in space S
+cites only live episodes whose space is in `visible_spaces(S)` - refused as `ProvenanceError`, the
+same path as a dead source, so a project fact never stands on another project's words and a core
+fact never on a project's. It closes (`supersedes`) only memories of exactly S: recall serves the
+successor and never what it closed, everywhere, so a project fact closing a core one would take it
+from core and every other project. `receive_file` runs the same gate with the file's own stamp.
+
+**Recall.** `recall` and `recall_whole` take `space`; every lane adds `n.space IN (...)` for
+`visible_spaces` of it, and a space with no file on disk is answered as core (`seen_from`, the one
+place recall stats the disk). The always block - `memory.always`, static - is `space = ''` alone.
+`space_always(brain, space)` is a space's own always tier, ranked, capped and quoted as
+`memory.always` is, with its honest total; `frame.space` renders it as "Kept for this project", and
+`recall` in that space leaves those memories out of the keyword lane so nothing prints twice. Its
+budget is 8,000 characters (a brief at the cap, 24 apps and a full kept tier at the 400-character
+line cap measure 7,745); a tier whose every character JSON-escapes still runs past it and is a
+warning, never a cut. `core.recall` answers in the turn's space.
+
+**Who stamps.** The browser lane stamps every episode a turn appends with `TurnContext.space_id`;
+`core.write_fact` and `core.checkpoint` stamp with it. A card carries the space of the turn that
+filed it on its row (`companion_approval.space_id`, an added column) and `POST /decisions/<id>`
+answers in that space - the case's when the card's turn ran under one - so an approved fact and a
+declined card's episode land where they were asked for, however long the card waited; a card whose
+project was erased since is refused 400 `unknown_ref`, and an answer counts as a turn in the space
+while it runs, so an erase waits for it. A delegated task stores the delegating turn's
+`space_id` (`companion_task.space_id`, not on the wire); every turn of the task runs in it whatever
+the window sends, its harvest episode is stamped with it, and a task whose project is gone is
+refused before its turn. A chore approval's episode and facts carry the case's space. A writer with
+no turn writes core.
+
+**Sleep.** The cycle reads the window as before and partitions its take by the episode's stamp:
+core first, then each space by its most recent episode; an episode stamped with a space that has no
+file is read past, counted (`space_unknown`) and journalled, never distilled. Every partition is
+compressed before anything is written, so a failed leg still writes nothing and keeps the
+boundary. The take already holds the 120-episode and 30,000-character caps; the fact, procedural
+and supersede caps are spent across partitions in that order, so they stay the cycle's totals.
+Each partition is merged on its own: its shortlist and key prefilter see only what its space can
+see, a verdict that would close a memory of another space is written as new beside it, and the
+forget bars that apply are those its space can see (a core forget bars a key everywhere, a
+project's only there). Facts, procedurals and contradiction proposals carry the partition's space;
+a forget proposal and the marker a forget writes carry the forgotten memory's, and the marker cites
+those of its sources that space can still see.
+
+**The two explicit acts.** *Make core* (`Brain.unstamp`) rewrites the file whole without its
+`space:` line - every other byte kept - and sets the row's `space` and `content_hash`; only a
+fact or procedural whose file says that space is moved, else 404 `unknown_ref`. Its citations are
+kept, so a core fact may cite a project's episode; recall never follows a citation, so nothing of
+the episode is shown outside its project. *Erase* (`Brain.erase_space`) collects what the index
+holds under the space and what the disk holds under it (a file whose row a crash lost), deletes
+the files first and then every row naming them - node, full-text (by rowid and by `node_id`),
+fact, procedural, provenance, supersedence on either side, use and fade - and the proposals
+stamped with the space; files first, so an erase pressed again after a crash still finds the rows.
+A core memory citing an erased episode keeps its citation, as the existing code does for any
+source that is gone: recall reads no provenance, so it is recalled as before; the rebuild writes
+`sources` back as the file says without re-running the gate (`reconcile.index_file`); only a new
+write must cite live, visible episodes, so a forget marker for it cites whichever sources remain.
+
+**Amended above.** "A brain's first start under it rebuilds the index from disk" is the column
+migration and header scan described here, not a rebuild; `frame.space`'s budget is 8,000, not
+6,000; and the seams in `spaces/memory.py` now answer from the stamp.
+
+**Known limits.** A stamped memory replicates to a paired PC like any other, but the space file
+does not, so there it is visible nowhere until projects replicate; erasing a project on one PC does
+not erase its copies on another. A promoted fact whose sources are all in its old project cannot be
+forgotten through a proposal: its marker is core's and would cite nothing core can see. A downgrade
+to a build before the wall that rebuilds its index writes `''` for stamped files, and the next
+open of this build does not rescan (the stamp says 3); `athena brain reconcile` restores the wall.

@@ -39,7 +39,9 @@ once with no interview.
 id, or ``""`` for Athena's core. The key is new and the schema is not: a file written before
 projects has no key and reads as core, and a rewrite keeps whatever the block held. It is set when
 the approval is written (``POST /adopt``'s ``space_id``) and moved by :meth:`CaseBook.set_space`;
-a reopen keeps the case's own unless the reopening names another.
+a reopen keeps the case's own unless the reopening names another. The approval's episode and the
+facts drawn from it are written in that project (ADR 0225, "Memory wall"): what the person said
+about a chore filed in a project is remembered inside it, and a core chore's in core.
 """
 
 from __future__ import annotations
@@ -334,7 +336,7 @@ class CaseBook:
         its slots and answers, never what a lane or a document set since. The session's case id
         is minted on its first save and kept; a reopened session already holds its case's. Raises
         ``ValueError`` for a rev never drafted, and what the brain raises (a refused fact, a disk
-        error).
+        error). The episode and the facts are stamped with the case's project (ADR 0225).
         """
         with self._lock, session.case_lock:
             draft = session.draft_of(rev)
@@ -351,6 +353,8 @@ class CaseBook:
                 playbook_id = session.playbook_id
                 asked_space = session.space_id
             case_id = case_id or ids.mint("project")
+            # The project the session was opened in, else the one the case already had.
+            space_id = asked_space or (prior.space_id if prior is not None else "")
             now = now_iso()
             title = _s(playbook.get("short_title")) or _s(playbook.get("title")) or playbook_id
             quotes = _quotes(answers)
@@ -369,6 +373,7 @@ class CaseBook:
                 marked("\n".join(lines), origin="adopt", project_id=case_id),
                 "user",
                 session_id=ids.conversation_for_project(case_id),
+                space=space_id,
             )
 
             kept: list[CaseSlot] = []
@@ -382,6 +387,7 @@ class CaseBook:
                         f'(my case {case_id} of "{title}")',
                         scope="project",
                         sources=[episode.id],
+                        space=space_id,
                     )
                     confirmed_at, fact_id = now, fact.id
                 elif slot.status == "confirmed" and held is not None and held.confirmed_at:
@@ -420,8 +426,7 @@ class CaseBook:
                 open_slot_ids=brief.open_slot_ids,
                 slots=tuple(kept),
                 approvals=(*(prior.approvals if prior is not None else ()), approval),
-                # The project the session was opened in, else the one the case already had.
-                space_id=asked_space or (prior.space_id if prior is not None else ""),
+                space_id=space_id,
             )
             extra = self._extra(case_id)
             self.brain.write_goal(

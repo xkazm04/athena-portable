@@ -270,6 +270,10 @@ class GateHook:
         # built by hand with no minted turn id files the card as it always did.
         if ids.is_id("turn", ctx.turn_id):
             optional["turn_id"] = ctx.turn_id
+        # The project the turn runs in (ADR 0225), so the answer runs - and writes - there too.
+        # Core files the card as it always did.
+        if ctx.space_id:
+            optional["space_id"] = ctx.space_id
         card = self.approvals.create(
             entry.name,
             dict(params),

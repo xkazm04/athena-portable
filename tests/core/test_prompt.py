@@ -537,10 +537,11 @@ def test_an_empty_space_says_so_and_a_capped_kept_list_announces_itself() -> Non
 
 
 def test_the_space_budget_is_a_tripwire_that_a_full_brief_fits_under() -> None:
-    """6,000 characters. A brief at its cap, 24 apps and a full always tier (eight facts, six
-    procedurals) of half-cap lines fit; a full tier at the 400-character line cap does not, and
-    then the block is a warning on the composition, never a cut (budgets are tripwires)."""
-    assert BUDGETS["frame.space"] == 6_000
+    """8,000 characters. A brief at its cap, 24 apps and a full always tier (eight facts, six
+    procedurals) at the 400-character line cap fit - measured 7,745; a full tier whose every
+    character JSON escapes doubles does not, and then the block is a warning on the composition,
+    never a cut (budgets are tripwires)."""
+    assert BUDGETS["frame.space"] == 8_000
     longest = Space(
         id=SPACE.id,
         name="x" * 60,
@@ -548,14 +549,14 @@ def test_the_space_budget_is_a_tripwire_that_a_full_brief_fits_under() -> None:
         apps=tuple(f"https://app{n}.example" for n in range(24)),
     )
     count = recall_module.ALWAYS_FACTS + recall_module.ALWAYS_PROCEDURALS
-    half = '"' + "k" * (recall_module.ALWAYS_LINE_CAP // 2) + '"'
-    result = composed(space=SpaceFrame(longest, (half,) * count, count))
+    full = recall_module.memory_line("k" * recall_module.ALWAYS_LINE_CAP)
+    result = composed(space=SpaceFrame(longest, (full,) * count, count))
     block = result.frame.block("frame.space")
     assert block is not None and block.size <= BUDGETS["frame.space"]
     assert result.warnings == ()
 
-    full = '"' + "k" * recall_module.ALWAYS_LINE_CAP + '"'
-    over = composed(space=SpaceFrame(longest, (full,) * count, count))
+    escaped = recall_module.memory_line('"' * recall_module.ALWAYS_LINE_CAP)
+    over = composed(space=SpaceFrame(longest, (escaped,) * count, count))
     block = over.frame.block("frame.space")
-    assert block is not None and block.text.count(full) == count
+    assert block is not None and block.text.count(escaped) == count
     assert any("frame.space" in warning for warning in over.warnings)

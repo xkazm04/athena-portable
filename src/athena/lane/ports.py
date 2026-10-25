@@ -166,7 +166,12 @@ class BrainPort(Protocol):
     """
 
     def append_episode(
-        self, content: str, role: str = "user", *, session_id: str | None = None
+        self,
+        content: str,
+        role: str = "user",
+        *,
+        session_id: str | None = None,
+        space: str = "",
     ) -> EpisodeRef: ...
 
 
@@ -190,9 +195,10 @@ class FleetPort(Protocol):
     def prompt_text(self) -> str | None: ...
 
 
-RecallFn = Callable[[str], RecallPort]
-"""Recall for one message. ``lambda q: recall(brain, q)`` at wiring time; ``None`` in a test that
-is about something else, which composes a frame with no memory in it rather than a fake one."""
+RecallFn = Callable[[str, str], RecallPort]
+"""Recall for one message in one space (ADR 0225): ``(message, space_id)``, ``""`` for core.
+``lambda q, space: recall(brain, q, space=space)`` at wiring time; ``None`` in a test that is about
+something else, which composes a frame with no memory in it rather than a fake one."""
 
 
 def names_of(entries: Sequence[ToolEntry]) -> list[str]:

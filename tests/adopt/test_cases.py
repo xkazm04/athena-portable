@@ -433,6 +433,14 @@ def test_a_chore_adopted_in_a_project_is_filed_there_and_says_so(live: Live) -> 
     assert status == 200
     (row,) = [r for r in body["cases"] if r["case_id"] == case_id]
     assert row["space_id"] == space_id
+    # What the approval remembers is the project's (ADR 0225, "Memory wall"): its episode and
+    # every fact drawn from it carry the stamp, so they are recalled there and nowhere else.
+    brain = live.local.brain
+    remembered = [saved.episode_id, *(slot.fact_id for slot in saved.slots if slot.fact_id)]
+    assert len(remembered) > 1
+    for node_id in remembered:
+        node = brain.node(node_id)
+        assert node is not None and node.space == space_id, node_id
 
 
 def test_a_reopen_that_names_no_project_keeps_the_cases_own(live: Live) -> None:
@@ -455,6 +463,8 @@ def test_a_chore_adopted_in_no_project_is_cores(live: Live) -> None:
     _, case_id = approve_one(live, clear_script())
     saved = CaseBook(live.local.brain).load(case_id)
     assert saved is not None and saved.space_id == ""
+    node = live.local.brain.node(saved.episode_id)
+    assert node is not None and node.space == ""
 
 
 def test_post_adopt_refuses_a_space_that_is_not_one(live: Live) -> None:

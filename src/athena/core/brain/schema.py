@@ -15,7 +15,11 @@ from __future__ import annotations
 #: can tell an old index from a new one instead of guessing from the presence of a column.
 #: Version 2 keys each ``companion_fts`` row by its node's rowid (ADR 0077); an index stamped 1, or
 #: not stamped, is re-keyed when a :class:`~athena.core.brain.store.Brain` opens it.
-SCHEMA_VERSION = 2
+#: Version 3 adds the memory wall (ADR 0225): ``companion_node.space`` and
+#: ``companion_proposal.space``, and the ``companion_node_by_space`` index. An index stamped below 3
+#: gains the columns on open (:data:`SPACE_COLUMNS`) and has its ``space`` column filled from the
+#: stamps on disk, in the same transaction - see :class:`~athena.core.brain.store.Brain`.
+SCHEMA_VERSION = 3
 
 SCHEMA: tuple[str, ...] = (
     # -- index core: one row per memory, derivable from its file ------------------------------
@@ -30,7 +34,8 @@ SCHEMA: tuple[str, ...] = (
         tags_json TEXT NOT NULL DEFAULT '[]',
         machine INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        space TEXT NOT NULL DEFAULT ''
     )""",
     "CREATE INDEX IF NOT EXISTS idx_node_kind ON companion_node(kind, importance)",
     "CREATE INDEX IF NOT EXISTS idx_node_created ON companion_node(created_at)",
@@ -111,7 +116,8 @@ SCHEMA: tuple[str, ...] = (
         summary TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'open',
         created_at TEXT NOT NULL,
-        decided_at TEXT
+        decided_at TEXT,
+        space TEXT NOT NULL DEFAULT ''
     )""",
     "CREATE INDEX IF NOT EXISTS idx_proposal_status ON companion_proposal(status, created_at)",
     # When recall last showed a distilled memory, and how often: what keeps it from fading.
@@ -127,6 +133,27 @@ SCHEMA: tuple[str, ...] = (
         steps INTEGER NOT NULL DEFAULT 0,
         at TEXT NOT NULL
     )""",
+)
+
+#: The memory wall's columns (ADR 0225), as ``(table, column, declaration)``. ``CREATE TABLE IF NOT
+#: EXISTS`` leaves an index made before them without them, so a brain adds each one that is missing
+#: when it opens, before :data:`SPACE_INDEXES` - which name the column - are created. ``space`` is
+#: the stamp a memory's file carries in its ``space:`` key, ``''`` for core (the absent-value
+#: convention: never NULL). On ``companion_node`` it is derived from disk like every other column;
+#: on ``companion_proposal`` it is the partition of the sleep cycle that opened the proposal.
+SPACE_COLUMNS: tuple[tuple[str, str, str], ...] = (
+    ("companion_node", "space", "TEXT NOT NULL DEFAULT ''"),
+    ("companion_proposal", "space", "TEXT NOT NULL DEFAULT ''"),
+)
+
+#: Created after :data:`SPACE_COLUMNS` are in place. ``(space, kind)`` is the shape every question
+#: of the wall asks: a space's counts by kind, its memory page, and erase's list of what it holds.
+#: ``importance`` rides third because recall's population counts ask ``kind = ? AND importance > 0``
+#: (or ``>= 4``) inside the wall: with it the counts stay index-only, as they were on
+#: ``idx_node_kind`` before the wall; without it each count read every row of its kind (measured:
+#: 0.09 ms -> 1.7 ms over 5,000 nodes, the bulk of a 10% recall regression).
+SPACE_INDEXES: tuple[str, ...] = (
+    "CREATE INDEX IF NOT EXISTS companion_node_by_space ON companion_node(space, kind, importance)",
 )
 
 #: The tables the disk tree owns. A reconcile empties exactly these and rebuilds them from the

@@ -29,6 +29,16 @@ stamp with them - through the same disk-first write, the same provenance gate an
 per-file index function the rebuild uses. A brain with no device writes exactly the bytes it
 always did.
 
+**A memory says which space it was written in** (ADR 0225). A writer given a ``space`` stamps
+``space: "spc_<hex>"`` after every other key but the device's, and omits it for core (``""``), so a
+memory written outside every project is the bytes it always was. The stamp is written once, here,
+by the path that captured the memory, and ``companion_node.space`` is derived from it like every
+other column - a rebuild restores it. A distilled memory written in a space may cite only episodes
+that space can see (:func:`~athena.contracts.spaces.visible_spaces`), and may close only memories of
+its own space: a wall that a citation or a supersede could cross would not be one. Moving a memory
+out of a space is an explicit act (:meth:`Brain.unstamp`), and so is erasing one
+(:meth:`Brain.erase_space`); no query that happens to span spaces moves anything.
+
 **Every pure read takes a read handle, including this class's own.** :meth:`node`,
 :meth:`read_body`, :meth:`counts`, :meth:`sources_of` and :meth:`live_episode_ids` once read
 through the writer connection, which was correct on one thread and wrong on several: a daemon read
@@ -63,8 +73,9 @@ from typing import Any
 
 from athena.contracts import ids
 from athena.contracts.channel import now_iso
+from athena.contracts.spaces import CORE, visible_spaces
 from athena.core.brain import frontmatter, paths, text
-from athena.core.brain.schema import SCHEMA, SCHEMA_VERSION
+from athena.core.brain.schema import SCHEMA, SCHEMA_VERSION, SPACE_COLUMNS, SPACE_INDEXES
 
 #: The scopes each distilled kind may be filed under. A scope is a directory on disk, so an
 #: unknown one would write outside the tree a reconcile walks and the memory would vanish on
@@ -133,6 +144,39 @@ def replicated_path(kind: str, rel: str) -> str:
     return found.group("id")
 
 
+#: The frontmatter key naming the space a memory was written in (ADR 0225). Written on an episode,
+#: fact or procedural after every other key but :data:`DEVICE_KEY`, and only for a space: core
+#: omits it, so every file written outside a project - all of them, before projects - keeps its
+#: bytes. Unlike the device it is a column too (``companion_node.space``): recall filters on it.
+SPACE_KEY = "space"
+#: What :func:`space_of` answers for a ``space:`` key that is present but is not a space id: a
+#: value no space can ever be, so the memory is outside every wall and visible nowhere (fail
+#: closed). Never core: a stamp that cannot be read is not the absence of one.
+UNKNOWN_SPACE = "?"
+#: The kinds a space stamp is written on and erased with (ADR 0225).
+STAMPED_KINDS: tuple[str, ...] = ("episode", "fact", "procedural")
+
+
+def space_of(meta: dict[str, Any]) -> str:
+    """The space a parsed header says the memory was written in: ``""`` (core) when there is no
+    ``space:`` key or it is empty, the ``spc_`` id when it is one, else :data:`UNKNOWN_SPACE`."""
+    if SPACE_KEY not in meta:
+        return CORE
+    value = meta[SPACE_KEY]
+    if value == CORE:
+        return CORE
+    return value if isinstance(value, str) and ids.is_id("space", value) else UNKNOWN_SPACE
+
+
+def check_space(space: str) -> str:
+    """``space`` if a writer may stamp it - core (``""``) or a minted space id - else ValueError.
+    Whether the space's file exists is the caller's question: a stamp naming a space that has none
+    is invisible everywhere, so a writer that raced an erase writes a memory no turn will see."""
+    if space != CORE and not ids.is_id("space", space):
+        raise ValueError(f"not a space id: {space!r}")
+    return space
+
+
 def device_of(meta: dict[str, Any]) -> str | None:
     """The device a parsed header says wrote the memory, or ``None``: legacy, or not a device id."""
     value = meta.get(DEVICE_KEY)
@@ -196,6 +240,8 @@ class NodeRow:
     session_id: str | None = None
     machine: bool = False
     tags: list[str] = field(default_factory=list)
+    #: The space the memory was written in (ADR 0225), ``""`` for core.
+    space: str = CORE
 
 
 def sha256(payload: str) -> str:
@@ -214,12 +260,14 @@ def node_from_row(row: Sequence[Any]) -> NodeRow:
         session_id=None if row[6] is None else str(row[6]),
         machine=bool(row[7]),
         tags=list(json.loads(str(row[8]))) if row[8] else [],
+        space=str(row[9] or CORE) if len(row) > 9 else CORE,
     )
 
 
 #: The projection :func:`node_from_row` reads, in order. One string so the SELECTs cannot drift.
 NODE_COLUMNS = (
-    "id, kind, file_path, body_excerpt, importance, created_at, session_id, machine, tags_json"
+    "id, kind, file_path, body_excerpt, importance, created_at, session_id, machine, tags_json, "
+    "space"
 )
 
 
@@ -273,11 +321,18 @@ class Brain:
             with self.write_txn():
                 for statement in SCHEMA:
                     self._con.execute(statement)
+                # The wall's columns before its index, which names them (ADR 0225). Asked of the
+                # table, not of the stamp: a stamp says what a build meant to do, the table what is.
+                _add_space_columns(self._con)
+                for statement in SPACE_INDEXES:
+                    self._con.execute(statement)
                 # Read before the stamp below overwrites it: an older index is migrated in this same
                 # transaction, so no reader ever sees it half re-keyed.
                 stored = _stored_version(self._con)
                 if stored < 2:
                     _rekey_fts(self._con)
+                if stored < 3:
+                    _fill_spaces(self._con, self.root)
                 # Never lower the stamp: an older build opening a newer index must leave it, or the
                 # newer build re-runs its migration.
                 self._con.execute(
@@ -379,8 +434,12 @@ class Brain:
         value = device() if callable(device) else device
         return value if isinstance(value, str) and ids.is_id("device", value) else None
 
-    def _stamped(self, header: list[tuple[str, Any]]) -> list[tuple[str, Any]]:
-        """``header`` with :data:`DEVICE_KEY` last when this brain has a device, else unchanged."""
+    def _stamped(self, header: list[tuple[str, Any]], space: str = CORE) -> list[tuple[str, Any]]:
+        """``header`` with :data:`SPACE_KEY` after it for a space (ADR 0225), then
+        :data:`DEVICE_KEY` last when this brain has a device; core on a brain with no device is
+        ``header`` unchanged."""
+        if space != CORE:
+            header = [*header, (SPACE_KEY, space)]
         device = self.device_id
         return header if device is None else [*header, (DEVICE_KEY, device)]
 
@@ -409,12 +468,15 @@ class Brain:
         session_id: str | None = None,
         importance: int | None = None,
         created: datetime | None = None,
+        space: str = CORE,
     ) -> MemoryRef:
         """Append one episode. Episodes are the only kind that is its own provenance.
 
         The file is ``episodes/YYYY/MM/DD/<ep_id>_<role>.md`` with the header ref §8 fixes:
-        ``id, type, role, session, created``, in that order.
+        ``id, type, role, session, created``, in that order. ``space`` is the project the turn
+        that said it ran in (ADR 0225), stamped after them; core omits it.
         """
+        check_space(space)
         body = _lf(content).strip()
         if not body:
             raise ValueError("refusing to append an empty episode")
@@ -436,7 +498,8 @@ class Brain:
                     ("role", role),
                     ("session", sid),
                     ("created", created_at),
-                ]
+                ],
+                space,
             ),
             body,
         )
@@ -461,6 +524,7 @@ class Brain:
                 machine=machine,
                 tags=[f"role:{role}"],
                 fts_tags=f"session:{sid} role:{role}",
+                space=space,
             )
         return MemoryRef(node_id, rel, "episode")
 
@@ -468,34 +532,48 @@ class Brain:
 
     def live_episode_ids(self, candidates: Sequence[str]) -> set[str]:
         """Which of ``candidates`` are episodes of this brain that have not been demoted."""
+        return set(self.live_episode_spaces(candidates))
+
+    def live_episode_spaces(self, candidates: Sequence[str]) -> dict[str, str]:
+        """The live episodes among ``candidates``, each with the space it was written in."""
         if not candidates:
-            return set()
+            return {}
         marks = ",".join("?" for _ in candidates)
         with closing(self.read_connection()) as con:
             rows = con.execute(
-                f"""SELECT id FROM companion_node
+                f"""SELECT id, space FROM companion_node
                     WHERE kind = 'episode' AND importance > 0 AND id IN ({marks})""",
                 tuple(candidates),
             ).fetchall()
-        return {str(row[0]) for row in rows}
+        return {str(row[0]): str(row[1] or CORE) for row in rows}
 
-    def _require_provenance(self, sources: Sequence[str]) -> list[str]:
+    def _require_provenance(self, sources: Sequence[str], space: str = CORE) -> list[str]:
         """The gate of README §2 invariant 2. Deduplicates, preserving the caller's order.
 
-        Two refusals, and they read differently on purpose. An empty list is a writer that never
+        Three refusals, and they read differently on purpose. An empty list is a writer that never
         had evidence; a dangling id is a writer that cited something this brain cannot open —
-        a hallucinated id, an episode from another brain, or one that has been demoted since.
+        a hallucinated id, an episode from another brain, or one that has been demoted since. The
+        third is the wall (ADR 0225): a memory written in ``space`` may cite only episodes that
+        space can see - its own and core's - so a fact in one project can never stand on what was
+        said in another, and a core fact never on anything said inside a project.
         """
         if not sources:
             raise ProvenanceError("a fact or a procedural must cite at least one live episode id")
         malformed = [s for s in sources if not ids.is_id("episode", s)]
         if malformed:
             raise ProvenanceError(f"sources are not episode ids: {sorted(malformed)}")
-        live = self.live_episode_ids(sources)
+        live = self.live_episode_spaces(sources)
         dangling = [s for s in sources if s not in live]
         if dangling:
             raise ProvenanceError(
                 f"sources are not live episodes of this brain: {sorted(dangling)}"
+            )
+        seen = visible_spaces(space)
+        walled = [s for s in sources if live[s] not in seen]
+        if walled:
+            where = "core" if space == CORE else f"space {space}"
+            raise ProvenanceError(
+                f"sources are not live episodes visible in {where}: {sorted(walled)}"
             )
         return list(dict.fromkeys(sources))
 
@@ -545,6 +623,7 @@ class Brain:
         every_turn: bool = False,
         supersedes: Sequence[str] = (),
         retired: bool = False,
+        space: str = CORE,
     ) -> MemoryRef:
         """Write one distilled claim, citing the episodes it was drawn from.
 
@@ -561,7 +640,11 @@ class Brain:
         is hidden from the start (importance 0): the marker a person's "forget" leaves, which must
         travel to every paired device like any other fact. The two keys are on disk, so a rebuild
         restores both; a retired fact cannot also ride every turn.
+
+        ``space`` is the project the claim was captured in (ADR 0225), ``""`` for core: stamped on
+        disk, it may cite only episodes that space can see and close only that space's memories.
         """
+        check_space(space)
         if retired and every_turn:
             raise ValueError("a retired fact cannot ride every turn")
         if scope not in FACT_SCOPES:
@@ -572,8 +655,8 @@ class Brain:
         body = _lf(value).strip()
         if not body:
             raise ValueError("refusing to write an empty fact")
-        cited = self._require_provenance(sources)
-        closes = self._require_supersedable(supersedes)
+        cited = self._require_provenance(sources, space)
+        closes = self._require_supersedable(supersedes, space)
 
         node_id = ids.mint("fact")
         created_at = now_iso()
@@ -593,7 +676,7 @@ class Brain:
             importance = ALWAYS_IMPORTANCE
         if retired:
             importance = 0
-        file_text = frontmatter.render(self._stamped(header), body)
+        file_text = frontmatter.render(self._stamped(header, space), body)
         self._write_file(rel, file_text)
 
         with self.write_txn() as con:
@@ -607,6 +690,7 @@ class Brain:
                 importance=importance,
                 created_at=created_at,
                 tags=list(tags or []),
+                space=space,
             )
             con.execute(
                 """INSERT INTO companion_fact (id, scope, fact_key, confidence)
@@ -629,11 +713,14 @@ class Brain:
         tags: Sequence[str] | None = None,
         supersedes: Sequence[str] = (),
         retired: bool = False,
+        space: str = CORE,
     ) -> MemoryRef:
         """Write one "when X, do Y" rule, citing the episodes that taught it.
 
-        ``supersedes`` and ``retired`` mean what they mean on :meth:`write_fact` (ADR 0143).
+        ``supersedes`` and ``retired`` mean what they mean on :meth:`write_fact` (ADR 0143), and so
+        does ``space`` (ADR 0225).
         """
+        check_space(space)
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
         _require_finite(confidence)
@@ -642,8 +729,8 @@ class Brain:
         body = _lf(behavior).strip()
         if not body:
             raise ValueError("refusing to write an empty procedural")
-        cited = self._require_provenance(sources)
-        closes = self._require_supersedable(supersedes)
+        cited = self._require_provenance(sources, space)
+        closes = self._require_supersedable(supersedes, space)
 
         node_id = ids.mint("procedural")
         created_at = now_iso()
@@ -659,7 +746,8 @@ class Brain:
                     ("created", created_at),
                     ("sources", cited),
                     *_lineage(closes, retired),
-                ]
+                ],
+                space,
             ),
             body,
         )
@@ -678,6 +766,7 @@ class Brain:
                 importance=importance,
                 created_at=created_at,
                 tags=list(tags or []),
+                space=space,
             )
             con.execute(
                 """INSERT INTO companion_procedural (id, scope, trigger_pattern, confidence)
@@ -688,12 +777,16 @@ class Brain:
             self.index_supersedes(con, node_id, closes)
         return MemoryRef(node_id, rel, "procedural")
 
-    def _require_supersedable(self, supersedes: Sequence[str]) -> list[str]:
+    def _require_supersedable(self, supersedes: Sequence[str], space: str = CORE) -> list[str]:
         """The ids a new memory may close: facts or procedurals this brain holds. Deduplicated.
 
         A sleep cycle's merge leg names them, and a model's reference is untrusted until it is
         checked (ADR 0143): an id that is not a distilled memory here is refused, before the file
         is written, rather than recorded as closing something that was never there.
+
+        Only a memory of the writer's own ``space`` may be closed (ADR 0225). Recall serves the
+        successor and never what it closed, in every space: a project's fact closing a core one
+        would take it from core and from every other project, where the successor is not visible.
         """
         wanted = list(dict.fromkeys(supersedes))
         if not wanted:
@@ -706,14 +799,18 @@ class Brain:
         marks = ",".join("?" for _ in wanted)
         with closing(self.read_connection()) as con:
             rows = con.execute(
-                f"""SELECT id FROM companion_node
+                f"""SELECT id, space FROM companion_node
                     WHERE kind IN ('fact', 'procedural') AND id IN ({marks})""",
                 tuple(wanted),
             ).fetchall()
-        known = {str(row[0]) for row in rows}
+        known = {str(row[0]): str(row[1] or CORE) for row in rows}
         missing = [s for s in wanted if s not in known]
         if missing:
             raise ValueError(f"supersedes names memories this brain does not hold: {missing}")
+        walled = [s for s in wanted if known[s] != space]
+        if walled:
+            where = "core" if space == CORE else f"space {space}"
+            raise ValueError(f"supersedes names memories that are not {where}'s: {walled}")
         return wanted
 
     # -- goals ---------------------------------------------------------------------------------
@@ -879,7 +976,7 @@ class Brain:
             sources = meta.get("sources")
             if not isinstance(sources, list):
                 raise ProvenanceError(f"{rel}: a fact or a procedural must cite its episodes")
-            self._require_provenance([str(source) for source in sources])
+            self._require_provenance([str(source) for source in sources], space_of(meta))
             checked = reconcile.confidence_of(meta)
             if checked is None:
                 raise ValueError(f"{rel}: confidence is not a number")
@@ -937,6 +1034,7 @@ class Brain:
         machine: bool = False,
         tags: Sequence[str] | None = None,
         fts_tags: str | None = None,
+        space: str = CORE,
     ) -> None:
         tag_list = list(tags or [])
         # An upsert, not INSERT OR REPLACE: a replace deletes the row and gives the new one a new
@@ -944,14 +1042,15 @@ class Brain:
         ((rowid,),) = con.execute(
             """INSERT INTO companion_node
                (id, kind, session_id, file_path, content_hash, importance, body_excerpt,
-                tags_json, machine, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tags_json, machine, created_at, updated_at, space)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT (id) DO UPDATE SET
                  kind = excluded.kind, session_id = excluded.session_id,
                  file_path = excluded.file_path, content_hash = excluded.content_hash,
                  importance = excluded.importance, body_excerpt = excluded.body_excerpt,
                  tags_json = excluded.tags_json, machine = excluded.machine,
-                 created_at = excluded.created_at, updated_at = excluded.updated_at
+                 created_at = excluded.created_at, updated_at = excluded.updated_at,
+                 space = excluded.space
                RETURNING rowid""",
             (
                 node_id,
@@ -965,6 +1064,7 @@ class Brain:
                 1 if machine else 0,
                 created_at,
                 created_at,
+                space,
             ),
         ).fetchall()
         con.execute("DELETE FROM companion_fts WHERE rowid = ?", (rowid,))
@@ -1061,6 +1161,109 @@ class Brain:
             self._write_lock.release()
         return True
 
+    # -- the memory wall's two explicit acts (ADR 0225) ------------------------------------------
+
+    def unstamp(self, node_id: str, space: str) -> str | None:
+        """Move the fact or procedural ``node_id`` out of ``space`` into core: its file rewritten
+        whole without its ``space:`` line, its row's ``space`` and ``content_hash`` updated.
+
+        Answers the memory's kind, or ``None`` when no fact or procedural of that space has that
+        id - on disk, which is the truth: a row that says the space over a file that does not is
+        not moved. Every other byte of the file is kept, so the file is the one its writer would
+        have written in core, plus nothing; every index-only column (importance, fade, use) is
+        kept too, which a reindex would reset. Its citations are kept as they are: a promoted
+        memory may cite what was said in the space, and a core memory's citation of an episode
+        nobody can see is recorded, never followed by recall (the episode block draws on its own).
+        """
+        if space == CORE or not ids.is_id("space", space):
+            return None
+        with self._write_lock:
+            with closing(self.read_connection()) as con:
+                row = con.execute(
+                    "SELECT kind, file_path, space FROM companion_node WHERE id = ?", (node_id,)
+                ).fetchone()
+            if row is None or row[0] not in SUPERSEDABLE_KINDS or row[2] != space:
+                return None
+            kind, rel = str(row[0]), str(row[1])
+            try:
+                raw = (self.root / rel).read_bytes().decode("utf-8")
+            except (OSError, UnicodeDecodeError):
+                return None
+            moved = _without_space(raw, space)
+            if moved is None:
+                return None
+            self._write_file(rel, moved)
+            with self.write_txn() as con:
+                con.execute(
+                    "UPDATE companion_node SET space = ?, content_hash = ? WHERE id = ?",
+                    (CORE, sha256(_lf(moved)), node_id),
+                )
+        return kind
+
+    def erase_space(self, space: str) -> dict[str, int]:
+        """Erase every episode, fact and procedural stamped with ``space``: the files, then every
+        index row of them, then the sleep proposals stamped with it. Answers how many of each kind
+        went, as ``{"episode": n, "fact": n, "procedural": n}``.
+
+        What is erased is what the index holds under ``space`` **and** what the disk holds under it
+        - a file written and never indexed (a crash between the two) is found by its header, so it
+        cannot come back on the next rebuild. The rows are every table that names one of them:
+        ``companion_node`` and its FTS row, the fact and procedural sidecars, provenance (the
+        memory's own citations), supersedence (either side), and the use and fade marks. A memory
+        of another space or of core that *cites* an erased episode keeps its citation: the row is
+        that memory's, and what it records is what its file says (a rebuild writes it back).
+
+        Files go first. A crash part way leaves rows whose files are gone, which the next erase
+        finds again in the index and removes; rows first would leave files no index names, which
+        an erase pressed again could not see.
+        """
+        if not ids.is_id("space", space):
+            raise ValueError(f"not a space id: {space!r}")
+        with self._write_lock:
+            found: dict[str, tuple[str, set[str]]] = {}
+            with closing(self.read_connection()) as con:
+                marks = ",".join("?" for _ in STAMPED_KINDS)
+                for node_id, kind, rel in con.execute(
+                    f"""SELECT id, kind, file_path FROM companion_node
+                        WHERE space = ? AND kind IN ({marks})""",
+                    (space, *STAMPED_KINDS),
+                ).fetchall():
+                    found[str(node_id)] = (str(kind), {str(rel)})
+            for node_id, kind, rel in _stamped_on_disk(self.root, space):
+                held = found.setdefault(node_id, (kind, set()))
+                held[1].add(rel)
+            for _, rels in found.values():
+                for rel in rels:
+                    (self.root / rel).unlink(missing_ok=True)
+            erased = json.dumps(sorted(found))
+            each = "(SELECT value FROM json_each(?))"
+            with self.write_txn() as con:
+                con.execute(
+                    f"""DELETE FROM companion_fts WHERE rowid IN
+                        (SELECT rowid FROM companion_node WHERE id IN {each})""",
+                    (erased,),
+                )
+                # And any FTS row whose node row is already gone (a crash between the two, or an
+                # older index): by ``node_id``, which is UNINDEXED and so a scan - an erase is rare
+                # and must leave no searchable word of the space behind.
+                con.execute(f"DELETE FROM companion_fts WHERE node_id IN {each}", (erased,))
+                for table, column in (
+                    ("companion_node", "id"),
+                    ("companion_fact", "id"),
+                    ("companion_procedural", "id"),
+                    ("companion_provenance", "node_id"),
+                    ("companion_supersede", "node_id"),
+                    ("companion_supersede", "superseded_id"),
+                    ("companion_recall_seen", "node_id"),
+                    ("companion_fade", "node_id"),
+                ):
+                    con.execute(f"DELETE FROM {table} WHERE {column} IN {each}", (erased,))
+                con.execute("DELETE FROM companion_proposal WHERE space = ?", (space,))
+        counts = dict.fromkeys(STAMPED_KINDS, 0)
+        for kind, _ in found.values():
+            counts[kind] = counts.get(kind, 0) + 1
+        return counts
+
     # -- reads ---------------------------------------------------------------------------------
 
     def node(self, node_id: str) -> NodeRow | None:
@@ -1152,3 +1355,89 @@ def _rekey_fts(con: sqlite3.Connection) -> None:
         )
     finally:
         con.execute("DROP TABLE temp.athena_fts_rekey")
+
+
+def _add_space_columns(con: sqlite3.Connection) -> None:
+    """Give an index made before the memory wall its ``space`` columns (ADR 0225), each one that is
+    missing; a fresh index already has them from its ``CREATE TABLE``. ``ADD COLUMN`` with a
+    constant default rewrites nothing: every existing row reads ``''``, core."""
+    for table, column, declaration in SPACE_COLUMNS:
+        present = {str(row[1]) for row in con.execute(f"PRAGMA table_info({table})")}
+        if column not in present:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {declaration}")
+
+
+def _fill_spaces(con: sqlite3.Connection, root: Path) -> None:
+    """Read the ``space`` stamp of every indexed episode, fact and procedural from its file, once,
+    when an index older than the wall is first opened (ADR 0225).
+
+    The column is derived from disk, and an index built before it existed says ``''`` for every
+    row - which is right for every file this PC wrote then, and wrong for one a paired device
+    stamped and replication delivered. Core is the one value that must never be guessed, so each
+    file's header is read; a file that does not name a space (all of them, on a brain that has
+    never had one) costs one read and no write. A file that cannot be read keeps its row as it
+    was, as a rebuild would skip it.
+    """
+    marks = ",".join("?" for _ in STAMPED_KINDS)
+    stamped: list[tuple[str, str]] = []
+    for node_id, rel in con.execute(
+        f"SELECT id, file_path FROM companion_node WHERE kind IN ({marks})", STAMPED_KINDS
+    ).fetchall():
+        try:
+            file_text = (root / str(rel)).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if f"{SPACE_KEY}:" not in file_text:
+            continue
+        meta, _ = frontmatter.parse(file_text)
+        found = space_of(meta)
+        if found != CORE:
+            stamped.append((found, str(node_id)))
+    con.executemany("UPDATE companion_node SET space = ? WHERE id = ?", stamped)
+
+
+#: The directories each stamped kind is filed under, for the erase's walk of the disk.
+_STAMPED_DIRS: tuple[tuple[str, str], ...] = (
+    ("episodes", "episode"),
+    *((f"semantic/{scope}", "fact") for scope in paths.FACT_SCOPES),
+    *((f"procedurals/{scope}", "procedural") for scope in paths.PROCEDURAL_SCOPES),
+)
+
+
+def _stamped_on_disk(root: Path, space: str) -> list[tuple[str, str, str]]:
+    """Every episode, fact and procedural file whose header says ``space``, as ``(id, kind,
+    rel)``: what an erase removes beside what the index names. A file that cannot be read, or
+    names no id, is passed over - it is not a memory any reader could reach either."""
+    out: list[tuple[str, str, str]] = []
+    for subdir, kind in _STAMPED_DIRS:
+        base = root / subdir
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.md")):
+            try:
+                file_text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if space not in file_text:
+                continue
+            meta, _ = frontmatter.parse(file_text)
+            node_id = str(meta.get("id") or "")
+            if node_id and space_of(meta) == space:
+                out.append((node_id, kind, path.relative_to(root).as_posix()))
+    return out
+
+
+def _without_space(file_text: str, space: str) -> str | None:
+    """``file_text`` with its ``space:`` header line(s) removed, every other byte kept; ``None``
+    when its header does not say ``space`` (then there is nothing of that space to move)."""
+    meta, _ = frontmatter.parse(file_text)
+    if space_of(meta) != space:
+        return None
+    head_fence = f"{frontmatter.FENCE}\n"
+    text = file_text.removeprefix("﻿")
+    end = text.find(f"\n{frontmatter.FENCE}\n", len(frontmatter.FENCE))
+    if not text.startswith(head_fence) or end == -1:
+        return None
+    head = text[len(head_fence) : end].split("\n")
+    kept = [line for line in head if line.partition(":")[0].strip() != SPACE_KEY]
+    return head_fence + "\n".join(kept) + text[end:]

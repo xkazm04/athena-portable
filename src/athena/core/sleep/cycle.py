@@ -21,6 +21,16 @@ The cycle is handed the window admission measured and runs four phases:
 4. **forget proposals** (report-only, in the fade phase) - a fact faded all the way is offered to a
    person; nothing is retired here.
 
+**One space at a time** (ADR 0225). The take is partitioned by the space each episode was written
+in - core first, then each space by its most recent episode - and each partition is compressed and
+merged on its own, so a fact is drawn only from one space's episodes, judged only against what
+that space can see, written with that space's stamp, and closes only memories of that space. The
+caps stay what they were and are the cycle's total, across partitions: the take already holds the
+episode and character caps, and the fact, procedural and supersede caps are spent partition by
+partition, core first. An episode stamped with a space that has no file is passed over - read past,
+never distilled - and counted. Every partition is compressed before anything is written, so a
+failed leg still writes nothing and leaves the boundary where it was.
+
 **Progress is committed as it is made.** Each write lands on disk at once and the cycle row's
 stats are updated after it, so a cycle killed halfway leaves real memories and an honest
 ``running`` row. Its boundary has not moved, so the next cycle re-reads the same window; the
@@ -36,7 +46,10 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from athena.contracts import ids
 from athena.contracts.channel import iso
+from athena.contracts.spaces import CORE
+from athena.core.brain import paths
 from athena.core.brain.store import Brain, MemoryRef, ProvenanceError
 from athena.core.brain.text import fts_match
 from athena.core.sleep import (
@@ -58,7 +71,7 @@ from athena.core.sleep.book import (
     norm_key,
 )
 from athena.core.sleep.legs import Candidate, Judged, LegDoor, compress, merge
-from athena.core.sleep.window import Take, Window
+from athena.core.sleep.window import Read, Take, Window
 
 #: Called with the phase a cycle enters (``compress``, ``merge``, ``fade``) and ``None`` at the end.
 PhaseFn = Callable[[str | None], None]
@@ -138,7 +151,8 @@ class SleepCycle:
         self.book.progress(cycle_id, stats)
 
         self._phase("compress")
-        candidates: list[Candidate] = []
+        # (space, candidate), partition by partition in the order they were compressed.
+        candidates: list[tuple[str, Candidate]] = []
         skipped = failures.quarantine and len(take.reads) == 1
         if skipped:
             # The one episode the halving isolated failed alone twice: walk past it, no leg call.
@@ -152,46 +166,77 @@ class SleepCycle:
             )
             self.book.progress(cycle_id, stats)
         elif take.reads:
-            compressed = compress(self.door, take.reads)
-            if compressed.error is not None:
-                # Nothing written, the boundary where it was: these episodes are the next cycle's.
-                # The class and the take say whether the next cycle halves it (ADR 0190).
-                stats.update(failure=compressed.error_reason or "failed", take=len(take.reads))
-                self._finish(cycle_id, "failed", stats, reason=compressed.error)
-                row = self.book.get(cycle_id)
-                assert row is not None
-                return row
-            candidates = self._unbarred(compressed.candidates, stats, journal)
+            parts, passed = self._partitions(take.reads)
+            if passed:
+                stats["space_unknown"] = passed
+                journal.skipped.append(
+                    f"{passed} episode(s) written in a project that no longer exists were read "
+                    "past and not distilled."
+                )
+            if len(parts) > 1 or any(space != CORE for space, _ in parts):
+                stats["partitions"] = [[space, len(reads)] for space, reads in parts]
+            room = {"fact": FACTS_CAP, "procedural": PROCEDURALS_CAP}
+            dropped = {"fact": 0, "procedural": 0}
+            unknown_ids = rejected = 0
+            for space, reads in parts:
+                compressed = compress(self.door, reads)
+                if compressed.error is not None:
+                    # Nothing written, the boundary where it was: these episodes are the next
+                    # cycle's. The class and the take say whether the next cycle halves it
+                    # (ADR 0190).
+                    stats.update(failure=compressed.error_reason or "failed", take=len(take.reads))
+                    self._finish(cycle_id, "failed", stats, reason=compressed.error)
+                    row = self.book.get(cycle_id)
+                    assert row is not None
+                    return row
+                dropped["fact"] += compressed.facts_dropped
+                dropped["procedural"] += compressed.procedurals_dropped
+                unknown_ids += compressed.unknown_ids
+                rejected += compressed.rejected
+                # The caps are the cycle's, not the partition's: spent in partition order.
+                kept: list[Candidate] = []
+                for candidate in compressed.candidates:
+                    if room[candidate.kind] <= 0:
+                        dropped[candidate.kind] += 1
+                        continue
+                    room[candidate.kind] -= 1
+                    kept.append(candidate)
+                candidates.extend(
+                    (space, candidate) for candidate in self._unbarred(kept, stats, journal, space)
+                )
             stats.update(
-                facts_dropped=compressed.facts_dropped,
-                procedurals_dropped=compressed.procedurals_dropped,
-                unknown_ids=compressed.unknown_ids,
-                rejected=compressed.rejected,
+                facts_dropped=dropped["fact"],
+                procedurals_dropped=dropped["procedural"],
+                unknown_ids=unknown_ids,
+                rejected=rejected,
             )
             self.book.progress(cycle_id, stats)
 
         self._phase("merge")
         degraded = False
-        verdicts: dict[int, Judged] = {}
-        if candidates:
+        for space in dict.fromkeys(space for space, _ in candidates):
+            batch = [candidate for where, candidate in candidates if where == space]
             shortlists = {
                 index: self.book.shortlist(
-                    candidate.kind, fts_match(f"{candidate.key} {candidate.value}"), SHORTLIST
+                    candidate.kind,
+                    fts_match(f"{candidate.key} {candidate.value}"),
+                    SHORTLIST,
+                    space,
                 )
-                for index, candidate in enumerate(candidates)
+                for index, candidate in enumerate(batch)
             }
-            merged = merge(self.door, candidates, shortlists)
+            merged = merge(self.door, batch, shortlists)
             if merged.error is not None:
                 degraded = True
                 journal.notes.append(
-                    f"{merged.error} Each candidate was judged by its key alone: an exact match "
-                    "is a duplicate, anything else was written as new."
+                    f"{merged.error} Each candidate{_in_space(space)} was judged by its key "
+                    "alone: an exact match is a duplicate, anything else was written as new."
                 )
-                verdicts = self._by_key(candidates)
+                verdicts = self._by_key(batch, space)
             else:
                 verdicts = merged.verdicts
                 stats["unknown_ids"] = int(stats.get("unknown_ids", 0)) + merged.unknown_ids
-            self._apply(cycle_id, candidates, verdicts, shortlists, stats, journal)
+            self._apply(cycle_id, batch, verdicts, shortlists, stats, journal, space)
 
         self._phase("fade")
         stats["faded"] = self.book.fade(self.clock())
@@ -229,32 +274,40 @@ class SleepCycle:
         shortlists: dict[int, list[Existing]],
         stats: dict[str, Any],
         journal: _Journal,
+        space: str = CORE,
     ) -> None:
-        """Write what the merge decided, one memory at a time, committing progress after each."""
-        links = 0
+        """Write what the merge decided for one partition, one memory at a time, committing
+        progress after each. Every memory is stamped with ``space``, and closes only memories of
+        ``space`` (ADR 0225): a candidate the judge said supersedes a core memory, seen from inside
+        a space, is written as new beside it, because closing it would take it from core and from
+        every other space. The supersede cap is the cycle's, counted across partitions."""
         for index, candidate in enumerate(candidates):
             judged = verdicts.get(index, Judged("new"))
             known = {existing.id: existing for existing in shortlists.get(index, [])}
-            label = f"{candidate.kind} `{_tick(candidate.key)}`"
+            label = f"{candidate.kind} `{_tick(candidate.key)}`{_in_space(space)}"
             if judged.decision == "duplicate":
                 stats["duplicates"] += 1
                 journal.confirmed.append(f"{label} confirmed {judged.ids[0]} (not written again)")
                 continue
             closes: list[str] = []
+            walled: list[str] = []
             if judged.decision == "supersedes":
-                room = SUPERSEDES_CAP - links
-                closes = list(judged.ids[: max(0, room)])
-                dropped = len(judged.ids) - len(closes)
+                own = [i for i in judged.ids if i in known and known[i].space == space]
+                walled = [i for i in judged.ids if i not in own]
+                room = SUPERSEDES_CAP - int(stats.get("supersedes", 0))
+                closes = own[: max(0, room)]
+                dropped = len(own) - len(closes)
                 if dropped:
                     stats["supersedes_dropped"] = int(stats.get("supersedes_dropped", 0)) + dropped
-            ref = self._write(candidate, closes, stats, journal, label)
+            ref = self._write(candidate, closes, stats, journal, label, space)
             if ref is None:
                 continue
             line = f"{label} ({ref.id}) from {len(candidate.sources)} episode(s)"
             if closes:
-                links += len(closes)
                 stats["supersedes"] += len(closes)
                 line += f", supersedes {', '.join(closes)}"
+            elif walled:
+                line += f" - written as new beside {', '.join(walled)}, which is core's"
             elif judged.decision == "supersedes":
                 line += f" - written as new: the cap of {SUPERSEDES_CAP} supersede links was spent"
             if judged.decision == "contradicts":
@@ -271,6 +324,7 @@ class SleepCycle:
                     [ref.id, judged.ids[0]],
                     summary,
                     now=iso(self.clock()),
+                    space=space,
                 )
                 if proposal is None:
                     stats["proposals_dropped"] = int(stats.get("proposals_dropped", 0)) + 1
@@ -287,8 +341,10 @@ class SleepCycle:
         stats: dict[str, Any],
         journal: _Journal,
         label: str,
+        space: str = CORE,
     ) -> MemoryRef | None:
-        """One write through the brain's own door. A refusal is counted and journalled."""
+        """One write through the brain's own door, stamped with the partition's ``space``. A
+        refusal is counted and journalled."""
         try:
             if candidate.kind == "fact":
                 ref = self.brain.write_fact(
@@ -298,6 +354,7 @@ class SleepCycle:
                     sources=list(candidate.sources),
                     confidence=candidate.confidence,
                     supersedes=closes,
+                    space=space,
                 )
                 stats["facts_written"] += 1
             else:
@@ -308,6 +365,7 @@ class SleepCycle:
                     sources=list(candidate.sources),
                     confidence=candidate.confidence,
                     supersedes=closes,
+                    space=space,
                 )
                 stats["procedurals_written"] += 1
         except (ProvenanceError, ValueError) as exc:
@@ -317,12 +375,16 @@ class SleepCycle:
         return ref
 
     def _unbarred(
-        self, candidates: list[Candidate], stats: dict[str, Any], journal: _Journal
+        self,
+        candidates: list[Candidate],
+        stats: dict[str, Any],
+        journal: _Journal,
+        space: str = CORE,
     ) -> list[Candidate]:
-        """The candidates a person's forget does not bar (``SleepBook.bars``), before the merge
-        sees any: a barred one is skipped, counted and journalled, never written or judged, so
-        the person can see how often she wanted it back."""
-        bars = self.book.bars()
+        """The candidates a person's forget does not bar (``SleepBook.bars``) in ``space``, before
+        the merge sees any: a barred one is skipped, counted and journalled, never written or
+        judged, so the person can see how often she wanted it back."""
+        bars = self.book.bars(space)
         if not bars:
             return candidates
         kept: list[Candidate] = []
@@ -338,11 +400,12 @@ class SleepCycle:
             )
         return kept
 
-    def _by_key(self, candidates: list[Candidate]) -> dict[int, Judged]:
-        """The deterministic prefilter a failed merge degrades to: an exact key is a duplicate."""
+    def _by_key(self, candidates: list[Candidate], space: str = CORE) -> dict[int, Judged]:
+        """The deterministic prefilter a failed merge degrades to: an exact key - among what
+        ``space`` can see - is a duplicate."""
         verdicts: dict[int, Judged] = {}
         for index, candidate in enumerate(candidates):
-            same = self.book.same_key(candidate.kind, candidate.key)
+            same = self.book.same_key(candidate.kind, candidate.key, space)
             verdicts[index] = Judged("duplicate", (same.id,)) if same else Judged("new")
         return verdicts
 
@@ -358,6 +421,7 @@ class SleepCycle:
                 [existing.id],
                 f'"{_tick(existing.key)}" has not been recalled for months. Forget it?',
                 now=iso(self.clock()),
+                space=existing.space,
             )
             if proposal is None:
                 stats["proposals_dropped"] = int(stats.get("proposals_dropped", 0)) + 1
@@ -368,6 +432,26 @@ class SleepCycle:
             )
 
     # -- plumbing -------------------------------------------------------------------------------
+
+    def _partitions(self, reads: tuple[Read, ...]) -> tuple[list[tuple[str, list[Read]]], int]:
+        """The take by space, core first and then each space by its most recent episode, and how
+        many episodes were passed over for a space that has no file (ADR 0225). Each partition
+        keeps the take's oldest-first order."""
+        groups: dict[str, list[Read]] = {}
+        latest: dict[str, tuple[str, str]] = {}
+        passed = 0
+        for read in reads:
+            space = read.row.space
+            if space != CORE and not (
+                ids.is_id("space", space) and paths.space_file(self.brain.root, space).is_file()
+            ):
+                passed += 1
+                continue
+            groups.setdefault(space, []).append(read)
+            latest[space] = max(latest.get(space, ("", "")), (read.row.created_at, read.row.id))
+        order = [CORE] if CORE in groups else []
+        order += sorted((s for s in groups if s != CORE), key=lambda s: latest[s], reverse=True)
+        return [(space, groups[space]) for space in order], passed
 
     def _finish(
         self,
@@ -391,6 +475,11 @@ class SleepCycle:
     def _phase(self, phase: str | None) -> None:
         if self.on_phase is not None:
             self.on_phase(phase)
+
+
+def _in_space(space: str) -> str:
+    """`` in <space>`` for a journal line about a space's partition; nothing for core's."""
+    return "" if space == CORE else f" in {space}"
 
 
 def _tick(text: str) -> str:
@@ -421,6 +510,13 @@ def _render(
         f"- {stats['episodes_in']} of {of} episodes this PC wrote since {window.boundary.at} "
         f"({stats['chars_in']:,} characters).",
     ]
+    parts = stats.get("partitions")
+    if isinstance(parts, list) and parts:
+        lines.append(
+            "- By space: "
+            + ", ".join(f"{space or 'core'} {count}" for space, count in parts)
+            + " (each distilled on its own)."
+        )
     cut = sum(1 for read in take.reads if read.cut)
     if cut:
         lines.append(f"- {cut} episode(s) were cut to {EPISODE_CHARS:,} characters.")

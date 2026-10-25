@@ -125,12 +125,15 @@ def recall_executor(brain: Brain) -> ExecutorFn:
 
     A store that could not be read is a failure, not an empty answer (ADR 0076): ``engine_error``,
     the reason a connector gives when the service behind its tool fails, with the trace's note.
+
+    It answers within the turn's project (ADR 0225): core's memory and that project's, never
+    another's.
     """
 
     def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
         query = str(params.get("query", ""))
         limit = int(params["limit"]) if params.get("limit") else None
-        trace = recall_whole(brain, query, cap=RECALL_CAP, limit=limit)
+        trace = recall_whole(brain, query, cap=RECALL_CAP, limit=limit, space=ctx.space_id)
         if trace.unavailable:
             return ExecResult.failure("engine_error", "\n".join(trace.notes))
         blocks = "\n\n".join(f"### {block.name}\n{block.render()}" for block in trace.blocks)
@@ -149,6 +152,9 @@ def write_fact_executor(brain: Brain) -> ExecutorFn:
 
     ``every_turn`` is the always tier's one product path (ADR 0071). The tool is gated, so this
     runs only on a card the user approved, and the approval is bound to the params it showed.
+
+    The fact is stamped with the turn's project (ADR 0225) - on a card, the project of the turn
+    that filed it - so it may cite only what that project can see and is recalled only there.
     """
 
     def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
@@ -161,6 +167,7 @@ def write_fact_executor(brain: Brain) -> ExecutorFn:
                 sources=sources,
                 confidence=float(params.get("confidence", DEFAULT_CONFIDENCE)),
                 every_turn=params.get("every_turn") is True,
+                space=ctx.space_id,
             )
         except (ProvenanceError, ValueError) as exc:
             return ExecResult.failure("validator_failed", str(exc))
@@ -176,7 +183,9 @@ def checkpoint_executor(brain: Brain) -> ExecutorFn:
         text = str(params.get("text", ""))
         if not text.strip():
             return ExecResult.failure("validator_failed", "core.checkpoint: the note is empty")
-        ref = brain.append_episode(text, "system", session_id=ctx.conversation_id)
+        ref = brain.append_episode(
+            text, "system", session_id=ctx.conversation_id, space=ctx.space_id
+        )
         return ExecResult(ok=True, output=f"noted as {ref.id}")
 
     return run
@@ -400,7 +409,7 @@ def build_local(
         frames = FrameBuilder(
             constitution=constitution,
             catalog=catalog,
-            recall=lambda query: recall(brain, query),
+            recall=lambda query, space: recall(brain, query, space=space),
             fleet=FleetPrompt(vitals),
         )
         lane = BrowserLane(

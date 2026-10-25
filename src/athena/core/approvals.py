@@ -197,6 +197,10 @@ _ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
     ("tab_id", "INTEGER"),
     ("tab_nav", "INTEGER"),
     ("turn_id", "TEXT"),
+    # The project the filing turn ran in (ADR 0225); NULL and '' are core. The answer to the card
+    # runs in it, so what the answer writes - a declined card's episode, an approved fact - is
+    # stamped where the turn that asked for it ran, however long the card waited.
+    ("space_id", "TEXT"),
 )
 
 
@@ -287,6 +291,9 @@ class ApprovalRow:
     #: The turn that filed the card (``TurnContext.turn_id``), so a case's run finds its cards by
     #: the turns stamped under it (ADR 0127); ``None`` on a row filed before the column existed.
     turn_id: str | None = None
+    #: The project the filing turn ran in (ADR 0225), ``""`` for core and for a row filed before
+    #: the column existed. Set from the turn's context, never by a model.
+    space_id: str = ""
 
     @property
     def pending(self) -> bool:
@@ -554,7 +561,7 @@ def _backfill(con: sqlite3.Connection) -> None:
 _COLUMNS = (
     "id, action, params_json, origin, conversation_id, surface, options_json, status, "
     "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at, "
-    "consumed_at, tab_id, tab_nav, turn_id"
+    "consumed_at, tab_id, tab_nav, turn_id, space_id"
 )
 
 
@@ -580,6 +587,7 @@ def _row(raw: Sequence[Any]) -> ApprovalRow:
         tab_id=None if raw[17] is None else int(raw[17]),
         tab_nav=None if raw[18] is None else int(raw[18]),
         turn_id=None if raw[19] is None else str(raw[19]),
+        space_id=str(raw[20] or ""),
     )
 
 
@@ -618,6 +626,7 @@ class Approvals:
         tab_id: int | None = None,
         tab_nav: int | None = None,
         turn_id: str | None = None,
+        space_id: str = "",
         now: datetime | None = None,
     ) -> ApprovalRow:
         """File a card and return the row it became.
@@ -648,6 +657,8 @@ class Approvals:
             raise ApprovalError(f"a document generation needs a tab and a count: {tab_nav!r}")
         if turn_id is not None and not ids.is_id("turn", turn_id):
             raise ApprovalError(f"not a turn id: {turn_id!r}")
+        if space_id and not ids.is_id("space", space_id):
+            raise ApprovalError(f"not a space id: {space_id!r}")
 
         stored_params = _canonical(params)  # before the transaction: a refusal is not a rollback
         moment = now or _now()
@@ -667,14 +678,15 @@ class Approvals:
             tab_id=tab_id,
             tab_nav=tab_nav,
             turn_id=turn_id,
+            space_id=space_id,
         )
         with self.brain.write_txn() as con:
             con.execute(
                 """INSERT INTO companion_approval
                    (id, action, params_json, origin, conversation_id, surface, options_json,
                     summary, capture_id, status, created_at, expires_at, tab_id, tab_nav,
-                    turn_id)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    turn_id, space_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     row.id,
                     row.action,
@@ -691,6 +703,7 @@ class Approvals:
                     row.tab_id,
                     row.tab_nav,
                     row.turn_id,
+                    row.space_id,
                 ),
             )
             _append(con, row.id, "filed", ApprovalStatus.PENDING, row.created_at)

@@ -438,7 +438,9 @@ class BrowserLane:
         )
         if not body.strip():
             return
-        self.brain.append_episode(body, role, session_id=ctx.conversation_id)
+        # Stamped with the turn's project (ADR 0225): what was said in a project is that
+        # project's, and core (``""``) writes the bytes it always did.
+        self.brain.append_episode(body, role, session_id=ctx.conversation_id, space=ctx.space_id)
 
     def _row(self, grant: GrantPort, ctx: TurnContext, *, reason: str) -> None:
         """The ledger row a resolution writes.

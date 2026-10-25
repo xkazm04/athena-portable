@@ -7,6 +7,10 @@ are write-once, so a header read is cached by id for as long as the row is in th
 measurement opens only the files that arrived since. A PC before pairing stamps nothing, so with no
 device id an episode with no ``device:`` key is this PC's.
 
+**The space rides along** (ADR 0225). Each row carries its episode's ``companion_node.space``, so
+the cycle can partition what it takes by the project each episode was said in; the window itself is
+one read across every space, and the boundary one position for all of them.
+
 **One boundary, one read.** :class:`Window` is both the measurement admission decides on and the
 material the compress leg reads: the cycle is handed the same object, read in one SQLite snapshot,
 never a second query that agrees with the first today.
@@ -77,6 +81,9 @@ class Row:
     own: bool
     chars: int
     role: str = ""
+    #: The space the episode was written in (ADR 0225), ``""`` for core: the partition a cycle
+    #: consolidates it in.
+    space: str = ""
 
 
 @dataclass(frozen=True)
@@ -195,14 +202,14 @@ class EpisodeReader:
             con.execute("BEGIN")
             try:
                 cursor = con.execute(
-                    """SELECT n.id, n.created_at, n.file_path, length(f.body)
+                    """SELECT n.id, n.created_at, n.file_path, length(f.body), n.space
                        FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
                        WHERE n.kind = 'episode' AND n.importance > 0 AND n.machine = 0
                          AND (n.created_at > ? OR (n.created_at = ? AND n.id > ?))
                        ORDER BY n.created_at, n.id""",
                     (boundary.at, boundary.at, boundary.after_id),
                 )
-                for node_id, created_at, rel, length in cursor:
+                for node_id, created_at, rel, length, space in cursor:
                     if len(rows) >= SCAN_ROWS or own >= EPISODE_FETCH:
                         counted_all = False
                         break
@@ -220,6 +227,7 @@ class EpisodeReader:
                             own=is_own,
                             chars=int(length or 0),
                             role=_role(key, str(rel or "")),
+                            space=str(space or ""),
                         )
                     )
                 cursor.close()

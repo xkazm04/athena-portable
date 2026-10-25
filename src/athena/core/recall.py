@@ -36,6 +36,15 @@ by. A faded memory is still served: both distilled lanes rank by the value model
 bonus), so it sinks below the memories in use, and one step of fade never costs a best match more
 than the gap to a bare one - a fade ranks, it never hides.
 
+**Every lane sees through the wall** (ADR 0225). A recall runs in one space - the turn's, ``""``
+for core - and every lane draws only on the memories :func:`~athena.contracts.spaces.visible_spaces`
+gives it: core's, and inside a space that space's too. The always tier that feeds the static
+``memory.always`` block is core's alone, because the system prompt outlives the turn's space; a
+space's own always tier is :func:`space_always`, which the per-turn ``frame.space`` renders under
+"Kept for this project". The filter is the request's and never the memory's: a stamp is a value the
+lane compares, and a stamp naming a space whose file does not exist is in no view at all (fail
+closed). A turn that names such a space is answered as core.
+
 **A store that cannot be read says so** (ADR 0076). The first ``sqlite3.Error`` ends the recall:
 no further statement runs, every block is empty and renders ``memory could not be read: ...``
 instead of a footer, and the trace is marked :attr:`RecallTrace.unavailable`. Reading a lock or a
@@ -52,9 +61,11 @@ from contextlib import closing
 from dataclasses import dataclass, field
 from typing import Any
 
+from athena.contracts import ids
 from athena.contracts.harness import PromptBlock
+from athena.contracts.spaces import CORE, visible_spaces
 from athena.core import fence
-from athena.core.brain import value
+from athena.core.brain import paths, value
 from athena.core.brain.store import ALWAYS_IMPORTANCE, Brain
 from athena.core.brain.text import EXCERPT_BYTES, excerpt, fts_match, fts_terms
 from athena.core.catalog import canonical_line, neutralise_text
@@ -311,6 +322,21 @@ class RecallTrace:
         }
 
 
+def seen_from(brain: Brain, space: str) -> tuple[str, ...]:
+    """The spaces a recall in ``space`` may draw on: :func:`visible_spaces` of it when it is core or
+    a space whose file exists, else core's view alone. The one place recall asks the disk."""
+    if space == CORE:
+        return visible_spaces(CORE)
+    if not ids.is_id("space", space) or not paths.space_file(brain.root, space).is_file():
+        return visible_spaces(CORE)
+    return visible_spaces(space)
+
+
+def _in(column: str, spaces: tuple[str, ...]) -> str:
+    """``<column> IN (?, ...)`` for ``spaces``: the wall as one SQL predicate."""
+    return f"{column} IN ({','.join('?' for _ in spaces)})"
+
+
 def recall(
     brain: Brain,
     query: str,
@@ -318,17 +344,28 @@ def recall(
     episode_budget: int = EPISODE_WINDOW,
     keyword_slots: int = KEYWORD_SLOTS,
     include_always: bool = True,
+    space: str = CORE,
 ) -> RecallTrace:
-    """Build the bundle for one turn. Read-only, on one per-call handle.
+    """Build the bundle for one turn in ``space`` (``""``: core). Read-only, on one handle.
+
+    The always block is core's alone (it becomes the static ``memory.always``). Inside a space,
+    that space's own always tier is :func:`space_always`'s, rendered in ``frame.space``; the
+    keyword lane leaves it out, as it leaves out core's, so no memory is printed twice.
 
     A store that cannot be read gives :func:`unavailable_trace`, and the turn still runs on it.
     """
+    seen = seen_from(brain, space)
     try:
         with closing(brain.read_connection()) as con:
-            always = _always_block(con) if include_always else RecallBlock(ALWAYS_BLOCK, (), 0)
+            always = (
+                _always_block(con, (CORE,)) if include_always else RecallBlock(ALWAYS_BLOCK, (), 0)
+            )
             shown_ids = {memory.id for memory in always.items}
-            keyword = _keyword_block(con, query, keyword_slots, shown_ids)
-            episodes = _episode_block(con, query, episode_budget)
+            own = tuple(s for s in seen if s != CORE)
+            if include_always and own:
+                shown_ids |= {memory.id for memory in _always_block(con, own).items}
+            keyword = _keyword_block(con, query, keyword_slots, shown_ids, seen)
+            episodes = _episode_block(con, query, episode_budget, seen)
     except sqlite3.Error as exc:
         return unavailable_trace(query, exc, (ALWAYS_BLOCK, KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(always, keyword, episodes))
@@ -345,6 +382,7 @@ def recall_whole(
     cap: int,
     limit: int | None = None,
     keyword_slots: int = KEYWORD_SLOTS,
+    space: str = CORE,
 ) -> RecallTrace:
     """The recall she asks for: matched episodes whole, best first, packed under ``cap`` (ADR 0058).
 
@@ -360,16 +398,19 @@ def recall_whole(
     The read is a page, not every match: at most ``limit`` (or :data:`EPISODE_WINDOW`) episodes a
     person or a page wrote, and at most :data:`MACHINE_EPISODE_SLOTS` machine ones. The cap bounds
     the answer, and the page bounds what is read to build it.
+
+    ``space`` is the turn's (ADR 0225): both lanes see only what :func:`seen_from` gives it.
     """
+    seen = seen_from(brain, space)
     try:
         with closing(brain.read_connection()) as con:
-            keyword = _keyword_block(con, query, keyword_slots, set())
+            keyword = _keyword_block(con, query, keyword_slots, set(), seen)
             # The note that nothing distilled matched rides after the blocks, so it is paid for
             # before any episode is packed, as the keyword block is.
             spent = _packed_chars(keyword)
             if not keyword.total:
                 spent += _note_chars(NO_DISTILLED_MATCH)
-            episodes = _whole_episodes(con, query, cap, limit, spent)
+            episodes = _whole_episodes(con, query, cap, limit, spent, seen)
     except sqlite3.Error as exc:
         return unavailable_trace(query, exc, (KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(keyword, episodes))
@@ -417,17 +458,25 @@ def _note_chars(note: str) -> int:
 
 
 def _whole_episodes(
-    con: sqlite3.Connection, query: str, cap: int, limit: int | None, spent: int
+    con: sqlite3.Connection,
+    query: str,
+    cap: int,
+    limit: int | None,
+    spent: int,
+    seen: tuple[str, ...] = (CORE,),
 ) -> RecallBlock:
     match = _body_match(query)
     if not match:
         return RecallBlock(EPISODE_BLOCK, (), 0)
-    where = "companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0"
+    where = (
+        "companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0 "
+        f"AND {_in('n.space', seen)}"
+    )
     total = _count(
         con,
         f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE {where}""",
-        (match,),
+        (match, *seen),
     )
     # Two pages in one order, then merged in it. The loop below takes at most ``page`` items and
     # skips every machine episode past MACHINE_EPISODE_SLOTS, so no row past either page could
@@ -443,7 +492,7 @@ def _whole_episodes(
                 FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
                 WHERE {where} AND n.machine = ?
                 ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC LIMIT ?""",
-            (match, machine, size),
+            (match, *seen, machine, size),
         )
     ]
     # ORDER BY bm25 ASC, created_at DESC, id DESC, as three stable sorts from the last key.
@@ -577,18 +626,21 @@ def _prerank(kind: str) -> str:
     return f"({trust} * {fade})"
 
 
-def _always_block(con: sqlite3.Connection) -> RecallBlock:
-    """The query-independent tier: high-importance facts and rules, each capped on its own.
+def _always_block(con: sqlite3.Connection, spaces: tuple[str, ...]) -> RecallBlock:
+    """The query-independent tier of ``spaces``: high-importance facts and rules, each capped on
+    its own. ``(CORE,)`` is ``memory.always``'s; one space alone is that space's "Kept for this
+    project" (:func:`space_always`). Never a mix: the two render in two different places.
 
     Each kind reads a page of ``cap * CANDIDATE_FACTOR`` rows by the model's SQL pre-rank and
     re-ranks it with :func:`~athena.core.brain.value.score` (``match = 1``), newer first on a tie.
     """
     marks = ",".join("?" for _ in DISTILLED_KINDS)
+    wall = _in("n.space", spaces)
     total = _count(
         con,
         f"""SELECT COUNT(*) FROM companion_node n
-            WHERE n.importance >= ? AND n.kind IN ({marks}) AND {NOT_SUPERSEDED}""",
-        (ALWAYS_IMPORTANCE_FLOOR, *DISTILLED_KINDS),
+            WHERE n.importance >= ? AND n.kind IN ({marks}) AND {wall} AND {NOT_SUPERSEDED}""",
+        (ALWAYS_IMPORTANCE_FLOOR, *DISTILLED_KINDS, *spaces),
     )
     items: list[Memory] = []
     for kind, cap in (("fact", ALWAYS_FACTS), ("procedural", ALWAYS_PROCEDURALS)):
@@ -597,9 +649,9 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
             f"""{_BODY_SELECT}, n.importance, {VALUE_COLUMNS}
                 FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
                 {VALUE_JOINS}
-                WHERE n.importance >= ? AND n.kind = ? AND {NOT_SUPERSEDED}
+                WHERE n.importance >= ? AND n.kind = ? AND {wall} AND {NOT_SUPERSEDED}
                 ORDER BY {_prerank(kind)} DESC, n.created_at DESC, n.id DESC LIMIT ?""",
-            (ALWAYS_IMPORTANCE_FLOOR, kind, cap * value.CANDIDATE_FACTOR),
+            (ALWAYS_IMPORTANCE_FLOOR, kind, *spaces, cap * value.CANDIDATE_FACTOR),
         )
         # Stable: rows the model values equally keep the page's newer-first order.
         rows.sort(key=lambda row: -_value(row, 7))
@@ -608,7 +660,11 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
 
 
 def _keyword_block(
-    con: sqlite3.Connection, query: str, slots: int, exclude: set[str]
+    con: sqlite3.Connection,
+    query: str,
+    slots: int,
+    exclude: set[str],
+    seen: tuple[str, ...] = (CORE,),
 ) -> RecallBlock:
     """BM25 over the distilled memories the always tier did not already show.
 
@@ -628,12 +684,13 @@ def _keyword_block(
     # ``NOT IN (NULL)`` is NULL and would filter out everything, so an empty exclusion set
     # becomes a value no id can equal rather than a NULL.
     skip_marks = ",".join("?" for _ in exclude) or "''"
-    params = (match, *DISTILLED_KINDS, *sorted(exclude))
+    wall = _in("n.space", seen)
+    params = (match, *DISTILLED_KINDS, *sorted(exclude), *seen)
     total = _count(
         con,
         f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks}) AND {NOT_SUPERSEDED}""",
+              AND n.id NOT IN ({skip_marks}) AND {wall} AND {NOT_SUPERSEDED}""",
         params,
     )
     rows = _rows(
@@ -642,7 +699,7 @@ def _keyword_block(
             FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             {VALUE_JOINS}
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks}) AND {NOT_SUPERSEDED}
+              AND n.id NOT IN ({skip_marks}) AND {wall} AND {NOT_SUPERSEDED}
             ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC LIMIT ?""",
         (*params, slots * value.CANDIDATE_FACTOR),
     )
@@ -655,10 +712,16 @@ def _keyword_block(
     )
 
 
-def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBlock:
+def _episode_block(
+    con: sqlite3.Connection, query: str, budget: int, seen: tuple[str, ...] = (CORE,)
+) -> RecallBlock:
     """The turn window: relevance first, then a recency tail, rendered oldest first."""
+    wall = _in("n.space", seen)
     total = _count(
-        con, "SELECT COUNT(*) FROM companion_node WHERE kind = 'episode' AND importance > 0", ()
+        con,
+        f"""SELECT COUNT(*) FROM companion_node n
+            WHERE n.kind = 'episode' AND n.importance > 0 AND {wall}""",
+        seen,
     )
     if budget <= 0:
         return RecallBlock(EPISODE_BLOCK, (), total)
@@ -676,13 +739,13 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
             for machine, size in ((0, budget), (1, MACHINE_EPISODE_SLOTS))
             for row in _rows(
                 con,
-                """SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
+                f"""SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
                         bm25(companion_fts)
                     FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
                     WHERE companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0
-                      AND n.machine = ?
+                      AND n.machine = ? AND {wall}
                     ORDER BY bm25(companion_fts) ASC LIMIT ?""",
-                (match, machine, size),
+                (match, machine, *seen, size),
             )
         ]
         rows.sort(key=lambda row: float(row[6]))
@@ -709,12 +772,12 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
         # (ADR 0077); without one, the excerpt is all there is.
         for row in _rows(
             con,
-            """SELECT n.id, n.kind, COALESCE(f.body, n.body_excerpt), n.file_path, n.created_at,
+            f"""SELECT n.id, n.kind, COALESCE(f.body, n.body_excerpt), n.file_path, n.created_at,
                     n.machine
                 FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
-                WHERE n.kind = 'episode' AND n.importance > 0 AND n.machine = 0
+                WHERE n.kind = 'episode' AND n.importance > 0 AND n.machine = 0 AND {wall}
                 ORDER BY n.created_at DESC, n.id DESC LIMIT ?""",
-            (remaining + len(chosen),),
+            (*seen, remaining + len(chosen)),
         ):
             if len(chosen) >= budget:
                 break
@@ -724,3 +787,29 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
 
     window = sorted(chosen.values(), key=lambda memory: (memory.created_at, memory.id))
     return RecallBlock(EPISODE_BLOCK, tuple(window), total)
+
+
+def space_always(brain: Brain, space: str) -> tuple[list[str], int]:
+    """A space's own always tier, for ``frame.space``'s "Kept for this project" (ADR 0225): each
+    line through :func:`memory_line` at :data:`ALWAYS_LINE_CAP`, ranked and capped as
+    ``memory.always`` is (:data:`ALWAYS_FACTS` facts, :data:`ALWAYS_PROCEDURALS` procedurals), and
+    how many qualified before the caps - the block's honest M.
+
+    Core, and a space whose file does not exist, have none here: core's always tier is the static
+    ``memory.always``, and a space that is not on disk is in no view. Like a recall, the memories
+    shown are marked as used afterwards. A store that cannot be read answers one line saying so,
+    quoted like any other, and an M of zero (ADR 0076): an empty list would read as "nothing kept".
+    """
+    if space == CORE or seen_from(brain, space) == visible_spaces(CORE):
+        return [], 0
+    try:
+        with closing(brain.read_connection()) as con:
+            block = _always_block(con, (space,))
+    except sqlite3.Error as exc:
+        note = unavailable_trace("", exc, (ALWAYS_BLOCK,)).notes[0]
+        return [memory_line(note)], 0
+    shown = [memory.id for memory in block.items]
+    mark = getattr(brain, "note_recalled", None)
+    if shown and callable(mark):
+        mark(shown)
+    return [memory_line(memory.excerpt, ALWAYS_LINE_CAP) for memory in block.items], block.total

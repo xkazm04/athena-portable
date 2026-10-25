@@ -9,8 +9,10 @@ The additions are a fact's ``every_turn: true``, written last and only when true
 the device stamp ``device: "dev_<hex>"`` on an episode, fact or procedural written on a device that
 has an identity (ADR 0140), written after everything else - after ``every_turn`` too - and omitted
 when there is none, so a legacy file and a file from a device that never paired are the bytes they
-always were. This module renders and parses both like any other scalar and knows nothing of what
-either means; :mod:`~athena.core.brain.store` owns the order and the meaning.
+always were. The space stamp ``space: "spc_<hex>"`` (ADR 0225) goes just before the device's, and
+only on a memory written inside a project, so a core file is the bytes it always was too. This
+module renders and parses all of them like any other scalar and knows nothing of what they mean;
+:mod:`~athena.core.brain.store` owns the order and the meaning.
 
 The one refusal in this module is the interesting part. A scalar is interpolated into the header
 with no escaping, so a line break inside one is header injection: a model-authored ``key`` that

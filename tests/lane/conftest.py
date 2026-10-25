@@ -76,6 +76,8 @@ class Episode:
     content: str
     role: str
     session_id: str | None
+    #: The project the turn ran in (ADR 0225), ``""`` for core.
+    space: str = ""
 
 
 class FakeBrain:
@@ -85,13 +87,19 @@ class FakeBrain:
         self.episodes: list[Episode] = []
 
     def append_episode(
-        self, content: str, role: str = "user", *, session_id: str | None = None
+        self,
+        content: str,
+        role: str = "user",
+        *,
+        session_id: str | None = None,
+        space: str = "",
     ) -> Episode:
         episode = Episode(
             id=f"ep_{len(self.episodes):08x}",
             content=content,
             role=role,
             session_id=session_id,
+            space=space,
         )
         self.episodes.append(episode)
         return episode

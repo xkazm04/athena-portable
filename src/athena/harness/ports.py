@@ -129,6 +129,7 @@ class ApprovalsPort(Protocol):
         tab_id: int | None = None,
         tab_nav: int | None = None,
         turn_id: str | None = None,
+        space_id: str = "",
     ) -> Card: ...
 
     def describe(self, approval_id: str) -> Grant: ...

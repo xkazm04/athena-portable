@@ -14,6 +14,12 @@ The floor and the next boundary read :meth:`SleepBook.last_settled` - the newest
 an expiry (:data:`PROPOSAL_EXPIRE_D` days), and a reaper (:meth:`SleepBook.sweep`), which also
 dismisses an open proposal whose memory is gone - superseded, retired or never indexed - so a
 person is never asked about something that is no longer there.
+
+**Every read a cycle judges by sees through the wall** (ADR 0225). A cycle consolidates one space's
+episodes at a time, and what it compares a candidate with - the merge shortlist, the key prefilter,
+the forget bars - is what that space can see: its own memories and core's
+(:func:`~athena.contracts.spaces.visible_spaces`), never another space's. A proposal carries the
+space it was opened in (``companion_proposal.space``), so erasing a space takes its proposals too.
 """
 
 from __future__ import annotations
@@ -28,6 +34,7 @@ from typing import Any, Literal
 
 from athena.contracts import ids
 from athena.contracts.channel import iso
+from athena.contracts.spaces import CORE, visible_spaces
 from athena.core.brain.store import DEFAULT_IMPORTANCE, Brain
 from athena.core.sleep import (
     COMPRESS_EPISODES,
@@ -120,6 +127,9 @@ class ProposalRow:
     status: str
     created_at: str
     decided_at: str | None = None
+    #: The space of the cycle partition (or the memory) it was opened for (ADR 0225); not on the
+    #: wire, where ``ProposalView`` is unchanged.
+    space: str = CORE
 
     def view(self, memories: Mapping[str, dict[str, Any]] | None = None) -> dict[str, Any]:
         """``ProposalView`` (``lib/sleep.ts``). Given what :meth:`SleepBook.proposal_memories`
@@ -195,12 +205,21 @@ class Existing:
     kind: str
     key: str
     excerpt: str
+    #: The space the memory was written in (ADR 0225), ``""`` for core.
+    space: str = CORE
+
+
+def _wall(spaces: tuple[str, ...]) -> str:
+    """``n.space IN (?, ...)``: the predicate that keeps a cycle's reads inside a space's view."""
+    return f"n.space IN ({','.join('?' for _ in spaces)})"
 
 
 _CYCLE_COLUMNS = (
     "id, started_at, finished_at, status, reason, boundary, consumed_through, stats_json"
 )
-_PROPOSAL_COLUMNS = "id, cycle_id, kind, node_ids_json, summary, status, created_at, decided_at"
+_PROPOSAL_COLUMNS = (
+    "id, cycle_id, kind, node_ids_json, summary, status, created_at, decided_at, space"
+)
 
 
 def _cycle(row: Sequence[Any]) -> CycleRow:
@@ -234,6 +253,7 @@ def _proposal(row: Sequence[Any]) -> ProposalRow:
         status=str(row[5]),
         created_at=str(row[6]),
         decided_at=None if row[7] is None else str(row[7]),
+        space=str(row[8] or CORE),
     )
 
 
@@ -382,9 +402,11 @@ class SleepBook:
         summary: str,
         *,
         now: str,
+        space: str = CORE,
     ) -> ProposalRow | None:
         """Open one proposal, or ``None`` when :data:`OPEN_PROPOSALS_CAP` are already open (the
-        caller counts it dropped). The cap is checked in the same transaction as the insert."""
+        caller counts it dropped). The cap is checked in the same transaction as the insert.
+        ``space`` is where it belongs (ADR 0225): erasing that space takes it."""
         proposal_id = ids.mint("proposal")
         with self.brain.write_txn() as con:
             ((open_now,),) = con.execute(
@@ -394,10 +416,12 @@ class SleepBook:
                 return None
             con.execute(
                 f"""INSERT INTO companion_proposal ({_PROPOSAL_COLUMNS})
-                    VALUES (?, ?, ?, ?, ?, 'open', ?, NULL)""",
-                (proposal_id, cycle_id, kind, json.dumps(list(node_ids)), summary, now),
+                    VALUES (?, ?, ?, ?, ?, 'open', ?, NULL, ?)""",
+                (proposal_id, cycle_id, kind, json.dumps(list(node_ids)), summary, now, space),
             )
-        return ProposalRow(proposal_id, cycle_id, kind, list(node_ids), summary, "open", now)
+        return ProposalRow(
+            proposal_id, cycle_id, kind, list(node_ids), summary, "open", now, space=space
+        )
 
     def proposal(self, proposal_id: str) -> ProposalRow | None:
         row = self._one(
@@ -558,7 +582,7 @@ class SleepBook:
         """One live fact or procedural with its key (a fact's) or trigger (a procedural's)."""
         row = self._one(
             f"""SELECT n.id, n.kind, COALESCE(fc.fact_key, pr.trigger_pattern, ''),
-                       n.body_excerpt
+                       n.body_excerpt, n.space
                 FROM companion_node n
                 LEFT JOIN companion_fact fc ON fc.id = n.id
                 LEFT JOIN companion_procedural pr ON pr.id = n.id
@@ -567,31 +591,42 @@ class SleepBook:
         )
         if row is None:
             return None
-        return Existing(str(row[0]), str(row[1]), str(row[2]), str(row[3] or "")[:EXCERPT_CHARS])
+        return Existing(
+            str(row[0]),
+            str(row[1]),
+            str(row[2]),
+            str(row[3] or "")[:EXCERPT_CHARS],
+            str(row[4] or CORE),
+        )
 
     def scope_of(self, node_id: str) -> str | None:
         """A fact's scope, or ``None`` for anything else."""
         row = self._one("SELECT scope FROM companion_fact WHERE id = ?", (node_id,))
         return None if row is None else str(row[0])
 
-    def shortlist(self, kind: str, match: str, limit: int) -> list[Existing]:
+    def shortlist(self, kind: str, match: str, limit: int, space: str = CORE) -> list[Existing]:
         """The ``limit`` live memories of ``kind`` that best match ``match`` (an FTS expression),
-        each with an excerpt of at most :data:`EXCERPT_CHARS` characters."""
+        each with an excerpt of at most :data:`EXCERPT_CHARS` characters - of those ``space`` can
+        see (ADR 0225): a candidate is never judged against another space's memory."""
         if not match or limit <= 0:
             return []
+        seen = visible_spaces(space)
         key_column = "fc.fact_key" if kind == "fact" else "pr.trigger_pattern"
         rows = self._all(
-            f"""SELECT n.id, n.kind, COALESCE({key_column}, ''), f.body
+            f"""SELECT n.id, n.kind, COALESCE({key_column}, ''), f.body, n.space
                 FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
                 LEFT JOIN companion_fact fc ON fc.id = n.id
                 LEFT JOIN companion_procedural pr ON pr.id = n.id
-                WHERE companion_fts MATCH ? AND n.kind = ? AND {_LIVE}
+                WHERE companion_fts MATCH ? AND n.kind = ? AND {_LIVE} AND {_wall(seen)}
                 ORDER BY bm25(companion_fts) ASC LIMIT ?""",
-            (f"body : ({match})", kind, limit),
+            (f"body : ({match})", kind, *seen, limit),
         )
-        return [Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or ""))) for r in rows]
+        return [
+            Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or "")), str(r[4] or CORE))
+            for r in rows
+        ]
 
-    def bars(self) -> dict[tuple[str, str, str], str]:
+    def bars(self, space: str = CORE) -> dict[tuple[str, str, str], str]:
         """Every key a person's forget bars from being learned again, as
         ``(kind, scope, normalized key) -> the marker's id`` (ADR 0143).
 
@@ -602,9 +637,14 @@ class SleepBook:
         it: a live memory under the same kind, scope and key written after the marker (an
         approved ``core.write_fact``; a cycle cannot write one, it is barred) ends the bar. A
         fade, an expiry or a cap never writes a marker, so none of them bars anything.
+
+        Only what ``space`` can see bars it, and only what it can see lifts a bar (ADR 0225): a
+        forget in core bars a key everywhere, a forget in one project bars it there alone.
         """
+        seen = visible_spaces(space)
+        marks = ",".join("?" for _ in seen)
         rows = self._all(
-            """SELECT m.id, m.created_at, o.kind,
+            f"""SELECT m.id, m.created_at, o.kind,
                       COALESCE(ofc.scope, opr.scope, ''),
                       COALESCE(ofc.fact_key, opr.trigger_pattern, '')
                FROM companion_fact mf
@@ -613,8 +653,9 @@ class SleepBook:
                JOIN companion_node o ON o.id = s.superseded_id
                LEFT JOIN companion_fact ofc ON ofc.id = o.id
                LEFT JOIN companion_procedural opr ON opr.id = o.id
-               WHERE mf.fact_key LIKE ? AND o.kind IN ('fact', 'procedural')""",
-            (FORGOTTEN_PREFIX + "%",),
+               WHERE mf.fact_key LIKE ? AND o.kind IN ('fact', 'procedural')
+                 AND m.space IN ({marks})""",
+            (FORGOTTEN_PREFIX + "%", *seen),
         )
         if not rows:
             return {}
@@ -630,7 +671,8 @@ class SleepBook:
                 FROM companion_node n
                 LEFT JOIN companion_fact fc ON fc.id = n.id
                 LEFT JOIN companion_procedural pr ON pr.id = n.id
-                WHERE {_LIVE}"""
+                WHERE {_LIVE} AND {_wall(seen)}""",
+            seen,
         ):
             mark = (str(kind), str(scope), norm_key(str(key)))
             if mark in newest and str(created) > written.get(mark, ""):
@@ -641,21 +683,27 @@ class SleepBook:
             if written.get(mark, "") <= created
         }
 
-    def same_key(self, kind: str, key: str) -> Existing | None:
+    def same_key(self, kind: str, key: str, space: str = CORE) -> Existing | None:
         """A live memory of ``kind`` whose key (or trigger) is ``key``, ignoring case and spacing:
-        the deterministic prefilter the merge degrades to when its leg fails."""
+        the deterministic prefilter the merge degrades to when its leg fails. Of those ``space``
+        can see (ADR 0225)."""
         wanted = norm_key(key)
+        seen = visible_spaces(space)
         column, table = (
             ("fact_key", "companion_fact")
             if kind == "fact"
             else ("trigger_pattern", "companion_procedural")
         )
-        for node_id, found, body in self._all(
-            f"""SELECT n.id, t.{column}, n.body_excerpt
-                FROM {table} t JOIN companion_node n ON n.id = t.id WHERE {_LIVE}"""
+        for node_id, found, body, where in self._all(
+            f"""SELECT n.id, t.{column}, n.body_excerpt, n.space
+                FROM {table} t JOIN companion_node n ON n.id = t.id
+                WHERE {_LIVE} AND {_wall(seen)}""",
+            seen,
         ):
             if norm_key(str(found)) == wanted:
-                return Existing(str(node_id), kind, str(found), _excerpt(str(body or "")))
+                return Existing(
+                    str(node_id), kind, str(found), _excerpt(str(body or "")), str(where or CORE)
+                )
         return None
 
     # -- fade -----------------------------------------------------------------------------------
@@ -694,14 +742,17 @@ class SleepBook:
         """Live facts faded all the way at no more than the default importance: what a forget
         proposal offers, oldest fade first. Report-only: nothing here retires anything."""
         rows = self._all(
-            f"""SELECT n.id, n.kind, fc.fact_key, n.body_excerpt
+            f"""SELECT n.id, n.kind, fc.fact_key, n.body_excerpt, n.space
                 FROM companion_node n JOIN companion_fade fd ON fd.node_id = n.id
                 JOIN companion_fact fc ON fc.id = n.id
                 WHERE {_LIVE} AND n.kind = 'fact' AND n.importance <= ? AND fd.steps >= ?
                 ORDER BY fd.at, n.id""",
             (DEFAULT_IMPORTANCE, FADE_MAX),
         )
-        return [Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or ""))) for r in rows]
+        return [
+            Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or "")), str(r[4] or CORE))
+            for r in rows
+        ]
 
 
 def _unknown_memory(node_id: str) -> dict[str, Any]:

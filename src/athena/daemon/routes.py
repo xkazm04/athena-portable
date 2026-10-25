@@ -697,7 +697,12 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         return error(400, "validator_failed", str(exc))
     if task is not None:
         ctx = replace(ctx, conversation_id=task.conversation_id)
-    ctx = replace(ctx, space_id=turn_space(daemon, ctx.case_id, space_id))
+        # A task works in the project that delegated it, whatever the window asked (ADR 0225);
+        # one whose project was erased since is not run into a project that is gone.
+        if task.space_id and not daemon.space_open(task.space_id):
+            return error(400, "unknown_ref", "no such space: the task's project is gone")
+    asked = task.space_id if task is not None else space_id
+    ctx = replace(ctx, space_id=turn_space(daemon, ctx.case_id, asked))
     # "Set up with Athena" (ADR 0140, WP4): the setup conversation's first turn is hers to open. A
     # window sends ``start`` and no message; the daemon writes what she is told (SETUP_OPENING), so
     # no window can put words in that turn, and no other session can start one on its own.

@@ -48,6 +48,11 @@ The rows live in ``index.sqlite`` beside the approvals and the case turns, with 
 ``CREATE TABLE IF NOT EXISTS`` idiom and absent from ``INDEX_TABLES``, so a reconcile leaves them
 alone. Absent values are ``NULL`` in the table and ``null`` on the wire; no key is ever omitted.
 
+**A task works in the project that delegated it** (ADR 0225). The delegating turn's ``space_id``
+is stored on the row (``""`` for core); every turn the task runs is in that project, and the
+harvest episode the parent thread reads is stamped with it, so a project's background work is
+remembered inside the project and nowhere else. It is not on the wire: ``TaskView`` is unchanged.
+
 **The gate (ADR 0143).** :attr:`Tasks.room` is this PC's vitals gate, set by the wiring. A claim
 asks it whether one more task fits - RAM, CPU, battery and disk, and the slots the RAM allows - and
 waits with its reason when not. ``None`` is no gate: the cap alone decides, as before.
@@ -133,14 +138,20 @@ TASK_SCHEMA: tuple[str, ...] = (
         turns INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
         started_at TEXT,
-        finished_at TEXT
+        finished_at TEXT,
+        space_id TEXT NOT NULL DEFAULT ''
     )""",
     "CREATE INDEX IF NOT EXISTS idx_task_status ON companion_task(status, created_at)",
 )
 
+#: Columns added after a brain could already hold the table, as ``(name, declaration)``: an older
+#: table gains each on open, which ``CREATE TABLE IF NOT EXISTS`` alone would not do. ``space_id``
+#: is the delegating turn's project (ADR 0225); a row from before it reads ``''``, core.
+_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (("space_id", "TEXT NOT NULL DEFAULT ''"),)
+
 _COLUMNS = (
     "id, parent_conversation, conversation_id, title, brief, app_id, origin, status, tab_id, "
-    "result, error, turns, created_at, started_at, finished_at"
+    "result, error, turns, created_at, started_at, finished_at, space_id"
 )
 
 
@@ -184,6 +195,8 @@ class Task:
     started_at: str | None
     finished_at: str | None
     position: int | None = None
+    #: The project the delegating turn ran in (ADR 0225), ``""`` for core. Not on the wire.
+    space_id: str = ""
 
     @property
     def active(self) -> bool:
@@ -226,6 +239,7 @@ def _task(raw: Sequence[Any]) -> Task:
         created_at=str(raw[12]),
         started_at=None if raw[13] is None else str(raw[13]),
         finished_at=None if raw[14] is None else str(raw[14]),
+        space_id=str(raw[15] or ""),
     )
 
 
@@ -280,6 +294,10 @@ class Tasks:
         with brain.write_txn() as con:
             for statement in TASK_SCHEMA:
                 con.execute(statement)
+            present = {str(raw[1]) for raw in con.execute("PRAGMA table_info(companion_task)")}
+            for name, declaration in _ADDED_COLUMNS:
+                if name not in present:
+                    con.execute(f"ALTER TABLE companion_task ADD COLUMN {name} {declaration}")
 
     # -- reading -------------------------------------------------------------------------------
 
@@ -364,8 +382,10 @@ class Tasks:
         *,
         app_id: str | None = None,
         origin: str | None = None,
+        space_id: str = "",
     ) -> Task:
-        """Admit one task as ``queued``, or refuse ``queue_full`` (ADR 0141)."""
+        """Admit one task as ``queued``, or refuse ``queue_full`` (ADR 0141). ``space_id`` is the
+        delegating turn's project (ADR 0225), where the task's turns and its harvest will run."""
         title, brief = title.strip(), brief.strip()
         if not title or not brief:
             raise TaskRefused("bad_request", "a task needs a title and a brief")
@@ -375,6 +395,8 @@ class Tasks:
             )
         if not ids.is_id("conversation", parent_conversation):
             raise TaskRefused("bad_request", f"not a conversation: {parent_conversation!r}")
+        if space_id and not ids.is_id("space", space_id):
+            raise TaskRefused("bad_request", f"not a space id: {space_id!r}")
         task_id = ids.mint("task")
         with self._lock, self.brain.write_txn() as con:
             waiting = int(
@@ -389,8 +411,8 @@ class Tasks:
                 )
             con.execute(
                 "INSERT INTO companion_task (id, parent_conversation, conversation_id, title, "
-                "brief, app_id, origin, status, created_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, 'queued', ?)",
+                "brief, app_id, origin, status, created_at, space_id) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 'queued', ?, ?)",
                 (
                     task_id,
                     parent_conversation,
@@ -400,6 +422,7 @@ class Tasks:
                     app_id,
                     origin,
                     self._now(),
+                    space_id,
                 ),
             )
         return self._changed(task_id)
@@ -554,11 +577,15 @@ class Tasks:
 
         The row is the truth and is already written: a parent episode the brain refused (an
         unwritable disk) leaves the row ended and the thread untold, never the other way round.
+        The episode is stamped with the delegating turn's project (ADR 0225).
         """
         task = self._changed(task_id)
         with suppress(OSError, ValueError):
             self.brain.append_episode(
-                harvest_line(task), "system", session_id=task.parent_conversation
+                harvest_line(task),
+                "system",
+                session_id=task.parent_conversation,
+                space=task.space_id,
             )
         return task
 
@@ -646,6 +673,7 @@ def delegate_executor(tasks: Tasks) -> ExecutorFn:
                 str(params.get("brief", "")),
                 app_id=app_id,
                 origin=origin,
+                space_id=ctx.space_id,
             )
         except TaskRefused as exc:
             return _refused(exc)

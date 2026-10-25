@@ -425,6 +425,7 @@ def test_a_fact_file_in_todays_frontmatter_rebuilds_to_the_rows_it_always_did(
                 None,
                 when,
                 when,
+                "",  # core: a file with no ``space:`` key (ADR 0225)
             ),
             ("provenance", "fact_0a1b2c3d", "ep_0a1b2c3d"),
             ("fact", "fact_0a1b2c3d", "user", "acme pays late", 0.7),

@@ -6,7 +6,9 @@ that says ``supersedes: [<id>]`` and ``retired: true``, written through
 :meth:`~athena.core.brain.store.Brain.write_fact` like any other. So it cites the forgotten
 memory's own live episodes (the provenance gate holds), it is on disk, a rebuild restores it, and
 replication carries it to every paired PC, where it hides the same memory. The forgotten memory's
-file stays: forgetting is a closed belief with its lineage kept, never an erasure.
+file stays: forgetting is a closed belief with its lineage kept, never an erasure. The marker is
+written in the forgotten memory's own space (ADR 0225) - a memory closes only memories of its own
+space - and cites those of its sources that space can still see.
 
 - ``keep`` closes the proposal (``kept``): a ``forget`` proposal for that memory is not offered
   again, and a contradiction keeps both.
@@ -20,6 +22,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 from athena.contracts.channel import iso
+from athena.contracts.spaces import visible_spaces
 from athena.core.brain.store import Brain, ProvenanceError
 from athena.core.sleep import FORGOTTEN_PREFIX
 from athena.core.sleep.book import ProposalRow, SleepBook
@@ -76,8 +79,9 @@ def retire(brain: Brain, book: SleepBook, node_id: str, *, when: str) -> str:
     if memory is None:
         raise ProposalRefused(409, "validator_failed", f"{node_id} is no longer a live memory")
     cited = brain.sources_of(node_id)
-    live = brain.live_episode_ids(cited)
-    sources = [source for source in cited if source in live]
+    live = brain.live_episode_spaces(cited)
+    seen = visible_spaces(memory.space)
+    sources = [source for source in cited if live.get(source, "?") in seen]
     if not sources:
         raise ProposalRefused(
             409,
@@ -94,6 +98,7 @@ def retire(brain: Brain, book: SleepBook, node_id: str, *, when: str) -> str:
             confidence=1.0,
             supersedes=[node_id],
             retired=True,
+            space=memory.space,
         )
     except (ProvenanceError, ValueError) as exc:
         raise ProposalRefused(409, "validator_failed", str(exc)) from exc

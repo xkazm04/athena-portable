@@ -171,7 +171,7 @@ class FrameBuilder:
             constitution=self.constitution,
             catalog=self.catalog,
             lane=self.lane,
-            recall=self.recall(turn.message) if self.recall is not None else None,
+            recall=(self.recall(turn.message, turn.space_id) if self.recall is not None else None),
             host_state=turn.host_state,
             previous_host_state=previous,
             tool_results=turn.tool_results,

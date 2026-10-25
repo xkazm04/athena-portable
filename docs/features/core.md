@@ -16,9 +16,11 @@ A contract changes only with a test.
 - **Disk is truth** (invariant 1, ADR 0003). Episodes, facts and procedurals are markdown files with
   frontmatter; SQLite is a rebuildable index (`athena brain reconcile`). One writer behind a lock,
   a read-only connection per read request. A brain is portable by copying its directory.
-- **The index is schema version 2** (ADR 0077): each full-text row has its memory's rowid, so a
-  write costs the same at any brain size. An older index is re-keyed when a brain opens it; the
-  markdown is untouched.
+- **The index is schema version 3.** Version 2 (ADR 0077) gave each full-text row its memory's
+  rowid, so a write costs the same at any brain size; an older index is re-keyed when a brain opens
+  it. Version 3 (ADR 0225) adds the memory wall's `space` column to memories and sleep proposals:
+  an older index gains it on open and reads each memory file's header once to fill it, keeping
+  every index-only value. The markdown is untouched either way.
 - **Provenance at write** (invariant 2). `write_fact` and `write_procedural` reject any source that
   is not a live episode id. There is no bypass, tests included.
   A memory file is written whole or not at all, and text that is not valid Unicode is refused
@@ -47,6 +49,17 @@ A contract changes only with a test.
 - `core.recall` is also a tool she can call mid-turn; its answer is capped at 4,800 characters,
   three page reads' worth (ADR 0049). It reads one page of matches, at most `limit` episodes (20
   when none is given) and two machine-written ones, not every episode that matched.
+- **The memory wall** (ADR 0225). Every episode, fact and procedural a turn in a project writes -
+  the turn's own words, an approved `core.write_fact`, a declined card, `core.checkpoint`, a
+  delegated task's turns and its report, a chore approval - carries a `space: "spc_…"` key in its
+  frontmatter; core writes none, so older files are core. Every recall lane, `core.recall`
+  included, sees core plus the turn's project and nothing of any other; a stamp naming a project
+  whose file is gone is seen nowhere. What she always carries in the system prompt is core's alone;
+  a project's own always-tier facts ride in its `frame.space` as "Kept for this project". A fact in
+  a project cites only episodes that project can see and closes only that project's memories. The
+  sleep cycle distils each project's episodes on its own, core first, inside the same caps.
+  Making a fact core's rewrites its file without the key; erasing a project deletes every file
+  and index row it stamped.
 
 ## The catalog and the gate
 

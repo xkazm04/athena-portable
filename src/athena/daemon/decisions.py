@@ -29,6 +29,7 @@ from athena.daemon.routes import (
     disabled_origins_from,
     error,
     stamp_case_turn,
+    turn_space,
 )
 
 if TYPE_CHECKING:
@@ -79,7 +80,16 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     case_id = daemon.case_turns.case_of(row.turn_id) if row and row.turn_id else None
     if case_id is not None:
         ctx = replace(ctx, case_id=case_id)
-    with daemon.card(approval_id):
+    # The answer runs in the project the filing turn ran in (ADR 0225) - its case's when it has
+    # one, as a turn does - so the episode a decline writes and the fact an approval writes are
+    # stamped where they were asked for. A project erased since is not answered into.
+    space = turn_space(daemon, ctx.case_id, row.space_id if row is not None else "")
+    if space and not daemon.space_open(space):
+        return error(400, "unknown_ref", f"no such space: the card's project {space} is gone")
+    ctx = replace(ctx, space_id=space)
+    with daemon.card(approval_id), daemon.in_space(space) as entered:
+        if not entered:
+            return error(400, "unknown_ref", f"no such space: {space} is being erased")
         stamped = stamp_case_turn(daemon, ctx)
         try:
             resolution = daemon.lane.answer_decision(approval_id, choice, ctx)
@@ -97,6 +107,7 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
             f"[decision] the user added: {capped(str(answer), ANSWER_CAP)}",
             "user",
             session_id=grant.conversation,
+            space=space,
         )
 
     execute = [] if resolution.execute is None else [_execute_row(resolution.execute)]

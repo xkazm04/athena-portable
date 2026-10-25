@@ -45,6 +45,18 @@ INDEX_FILENAME = "index.sqlite"
 #: Set this and the brain moves with it: ``$ATHENA_HOME/brain``.
 HOME_ENV = "ATHENA_HOME"
 
+#: The directory under the brain root that holds one file per space, ``spaces/<spc_id>.md``
+#: (ADR 0225). Not in :data:`TREE` and not in the rebuild's walk: a space is not a memory and has
+#: no index row. It is named here, beside the tree, because the memory wall is drawn in the core
+#: (recall and the sleep cycle ask whether a stamp's space exists) and the core imports nothing of
+#: :mod:`athena.spaces`, which owns the files themselves.
+SPACES_DIRNAME = "spaces"
+
+
+def space_file(root: str | Path, space_id: str) -> Path:
+    """Where ``space_id``'s file is under the brain ``root``. The caller checked the id."""
+    return Path(root) / SPACES_DIRNAME / f"{space_id}.md"
+
 
 def athena_home() -> Path:
     """``$ATHENA_HOME`` if set, else ``~/.athena``. Always absolute — see :func:`brain_root`."""

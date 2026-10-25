@@ -48,6 +48,7 @@ from athena.contracts.spaces import (
     SPACE_SCHEMA,
     Space,
 )
+from athena.core.brain import paths
 from athena.core.brain.store import Brain
 
 __all__ = [
@@ -68,8 +69,9 @@ __all__ = [
 SPACE_MARKER = "<!-- athena:space -->"
 _OPEN = "```json"
 _CLOSE = "```"
-#: The directory under the brain root that holds one file per space.
-SPACES_DIRNAME = "spaces"
+#: The directory under the brain root that holds one file per space. The core names it
+#: (``core.brain.paths``), because recall and the sleep cycle ask whether a stamp's space exists.
+SPACES_DIRNAME = paths.SPACES_DIRNAME
 #: The most spaces one brain holds. ``GET /spaces`` answers all of them, so the list is bounded by
 #: refusing the one past this at create rather than by cutting the answer.
 MAX_SPACES = 100
