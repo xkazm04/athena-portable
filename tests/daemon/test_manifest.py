@@ -318,7 +318,9 @@ def test_a_merge_whose_pin_or_session_raises_is_put_back_before_the_answer(
         monkeypatch.setattr(daemon, "pin", _broken)
     else:
         monkeypatch.setattr(daemon.sessions, "touch", _broken)
-    body = manifest_body(tools=[{"name": "archive", "reversible": True}])
+    body = manifest_body(
+        tools=[{"name": "archive", "reversible": True, "side_effects": "internal"}]
+    )
 
     with pytest.raises(RuntimeError, match="broke"):
         routes.manifest(daemon, routes.Request("POST", "/manifest", body=body))

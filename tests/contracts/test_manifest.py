@@ -278,3 +278,98 @@ def test_the_loopback_hosts_are_the_ones_the_desktop_offers() -> None:
         r'"([^"]*)"', _exported("apps/desktop/src/lib/manifest.ts", "LOOPBACK_PAGE_HOSTS")
     )
     assert tuple(declared) == LOOPBACK_PAGE_HOSTS
+
+
+# --- the wire reader parses flags by type: a corrupt flag is refused, never coerced (ADR 0207) ---
+
+
+def _wire(**kw: object) -> dict[str, object]:
+    base: dict[str, object] = {"app_id": "inv", "page_origin": "https://a.test", "tools": []}
+    base.update(kw)
+    return base
+
+
+def test_a_reversible_spelled_as_a_string_is_refused_and_gated_not_read_as_true() -> None:
+    manifest = HostManifest.from_dict(
+        _wire(tools=[{"name": "void", "reversible": "false", "side_effects": "none"}])
+    )
+    problems = manifest.validate()
+    assert any("'void'" in p and "reversible must be true or false" in p for p in problems)
+    assert manifest.tools[0].default_class() is ToolClass.GATED
+
+
+@pytest.mark.parametrize("flag", [1, "yes", [], {}], ids=["one", "yes", "list", "object"])
+def test_only_a_json_boolean_is_read_as_a_reversible_declaration(flag: object) -> None:
+    manifest = HostManifest.from_dict(
+        _wire(tools=[{"name": "void", "reversible": flag, "side_effects": "none"}])
+    )
+    assert any("reversible must be true or false" in p for p in manifest.validate())
+    assert manifest.tools[0].default_class() is ToolClass.GATED
+
+
+def test_an_omitted_side_effects_is_refused_and_gated_not_read_as_internal() -> None:
+    manifest = HostManifest.from_dict(_wire(tools=[{"name": "pay", "reversible": True}]))
+    problems = manifest.validate()
+    assert any("'pay'" in p and "must declare side_effects" in p for p in problems)
+    assert manifest.tools[0].default_class() is ToolClass.GATED
+
+
+@pytest.mark.parametrize(
+    ("tools", "named"),
+    [({"a": 1}, "tools must be a list of objects"), (["send"], "tools[0] must be an object")],
+    ids=["tools-object", "tool-string"],
+)
+def test_tools_of_the_wrong_shape_are_a_named_problem_not_an_exception(
+    tools: object, named: str
+) -> None:
+    manifest = HostManifest.from_dict(_wire(tools=tools))
+    assert any(named in p for p in manifest.validate())
+
+
+@pytest.mark.parametrize("bound", ["lots", 0, -5, True], ids=["word", "zero", "negative", "bool"])
+def test_a_readable_bound_must_be_a_positive_integer(bound: object) -> None:
+    manifest = HostManifest.from_dict(
+        _wire(
+            tools=[{"name": "t", "reversible": True, "side_effects": "none"}],
+            state_readables=[{"name": "rows", "max_chars": bound}],
+        )
+    )
+    assert "readable 'rows': max_chars must be a positive integer" in manifest.validate()
+
+
+def test_a_readable_schema_that_is_not_an_object_is_a_named_problem() -> None:
+    manifest = HostManifest.from_dict(
+        _wire(state_readables=[{"name": "rows", "schema": [1], "max_items": 5}])
+    )
+    assert any("readable 'rows': schema must be an object" in p for p in manifest.validate())
+
+
+def test_guard_shipped_manifests_still_load_and_well_formed_flags_keep_their_class() -> None:
+    from athena.connectors.spec import load_builtin
+    from athena.proving.manifests import ledgerbox_manifest
+
+    assert load_builtin()
+    assert HostManifest.from_dict(ledgerbox_manifest()).validate() == []
+    manifest = HostManifest.from_dict(
+        _wire(
+            tools=[
+                {"name": "a", "reversible": True, "side_effects": "none"},
+                {"name": "b", "reversible": True, "side_effects": "internal"},
+                {"name": "c", "reversible": True, "side_effects": "external"},
+            ],
+            state_readables=[{"name": "rows", "schema": {}, "max_chars": 400, "max_items": 20}],
+        )
+    )
+    assert manifest.validate() == []
+    assert [t.default_class() for t in manifest.tools] == [
+        ToolClass.AUTO,
+        ToolClass.AUTO,
+        ToolClass.GATED,
+    ]
+
+
+def test_guard_a_tool_built_in_code_keeps_its_defaults() -> None:
+    tool = HostTool(name="t", reversible=True)
+    assert tool.side_effects == "internal"
+    assert tool.default_class() is ToolClass.AUTO
+    assert a_manifest(tools=[tool]).validate() == []

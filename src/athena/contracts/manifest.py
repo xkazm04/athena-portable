@@ -9,10 +9,18 @@ whole — a half-merged manifest is a catalog nobody can reason about.
 The three refusals this module is built around: a tool that does not say whether it is
 ``reversible`` (an omission read permissively is a tool that executes without a card), two
 tools with one name, and an empty ``app_id`` (which namespaces every tool as ``host..<tool>``).
+
+The wire readers (``from_dict``) read every field the gate depends on by its JSON type and never
+coerce (ADR 0207): ``"reversible": "false"`` is not ``True``, an omitted ``side_effects`` is not
+``internal``, and a ``tools`` that is not a list is not an exception. Each mismatch is kept as a
+named problem that :meth:`HostManifest.validate` returns first, and the field resolves to its
+strict reading (``reversible`` unknown, ``side_effects`` external), so corrupt input can never
+class a tool looser than absent input would. A tool built in code keeps its dataclass defaults.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
 from urllib.parse import urlsplit
@@ -148,9 +156,17 @@ class HostTool:
     #: ``HAND_RUNNER`` for a hand the shell appended, ``""`` for everything else. It says which
     #: tier the tool is reported at and nothing about its class, which only the flags decide.
     runner: str = ""
+    #: What :meth:`from_dict` refused to coerce, in the words ``validate`` reports. Always empty
+    #: for a tool built in code; not part of the tool's identity or its repr.
+    _parse_problems: list[str] = field(default_factory=list, compare=False, repr=False)
 
     def default_class(self) -> ToolClass:
-        """``AUTO`` iff reversible and not externally visible; ``GATED`` in every other case."""
+        """``AUTO`` iff reversible and not externally visible; ``GATED`` in every other case.
+
+        A tool whose wire form was refused is ``GATED`` too, whatever its flags resolved to.
+        """
+        if self._parse_problems:
+            return ToolClass.GATED
         if self.reversible is not True or self.side_effects == "external":
             return ToolClass.GATED
         return ToolClass.AUTO
@@ -159,19 +175,46 @@ class HostTool:
         return f"host.{app_id}.{self.name}"
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> HostTool:
+    def from_dict(cls, d: Mapping[str, Any]) -> HostTool:
+        """Read one tool off the wire, each gate flag by its JSON type (ADR 0207).
+
+        ``reversible`` is kept only when it is a boolean: anything else resolves to ``None`` and
+        a problem, never to ``bool(raw)`` (which reads ``"false"`` as ``True``). An absent or
+        non-string ``side_effects`` resolves to ``external`` and a problem, the strict reading the
+        bridge's ``gate.js`` gives the same input.
+        """
+        problems: list[str] = []
+        name = str(d.get("name", ""))
         raw = d.get("reversible")
+        reversible: bool | None = None
+        if isinstance(raw, bool):
+            reversible = raw
+        elif raw is not None:
+            problems.append(
+                f"tool {name!r}: reversible must be true or false, got {type(raw).__name__}"
+            )
+        effects = d.get("side_effects")
+        if effects is None:
+            problems.append(f"tool {name!r} must declare side_effects")
+            effects = "external"
+        elif not isinstance(effects, str):
+            problems.append(
+                f"tool {name!r}: side_effects must be one of {SIDE_EFFECTS}, "
+                f"got {type(effects).__name__}"
+            )
+            effects = "external"
         # A schema that is not an object is kept as it came, so ``validate`` names it, rather
         # than coerced here into whatever ``dict()`` would make of it.
         schema: Any = d.get("params_schema") or d.get("input_schema") or {}
         return cls(
-            name=str(d.get("name", "")),
+            name=name,
             description=str(d.get("description", "")),
             params_schema=dict(schema) if isinstance(schema, dict) else schema,
-            reversible=None if raw is None else bool(raw),
-            side_effects=str(d.get("side_effects", "internal")),
+            reversible=reversible,
+            side_effects=effects,
             transport=str(d.get("transport", "webmcp")),
             runner=str(d.get("runner", "")),
+            _parse_problems=problems,
         )
 
 
@@ -192,29 +235,52 @@ class HostManifest:
     state_readables: list[StateReadable] = field(default_factory=list)
     #: ``connector:<id>`` when this manifest came from a connector rather than a page (README §4).
     origin_kind: str = "host"
+    #: What :meth:`from_dict` refused to coerce at the manifest level (the shape of ``tools`` and
+    #: ``state_readables``); each tool keeps its own. Empty for a manifest built in code.
+    _parse_problems: list[str] = field(default_factory=list, compare=False, repr=False)
 
     @property
     def registry_origin(self) -> str:
         return f"{self.origin_kind}:{self.app_id}"
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> HostManifest:
+    def from_dict(cls, d: Mapping[str, Any]) -> HostManifest:
+        """Read a manifest off the wire. A wrong shape raises nothing: every mismatch is a named
+        problem :meth:`validate` returns first, and the manifest is refused whole (ADR 0207)."""
+        problems: list[str] = []
+        tools: list[HostTool] = []
+        for i, raw in enumerate(_listed(d, "tools", problems)):
+            if isinstance(raw, Mapping):
+                tools.append(HostTool.from_dict(raw))
+            else:
+                problems.append(f"tools[{i}] must be an object, got {type(raw).__name__}")
+        readables: list[StateReadable] = []
+        for i, raw in enumerate(_listed(d, "state_readables", problems)):
+            if not isinstance(raw, Mapping):
+                problems.append(f"state_readables[{i}] must be an object, got {type(raw).__name__}")
+                continue
+            name = str(raw.get("name", ""))
+            schema = raw.get("schema") or {}
+            if not isinstance(schema, Mapping):
+                problems.append(f"readable {name!r}: schema must be an object")
+                schema = {}
+            readables.append(
+                StateReadable(
+                    name=name,
+                    schema=dict(schema),
+                    max_chars=_bound(raw, "max_chars", name, problems),
+                    max_items=_bound(raw, "max_items", name, problems),
+                )
+            )
         return cls(
             app_id=str(d.get("app_id", "")),
             app_version=str(d.get("app_version", "0")),
             page_origin=str(d.get("page_origin", d.get("origin", ""))),
             generated_at=str(d.get("generated_at", "")),
-            tools=[HostTool.from_dict(t) for t in d.get("tools", [])],
-            state_readables=[
-                StateReadable(
-                    name=str(r.get("name", "")),
-                    schema=dict(r.get("schema") or {}),
-                    max_chars=r.get("max_chars"),
-                    max_items=r.get("max_items"),
-                )
-                for r in d.get("state_readables", [])
-            ],
+            tools=tools,
+            state_readables=readables,
             origin_kind=str(d.get("origin_kind", "host")),
+            _parse_problems=problems,
         )
 
     def validate(self) -> list[str]:
@@ -222,7 +288,9 @@ class HostManifest:
 
         The caller merges all of it or none of it; there is no "merge the good tools".
         """
-        problems: list[str] = []
+        problems: list[str] = list(self._parse_problems)
+        for tool in self.tools:
+            problems.extend(tool._parse_problems)
 
         if not self.app_id.strip():
             problems.append("app_id must not be empty")
@@ -289,3 +357,23 @@ class HostManifest:
 
     def is_valid(self) -> bool:
         return not self.validate()
+
+
+def _listed(d: Mapping[str, Any], key: str, problems: list[str]) -> list[Any]:
+    """``d[key]`` when it is a list (absent reads as empty), else ``[]`` and a named problem."""
+    raw = d.get(key, [])
+    if isinstance(raw, list):
+        return raw
+    problems.append(f"{key} must be a list of objects, got {type(raw).__name__}")
+    return []
+
+
+def _bound(raw: Mapping[str, Any], key: str, name: str, problems: list[str]) -> int | None:
+    """A readable's ``max_chars`` or ``max_items``: absent, or a positive integer (not a bool)."""
+    value = raw.get(key)
+    if value is None:
+        return None
+    if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+        return value
+    problems.append(f"readable {name!r}: {key} must be a positive integer")
+    return None
