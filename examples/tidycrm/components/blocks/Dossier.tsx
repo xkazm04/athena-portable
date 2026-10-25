@@ -50,7 +50,7 @@ import { motion } from "motion/react";
 import { useOverlayEscape } from "@athena/demo-kit/zoom";
 
 import type { MotionTokens } from "./motion-tokens";
-import type { BkTable } from "./model";
+import type { BkTable, WorkDirection } from "./model";
 import { DossierChecks } from "./dossier/Checks";
 import { DossierGate } from "./dossier/Gate";
 import { DossierHead } from "./dossier/Head";
@@ -103,13 +103,48 @@ function riseFrom(ident: string): { opacity: number; scale: number; x: number; y
   };
 }
 
+/**
+ * Where this table stands in the sheet's worklist (`model/worklist.ts`): its one-based place, or
+ * null when it is not on the list (it has no work, or a repair just cleared it), and the length.
+ */
+export interface DossierWalk {
+  at: number | null;
+  of: number;
+  /** False once a repair has cleared this table: `at` is then the slot it held. */
+  listed: boolean;
+}
+
+/** What the walk line says. Pure, so the three states read the same everywhere. */
+export function walkLine(walk: DossierWalk, ended: WorkDirection | null): string {
+  if (ended === "next") return walk.of === 0 ? "Nothing left on the sheet." : "That was the last table on the list.";
+  if (ended === "previous") return "That was the worst table on the list.";
+  if (walk.of === 0) return "Nothing left on the sheet.";
+  if (walk.listed && walk.at !== null) return `Worst first · ${walk.at} of ${walk.of}`;
+  if (walk.at !== null) return `Cleared · ${walk.of} left`;
+  return `No work here · ${walk.of} tables have some`;
+}
+
+/** The two keys that step the walk, with nothing held: `]` next, `[` previous. */
+function stepKey(event: React.KeyboardEvent): WorkDirection | null {
+  if (event.ctrlKey || event.metaKey || event.altKey) return null;
+  if (event.key === "]") return "next";
+  if (event.key === "[") return "previous";
+  return null;
+}
+
 export function Dossier({
   table,
   onClose,
+  walk,
+  onStep,
   motion: tokens,
 }: {
   table: BkTable;
   onClose: () => void;
+  /** Where the table stands in the worklist; the walk bar is drawn only with `onStep`. */
+  walk?: DossierWalk;
+  /** Open the next or previous table worst first, across databases. False at either end. */
+  onStep?: (direction: WorkDirection) => boolean;
   /** The direction's durations and easing, read out of the cascade. See
    *  `motion-tokens.ts`; `null` only before the wrapper exists. */
   motion: MotionTokens | null;
@@ -118,6 +153,12 @@ export function Dossier({
   const { armed, arm, disarm } = useArm();
   const settle = useSettle(table);
   const [pairId, setPairId] = useState(table.pairs[0]?.id ?? "");
+  /* Which end a step ran into. The card is keyed by the table, so a step that lands is a new
+     card and this resets with it. */
+  const [ended, setEnded] = useState<WorkDirection | null>(null);
+  const step = (direction: WorkDirection) => {
+    if (onStep && !onStep(direction)) setEnded(direction);
+  };
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -140,7 +181,15 @@ export function Dossier({
    * cell is the object the card grew out of and where a reader watching the move
    * expects to be put down.
    */
-  const overlay = useOverlayEscape({ onClose, prefer: "origin", returnFocusTo: () => cellFor(ident) });
+  /*
+   * A step re-keys the card, so the old one unmounts AFTER the new one has taken focus; its
+   * restore must hand focus to the card now open, not pull it back to a cell under the scrim.
+   */
+  const overlay = useOverlayEscape({
+    onClose,
+    prefer: "origin",
+    returnFocusTo: () => document.querySelector<HTMLElement>(".bk-dossier") ?? cellFor(ident),
+  });
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -175,6 +224,12 @@ export function Dossier({
    */
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     overlay.onKeyDown(event);
+    const direction = onStep ? stepKey(event) : null;
+    if (direction) {
+      event.preventDefault();
+      step(direction);
+      return;
+    }
     if (event.key !== "Tab") return;
     const focusable = sheetRef.current?.querySelectorAll<HTMLElement>(
       "button:not(:disabled), select:not(:disabled), [href]",
@@ -254,6 +309,24 @@ export function Dossier({
           disarm={disarm}
           settle={settle}
         />
+
+        {/* The walk: the next table worth a person's attention, one key away, across databases.
+            The same list and step the agent's `next_table` takes (`model/worklist.ts`). */}
+        {onStep && walk ? (
+          <nav className="bk-foot-bar" aria-label="Worklist">
+            <div className="bk-actions">
+              <button type="button" className="bk-btn" onClick={() => step("previous")} aria-keyshortcuts="[">
+                [ Previous
+              </button>
+              <button type="button" className="bk-btn" onClick={() => step("next")} aria-keyshortcuts="]">
+                Next worst ]
+              </button>
+              <span className="bk-band-note" role="status">
+                {walkLine(walk, ended)}
+              </span>
+            </div>
+          </nav>
+        ) : null}
       </motion.div>
     </div>
   );

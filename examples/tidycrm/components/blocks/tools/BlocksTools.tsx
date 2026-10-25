@@ -5,7 +5,9 @@
  *
  * Four of the tools are the shared ones every three-level direction gets from
  * `useZoomTools` — read the view, open a database, open a table, come back out.
- * The four below are what only this sheet can answer: a search over the tables,
+ * `next_table` is the dossier's ] key: the next table worst first, across
+ * databases, from the same worklist the person walks (`../model/worklist.ts`).
+ * The four below it are what only this sheet can answer: a search over the tables,
  * a search over the example rows they carry, the deviation breakdown the
  * sheet head can be asked to show, and every repair the dossiers offer, as the
  * calls that carry it out (`plan_repairs`, ADR 0174). That last one names the
@@ -37,7 +39,19 @@ import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
 import { ARRIVAL_MS } from "../beats";
-import { BK_LEVELS, DATABASE_IDS, REMEDY_KINDS, databaseOf, tableOf, type BkSheet, type RemedyKind } from "../model";
+import {
+  BK_LEVELS,
+  DATABASE_IDS,
+  REMEDY_KINDS,
+  databaseOf,
+  placeOf,
+  stepWorklist,
+  tableOf,
+  worklistOf,
+  type BkSheet,
+  type RemedyKind,
+  type WorkPlace,
+} from "../model";
 import { databaseRead, dossierRead, planRepairs, sheetRead, tableRead } from "./read";
 import { searchBlocks, searchRecords, type BlocksQuery } from "./search";
 
@@ -59,6 +73,7 @@ export function BlocksTools({
   onOpenDatabase,
   showKinds,
   setShowKinds,
+  place = null,
 }: {
   sheet: BkSheet;
   nav: ZoomNav;
@@ -66,6 +81,9 @@ export function BlocksTools({
   onOpenDatabase: (id: string) => void;
   showKinds: boolean;
   setShowKinds: (next: boolean) => void;
+  /** Where the dossier's walk last stood, so a step from a table a repair just cleared goes on
+   *  from its slot (`../model/worklist.ts`). */
+  place?: WorkPlace | null;
 }) {
   useZoomTools({
     nav,
@@ -179,6 +197,49 @@ export function BlocksTools({
         ...(kind === undefined ? {} : { kind: String(kind) as RemedyKind }),
         ...(num(page) === undefined ? {} : { page: num(page) }),
       }),
+  });
+
+  useWebMCPTool({
+    name: "next_table",
+    // The dossier's ] and [ keys, as one call: the same list, the same step, the same nav door.
+    description:
+      "Open the next (or previous) table worth a person's attention, worst first across all databases, as search_blocks ranks them. From L0 or L1 opens the worst. Returns its place (at, of), the table, and how long the move takes.",
+    parameters: [
+      {
+        name: "direction",
+        type: "string",
+        required: false,
+        enum: ["next", "previous"],
+        description: "next (the default) or previous",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ direction }) => {
+      const list = worklistOf(sheet);
+      const { level, group, item } = nav.state.focus;
+      const from = level === 2 ? placeOf(list, item, place) : null;
+      const step = stepWorklist(list, from, direction === "previous" ? "previous" : "next");
+      if (!step) {
+        return {
+          done: true,
+          at: from?.at ?? 0,
+          of: list.length,
+          note: list.length === 0 ? "No table has work on it." : `That was the ${direction === "previous" ? "first" : "last"} table on the list.`,
+        };
+      }
+      const table = tableOf(sheet, step.item);
+      nav.openItem(step.group, step.item);
+      return {
+        ...(table ? tableRead(table) : {}),
+        database: step.group,
+        at: step.at,
+        of: step.of,
+        // A database change flies the camera and dresses the cards (`../beats.ts`); a step inside
+        // the open database only re-keys the card.
+        arrives_in_ms: level === 2 && group === step.group ? 0 : ARRIVAL_MS,
+      };
+    },
   });
 
   useWebMCPTool({

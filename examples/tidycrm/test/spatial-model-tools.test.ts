@@ -183,6 +183,7 @@ const SESSION: [string, Record<string, unknown>][] = [
   ["read_view", {}],
   ["open_item", { id: table.ident }],
   ["read_view", {}],
+  ["next_table", { direction: "next" }],
   ["zoom_out", {}],
   ["zoom_out", {}],
 ];
@@ -199,6 +200,7 @@ const MAY_MOVE: Record<string, string[]> = {
   plan_repairs: [],
   open_group: ["openDatabase", "nav.openGroup"],
   open_item: ["nav.openItem"],
+  next_table: ["nav.openItem"],
   zoom_out: ["nav.up"],
 };
 
@@ -260,10 +262,11 @@ for (const [name, args] of SESSION) {
 
 /* --------------------------------------------------------------------- the checks */
 
-test("the page registers the kit's four verbs and the Blocks' four, and the session calls each", () => {
+test("the page registers the kit's four verbs and the Blocks' five, and the session calls each", () => {
   assert.deepEqual(
     [...registered.keys()].sort(),
     [
+      "next_table",
       "open_group",
       "open_item",
       "plan_repairs",
@@ -298,6 +301,7 @@ test("no tool the Blocks register changes the sheet or the database, or moves th
     show_breakdown: ["setShowKinds"],
     open_group: ["openDatabase", "nav.openGroup"],
     open_item: ["nav.openItem"],
+    next_table: ["nav.openItem"],
     zoom_out: ["nav.up"],
   });
 });
@@ -427,4 +431,62 @@ test("plan_repairs pages every stale target on the sheet, each page one whole JS
   }
   assert.deepEqual([...got].sort(), [...want].sort());
   assert.equal(got.size, sheet.databases.flatMap((d) => d.tables).reduce((n, t) => n + t.staleIds.length, 0));
+});
+
+test("next_table walks the worklist from the open table, and from L0 opens its head", async () => {
+  // The dossier's ] key and the agent's next_table are one walk over `worklistOf(sheet)`: one call
+  // instead of search_blocks + open_item, crossing databases through the same nav door.
+  const spec = registered.get("next_table");
+  assert.ok(spec, "next_table is registered");
+  const { worklistOf } = (await import("../components/blocks/model")) as unknown as {
+    worklistOf: (s: typeof sheet) => { database: string; ident: string }[];
+  };
+  const { tableRead } = await import("../components/blocks/tools/read");
+  const { ARRIVAL_MS } = await import("../components/blocks/beats");
+  const list = worklistOf(sheet);
+  const tableBy = (ident: string) => sheet.databases.flatMap((d) => d.tables).find((t) => t.ident === ident)!;
+  const calls: [string, string][] = [];
+  const openItem = nav.openItem;
+  (nav as { openItem: ZoomNav["openItem"] }).openItem = (group, id) => {
+    calls.push([group, id]);
+    openItem(group, id);
+  };
+  try {
+    // At L2 on the worst table.
+    Object.assign(focus, { level: 2, group: list[0]!.database, item: list[0]!.ident });
+    const seen = await drive(spec, { direction: "next" });
+    assert.deepEqual(calls, [[list[1]!.database, list[1]!.ident]]);
+    assert.deepEqual(seen.moved, ["nav.openItem"]);
+    assert.deepEqual(seen.changed, []);
+    const answer = seen.answer as Record<string, unknown>;
+    assert.equal(answer.at, 2);
+    assert.equal(answer.of, list.length);
+    assert.equal(answer.database, list[1]!.database);
+    assert.deepEqual({ ...answer, at: undefined, of: undefined, database: undefined, arrives_in_ms: undefined }, {
+      ...tableRead(tableBy(list[1]!.ident)),
+      at: undefined,
+      of: undefined,
+      database: undefined,
+      arrives_in_ms: undefined,
+    });
+    // A database change is a flight and a dress; a step inside one is not.
+    assert.equal(answer.arrives_in_ms, list[1]!.database === list[0]!.database ? 0 : ARRIVAL_MS);
+
+    // At L0, nothing open: the head of the list, a flight away.
+    calls.length = 0;
+    Object.assign(focus, { level: 0, group: null, item: null });
+    const fromTop = await drive(spec, {});
+    assert.deepEqual(calls, [[list[0]!.database, list[0]!.ident]]);
+    assert.equal(fromTop.answer.at, 1);
+    assert.equal(fromTop.answer.arrives_in_ms, ARRIVAL_MS);
+
+    // previous from the head: the end, said, and nothing moves.
+    calls.length = 0;
+    const end = await drive(spec, { direction: "previous" });
+    assert.deepEqual(calls, []);
+    assert.equal(end.answer.done, true);
+  } finally {
+    (nav as { openItem: ZoomNav["openItem"] }).openItem = openItem;
+    Object.assign(focus, { level: 0, group: null, item: null });
+  }
 });

@@ -50,7 +50,16 @@ import { SheetFoot } from "./sheet/Foot";
 import { SheetHead } from "./sheet/Head";
 import { BANDS, BOUNDS, REST, poseFor, resolveGroup, resolveItem, snapNear } from "./space/camera";
 import { useWheelZoom } from "./space/useWheelZoom";
-import { databaseOf, tableOf, type BkSheet } from "./model";
+import {
+  databaseOf,
+  placeOf,
+  stepWorklist,
+  tableOf,
+  worklistOf,
+  type BkSheet,
+  type WorkDirection,
+  type WorkPlace,
+} from "./model";
 import "./style/index.css";
 
 /** Which cell is holding its ink back, and which way the box is travelling. */
@@ -209,6 +218,27 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
     });
   }
   const hold = ink.hold;
+
+  /*
+   * THE WALK. Every table with work on it, worst first across the databases, and where the open
+   * table stands in it (`model/worklist.ts`). The last place is remembered, adjusted during render
+   * like the ink hold, so when a repair clears the open table and the refreshed sheet drops it
+   * from the list, the next step goes on from the slot it held instead of the head.
+   */
+  const worklist = useMemo(() => worklistOf(sheet), [sheet]);
+  const [lastPlace, setLastPlace] = useState<WorkPlace | null>(null);
+  const place = placeOf(worklist, open, lastPlace);
+  if (place !== null && place !== lastPlace && (place.ident !== lastPlace?.ident || place.at !== lastPlace.at)) {
+    setLastPlace(place);
+  }
+  const listed = open !== null && worklist.some((e) => e.ident === open);
+  const onStep = (direction: WorkDirection): boolean => {
+    const next = stepWorklist(worklist, place, direction);
+    if (!next) return false;
+    // The nav's own door: a step into another database flies and dresses like an agent's open_item.
+    nav.openItem(next.group, next.item);
+    return true;
+  };
   useEffect(() => {
     if (hold?.phase !== "back") return;
     const id = window.setTimeout(() => setInk((s) => ({ ...s, hold: null })), holdMs);
@@ -229,6 +259,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
           onOpenDatabase={openDatabase}
           showKinds={showKinds}
           setShowKinds={setShowKinds}
+          place={place}
         />
 
         <div className="bk-sheet">
@@ -311,7 +342,14 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
             same card holding a different one. */}
         <AnimatePresence>
           {level === 2 && table ? (
-            <Dossier key={table.ident} table={table} onClose={nav.up} motion={motion} />
+            <Dossier
+              key={table.ident}
+              table={table}
+              onClose={nav.up}
+              walk={{ at: place?.at ?? null, of: worklist.length, listed }}
+              onStep={onStep}
+              motion={motion}
+            />
           ) : null}
         </AnimatePresence>
       </MotionConfig>

@@ -13,7 +13,7 @@
  */
 import { bounded } from "@athena/demo-kit/webmcp";
 
-import type { BkDatabase, BkSheet, BkTable } from "../model";
+import { worstFirst, type BkDatabase, type BkSheet, type BkTable } from "../model";
 import { percent, tableRead } from "./read";
 
 /** Results returned before a search stops and says how many it left out. */
@@ -48,17 +48,6 @@ function databasesOf(sheet: BkSheet, id: string | undefined): BkDatabase[] {
   return id && id !== "all" ? sheet.databases.filter((d) => d.id === id) : sheet.databases;
 }
 
-/**
- * Worst first: the ones a person is waiting on, then the most deviations.
- *
- * Attention leads because it is the only queue on this sheet that no amount of
- * automatic work will shorten.
- */
-function worstFirst(a: BkTable, b: BkTable): number {
-  if (a.attention !== b.attention) return a.attention ? -1 : 1;
-  return b.deviationTotal - a.deviationTotal;
-}
-
 export function searchBlocks(sheet: BkSheet, q: BlocksQuery) {
   const databases = databasesOf(sheet, q.database);
   if (databases.length === 0) {
@@ -71,7 +60,7 @@ export function searchBlocks(sheet: BkSheet, q: BlocksQuery) {
 
   const found = databases
     .flatMap((db) => db.tables.filter((t) => hit(t, q)).map((t) => ({ db, table: t })))
-    .sort((a, b) => worstFirst(a.table, b.table));
+    .sort((a, b) => worstFirst(a.table, b.table)); // `../model/worklist.ts`, the dossier's walk
 
   return {
     ...bounded(found, SEARCH_PAGE, ({ db, table }) => ({
