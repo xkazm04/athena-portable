@@ -21,6 +21,13 @@ of ``~/.athena/connectors`` (it has no flag of its own); ``--voice-backend none`
 because ``auto`` would pick up a provider key from the environment; and ``OPENAI_API_KEY`` is
 removed from the child's environment so nothing here can reach a network.
 
+**A transcript is a contract, and it is audited.** ``serve_scripted.py`` records every provider
+invocation to ``ATHENA_HOME/scripted/asked.ndjson``. ``Daemon.run(..., rounds=n)`` checks what one
+turn spent, and the ``spawn`` fixture's teardown fails a test whose transcript was overdrawn (a
+round asked for that the script lacks — the turn ended ``engine_error`` behind a 200) or left
+unconsumed (a round scripted for a turn that no longer asks for it). ``exact=False`` is the one,
+greppable opt-out for a test that over-supplies on purpose.
+
 The HTTP helpers — the response shape, the SSE frame parser, the recorded ``claude`` round, the
 ``OP:`` envelope, the two-tool manifest — are imported from ``tests/daemon/conftest.py`` rather
 than written again: a second SSE parser is a second opinion about what a frame is.
@@ -43,6 +50,7 @@ from typing import Any
 import pytest
 
 from athena.daemon.server import TOKEN_HEADER
+from athena.harness.transports import rounds_from_transcript
 
 # ``tests/`` is on ``sys.path`` (it is the first directory above a test package with no
 # ``__init__.py``, which is where pytest's prepend import mode inserts), so the daemon suite's
@@ -89,6 +97,10 @@ EXIT_TIMEOUT_S = 30.0
 
 _REPO = Path(__file__).resolve().parents[2]
 _SCRIPT = Path(__file__).resolve().parent / "serve_scripted.py"
+#: Where ``serve_scripted.py`` records each provider invocation, under the daemon's home. The
+#: child's own constant (``serve_scripted.ASKED``) says the same; it is not imported because the
+#: script arranges ``sys.path`` for a child process, not for this one.
+ASKED = ("scripted", "asked.ndjson")
 
 
 def athena_console_script() -> Path:
@@ -131,6 +143,8 @@ class Daemon:
     home: Path
     argv: tuple[str, ...]
     transcript: Path | None = None
+    #: Whether teardown holds this daemon to its transcript exactly (``Spawn.scripted(exact=)``).
+    exact: bool = False
     stopped: bool = field(default=False, repr=False)
 
     @property
@@ -199,15 +213,66 @@ class Daemon:
             "/manifest", method="POST", json_body=manifest_body(app_id, page_origin, **overrides)
         )
 
-    def run(self, message: str, *, origin: str = PAGE_ORIGIN, **body: Any) -> Response:
-        return self.request(
+    def run(
+        self, message: str, *, origin: str = PAGE_ORIGIN, rounds: int | None = None, **body: Any
+    ) -> Response:
+        """One turn. ``rounds`` is how many recorded rounds this turn must spend, checked."""
+        before = self.rounds_asked() if rounds is not None else 0
+        reply = self.request(
             "/run", method="POST", json_body={"message": message, "origin": origin, **body}
         )
+        if rounds is not None:
+            spent = self.rounds_asked() - before
+            assert spent == rounds, (
+                f"the turn {message!r} asked {spent} round(s), expected {rounds}"
+                f" ({self.accounting()})"
+            )
+        return reply
 
     def decide(self, approval_id: str, choice: str, **body: Any) -> Response:
         return self.request(
             f"/decisions/{approval_id}", method="POST", json_body={"choice": choice, **body}
         )
+
+    # -- the transcript, audited ----------------------------------------------------------------
+
+    def asked(self) -> list[dict[str, Any]]:
+        """Every provider invocation this daemon made, as ``serve_scripted.py`` recorded it."""
+        path = self.home.joinpath(*ASKED)
+        if not path.is_file():
+            return []
+        lines = path.read_text(encoding="utf-8").splitlines()
+        return [json.loads(line) for line in lines if line.strip()]
+
+    def rounds_asked(self) -> int:
+        return len(self.asked())
+
+    def rounds_available(self) -> int:
+        if self.transcript is None:
+            return 0
+        return len(rounds_from_transcript(self.transcript.read_text(encoding="utf-8")))
+
+    def accounting(self) -> str:
+        return f"{self.rounds_asked()} asked of {self.rounds_available()} scripted"
+
+    def transcript_failure(self) -> str:
+        """Why this daemon's transcript was not consumed exactly, or ``""`` when it was."""
+        if self.transcript is None:
+            return ""
+        asked, available = self.rounds_asked(), self.rounds_available()
+        if asked > available:
+            return (
+                f"round {available + 1} was asked for; the script has {available}"
+                f" ({asked} asked in all) - a turn ended engine_error behind a 200"
+            )
+        if asked < available:
+            unasked = available - asked
+            more = f" (and {unasked - 1} more after it)" if unasked > 1 else ""
+            return (
+                f"round {asked + 1} of {available} was never asked for{more} - a scripted round"
+                " no turn spent is a moved premise; pass exact=False to over-supply on purpose"
+            )
+        return ""
 
     # -- the end --------------------------------------------------------------------------------
 
@@ -455,6 +520,7 @@ class Spawn:
         extra: Sequence[str] = (),
         transcript: Path | None = None,
         fake_providers: bool = False,
+        exact: bool = True,
     ) -> Daemon:
         """The same daemon with a recorded engine (``tests/e2e/serve_scripted.py``).
 
@@ -464,6 +530,9 @@ class Spawn:
 
         ``fake_providers`` turns the connector vault on over the in-process fake Gmail and Notion
         of ``fake_providers.py``; nothing then reaches a real host.
+
+        ``exact`` (the default) makes teardown fail unless every scripted round was asked for and
+        none beyond them; ``exact=False`` is for a test that over-supplies on purpose.
         """
         where = home if home is not None else self.home()
         path = transcript if transcript is not None else where / "transcript.ndjson"
@@ -486,7 +555,7 @@ class Spawn:
             argv += ["--utterance", utterance]
         if fake_providers:
             argv.append("--fake-providers")
-        return self._start(argv, where, token=token, transcript=path)
+        return self._start(argv, where, token=token, transcript=path, exact=exact)
 
     # -- the machinery --------------------------------------------------------------------------
 
@@ -497,6 +566,7 @@ class Spawn:
         *,
         token: str | None,
         transcript: Path | None = None,
+        exact: bool = False,
     ) -> Daemon:
         process = subprocess.Popen(
             list(argv),
@@ -523,13 +593,26 @@ class Spawn:
             home=home,
             argv=tuple(argv),
             transcript=transcript,
+            exact=exact,
         )
         self.started.append(daemon)
         return daemon
 
     def stop_all(self) -> None:
+        """Stop every daemon, then fail if any exact transcript was not consumed exactly.
+
+        The audit is read first and raised last, so a failing check never leaves a daemon alive.
+        """
+        failures = [
+            f"daemon {number} ({daemon.transcript}): {failure}"
+            for number, daemon in enumerate(self.started, start=1)
+            if daemon.exact and (failure := daemon.transcript_failure())
+        ]
         for daemon in reversed(self.started):
             daemon.stop()
+        if failures:
+            said = "\n".join(failures)
+            raise AssertionError(f"the recorded transcript was not consumed exactly:\n{said}")
 
 
 def _token_from(path: Path) -> str:

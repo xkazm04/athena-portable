@@ -63,7 +63,11 @@ def test_with_the_vault_on_and_nothing_connected_each_connector_reports_its_heal
     spawn: Spawn,
 ) -> None:
     daemon = spawn.scripted(
-        [claude_round("Searching your mail.\n" + op(SEARCH_MAIL, query="invoice"))],
+        [
+            claude_round("Searching your mail.\n" + op(SEARCH_MAIL, query="invoice")),
+            # The refusal is told in the same turn (ADR 0041), and she answers it.
+            claude_round("Your mail is not connected, so I can't search it yet."),
+        ],
         connectors=True,
     )
     tools_before = daemon.request("/health").body["tools"]
@@ -109,10 +113,15 @@ def test_with_the_vault_on_and_nothing_connected_each_connector_reports_its_heal
 
     # ...and a proposal for one is refused rather than attempted.
     results = [
-        payload for kind, payload in daemon.run("search my mail").frames() if kind == "tool.result"
+        payload
+        for kind, payload in daemon.run("search my mail", rounds=2).frames()
+        if kind == "tool.result"
     ]
     assert len(results) == 1
     assert results[0]["error"] == "unknown_ref"
     assert daemon.request("/connectors").body["connectors"][0]["connection"]["health_at"] == ""
     assert daemon.request("/decisions").body["total"] == 0
-    assert daemon.request("/ledger").body["rows"][0]["origin"] == f"host:{APP_ID}"
+    row = daemon.request("/ledger").body["rows"][0]
+    assert row["origin"] == f"host:{APP_ID}"
+    # The refusal was told and she answered it: the turn ended well, not on a missing round.
+    assert (row["is_error"], row["error_reason"]) == (False, None)

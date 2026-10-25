@@ -253,11 +253,13 @@ def test_a_grant_revoked_mid_run_shows_needs_reauth_and_the_next_call_is_refused
             claude_round("Looking.\n" + op(SEARCH, query="invoice")),
             claude_round("It could not be read."),
             claude_round("Looking again.\n" + op(SEARCH, query="invoice")),
+            # The unknown_ref is told in the same turn (ADR 0041), and she answers it.
+            claude_round("Gmail needs reconnecting before I can search it."),
         ],
     )
     control(daemon, gmail_revoked=True)
 
-    results_of_the_turn = results(daemon.run("find the invoice mail"))
+    results_of_the_turn = results(daemon.run("find the invoice mail", rounds=2))
 
     assert len(results_of_the_turn) == 1 and results_of_the_turn[0]["ok"] is False
     assert "reconnected in Connectors" in results_of_the_turn[0]["output"]
@@ -268,9 +270,11 @@ def test_a_grant_revoked_mid_run_shows_needs_reauth_and_the_next_call_is_refused
 
     # Not live, so the name is no longer one the model can address, and nothing is dialled.
     asked = len(log(daemon))
-    again = results(daemon.run("try once more"))
+    again = results(daemon.run("try once more", rounds=2))
     assert again and again[0]["ok"] is False and again[0]["error"] == "unknown_ref"
     assert len(log(daemon)) == asked
+    turns = [row for row in daemon.request("/ledger").body["rows"] if row["trigger"] == "cli"]
+    assert [(row["is_error"], row["error_reason"]) for row in turns] == [(False, None)] * 2
     assert_every_request_was_answered_by_the_fake(daemon)
 
 

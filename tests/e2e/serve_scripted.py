@@ -8,7 +8,8 @@ ones ``athena serve`` builds — byte for byte the same code path — and the on
 are:
 
 * the **engine's transport**, which becomes a
-  :class:`~athena.harness.transports.ScriptedTransport` replaying ``--transcript`` (ADR 0007),
+  :class:`~athena.harness.transports.ScriptedTransport` replaying ``--transcript`` (ADR 0007) and
+  recording every invocation to ``ATHENA_HOME/scripted/asked.ndjson`` (:class:`RecordingTransport`),
 * the **connector providers**, when ``--fake-providers`` asks: the vault is built by its own
   constructor with :mod:`fake_providers` as its transport and as the browser at the consent page,
   so the specs, the host pin and the redirect handling are production code (uat J6), and
@@ -34,8 +35,9 @@ stdout is the ready line of :mod:`athena.daemon.ready` — same keys, same order
 from __future__ import annotations
 
 import argparse
+import json
 import sys
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -50,9 +52,22 @@ from athena.channels.voice.backends import (  # noqa: E402 - after the path is a
     VoiceBackend,
 )
 from athena.daemon import server  # noqa: E402
-from athena.harness.transports import ScriptedTransport  # noqa: E402
+from athena.harness.transports import CliRequest, ScriptedTransport  # noqa: E402
 
-__all__ = ["SCRIPTED_BACKEND", "build_parser", "install", "install_fake_providers", "main"]
+__all__ = [
+    "ASKED",
+    "SCRIPTED_BACKEND",
+    "RecordingTransport",
+    "build_parser",
+    "install",
+    "install_fake_providers",
+    "main",
+]
+
+#: Where each provider invocation is recorded, relative to ``ATHENA_HOME``: one NDJSON line per
+#: invocation, ``{"index", "available", "served"}``. The parent test reads it back
+#: (``tests/e2e/conftest.py``); it is the only witness of a round asked for in this process.
+ASKED = ("scripted", "asked.ndjson")
 
 #: The name ``--voice-backend`` takes for the scripted microphone. It is added to the daemon's own
 #: choices rather than replacing one, so ``auto``, ``openai`` and ``none`` still mean what they
@@ -92,6 +107,29 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+class RecordingTransport(ScriptedTransport):
+    """The same replay, plus one line per invocation saying whether the script had that round.
+
+    An overdraft still raises inside this process — the CLI harness still turns it into an
+    ``engine_error`` turn, exactly as before — but the line is written first, so the test that
+    owns the transcript can be told: the raise alone never crosses the process boundary.
+    """
+
+    def __init__(self, rounds: Sequence[Sequence[str]], record: Path) -> None:
+        super().__init__(rounds)
+        self.record = record
+
+    async def run(self, request: CliRequest) -> AsyncIterator[str]:
+        index = len(self.requests)
+        available = len(self.rounds)
+        line = {"index": index, "available": available, "served": index < available}
+        self.record.parent.mkdir(parents=True, exist_ok=True)
+        with self.record.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(line) + "\n")
+        async for out in super().run(request):
+            yield out
+
+
 def install_fake_providers() -> None:
     """Rebind ``server.Vault``, which ``serve`` reads at call time, to a Vault with the fakes.
 
@@ -129,11 +167,15 @@ def install(
         raise FileNotFoundError(f"no transcript at {path}")
 
     from athena import wiring
+    from athena.core.brain.paths import athena_home
+    from athena.harness.transports import rounds_from_transcript
 
     built = wiring.build_local
+    rounds = rounds_from_transcript(path.read_text(encoding="utf-8"))
+    record = athena_home().joinpath(*ASKED)
 
     def build_scripted(**kwargs: Any) -> Any:
-        kwargs["transport"] = lambda dialect: ScriptedTransport.from_transcript(path)
+        kwargs["transport"] = lambda dialect: RecordingTransport(rounds, record)
         return built(**kwargs)
 
     wiring.build_local = build_scripted

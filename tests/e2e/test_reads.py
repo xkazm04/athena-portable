@@ -166,7 +166,8 @@ def test_playbooks_answers_for_one_origin_and_says_honestly_that_it_has_none(
 ) -> None:
     """A fresh brain has distilled nothing, and the honest answer to that is an empty page with
     its own ``(showing 0 of 0)`` arithmetic — not an omitted key."""
-    daemon = spawn.scripted([claude_round("Noted.")])
+    # No turn runs, so no round is scripted: one that was would fail teardown as never asked for.
+    daemon = spawn.scripted([])
     daemon.register()
 
     reply = daemon.request(f"/playbooks?origin=host:{APP_ID}")

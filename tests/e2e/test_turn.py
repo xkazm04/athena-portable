@@ -182,7 +182,8 @@ def test_a_turn_from_an_origin_that_sent_no_manifest_is_refused_before_the_strea
 ) -> None:
     """Everything refusable is refused as a JSON body, so a caller never reads a 200 to find out
     the turn never started."""
-    daemon = spawn.scripted([claude_round("never reached")])
+    # Not one round: a refused turn that reached the engine would overdraw it and fail teardown.
+    daemon = spawn.scripted([])
 
     reply = daemon.run("do something", origin="https://not-registered.example")
 
