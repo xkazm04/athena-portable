@@ -11,6 +11,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ProposalMemory, ProposalView } from "@/lib/sleep";
+
 import { DEVICES_NOW, PATHS, fixtures, sleepFixtures } from "./fixtures";
 import SleepSection, { lastWords, pressureWords, stateLine, statsWords, type SleepModel, type SleepOpening } from "./sleep";
 import MindView from "./view";
@@ -159,10 +161,41 @@ describe("waiting for you", () => {
   it("asks which one goes before a contradiction forgets anything", () => {
     const h = html("typical", { choosing: "prp_00000000d001" });
     expect(h).toContain('role="group" aria-label="Which one goes?"');
-    expect(h).toContain(">Forget fct_00000000e001<");
-    expect(h).toContain(">Forget fct_00000000e002<");
+    // An older daemon sends no memories: the buttons name the side by its place, never its id.
+    expect(h).toContain(">Forget the first<");
+    expect(h).toContain(">Forget the second<");
+    expect(h).not.toMatch(/<button[^>]*>[^<]*fct_/);
     expect(h).toContain(">Cancel<");
     expect(h).not.toContain(">Keep both<");
+  });
+
+  it("a contradiction shows both memories' words and source side by side, a forget under each, no id on a button", () => {
+    const h = render(withMemories());
+    expect(h).toContain('class="sleep__pair"');
+    const contradiction = h.slice(h.indexOf('data-kind="contradiction"'), h.indexOf('data-kind="forget"'));
+    expect(count(contradiction, 'class="sleep__side"')).toBe(2);
+    expect(h).toContain("Invoices go out on Fridays.");
+    expect(h).toContain("Invoices go out on Mondays now.");
+    expect(h).toContain("&quot;Let us send the invoices every Friday.&quot;");
+    expect(h).toContain("&quot;From now on invoices go out on Monday.&quot;");
+    expect(h.indexOf("Fridays.")).toBeLessThan(h.indexOf("Mondays now."));
+    expect(count(h, ">Forget this one<")).toBe(2);
+    expect(h).toContain("used 2 h ago");
+    expect(h).toContain("never used");
+    expect(h).toContain("faded 2 of 3");
+    expect(h).not.toMatch(/<button[^>]*>[^<]*fct_/);
+    expect(h).not.toContain("sleep__ids");
+    expect(h).toContain(">Keep both<");
+    expect(h).not.toContain(">Forget one…<");
+  });
+
+  it("a forget card shows the memory's words and source above Keep and Forget", () => {
+    const h = render(withMemories());
+    expect(h).toContain("The old office Wi-Fi is ACME-GUEST.");
+    expect(h).toContain("&quot;The guest network is ACME-GUEST.&quot;");
+    expect(h).toContain("faded 3 of 3");
+    expect(h).toContain(">Keep<");
+    expect(h).toContain(">Forget<");
   });
 
   it("says an answer that was refused under its card", () => {
@@ -265,10 +298,27 @@ describe("pressing", () => {
     act(() => button("Cancel").click());
     expect(host.textContent).not.toContain("Which one goes?");
     act(() => button("Forget one…").click());
-    act(() => button("Forget fct_00000000e002").click());
+    act(() => button("Forget the second").click());
     expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
     act(() => button("Forget").click());
     expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d002", "forget", null);
+  });
+
+  it("forgets the side whose 'Forget this one' was pressed, in one press", () => {
+    const actions = {
+      load: vi.fn(async () => {}),
+      readJournal: vi.fn(async () => {}),
+      sleepNow: vi.fn(async () => {}),
+      decide: vi.fn(async () => {}),
+    };
+    act(() => root.render(<SleepSection model={{ ...withMemories(), actions }} />));
+    const forgets = [...host.querySelectorAll("button")].filter((b) => b.textContent === "Forget this one");
+    expect(forgets).toHaveLength(2);
+    act(() => forgets[1]!.click());
+    expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
+    // Each button is described by the words it would forget, so two of the same name are told apart.
+    const described = forgets[1]!.getAttribute("aria-describedby");
+    expect(described && host.querySelector(`[id="${described}"]`)?.textContent).toBe("Invoices go out on Mondays now.");
   });
 
   it("Sleep now asks; Read again reads", () => {
@@ -279,3 +329,29 @@ describe("pressing", () => {
     expect(actions.load).toHaveBeenCalledTimes(1);
   });
 });
+
+/** The typical fixture with the memories a daemon that reads them sends beside each proposal. */
+function withMemories(): SleepModel {
+  const base = sleepFixtures.typical!;
+  const memory = (over: Partial<ProposalMemory> & Pick<ProposalMemory, "id" | "text">): ProposalMemory => ({
+    kind: "fact",
+    key: "invoice day",
+    scope: "user",
+    created_at: "2026-10-12T09:00:00Z",
+    sources: 1,
+    recalled_at: null,
+    faded: 0,
+    quote: null,
+    live: true,
+    ...over,
+  });
+  const memories: Record<string, ProposalMemory[]> = {
+    prp_00000000d001: [
+      memory({ id: "fct_00000000e001", text: "Invoices go out on Fridays.", quote: "Let us send the invoices every Friday.", recalled_at: "2026-10-24T10:00:00Z" }),
+      memory({ id: "fct_00000000e002", text: "Invoices go out on Mondays now.", quote: "From now on invoices go out on Monday.", faded: 2 }),
+    ],
+    prp_00000000d002: [memory({ id: "fct_00000000e003", text: "The old office Wi-Fi is ACME-GUEST.", quote: "The guest network is ACME-GUEST.", faded: 3 })],
+  };
+  const proposals: ProposalView[] = base.state.proposals.map((p) => ({ ...p, memories: memories[p.id] ?? [] }));
+  return { ...base, state: { ...base.state, proposals } };
+}

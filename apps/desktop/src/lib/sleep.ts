@@ -63,6 +63,32 @@ export interface SleepView {
 export type ProposalKind = "forget" | "contradiction";
 export type ProposalStatus = "open" | "kept" | "forgotten" | "dismissed" | "expired";
 
+/**
+ * One memory a proposal names, as a person compares it: its words, where it came from and how it
+ * was used. No confidence figure: that is the distiller's guess, not a measurement.
+ */
+export interface ProposalMemory {
+  id: string;
+  /** `fact` or `procedural`; `null` for a node the index does not hold. */
+  kind: string | null;
+  /** A fact's key or a procedure's trigger. */
+  key: string | null;
+  /** The memory's words, one line, at most 200 characters; `null` when it is not live. */
+  text: string | null;
+  scope: string | null;
+  created_at: string | null;
+  /** How many episodes it cites. */
+  sources: number;
+  /** When recall last showed it; `null` when it never has. */
+  recalled_at: string | null;
+  /** Fade steps, 0 to 3. */
+  faded: number;
+  /** The first live episode it cites, one line, at most 200 characters; an open proposal's only. */
+  quote: string | null;
+  /** `false` once superseded (forgotten, replaced): nothing is shown to compare. */
+  live: boolean;
+}
+
 export interface ProposalView {
   id: string;
   cycle_id: string;
@@ -71,6 +97,8 @@ export interface ProposalView {
   summary: string;
   status: ProposalStatus;
   created_at: string;
+  /** One per `node_ids`, in that order. Absent from an older daemon, which sends ids only. */
+  memories?: ProposalMemory[];
 }
 
 /** `POST /sleep/run`. */

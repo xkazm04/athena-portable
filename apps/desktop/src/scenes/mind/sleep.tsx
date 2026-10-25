@@ -11,7 +11,9 @@
  * - while she sleeps, which of the three phases she is in;
  * - the last cycle in a line, and the journal of each cycle, opened row by row;
  * - the proposals a cycle left - forget a memory gone unused, or settle two that disagree - each
- *   kept or forgotten here, a contradiction's forget asking which of the two goes;
+ *   kept or forgotten here. Each shows the memory's words, the sentence it was learned from and how
+ *   it was used; a contradiction sets its two side by side with "Forget this one" under each, so the
+ *   choice is made on what they say, never on an id;
  * - "Sleep now", whose refusal is the daemon's sentence, shown as it came.
  *
  * {@link SleepSection} is a pure function of a {@link SleepModel} (the store's mirror plus `now`)
@@ -20,13 +22,13 @@
  * section mounts and stopped when it goes. Both are in the Mind depth's lazy chunk; the store is
  * imported from nowhere else.
  */
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import ProblemNote from "@/components/ProblemNote";
 import type { Tone } from "@/components/StatusDot";
-import type { CycleStats, CycleStatus, CycleView, ProposalView, SleepPhase, SleepView } from "@/lib/sleep";
+import type { CycleStats, CycleStatus, CycleView, ProposalMemory, ProposalView, SleepPhase, SleepView } from "@/lib/sleep";
 import { clockOf, parseStamp, whenAgo } from "@/lib/time";
 import { decide, readJournal, sleepNow, startSleep, loadSleep, useSleep, type SleepState } from "@/stores/sleep";
 
@@ -141,6 +143,21 @@ export function lastWords(cycle: CycleView, now: number): string {
       : `Last sleep, ${whenAgo(endOf(cycle), now)}: ${STATUS_WORD[cycle.status]}${why ? `, because ${why}` : ""}.`;
   const did = statsWords(cycle.stats, cycle.status);
   return did ? `${head} She ${did}.` : head;
+}
+
+/** How many steps a memory fades before it is offered to forget (`FADE_MAX`, core/sleep). */
+const FADE_STEPS = 3;
+
+/** The day a memory was learned, as "12 Oct"; the stamp as sent when it does not parse. */
+function dayWords(raw: string): string {
+  const at = parseStamp(raw);
+  return at === null ? raw : at.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+/** How a memory was used: when recall last showed it, or never, and how far it has faded. */
+export function usedWords(memory: ProposalMemory, now: number): string {
+  const used = memory.recalled_at ? `used ${whenAgo(memory.recalled_at, now)}` : "never used";
+  return memory.faded > 0 ? `${used} · faded ${memory.faded} of ${FADE_STEPS}` : used;
 }
 
 /** The day and clock a cycle began, for its journal row. */
@@ -316,6 +333,8 @@ function Proposal({
 }) {
   const busy = model.state.busy[proposal.id] ? "Answering…" : undefined;
   const pair = proposal.kind === "contradiction";
+  // An older daemon sends ids only; then the card falls back to naming each side by its place.
+  const memories = proposal.memories && proposal.memories.length === proposal.node_ids.length ? proposal.memories : null;
   const answer = (action: "keep" | "forget", nodeId: string | null = null) => {
     onChoose(false);
     void model.actions.decide(proposal.id, action, nodeId);
@@ -324,20 +343,46 @@ function Proposal({
     <li className="sleep__proposal" data-kind={proposal.kind}>
       <p className="typo-label">{pair ? "Two memories disagree" : "Forget this?"}</p>
       <p className="typo-body">{proposal.summary}</p>
-      <p className="sleep__ids typo-caption">
-        {proposal.node_ids.map((id, i) => (
-          <span key={id}>
-            {i > 0 ? (pair ? " and " : ", ") : null}
-            <code className="typo-code">{id}</code>
-          </span>
-        ))}
-      </p>
-      {choosing ? (
+      {memories ? (
+        pair ? (
+          <div className="sleep__pair" role="group" aria-label="The two memories, side by side">
+            {memories.map((memory) => (
+              <Memory key={memory.id} memory={memory} now={model.now}>
+                {(textId) =>
+                  memory.live ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabledReason={busy}
+                      aria-describedby={textId}
+                      onClick={() => answer("forget", memory.id)}
+                    >
+                      Forget this one
+                    </Button>
+                  ) : null
+                }
+              </Memory>
+            ))}
+          </div>
+        ) : (
+          memories.map((memory) => <Memory key={memory.id} memory={memory} now={model.now} />)
+        )
+      ) : (
+        <p className="sleep__ids typo-caption">
+          {proposal.node_ids.map((id, i) => (
+            <span key={id}>
+              {i > 0 ? (pair ? " and " : ", ") : null}
+              <code className="typo-code">{id}</code>
+            </span>
+          ))}
+        </p>
+      )}
+      {choosing && !memories ? (
         <div className="mind__row" role="group" aria-label="Which one goes?">
           <span className="typo-body">Which one goes?</span>
-          {proposal.node_ids.map((id) => (
+          {proposal.node_ids.map((id, i) => (
             <Button key={id} size="sm" variant="secondary" disabledReason={busy} onClick={() => answer("forget", id)}>
-              {`Forget ${id}`}
+              {`Forget the ${ORDINAL[i] ?? `number ${i + 1}`}`}
             </Button>
           ))}
           <Button size="sm" variant="ghost" onClick={() => onChoose(false)}>
@@ -349,18 +394,45 @@ function Proposal({
           <Button size="sm" variant="secondary" disabledReason={busy} onClick={() => answer("keep")}>
             {pair ? "Keep both" : "Keep"}
           </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabledReason={busy}
-            onClick={() => (pair ? onChoose(true) : answer("forget"))}
-          >
-            {pair ? "Forget one…" : "Forget"}
-          </Button>
+          {pair && memories ? null : (
+            <Button size="sm" variant="ghost" disabledReason={busy} onClick={() => (pair ? onChoose(true) : answer("forget"))}>
+              {pair ? "Forget one…" : "Forget"}
+            </Button>
+          )}
         </div>
       )}
       <Refusal text={model.state.errors[proposal.id]} />
     </li>
+  );
+}
+
+/** An older daemon's contradiction names its two sides by place, never by id. */
+const ORDINAL: readonly string[] = ["first", "second"];
+
+/**
+ * One memory as a person weighs it: its words, the day it was learned and the sentence it came
+ * from, and how it has been used. `children` gets the id of the words, for a button they describe.
+ */
+function Memory({ memory, now, children }: { memory: ProposalMemory; now: number; children?: (textId: string) => ReactNode }) {
+  const textId = useId();
+  const shown = memory.live && memory.text !== null;
+  return (
+    <div className="sleep__side" data-live={memory.live ? undefined : "false"}>
+      <p id={textId} className={shown ? "sleep__text typo-body" : "typo-caption"}>
+        {shown ? memory.text : "This memory is no longer there."}
+      </p>
+      {shown ? (
+        <>
+          <p className="typo-caption">
+            {memory.created_at ? `learned ${dayWords(memory.created_at)}` : "learned"}
+            {memory.quote ? " from:" : memory.sources > 0 ? `, from ${plural(memory.sources, "episode")}` : ""}
+          </p>
+          {memory.quote ? <blockquote className="sleep__quote typo-caption">{`"${memory.quote}"`}</blockquote> : null}
+          <p className="typo-caption">{usedWords(memory, now)}</p>
+        </>
+      ) : null}
+      {children ? children(textId) : null}
+    </div>
   );
 }
 

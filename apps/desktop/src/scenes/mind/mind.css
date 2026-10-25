@@ -1297,6 +1297,35 @@
 .sleep__ids code {
   overflow-wrap: anywhere;
 }
+/* A contradiction's two memories, compared side by side; one column when the panel is narrow. */
+.sleep__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 8px;
+}
+.sleep__side {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--line);
+}
+.sleep__side p,
+.sleep__quote {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.sleep__text {
+  font-weight: 600;
+}
+.sleep__quote {
+  padding-left: 8px;
+  border-left: 2px solid var(--line-strong);
+  color: var(--muted-foreground);
+}
 .sleep__cycle {
   border-radius: var(--radius-input);
   border: 1px solid var(--line);
