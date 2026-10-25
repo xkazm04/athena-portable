@@ -21,18 +21,21 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DaemonApi, sseFrames } from "@/lib/api";
-import { resetRunForTests, useRun, setRunDeps, type RunDeps } from "@/stores/run";
+import { resetRunForTests, useRun, setRunDeps } from "@/stores/run";
 
 import { startDaemon, type Daemon } from "./support/daemon";
 import {
   APP_ID,
   PAGE_ORIGIN,
+  PAGE_TAB_ID,
   fakePage,
-  manifestBody,
+  pageTab,
+  pageTabTools,
   READ_TOOL,
   WRITE_TOOL,
   type FakePage,
 } from "./support/page";
+import { pageShell, registered, registeredPage, shellDeps } from "./support/shell";
 import { recorder, rechunking, streamOf, type Recorder } from "./support/wire";
 
 interface Live {
@@ -46,9 +49,10 @@ let running: Daemon | null = null;
 /**
  * One daemon, one fake page, and the run loop wired to both.
  *
- * The only things faked are the three the surface owns: which tab is focused, what the host state
- * is, and what happens when the page is asked to run something. `api` is the real client against
- * the real socket, and `manifest` is the shell's own manifest builder.
+ * The only things faked are what the surface owns: which tab is open and focused, what its page
+ * published, the person's origins table, and what happens when the page is asked to run something.
+ * `api` is the real client against the real socket; the manifest and the gate's lists are read
+ * through the shell's own `snapshotOf` (`support/shell.ts`).
  */
 async function live(
   transcript: string,
@@ -59,14 +63,9 @@ async function live(
   const page = fakePage(options.answers ?? { list_overdue: "INV-118, INV-120, INV-131", pay: "paid" });
   const wire = recorder();
   const fetchImpl = options.chunk ? rechunking(options.chunk, wire.fetchImpl) : wire.fetchImpl;
-  const deps: RunDeps = {
-    api: () => new DaemonApi({ url: daemon.url, token: daemon.token }, fetchImpl),
-    focused: () => ({ tabId: 7, origin: PAGE_ORIGIN, appId: APP_ID }),
-    hostState: () => ({ page_url: `${PAGE_ORIGIN}/invoices`, page_title: "Ledgerbox", tabs: [] }),
-    call: page.call,
-    manifest: () => manifestBody(),
-  };
-  setRunDeps(deps);
+  // The shell's own trust read (`snapshotOf`) over a table in which the person registered the
+  // page and accepted its tools, so every claim below holds for the reason the product gives.
+  setRunDeps(shellDeps({ ...pageShell(registeredPage(), page.call), daemon, fetchImpl }));
   return { daemon, page, wire };
 }
 
@@ -271,15 +270,16 @@ describe("a GATED turn", () => {
     // it with the gate's own word rather than replaying the grant. Same tab id as the card's:
     // a different tab is stopped earlier, by the panel's own binding check (ADR 0103), and never
     // reaches the daemon's origin check this test is about.
-    setRunDeps({
-      ...({
-        api: () => new DaemonApi({ url: running!.url, token: running!.token }),
-        focused: () => ({ tabId: 7, origin: "https://not-ledgerbox.e2e", appId: "crm" }),
-        hostState: () => ({}),
-        call: page.call,
-        manifest: () => null,
-      } satisfies RunDeps),
-    });
+    const elsewhere = "https://not-ledgerbox.e2e";
+    const seed = pageShell(registered(elsewhere, []), page.call, []);
+    setRunDeps(
+      shellDeps({
+        ...seed,
+        tabs: [{ ...pageTab(), url: `${elsewhere}/`, title: "CRM" }],
+        byTab: { [PAGE_TAB_ID]: { ...pageTabTools([]), url: `${elsewhere}/`, appId: "crm" } },
+        daemon: running!,
+      }),
+    );
 
     await useRun.getState().answer(card.id, "approve");
 

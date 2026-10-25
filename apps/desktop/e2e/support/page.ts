@@ -13,7 +13,9 @@
  * application.
  */
 import type { BridgeTool } from "@/lib/bridge";
+import type { Tab } from "@/lib/ipc";
 import { manifestBodyOf, type ManifestSource } from "@/lib/manifest";
+import type { TabTools } from "@/stores/tools";
 
 /** The `athena:app` slug. The catalog namespaces the tools `host.ledgerbox.<name>`. */
 export const APP_ID = "ledgerbox";
@@ -51,6 +53,28 @@ export const MANIFEST_SOURCE: ManifestSource = {
   transport: "webmcp-polyfill",
   tools: PAGE_TOOLS,
 };
+
+/** The tab the page is open in, as the shell's tab strip holds it. */
+export const PAGE_TAB_ID = 7;
+
+/** The one focused tab on the page, in the shape `tabs_list` answers. */
+export function pageTab(): Tab {
+  return { id: PAGE_TAB_ID, label: `page-${PAGE_TAB_ID}`, url: `${PAGE_ORIGIN}/invoices`, title: "Ledgerbox", focused: true };
+}
+
+/** What the shell's tools store holds for that tab once the page answered `list` with `tools`. */
+export function pageTabTools(tools: readonly BridgeTool[] = PAGE_TOOLS): TabTools {
+  return {
+    tabId: PAGE_TAB_ID,
+    url: `${PAGE_ORIGIN}/invoices`,
+    tools,
+    transport: MANIFEST_SOURCE.transport,
+    appId: APP_ID,
+    appVersion: APP_VERSION,
+    problem: null,
+    asking: false,
+  };
+}
 
 /** The body `POST /manifest` takes, built by the shell's own code and nothing else. */
 export function manifestBody(

@@ -21,11 +21,12 @@ import { DaemonApi } from "@/lib/api";
 import { VoiceSetupApi } from "@/lib/voice-setup";
 import { PROTOCOL_PREFIX, VOICE_PATH, VoiceSocket, voiceUrl, type SocketLike } from "@/lib/voice";
 import type { Player } from "@/lib/voice-player";
-import { resetRunForTests, setRunDeps, useRun, type RunDeps } from "@/stores/run";
+import { resetRunForTests, setRunDeps, useRun } from "@/stores/run";
 import { resetVoiceForTests, setVoiceDeps, startVoice, useVoice, type VoiceDeps } from "@/stores/voice";
 
 import { startDaemon, type Daemon } from "./support/daemon";
-import { APP_ID, PAGE_ORIGIN, fakePage, manifestBody, WRITE_TOOL, type FakePage } from "./support/page";
+import { APP_ID, fakePage, WRITE_TOOL, type FakePage } from "./support/page";
+import { pageShell, registeredPage, shellDeps, voiceShellDeps } from "./support/shell";
 
 /** Every chunk the player was handed, with the generation the client read off the frame. */
 interface PlayerLog {
@@ -80,7 +81,9 @@ async function live(
   let sent = 0;
   let feed: ((pcm: Int16Array) => void) | null = null;
 
-  const deps: VoiceDeps = {
+  // The trust half is the shell's own read over a table that registered the page (`support/shell.ts`).
+  const seed = pageShell(registeredPage(), page.call);
+  const deps: VoiceDeps = voiceShellDeps(seed, {
     endpoint,
     config: () => voiceConfigOf(endpoint()),
     // The real DOM-shaped `WebSocket`, which Node has had since 22. The client's own `connect`
@@ -92,21 +95,10 @@ async function live(
       return { stop: () => (feed = null) };
     },
     player: () => audio.player,
-    focused: () => ({ tabId: 7, origin: PAGE_ORIGIN, appId: APP_ID }),
-    hostState: () => ({ page_url: `${PAGE_ORIGIN}/invoices`, page_title: "Ledgerbox", tabs: [] }),
-    call: page.call,
-    manifest: () => manifestBody(),
-  };
+  });
   setVoiceDeps(deps);
-  // The panel's HTTP half, for the card the button answers.
-  const runDeps: RunDeps = {
-    api: () => new DaemonApi(endpoint()),
-    focused: deps.focused,
-    hostState: deps.hostState,
-    call: page.call,
-    manifest: () => manifestBody(),
-  };
-  setRunDeps(runDeps);
+  // The panel's HTTP half, for the card the button answers, over the same seed.
+  setRunDeps(shellDeps({ ...seed, daemon }));
   await startVoice();
   return {
     daemon,
@@ -271,7 +263,8 @@ describe("one spoken utterance", () => {
     // The gateway refuses an unregistered origin exactly as `POST /run` does. Publishing the
     // manifest is the first thing `press` does; take it away and the spoken turn cannot start —
     // which is what the shipped store did until this suite was written.
-    setVoiceDeps({ ...depsOf(daemon), manifest: () => null });
+    const shell = depsOf(daemon);
+    setVoiceDeps({ ...shell, snapshot: () => ({ ...shell.snapshot(), manifest: null }), manifest: () => null });
     await useVoice.getState().say("what is overdue?");
 
     await until(
@@ -338,19 +331,19 @@ describe("a socket that goes away mid-turn", () => {
 });
 
 /** The deps of a live daemon, for a test that wants to change exactly one of them. */
-function depsOf(daemon: Daemon): VoiceDeps {
+function depsOf(daemon: Daemon): ReturnType<typeof voiceShellDeps> {
   const endpoint = () => ({ url: daemon.url, token: daemon.token });
-  return {
-    endpoint,
-    config: () => voiceConfigOf(endpoint()),
-    socket: (url, protocols) => new WebSocket(url, protocols) as unknown as SocketLike,
-    openMic: null,
-    player: () => null,
-    focused: () => ({ tabId: 7, origin: PAGE_ORIGIN, appId: APP_ID }),
-    hostState: () => ({}),
-    call: async () => ({ ok: true, output: "" }),
-    manifest: () => null,
-  };
+  const seed = pageShell(registeredPage(), async () => ({ ok: true, output: "" }));
+  return voiceShellDeps(
+    { ...seed, hostState: () => ({}) },
+    {
+      endpoint,
+      config: () => voiceConfigOf(endpoint()),
+      socket: (url, protocols) => new WebSocket(url, protocols) as unknown as SocketLike,
+      openMic: null,
+      player: () => null,
+    },
+  );
 }
 
 /** `GET /voice/config` for the store's availability check (ADR 0028), a refusal as a throw. */
