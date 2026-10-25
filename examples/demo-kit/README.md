@@ -182,7 +182,11 @@ openDb(appId: string, opts: { file?: string; seed: (db: Db) => void }): Db
 logActivity(db, { actor: "user"|"athena"|"system", action, target, summary,
                   reversible?, undo?, ts? }): ActivityEntry
 listActivity(db, limit = 50): ActivityEntry[]
-undoActivity(db, id, applyUndo: (db, entry) => void): { ok, reason?, entry? }
+undoActivity(db, id, applyUndo: (db, entry) => UndoVerdict, opts?: { through?: boolean })
+  : { ok, reason?, blockedBy?, partial?, entry?, alsoUndone? }
+// UndoVerdict: void (a clean undo, "Undid #n") | { refused, blockedBy? } (rolled back, row stays
+// undoable, nothing logged) | { partial } (row undone, one "Partly undid #n: <partial>" line).
+// through: a refusal naming blockedBy undoes that row first, newest first, all or nothing.
 
 useWebMCPTool({ name, description, parameters?, reversible, sideEffects, handler, deps?, available? })
 annotationsFor({ reversible, sideEffects }): WebMCPAnnotations

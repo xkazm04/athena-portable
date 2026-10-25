@@ -4,11 +4,13 @@
  * `@athena/demo-kit/activity/ui` - the shared activity log view.
  *
  * The Undo button calls a server action the app passes in, because only the app knows how to
- * reverse its own domain writes (`undoActivity(db, id, applyUndo)`).
+ * reverse its own domain writes (`undoActivity(db, id, applyUndo)`). The row then says what the
+ * undo put back: a refusal's reason, "Partly undone: ..." for a partial one, and, when a later row
+ * stands in the way, a button that undoes that row and this one together (ADR 0156).
  */
 import { useMemo, useState, useTransition } from "react";
 import { clsx } from "clsx";
-import type { ActivityEntry, Actor } from "./types";
+import type { ActivityEntry, Actor, UndoAnswer, UndoOptions } from "./types";
 
 const ACTOR_LABEL: Record<Actor, string> = {
   user: "You",
@@ -45,13 +47,31 @@ export function relativeTime(iso: string, now: number = Date.now()): string {
   return fmt.format(-Math.round(secs / 31557600), "year");
 }
 
+/** What a row says under its summary once its Undo has answered. */
+interface RowNote {
+  tone: "error" | "note";
+  text: string;
+  /** A refusal's blocker, which draws the "Undo #n and this" button. */
+  blockedBy?: number;
+}
+
+/** The row's line for an undo's answer: nothing for a clean undo, a sentence otherwise. */
+export function noteFor(res: UndoAnswer): RowNote | undefined {
+  if (!res.ok) {
+    const text = res.reason ?? "Undo failed";
+    return res.blockedBy === undefined ? { tone: "error", text } : { tone: "error", text, blockedBy: res.blockedBy };
+  }
+  return res.partial ? { tone: "note", text: `Partly undone: ${res.partial}` } : undefined;
+}
+
 export interface ActivityLogProps {
   entries: ActivityEntry[];
   /**
    * Server action bound by the app. Return `{ ok: false, reason }` and the row shows the reason
-   * instead of silently doing nothing.
+   * instead of silently doing nothing; add `blockedBy` and the row offers to undo that row and this
+   * one (`onUndo(id, { through: true })`); return `{ ok: true, partial }` and it says what stayed.
    */
-  onUndo?: (id: number) => Promise<{ ok: boolean; reason?: string }>;
+  onUndo?: (id: number, options?: UndoOptions) => Promise<UndoAnswer>;
   emptyLabel?: string;
   className?: string;
 }
@@ -63,7 +83,7 @@ export function ActivityLog({
   className,
 }: ActivityLogProps) {
   const [pending, startTransition] = useTransition();
-  const [errors, setErrors] = useState<Record<number, string>>({});
+  const [notes, setNotes] = useState<Record<number, RowNote | undefined>>({});
   const [busy, setBusy] = useState<number | null>(null);
   const now = useMemo(() => Date.now(), [entries]);
 
@@ -71,7 +91,7 @@ export function ActivityLog({
     return <p className="dk-activity-empty">{emptyLabel}</p>;
   }
 
-  const undo = (id: number) => {
+  const undo = (id: number, options?: UndoOptions) => {
     if (!onUndo) return;
     setBusy(id);
     startTransition(async () => {
@@ -79,10 +99,10 @@ export function ActivityLog({
       // Without the finally the row would stay disabled at "Undoing…" for the life of the page
       // with no reason shown - the silence this prop's own contract promises to prevent.
       try {
-        const res = await onUndo(id);
-        setErrors((e) => (res.ok ? { ...e, [id]: "" } : { ...e, [id]: res.reason ?? "Undo failed" }));
+        const res = options ? await onUndo(id, options) : await onUndo(id);
+        setNotes((n) => ({ ...n, [id]: noteFor(res) }));
       } catch (err) {
-        setErrors((e) => ({ ...e, [id]: err instanceof Error ? err.message : "Undo failed" }));
+        setNotes((n) => ({ ...n, [id]: { tone: "error", text: err instanceof Error ? err.message : "Undo failed" } }));
       } finally {
         setBusy(null);
       }
@@ -111,7 +131,11 @@ export function ActivityLog({
                 {relativeTime(entry.ts, now)}
               </time>
             </p>
-            {errors[entry.id] ? <p className="dk-activity-error">{errors[entry.id]}</p> : null}
+            {notes[entry.id] ? (
+              <p className={notes[entry.id]!.tone === "error" ? "dk-activity-error" : "dk-activity-meta"}>
+                {notes[entry.id]!.text}
+              </p>
+            ) : null}
           </div>
           <div className="dk-activity-actions">
             {entry.reversible ? (
@@ -127,6 +151,16 @@ export function ActivityLog({
                 disabled={pending && busy === entry.id}
               >
                 {pending && busy === entry.id ? "Undoing…" : "Undo"}
+              </button>
+            ) : null}
+            {entry.reversible && !entry.undone && onUndo && notes[entry.id]?.blockedBy !== undefined ? (
+              <button
+                type="button"
+                className="dk-btn dk-btn-ghost"
+                onClick={() => undo(entry.id, { through: true })}
+                disabled={pending && busy === entry.id}
+              >
+                {`Undo #${notes[entry.id]!.blockedBy} and this`}
               </button>
             ) : null}
             {entry.undone ? <span className="dk-badge dk-badge-undone">undone</span> : null}

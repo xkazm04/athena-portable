@@ -17,6 +17,7 @@ tempHome("hirelane-test-");
 
 const { STUDIO } = await import("@athena/demo-kit/seed");
 const { nextMoveFor, STAGES } = await import("../lib/constants");
+const { undoToastFor } = await import("../components/board/history");
 const { db } = await import("../lib/db");
 const {
   addNote,
@@ -163,7 +164,7 @@ test("a first decision is untouched by the terminal guard", async () => {
   );
 });
 
-test("undoing propose_slots does not un-book a slot a gated send already booked", async () => {
+test("case 8: undoing propose_slots after a gated send booked one is a partial undo, and says so once", async () => {
   const candidate = pick("interview");
   assert.equal((await proposeSlots(candidate.id)).ok, true);
 
@@ -177,17 +178,24 @@ test("undoing propose_slots does not un-book a slot a gated send already booked"
   assert.equal((await sendSchedulingEmail(candidate.id, booked)).ok, true);
   assert.equal(slot(booked).status, "booked");
 
-  assert.equal((await undoAction(entry.id)).ok, true);
+  const outcome = await undoAction(entry.id);
+  assert.equal(outcome.ok, true);
+  assert.match(outcome.partial ?? "", /released 2 of 3 slots: 1 had already been booked/);
+  assert.match(undoToastFor(outcome).text, /^Partly undone: /);
 
   assert.equal(slot(booked).status, "booked", "the booked, emailed slot is not released");
   assert.equal(slot(booked).applicant_id, candidate.id);
   for (const id of held.slice(1)) {
     assert.equal(slot(id).status, "open", "the merely-proposed slots do return to the pool");
   }
-  assert.match(
-    db().get<{ summary: string }>("SELECT summary FROM activity ORDER BY id DESC LIMIT 1 OFFSET 1")!.summary,
-    /released 2 of 3 slots: 1 had already been booked/,
-    "the partial undo says so in the log, since the kit's own line reports a clean one either way",
+  const undoRows = db().all<{ summary: string }>(
+    "SELECT summary FROM activity WHERE action = 'undo' AND id > ? ORDER BY id",
+    [entry.id],
+  );
+  assert.deepEqual(
+    undoRows.map((r) => r.summary),
+    [`Partly undid #${entry.id}: released 2 of 3 slots: 1 had already been booked and emailed about.`],
+    "one row, and it says the undo was partial",
   );
 });
 
@@ -370,23 +378,48 @@ test("a refused move on a decided applicant names no remedy the board would refu
  */
 const stageOf = (id: string): string =>
   db().get<Row>("SELECT id, stage FROM applicants WHERE id = ?", [id])!.stage!;
-const lastSummary = (): string =>
-  db().get<{ summary: string }>("SELECT summary FROM activity WHERE action = 'undo' ORDER BY id DESC LIMIT 1 OFFSET 1")!
-    .summary;
+const undoRowsAfter = (id: number): string[] =>
+  db()
+    .all<{ summary: string }>("SELECT summary FROM activity WHERE action = 'undo' AND id > ? ORDER BY id", [id])
+    .map((r) => r.summary);
+const undoneFlag = (id: number): boolean =>
+  db().get<{ undone: number }>("SELECT undone FROM activity WHERE id = ?", [id])!.undone === 1;
 
-test("undoing an older move after a newer one leaves the newer move standing, and says so", async () => {
+test("case 5: undoing an older move after a newer one is refused, names the blocker, and offers Undo both", async () => {
   const id = pick("applied").id;
   const first = await moveStage(id, "screening");
   const second = await moveStage(id, "interview");
   assert.equal(first.ok && second.ok, true, `${first.message} / ${second.message}`);
 
-  assert.equal((await undoAction(first.undoId!)).ok, true);
+  const outcome = await undoAction(first.undoId!);
+  assert.equal(outcome.ok, false);
+  assert.match(outcome.reason ?? "", /a later move \(to Interview\) was made after it/);
+  assert.equal(outcome.blockedBy, second.undoId);
   assert.equal(stageOf(id), "interview", "the later move to Interview still stands");
-  assert.match(lastSummary(), new RegExp(`#${first.undoId} left the stage alone: a later move \\(to Interview\\)`));
+  assert.equal(undoneFlag(first.undoId!), false, "the move is not marked undone");
+  assert.deepEqual(undoRowsAfter(second.undoId!), [], "no 'Undid' row is written for an undo that did nothing");
 
-  // The newer row's own undo is still the true way back one step.
-  assert.equal((await undoAction(second.undoId!)).ok, true);
-  assert.equal(stageOf(id), "screening");
+  const spec = undoToastFor(outcome);
+  assert.match(spec.text, /^Not undone: a later move \(to Interview\)/);
+  assert.deepEqual(spec.action, { label: "Undo both", id: first.undoId, through: true });
+});
+
+test("case 6: Undo both walks the two moves back, newest first, and both rows read undone", async () => {
+  const id = pick("applied").id;
+  const first = await moveStage(id, "screening");
+  const second = await moveStage(id, "interview");
+  assert.equal((await undoAction(first.undoId!)).ok, false, "refused alone, as in case 5");
+
+  const outcome = await undoAction(first.undoId!, { through: true });
+  assert.equal(outcome.ok, true, outcome.reason);
+  assert.equal(stageOf(id), "applied");
+  assert.equal(undoneFlag(first.undoId!), true);
+  assert.equal(undoneFlag(second.undoId!), true);
+  assert.deepEqual(
+    undoRowsAfter(second.undoId!).map((s) => s.replace(/:.*/, "")),
+    [`Undid #${second.undoId}`, `Undid #${first.undoId}`],
+    "two compensating rows, newest first",
+  );
 });
 
 test("undoing the newest move first, then the one before it, walks them back to where they began", async () => {
@@ -399,14 +432,18 @@ test("undoing the newest move first, then the one before it, walks them back to 
   assert.equal(stageOf(id), "applied");
 });
 
-test("undoing a move after a decision leaves the decision standing, and says so", async () => {
+test("case 7: undoing a move after a decision is refused with no chain to offer, and the decision stands", async () => {
   const id = pick("applied").id;
   const moved = await moveStage(id, "screening");
-  assert.equal((await decideStage(id, "rejected")).ok, true);
+  assert.equal((await decideStage(id, "offer")).ok, true);
 
-  assert.equal((await undoAction(moved.undoId!)).ok, true);
-  assert.equal(stageOf(id), "rejected", "a decision is not walked back by an AUTO undo");
-  assert.match(lastSummary(), /left the stage alone: a decision \(Rejected\)/);
+  const outcome = await undoAction(moved.undoId!);
+  assert.equal(outcome.ok, false);
+  assert.match(outcome.reason ?? "", /a decision \(Offer\) was recorded after it/);
+  assert.equal(outcome.blockedBy, undefined, "a decision is irreversible, so nothing is named to undo first");
+  assert.equal(undoToastFor(outcome).action, undefined, "and the toast offers no action");
+  assert.equal(stageOf(id), "offer", "a decision is not walked back by an AUTO undo");
+  assert.equal(undoneFlag(moved.undoId!), false);
 });
 
 /*

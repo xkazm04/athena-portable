@@ -11,7 +11,7 @@
  * so a rejection can never stand on file with no row saying it was sent (`test/atomic.test.ts`).
  */
 import { revalidatePath } from "next/cache";
-import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/activity";
+import { logActivity, undoActivity, type ActivityEntry, type UndoVerdict } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
 import {
@@ -374,10 +374,13 @@ export async function sendRejection(
  * about: a reversible action's undo reversing half of an irreversible one, which is the exact
  * distinction the app exists to make visible (DESIGN-LAW §7).
  *
- * A partial undo says so, in its own activity row, because `undoActivity`'s compensating line
- * reports a clean undo either way.
+ * It answers what it put back (ADR 0156), and `undoActivity` reports exactly that: a move a later
+ * act stands in front of is REFUSED, so the row stays undoable and nobody is told it was undone; a
+ * later move is named as `blockedBy`, so "Undo both" can take it first; a decision is named by
+ * nothing, because it has no undo. A slot release that had to keep a booked slot is PARTIAL, and
+ * the kit's one compensating line says so.
  */
-function applyUndo(tx: Db, entry: ActivityEntry): void {
+function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
   const undo = entry.undo as
     | { kind: "note"; noteId: number }
     | { kind: "stage"; applicantId: string; stage: Stage; eventId: number }
@@ -393,33 +396,25 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
     // back to applied.
     const now = tx.get<{ stage: Stage }>("SELECT stage FROM applicants WHERE id = ?", [undo.applicantId]);
     if (now && isDecisionStage(now.stage)) {
-      logActivity(tx, {
-        actor: "user",
-        action: "undo",
-        target: entry.target,
-        summary: `#${entry.id} left the stage alone: a decision (${STAGE_LABEL[now.stage]}) was recorded after it.`,
-        reversible: false,
-      });
-      tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
-      return;
+      return { refused: `a decision (${STAGE_LABEL[now.stage]}) was recorded after it` };
     }
     // A later move outranks this one the same way. Restoring this move's FROM stage after another
     // move would reverse that move too, unlogged, and leave its own Undo pointing at a stage they
-    // are no longer in. The move stays on the record, because it happened and still shaped where
-    // they are; the newer row's Undo is the way back.
+    // are no longer in. The refusal names the later move's own row, whose undo is the way back.
     const latest = tx.get<{ id: number; to_stage: Stage }>(
       "SELECT id, to_stage FROM stage_events WHERE applicant_id = ? ORDER BY id DESC LIMIT 1",
       [undo.applicantId],
     );
     if (latest && latest.id !== undo.eventId) {
-      logActivity(tx, {
-        actor: "user",
-        action: "undo",
-        target: entry.target,
-        summary: `#${entry.id} left the stage alone: a later move (to ${STAGE_LABEL[latest.to_stage]}) was made after it.`,
-        reversible: false,
-      });
-      return;
+      const blocker = tx.get<{ id: number }>(
+        `SELECT id FROM activity
+          WHERE reversible = 1 AND undone = 0
+            AND json_extract(undo_json, '$.kind') = 'stage' AND json_extract(undo_json, '$.eventId') = ?
+          ORDER BY id DESC LIMIT 1`,
+        [latest.id],
+      );
+      const refused = `a later move (to ${STAGE_LABEL[latest.to_stage]}) was made after it`;
+      return blocker ? { refused, blockedBy: blocker.id } : { refused };
     }
     tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [undo.stage, undo.applicantId]);
     tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
@@ -435,13 +430,9 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
       if (changes === 0) kept += 1;
     }
     if (kept > 0) {
-      logActivity(tx, {
-        actor: "user",
-        action: "undo",
-        target: entry.target,
-        summary: `#${entry.id} released ${undo.slotIds.length - kept} of ${undo.slotIds.length} slots: ${kept} had already been booked and emailed about.`,
-        reversible: false,
-      });
+      return {
+        partial: `released ${undo.slotIds.length - kept} of ${undo.slotIds.length} slots: ${kept} had already been booked and emailed about.`,
+      };
     }
     return;
   }
@@ -451,17 +442,29 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
 /** What `undoAction` reports: whether it took, why not if not, and what was undone if it did. */
 export interface UndoOutcome {
   ok: boolean;
+  /** The row the undo was asked of, so a refusal's "Undo both" knows what to retry. */
+  id?: number;
   reason?: string;
+  /** With a refusal: the later act whose undo would clear the way. */
+  blockedBy?: number;
+  /** With `ok`: what the undo had to leave in place. */
+  partial?: string;
   /** The undone row's own summary, so the confirmation names the act it reversed. */
   summary?: string;
+  /** With `through`: how many later acts were undone before it. */
+  alsoUndone?: number;
 }
 
-export async function undoAction(id: number): Promise<UndoOutcome> {
-  const result = undoActivity(db(), id, applyUndo);
+export async function undoAction(id: number, options?: { through?: boolean }): Promise<UndoOutcome> {
+  const result = undoActivity(db(), id, applyUndo, { through: options?.through === true });
   refresh();
   return {
     ok: result.ok,
+    id,
     ...(result.reason ? { reason: result.reason } : {}),
+    ...(result.blockedBy !== undefined ? { blockedBy: result.blockedBy } : {}),
+    ...(result.partial ? { partial: result.partial } : {}),
     ...(result.ok && result.entry ? { summary: result.entry.summary } : {}),
+    ...(result.alsoUndone?.length ? { alsoUndone: result.alsoUndone.length } : {}),
   };
 }

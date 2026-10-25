@@ -53,6 +53,6 @@ test("every act and every Undo in useRun is awaited through settle", () => {
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\/\/.*$/gm, "");
   assert.match(source, /await settle\(fn\)/, "run");
-  assert.match(source, /await settle\(\(\) => undoAction\(id\)/, "undo");
+  assert.match(source, /await settle\(\(\) => undoAction\(id[,)]/, "undo");
   assert.doesNotMatch(source, /await fn\(\)|await undoAction\(/, "and nothing awaits an action bare");
 });

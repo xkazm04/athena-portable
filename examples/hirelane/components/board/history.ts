@@ -64,11 +64,14 @@ export function historyNote(meta: { history: readonly unknown[]; historyTotal: n
 
 export type ToastTone = "success" | "error";
 
-/** What the toast shows for a result: its words, its tone and, when the act wrote one, its Undo. */
+/**
+ * What the toast shows for a result: its words, its tone and, when there is one, its way back - the
+ * act's Undo, or "Undo both" when a later act stands in front of the one being undone.
+ */
 export interface ToastSpec {
   text: string;
   tone: ToastTone;
-  action?: { label: "Undo"; id: number };
+  action?: { label: "Undo"; id: number } | { label: "Undo both"; id: number; through: true };
 }
 
 export function toastFor(result: { ok: boolean; message: string; undoId?: number }): ToastSpec {
@@ -76,8 +79,28 @@ export function toastFor(result: { ok: boolean; message: string; undoId?: number
   return result.ok && result.undoId !== undefined ? { ...spec, action: { label: "Undo", id: result.undoId } } : spec;
 }
 
-/** What the toast shows once an Undo has been pressed. */
-export function undoToastFor(result: { ok: boolean; reason?: string; summary?: string }): ToastSpec {
-  if (!result.ok) return { text: `Not undone: ${result.reason ?? "the act could not be reversed"}.`, tone: "error" };
-  return { text: result.summary ? `Undone: ${result.summary}` : "Undone.", tone: "success" };
+/**
+ * What the toast shows once an Undo has been pressed: what it put back, and only that (ADR 0156).
+ *
+ * A refusal says "Not undone" and, when the app named the later act in the way, offers "Undo both",
+ * which undoes that act and then this one. A partial undo says "Partly undone" and what stayed.
+ */
+export function undoToastFor(result: {
+  ok: boolean;
+  id?: number;
+  reason?: string;
+  blockedBy?: number;
+  partial?: string;
+  summary?: string;
+  alsoUndone?: number;
+}): ToastSpec {
+  if (!result.ok) {
+    const spec: ToastSpec = { text: `Not undone: ${result.reason ?? "the act could not be reversed"}.`, tone: "error" };
+    return result.blockedBy !== undefined && result.id !== undefined
+      ? { ...spec, action: { label: "Undo both", id: result.id, through: true } }
+      : spec;
+  }
+  if (result.partial) return { text: `Partly undone: ${result.partial}`, tone: "success" };
+  const also = result.alsoUndone ? `, and the later act that stood in front of it` : "";
+  return { text: result.summary ? `Undone: ${result.summary}${also}` : "Undone.", tone: "success" };
 }

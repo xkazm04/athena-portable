@@ -68,13 +68,20 @@ export function useRun() {
    * the dossier calls the same `undo`, so the two ways back are one call with one confirmation.
    */
   const undo = useCallback(
-    (id: number) =>
+    function undo(id: number, options?: { through: true }): void {
       start(async () => {
         // No answer is not "Not undone": the undo may have landed, so the toast claims neither.
-        const outcome = await settle(() => undoAction(id), () => null);
+        const outcome = await settle(() => undoAction(id, options), () => null);
         const spec = outcome ? undoToastFor(outcome) : { text: NO_ANSWER, tone: "error" as const };
-        toast(spec.text, spec.tone);
-      }),
+        // A refusal a later act caused carries "Undo both", which presses this same undo through it.
+        const action = spec.action;
+        toast(
+          spec.text,
+          spec.tone,
+          action ? { label: action.label, onAction: () => undo(action.id, { through: true }) } : undefined,
+        );
+      });
+    },
     [toast],
   );
 
