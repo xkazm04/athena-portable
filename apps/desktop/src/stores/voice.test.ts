@@ -12,7 +12,8 @@ import { DaemonApi } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { setHandsForTests } from "@/lib/hands";
 import { derivedIdOf } from "@/lib/manifest";
-import { Player as RealPlayer, type Player, type SocketLike } from "@/lib/voice";
+import { PLAYER_KIT, type SocketLike } from "@/lib/voice";
+import { Player as RealPlayer, type Player } from "@/lib/voice-player";
 import { resetRunForTests, setRunDeps, snapshotOf, unsureTools, useRun } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
 
@@ -120,6 +121,7 @@ function fakePlayer() {
       play: (generation: number) => played.push(generation),
       drop: (generation: number) => dropped.push(generation),
       finished: () => {},
+      silence: () => {},
       playing: () => false,
     },
   };
@@ -725,7 +727,7 @@ describe("playback and barge-in", () => {
         }),
         createBufferSource: source,
       };
-      return new RealPlayer(() => context as unknown as AudioContext);
+      return new RealPlayer(() => context as unknown as AudioContext, PLAYER_KIT);
     }
 
     async function speaking(generation: number) {
@@ -1101,5 +1103,112 @@ describe("a typed line whose socket closes while it waits", () => {
 
     expect(useVoice.getState().phase).not.toBe("thinking");
     expect(socket.frames().filter((f) => f.type === "text")).toEqual([]);
+  });
+});
+
+describe("her voice outlives its voice.stopped: one timeline (ADR: her lines queue on one playback timeline)", () => {
+  /** The real player over a clocked fake context; each stop() logs how many of `frame` were sent by then. */
+  function tailWired() {
+    const log: string[] = [];
+    let sentOf: (type: string) => number = () => 0;
+    const sources: Array<{ generation: number; stops: number; onended: (() => void) | null }> = [];
+    let current = 0;
+    const context = {
+      state: "running",
+      currentTime: 0,
+      destination: {},
+      createAnalyser: () => ({ fftSize: 4, connect: () => {}, getFloatTimeDomainData: () => {} }),
+      createBuffer: (_c: number, length: number, rate: number) => ({ duration: length / rate, copyToChannel: () => {} }),
+      createBufferSource: () => {
+        const source = {
+          generation: current,
+          stops: 0,
+          buffer: null as unknown,
+          connect: () => {},
+          start: () => {},
+          stop: () => {
+            source.stops += 1;
+            log.push(`stop:${source.generation} start=${sentOf("start")} text=${sentOf("text")}`);
+          },
+          onended: null as (() => void) | null,
+        };
+        sources.push(source);
+        return source;
+      },
+    };
+    const player = new RealPlayer(() => context as unknown as AudioContext, PLAYER_KIT);
+    const w = wire({ player: () => player });
+    sentOf = (type) => w.socket.frames().filter((f) => f.type === type).length;
+    const audio = (generation: number) => {
+      current = generation;
+      w.socket.emitAudio(generation);
+    };
+    return { ...w, player, sources, log, audio };
+  }
+
+  const speaking = (generation: number, text: string): Event => ({
+    kind: "voice.speaking",
+    generation,
+    text,
+    truncated: false,
+    sample_rate: 1000,
+  });
+
+  async function tailOfLineOne() {
+    const t = tailWired();
+    await startVoice();
+    await useVoice.getState().say("open it");
+    await t.socket.emit(finished("Opening it now."), speaking(1, "Opening it now."));
+    t.audio(1);
+    await t.socket.emit({ kind: "voice.stopped", generation: 1, reason: "done" });
+    return t;
+  }
+
+  it("case 3: a press during the tail of a finished line stops it before the start frame is sent", async () => {
+    const t = await tailOfLineOne();
+    expect(t.player.playing(1)).toBe(true);
+    await useVoice.getState().press();
+    expect(t.sources[0].stops).toBe(1);
+    expect(t.log[0]).toBe("stop:1 start=0 text=1");
+    expect(t.socket.frames().at(-1)?.type).toBe("start");
+  });
+
+  it("case 4: phase and caption stay 'speaking' through the tail, and go idle when her last word ends", async () => {
+    const t = await tailOfLineOne();
+    expect(useVoice.getState()).toMatchObject({ phase: "speaking", speakingText: "Opening it now.", generation: 1 });
+    t.sources[0].onended?.();
+    expect(useVoice.getState()).toMatchObject({ phase: "idle", speakingText: "", generation: null });
+  });
+
+  it("case 5: say() during the tail of a finished line stops it before the text frame is sent", async () => {
+    const t = await tailOfLineOne();
+    await useVoice.getState().say("and the next one");
+    expect(t.sources[0].stops).toBe(1);
+    expect(t.log[0]).toBe("stop:1 start=0 text=1");
+    expect(t.socket.frames().filter((f) => f.type === "text")).toHaveLength(2);
+  });
+
+  it("a second line queued behind the tail keeps 'speaking' until both have played", async () => {
+    const t = await tailOfLineOne();
+    await t.socket.emit(speaking(2, "Done."));
+    t.audio(2);
+    t.sources[0].onended?.();
+    expect(useVoice.getState()).toMatchObject({ phase: "speaking", generation: 2, speakingText: "Done." });
+    await t.socket.emit({ kind: "voice.stopped", generation: 2, reason: "done" });
+    expect(useVoice.getState().phase).toBe("speaking");
+    t.sources[1].onended?.();
+    expect(useVoice.getState()).toMatchObject({ phase: "idle", generation: null, speakingText: "" });
+  });
+
+  it("guard (case 6): voice.stopped barge_in drops the line at once and phase leaves 'speaking' at once", async () => {
+    const t = tailWired();
+    await startVoice();
+    await useVoice.getState().say("hi");
+    await t.socket.emit(finished("Hello."), speaking(1, "Hello."));
+    t.audio(1);
+    await t.socket.emit({ kind: "voice.stopped", generation: 1, reason: "barge_in" });
+    expect(t.sources[0].stops).toBe(1);
+    expect(t.player.playing(1)).toBe(false);
+    expect(useVoice.getState()).toMatchObject({ phase: "idle", generation: null, speakingText: "" });
   });
 });

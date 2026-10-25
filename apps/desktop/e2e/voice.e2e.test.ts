@@ -19,7 +19,8 @@ import { randomBytes } from "node:crypto";
 
 import { DaemonApi } from "@/lib/api";
 import { VoiceSetupApi } from "@/lib/voice-setup";
-import { PROTOCOL_PREFIX, VOICE_PATH, VoiceSocket, voiceUrl, type Player, type SocketLike } from "@/lib/voice";
+import { PROTOCOL_PREFIX, VOICE_PATH, VoiceSocket, voiceUrl, type SocketLike } from "@/lib/voice";
+import type { Player } from "@/lib/voice-player";
 import { resetRunForTests, setRunDeps, useRun, type RunDeps } from "@/stores/run";
 import { resetVoiceForTests, setVoiceDeps, startVoice, useVoice, type VoiceDeps } from "@/stores/voice";
 
@@ -47,6 +48,7 @@ function playerLog(): PlayerLog {
     drop: (generation: number) => log.dropped.push(generation),
     finished: (generation: number) => log.finished.push(generation),
     playing: () => false,
+    silence: () => {},
   } as unknown as Player;
   return log;
 }

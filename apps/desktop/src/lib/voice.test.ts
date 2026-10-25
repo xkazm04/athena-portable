@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   LEVEL_CEIL_DB,
   LEVEL_FLOOR_DB,
+  PLAYER_KIT,
   PROTOCOL_PREFIX,
-  Player,
   VoiceSocket,
   currentLevel,
   downsample,
@@ -24,6 +24,7 @@ import {
   voiceUrl,
   type SocketLike,
 } from "./voice";
+import { Player } from "./voice-player";
 
 describe("the resampler", () => {
   it("decimates 48 kHz to 16 kHz three to one and scales to 16-bit", () => {
@@ -262,7 +263,7 @@ describe("her reply plays into a context that is running", () => {
 
   it("resumes a suspended context before her first chunk, as the studio's preview player does", () => {
     const { context, resume, started } = suspended();
-    const player = new Player(() => context as unknown as AudioContext);
+    const player = new Player(() => context as unknown as AudioContext, PLAYER_KIT);
     player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
     expect(resume).toHaveBeenCalledTimes(1);
     expect(started).toHaveLength(1);
@@ -271,7 +272,7 @@ describe("her reply plays into a context that is running", () => {
   it("asks nothing of a context that is already running", () => {
     const { context, resume } = suspended();
     context.state = "running";
-    const player = new Player(() => context as unknown as AudioContext);
+    const player = new Player(() => context as unknown as AudioContext, PLAYER_KIT);
     player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
     player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
     expect(resume).not.toHaveBeenCalled();
@@ -303,7 +304,7 @@ describe("the player's clock, for her face", () => {
         return source;
       },
     };
-    const player = new Player(() => context as unknown as AudioContext);
+    const player = new Player(() => context as unknown as AudioContext, PLAYER_KIT);
     return { context, player, sources };
   }
 
@@ -367,5 +368,97 @@ describe("the player's clock, for her face", () => {
     expect(player.holds(2)).toBe(true);
     player.finished(2);
     expect(player.holds(2)).toBe(false);
+  });
+});
+
+describe("her lines play on one timeline (ADR: her lines queue on one playback timeline)", () => {
+  /** The clocked context at 1000 Hz, with each source's stop() counted. */
+  function clocked() {
+    const sources: Array<{ at: number; stops: number; onended: (() => void) | null }> = [];
+    const context = {
+      state: "running",
+      currentTime: 0,
+      destination: {},
+      createAnalyser: () => ({
+        fftSize: 4,
+        connect: () => {},
+        getFloatTimeDomainData: (out: Float32Array) => out.fill(0.5),
+      }),
+      createBuffer: (_c: number, length: number, rate: number) => ({ duration: length / rate, copyToChannel: () => {} }),
+      createBufferSource: () => {
+        const source = {
+          at: 0,
+          stops: 0,
+          buffer: null as unknown,
+          connect: () => {},
+          start: (at: number) => {
+            source.at = at;
+          },
+          stop: () => {
+            source.stops += 1;
+          },
+          onended: null as (() => void) | null,
+        };
+        sources.push(source);
+        return source;
+      },
+    };
+    const player = new Player(() => context as unknown as AudioContext, PLAYER_KIT);
+    return { context, player, sources };
+  }
+
+  const pcm = (n: number) => new Uint8Array(n * 2);
+
+  it("case 1: a line that arrives during the tail of a finished one starts where that one ends, not over it", () => {
+    const { context, player, sources } = clocked();
+    player.play(1, pcm(2000), 1000); // 0 .. 2.0
+    player.finished(1); // voice.stopped done: synthesis ran ahead of playback
+    context.currentTime = 0.5;
+    player.play(2, pcm(100), 1000);
+    expect(sources[1].at).toBe(2);
+  });
+
+  it("case 2: silence() stops every source of every line, and a late chunk of a silenced line is ignored", () => {
+    const { player, sources } = clocked();
+    player.play(1, pcm(2000), 1000);
+    player.finished(1);
+    player.play(2, pcm(100), 1000);
+    expect(player.level()).toBeGreaterThan(0);
+    player.silence();
+    expect(sources.map((s) => s.stops)).toEqual([1, 1]);
+    expect(player.playing(1)).toBe(false);
+    expect(player.playing(2)).toBe(false);
+    expect(player.level()).toBe(0);
+    player.play(2, pcm(100), 1000);
+    expect(sources).toHaveLength(2);
+  });
+
+  it("onQuiet fires once the last source of any line has ended, and on silence()", () => {
+    const { player, sources } = clocked();
+    const quiet = vi.fn();
+    player.onQuiet = quiet;
+    player.play(1, pcm(100), 1000);
+    player.finished(1);
+    player.play(2, pcm(100), 1000);
+    sources[0].onended?.();
+    expect(quiet).not.toHaveBeenCalled();
+    sources[1].onended?.();
+    expect(quiet).toHaveBeenCalledTimes(1);
+    player.play(3, pcm(100), 1000);
+    player.silence();
+    expect(quiet).toHaveBeenCalledTimes(2);
+  });
+
+  it("guard (case 7): a line queued behind another reads 0 until its first chunk starts, then follows its own samples", () => {
+    const { context, player, sources } = clocked();
+    player.play(1, pcm(2000), 1000);
+    player.finished(1);
+    context.currentTime = 0.5;
+    player.play(2, pcm(100), 1000);
+    const start = sources[1].at;
+    context.currentTime = Math.max(0.5, start - 0.1);
+    if (context.currentTime < start) expect(player.position(2)).toBe(0);
+    context.currentTime = start + 0.05;
+    expect(player.position(2)).toBe(50);
   });
 });

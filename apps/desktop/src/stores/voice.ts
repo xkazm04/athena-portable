@@ -21,8 +21,14 @@
  *
  * **Barge-in is the daemon's decision and the player's job.** Pressing the key over a reply sends
  * `start`, which the gateway treats as a barge-in; the player drops the generation the moment
- * `voice.stopped` says `barge_in`, and drops it locally on the press too, because a second of
- * stale audio between the two is the difference between "she stopped" and "she talked over me".
+ * `voice.stopped` says `barge_in`, and silences every line locally on the press too, because a
+ * second of stale audio between the two is the difference between "she stopped" and "she talked
+ * over me".
+ *
+ * **She is speaking for as long as she is heard.** Synthesis runs ahead of playback, so a line's
+ * `voice.stopped` with `done` usually lands while its tail is still sounding. The phase, the
+ * generation and the caption stay through that tail and go idle on the player's `onQuiet`; a
+ * press or a typed line in the tail stops it (ADR 0192).
  *
  * Every browser API is an argument (`VoiceDeps`), swapped wholesale in `voice.test.ts`.
  */
@@ -43,8 +49,9 @@ import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { TABS_READ, callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall, VoiceTranscript } from "@/lib/events";
 import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
+import type { Player } from "@/lib/voice-player";
 import {
-  Player,
+  PLAYER_KIT,
   VoiceSocket,
   openMicrophone,
   type AudioFrame,
@@ -98,8 +105,11 @@ export interface VoiceDeps {
   socket: SocketFactory;
   /** Open the microphone; `null` where the webview offers none. */
   openMic: ((onChunk: (pcm: Int16Array) => void) => Promise<MicrophoneSession>) | null;
-  /** The player, or `null` where there is no audio output (the headless test). */
-  player: () => Player | null;
+  /**
+   * The player, or `null` where there is no audio output (the headless test). Live, it is loaded
+   * with `import()` when the socket opens, so Main's first frame does not carry it.
+   */
+  player: () => Player | null | Promise<Player | null>;
   /** The focused tab, its web origin, and the app id the page declared, if it has yet. */
   focused: () => { tabId: number; origin: string; appId: string | null } | null;
   hostState: () => Record<string, unknown>;
@@ -188,7 +198,10 @@ const LIVE: VoiceDeps = {
             onChunk,
           )
       : null,
-  player: () => (typeof AudioContext === "undefined" ? null : new Player(() => new AudioContext())),
+  player: async () =>
+    typeof AudioContext === "undefined"
+      ? null
+      : new (await import("@/lib/voice-player")).Player(() => new AudioContext(), PLAYER_KIT),
   focused: () => {
     const { tabs } = useTabs.getState();
     const tab = tabs.find((t) => t.focused) ?? tabs[0];
@@ -249,11 +262,15 @@ export const useVoice = create<VoiceState>((set, get) => {
    * that finds its number stale stops: it sends no start and keeps no microphone. */
   let pressToken = 0;
   let player: Player | null = null;
+  /** The player being loaded, so two sockets opening at once share one. */
+  let loading: Promise<Player | null> | null = null;
   /** Host calls of the current turn with no result yet, in the order they were proposed. */
   let proposed = new Map<string, ToolCall>();
   let sampleRate = 16_000;
   /** The snapshot of the turn in progress: what the daemon's gate was told (ADR 0067). */
   let snap: Snapshot | null = null;
+  /** The line whose `voice.stopped` came with `done` while it was still sounding: its tail. */
+  let tailing: number | null = null;
 
   const runPush = (entry: { id: string; kind: "user" | "assistant" | "tool"; text: string }) =>
     useRun.setState((s) => ({ transcript: [...s.transcript, entry] }));
@@ -361,12 +378,17 @@ export const useVoice = create<VoiceState>((set, get) => {
         faceLine?.addMotion(event);
         break;
       case "voice.stopped":
-        // Nothing of the generation outlives its `voice.stopped`: a barge-in stops its sources
-        // first, and `finished` then forgets the generation, drop mark included.
+        // A barge-in stops the generation's sources first, and `finished` then forgets it, drop
+        // mark included. A line that ended `done` may still be sounding: it keeps the phase and
+        // the caption until the player goes quiet (`onQuiet`).
         if (event.reason === "barge_in") player?.drop(event.generation);
         player?.finished(event.generation);
         faceLine?.stopLine(event.generation, event.reason);
         if (get().generation === event.generation) {
+          if (event.reason === "done" && get().phase === "speaking" && player?.playing(event.generation)) {
+            tailing = event.generation;
+            break;
+          }
           set({
             generation: null,
             speakingText: "",
@@ -467,6 +489,30 @@ export const useVoice = create<VoiceState>((set, get) => {
     return true;
   }
 
+  /** Her voice went quiet: a line whose synthesis had finished is over for the person too. */
+  function onQuiet(): void {
+    const line = tailing;
+    tailing = null;
+    if (line === null || get().phase !== "speaking" || get().generation !== line) return;
+    faceLine?.clearLine(line);
+    set({ phase: "idle", generation: null, speakingText: "" });
+  }
+
+  /**
+   * The person speaks over her: every line she is sounding or has queued stops now. The line in
+   * flight is dropped (its late chunks and face events are ignored until its `voice.stopped`); a
+   * finished line's tail is simply stopped.
+   */
+  function hush(generation: number | null): void {
+    if (generation !== null && generation !== tailing) {
+      player?.drop(generation);
+      faceLine?.dropLine(generation);
+    }
+    if (tailing !== null) faceLine?.clearLine(tailing);
+    tailing = null;
+    player?.silence();
+  }
+
   async function ensureSocket(): Promise<VoiceSocket | null> {
     if (socket?.open) return socket;
     const found = deps.endpoint();
@@ -474,13 +520,26 @@ export const useVoice = create<VoiceState>((set, get) => {
       fail("the daemon is not ready");
       return null;
     }
-    player ??= deps.player();
+    loading ??= Promise.resolve()
+      .then(() => deps.player())
+      .then((made) => {
+        if (made) made.onQuiet = onQuiet;
+        return made;
+      });
+    try {
+      player = await loading;
+    } catch (error) {
+      loading = null;
+      fail(`her voice could not load: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
     const next = new VoiceSocket(deps.socket, {
       onEvent: (event) => void onEvent(event),
       onAudio,
       onClose: (reason) => {
         socket = null;
         proposed = new Map();
+        tailing = null;
         endListening();
         faceLine?.clearLine();
         set((s) => ({
@@ -525,10 +584,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!(await publish(taking)) || token !== pressToken) return;
       const live = await ensureSocket();
       if (!live || token !== pressToken) return;
-      if (state.generation !== null) {
-        player?.drop(state.generation);
-        faceLine?.dropLine(state.generation);
-      }
+      hush(get().generation);
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
       // The key came up while the capture was taken: no start, no microphone.
@@ -584,11 +640,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       // A refusal or a close that lands during an await leaves its own phase and reason: say stops.
       if (!live || socket !== live || !live.open) return;
-      const speaking = get().generation;
-      if (speaking !== null) {
-        player?.drop(speaking);
-        faceLine?.dropLine(speaking);
-      }
+      hush(get().generation);
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
       if (socket !== live || !live.open) return;
@@ -609,10 +661,12 @@ export const useVoice = create<VoiceState>((set, get) => {
 
     close() {
       endListening();
+      tailing = null;
       faceLine?.clearLine();
       socket?.close();
       socket = null;
       player = null;
+      loading = null;
       proposed = new Map();
     },
   };

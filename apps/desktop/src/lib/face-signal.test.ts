@@ -10,7 +10,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { FaceSignal } from "@/avatar/types";
 import { addVisemes, beginLine, faceTimeline, resetFaceTimelineForTests, type FaceTimeline } from "@/lib/face-timeline";
-import { Player, type SocketLike } from "@/lib/voice";
+import { PLAYER_KIT, type SocketLike } from "@/lib/voice";
+import { Player } from "@/lib/voice-player";
 import { resetRunForTests, useRun } from "@/stores/run";
 import { applyVoiceConfig, resetVoiceForTests, setVoiceDeps, useVoice } from "@/stores/voice";
 
@@ -236,7 +237,7 @@ describe("acceptance: a fake channel and a fake player clock in, her face out", 
         return source;
       },
     };
-    const player = new Player(() => context as unknown as AudioContext);
+    const player = new Player(() => context as unknown as AudioContext, PLAYER_KIT);
     return {
       factory,
       context,
@@ -353,10 +354,12 @@ describe("acceptance: a fake channel and a fake player clock in, her face out", 
 
     // The daemon has sent the whole line; her voice is still sounding its last chunk.
     await ch.emit({ kind: "voice.stopped", generation: 1, reason: "done" });
-    expect(useVoice.getState().phase).toBe("idle");
+    // She is speaking for as long as she is heard: the store goes idle when the player goes quiet.
+    expect(useVoice.getState().phase).toBe("speaking");
     const tail = frame(0.86); // 895: the second sentence's closing silence
     expect(tail).toMatchObject({ phase: "speaking", viseme: "sil", generation: 1 });
     ch.silence();
+    expect(useVoice.getState().phase).toBe("idle");
     const rest = frame(0.95);
     expect(rest).toMatchObject({ phase: "idle", viseme: null, open: 0, motion: null });
     expect(loop.running()).toBe(false);
