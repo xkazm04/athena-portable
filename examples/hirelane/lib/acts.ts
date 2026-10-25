@@ -169,6 +169,27 @@ function open(reason: ActReason | null): Act {
   return reason ? { enabled: false, reason } : { enabled: true };
 }
 
+/** Who a batch reads: the three facts `scoreBatchFor` decides on. */
+export interface BatchPerson {
+  id: string;
+  stage: Stage;
+  /** A stored rubric scorecard exists for them. */
+  scored: boolean;
+}
+
+/**
+ * Who one `score_batch` scores, of the people given: not decided, not scored yet, and at `stage`
+ * when one is named. The caller hands in one role's people. `app/actions.ts` guards with this and
+ * the group's "Score N unscored" control counts from it, so the button never offers a pile the
+ * action would score differently (ADR 0107). A score is not a decision: the batch never reads or
+ * writes a stage beyond choosing who is in it, and a decided person is never re-scored by it.
+ */
+export function scoreBatchFor(people: readonly BatchPerson[], stage?: Stage): string[] {
+  return people
+    .filter((p) => !p.scored && !decidedReason(p.stage) && (stage === undefined || p.stage === stage))
+    .map((p) => p.id);
+}
+
 /** Every act on one person, against the slots as they stand. */
 export function actsFor(person: ActPerson, slots: readonly ActSlot[]): Acts {
   const decided = decidedReason(person.stage);

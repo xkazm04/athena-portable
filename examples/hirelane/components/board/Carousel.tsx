@@ -33,9 +33,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { sharedIdentity, type Presence } from "@athena/demo-kit/zoom";
 
+import { scoreBatch } from "@/app/actions";
+import { scoreBatchFor } from "@/lib/acts";
+
 import { comparisonOrder, criterionMedians, groupId, type BdColumn, type BdRole } from "./model";
 import { CARD, VISIBLE } from "./carousel/pose";
 import { Slide } from "./carousel/Slide";
+import { useRun } from "./useRun";
 
 export function Carousel({
   role,
@@ -69,6 +73,10 @@ export function Carousel({
   presence?: (group: string, id: string) => Presence;
 }) {
   const ordered = useMemo(() => comparisonOrder(column), [column]);
+  /* The group's pile, counted by the rule `scoreBatch` guards with, so the label and the act agree
+     (ADR 0107). One press scores them all, with one toast and one Undo (ADR 0212). */
+  const pile = useMemo(() => scoreBatchFor(column.candidates, column.id).length, [column]);
+  const { pending, run } = useRun();
   const railRef = useRef<HTMLDivElement | null>(null);
 
   /* Once per column, not once per card: every card in the deck is scored against the same field. */
@@ -198,6 +206,16 @@ export function Carousel({
             {role.title} · {column.label}
           </h2>
           <p className="bd-carousel-wait">{column.wait}</p>
+          {pile > 0 && !ghost ? (
+            <button
+              type="button"
+              className="bd-btn"
+              disabled={pending}
+              onClick={() => run(() => scoreBatch(role.id, column.id))}
+            >
+              Score {pile} unscored
+            </button>
+          ) : null}
         </div>
         <p className="bd-hand">
           {column.scored === 0

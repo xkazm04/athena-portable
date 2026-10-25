@@ -43,9 +43,12 @@ requires; each one says at the top that it is no longer a specification. **The b
 Athena is asked: *"Screen this week's applicants for the backend role, and book the ones worth
 talking to."*
 
-1. **Score the pile.** `score_against_rubric` (AUTO) runs per applicant and writes a scorecard note
-   with the matched sentence quoted under every criterion. It never changes a stage, and there is
-   no bulk stage move in this app to reach for instead.
+1. **Score the pile.** `score_batch(role_id, stage?)` (AUTO) scores every unscored, undecided
+   applicant of the role in one act - one scorecard note per person, with the matched sentence quoted
+   under every criterion, and one activity row whose one undo takes the whole batch back. The board
+   offers the same act on a group as "Score N unscored". `score_against_rubric` (AUTO) does the same
+   for one applicant. Neither changes a stage, and there is no bulk stage move in this app to reach
+   for instead.
 2. **One decision, six people.** `read_applicants(role_id: "role_backend", borderline: true)` returns
    the six borderline applicants, each with the criterion their application never mentions. The read
    carries what a decision needs and nothing else: id, name, email, employer, `employer_domain`,
@@ -143,8 +146,8 @@ These are the design's own mitigations, implemented rather than promised.
   scoring zero silently.
 - **Score is not a decision.** `score_against_rubric` can never change a stage. Advancing, offering
   and rejecting are separate acts, and two of them are gated.
-- **No bulk decisions.** Bulk actions cover scoring and moves. Offers and rejections are taken one
-  person at a time, and each logs its own activity row.
+- **No bulk decisions.** The one act over a group is scoring (`score_batch`). Moves, offers and
+  rejections are taken one person at a time, and each logs its own activity row.
 
 ## The design
 

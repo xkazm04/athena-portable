@@ -35,6 +35,7 @@ import {
   moveStage,
   proposeSlots,
   scoreAgainstRubric,
+  scoreBatch,
   sendRejection,
   sendSchedulingEmail,
   type ActionResult,
@@ -79,6 +80,17 @@ export function HostCapabilities() {
       "Score one applicant against their role's rubric and write the result as a note, with the sentences that earned each score quoted verbatim. Never changes the stage: a score is not a decision.",
     ...registration("score_against_rubric"),
     handler: async ({ applicant_id: id }) => (await scoreAgainstRubric(String(id), ATHENA)).message,
+  });
+
+  useWebMCPTool({
+    name: "score_batch",
+    description:
+      "Score every unscored, undecided applicant of a role against its rubric in one act, or only those at one stage. Writes one scorecard note per person and logs one row with one undo for the whole batch. Never changes a stage. Returns how many were scored.",
+    ...registration("score_batch"),
+    handler: async ({ role_id: roleId, stage }) => {
+      const result = await scoreBatch(String(roleId), stage === undefined ? undefined : (stage as Stage), ATHENA);
+      return { ok: result.ok, message: result.message };
+    },
   });
 
   useWebMCPTool({

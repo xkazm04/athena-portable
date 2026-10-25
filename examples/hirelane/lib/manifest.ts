@@ -86,6 +86,26 @@ export const SHIPPED_CAPABILITIES = [
     sideEffects: "data",
     parameters: [APPLICANT_ID],
   },
+  /*
+   * Scoring is the one act that runs over a group (ADR 0212): every unscored, undecided applicant
+   * of a role, or of one stage of it, in one transaction with one undo. AUTO by the same rule as
+   * scoring one person - it writes notes and reverses cleanly. Moves and decisions stay per person.
+   */
+  {
+    name: "score_batch",
+    reversible: true,
+    sideEffects: "data",
+    parameters: [
+      ROLE_ID,
+      {
+        name: "stage",
+        type: "string",
+        enum: STAGES,
+        required: false,
+        description: "Only the unscored applicants at this stage; omit for every undecided stage",
+      },
+    ],
+  },
   {
     name: "add_note",
     reversible: true,

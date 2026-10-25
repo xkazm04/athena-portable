@@ -37,6 +37,7 @@ export function actorRefusal(actor: unknown): string | null {
 /** What each reversible act needs to take itself back; `applyUndo` switches over it exhaustively. */
 export type Undo =
   | { kind: "note"; noteId: number }
+  | { kind: "notes"; noteIds: number[] }
   | { kind: "stage"; applicantId: string; stage: Stage; eventId: number }
   | { kind: "slots"; slotIds: string[] };
 

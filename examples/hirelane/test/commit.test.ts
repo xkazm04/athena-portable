@@ -120,6 +120,7 @@ test("case 4: commitAct refuses an AUTO act with no undo and a GATED act with on
  */
 const RUN: Record<string, (actor: Actor) => Promise<ActionResult>> = {
   score_against_rubric: (actor) => actions.scoreAgainstRubric(fresh("applied"), actor),
+  score_batch: (actor) => actions.scoreBatch("role_designer", undefined, actor),
   add_note: (actor) => actions.addNote(fresh("applied"), "Worth a second read.", actor),
   move_stage: (actor) => actions.moveStage(fresh("applied"), "screening", actor),
   decide_stage: (actor) => actions.decideStage(fresh("applied"), "offer", actor),

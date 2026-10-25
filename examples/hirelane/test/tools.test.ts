@@ -161,6 +161,7 @@ test("each tool publishes as required only the arguments it truly cannot run wit
   const expected: Record<string, string[]> = {
     navigate: ["view"],
     score_against_rubric: ["applicant_id"],
+    score_batch: ["role_id"],
     add_note: ["applicant_id", "text"],
     move_stage: ["applicant_id", "stage"],
     decide_stage: ["applicant_id", "stage"],
@@ -182,4 +183,31 @@ test("each tool publishes as required only the arguments it truly cannot run wit
     const schema = parametersToJsonSchema(registration(c.name).parameters);
     assert.deepEqual([...(schema.required ?? [])].sort(), expected[c.name], c.name);
   }
+});
+
+test("case 8: score_batch is an AUTO act over a role, and scoring one person is still one note and one undo", async () => {
+  const batch = CAPABILITIES.find((c) => c.name === "score_batch");
+  assert.ok(batch, "score_batch is on the register");
+  assert.equal(isAuto(batch), true, "score_batch is AUTO by the manifest's own rule");
+  assert.equal(batch.sideEffects, "data");
+  assert.deepEqual(
+    batch.parameters.map((p) => p.name),
+    ["role_id", "stage"],
+  );
+  assert.deepEqual(
+    batch.parameters.filter((p) => p.required).map((p) => p.name),
+    ["role_id"],
+  );
+  assert.equal(CAPABILITIES.filter((c) => !isAuto(c)).length, 3, "exactly three capabilities stay GATED");
+
+  const { scoreAgainstRubric } = await import("../app/actions");
+  const id = db().get<{ id: string }>("SELECT id FROM applicants WHERE stage = 'applied' ORDER BY id LIMIT 1")!.id;
+  const notes = () => db().get<{ n: number }>("SELECT COUNT(*) AS n FROM notes WHERE applicant_id = ?", [id])!.n;
+  const rows = () => db().get<{ n: number }>("SELECT COUNT(*) AS n FROM activity")!.n;
+  const [n0, r0] = [notes(), rows()];
+  const result = await scoreAgainstRubric(id);
+  assert.equal(result.ok, true, result.message);
+  assert.equal(notes(), n0 + 1, "one note");
+  assert.equal(rows(), r0 + 1, "one activity row");
+  assert.equal(typeof result.undoId, "number", "and its own undo");
 });

@@ -22,6 +22,7 @@ import { actorRefusal, commitAct, type Actor, type Undo } from "./commit";
 
 import {
   canBook,
+  scoreBatchFor,
   decidedReason,
   proposeReason,
   REFUSAL,
@@ -34,13 +35,14 @@ import {
   isDecisionStage,
   isMoveStage,
   REJECTION_TEMPLATES,
+  STAGES,
   STAGE_LABEL,
   type RejectionTemplate,
   type Stage,
 } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { rejectionMail, schedulingMail, type Mail } from "@/lib/mail";
-import { getApplicant, getRole, listCriteria } from "@/lib/queries";
+import { getApplicant, getRole, latestScorecards, listApplicants, listCriteria, listRoles } from "@/lib/queries";
 import { scoreAgainst, summarise } from "@/lib/scoring";
 
 export interface ActionResult {
@@ -67,7 +69,7 @@ export interface ActionResult {
    * The activity row a reversible write logged, which is the id `undoAction` takes.
    *
    * Handed back so the surface that ran the act can offer its way back on the spot - the toast's
-   * Undo - instead of the remedy living only in a log no surface reads. Present on the four AUTO
+   * Undo - instead of the remedy living only in a log no surface reads. Present on the AUTO
    * writes and absent on the three gated ones, which log no undo because there is none to log.
    */
   undoId?: number;
@@ -157,6 +159,51 @@ export async function scoreAgainstRubric(applicantId: string, actor: Actor = "us
   });
   refresh();
   return { ok: true, message: `Scorecard written for ${applicant.name}.`, undoId };
+}
+
+/**
+ * AUTO. Scores a role's unscored pile in one act: every applicant `scoreBatchFor` names - not
+ * decided, not scored yet, at `stage` if one is given - with the same scorer and the same note
+ * `scoreAgainstRubric` writes, all in one transaction, logged as ONE row whose undo lists every
+ * note it wrote. One intent, one undo step (ADR 0212). Never touches a stage.
+ */
+export async function scoreBatch(roleId: string, stage?: Stage, actor: Actor = "user"): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
+  const role = getRole(roleId);
+  if (!role) {
+    const known = listRoles().map((r) => r.id);
+    return { ok: false, message: `No role ${roleId}. Use one of: ${known.join(", ")}.` };
+  }
+  if (stage !== undefined && !(STAGES as readonly string[]).includes(stage)) {
+    return { ok: false, message: `No stage called "${String(stage)}". Use one of: ${STAGES.join(", ")}.` };
+  }
+  const scored = latestScorecards(roleId);
+  const everyone = listApplicants(roleId);
+  const ids = new Set(scoreBatchFor(everyone.map((a) => ({ id: a.id, stage: a.stage, scored: a.id in scored })), stage));
+  const pile = everyone.filter((a) => ids.has(a.id));
+  if (pile.length === 0) return { ok: false, message: `Nothing left to score for ${role.title}.` };
+  const criteria = listCriteria(roleId);
+  const count = `${pile.length} ${role.title} applicant${pile.length === 1 ? "" : "s"}`;
+  const { id: undoId } = db().withTx((tx) => {
+    const ts = new Date().toISOString();
+    const noteIds = pile.map((applicant) => {
+      const scores = scoreAgainst(criteria, applicant.cv_text, applicant.short_answer);
+      return tx.run(
+        "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, ?, 'rubric', ?, ?)",
+        [applicant.id, ts, "user", `Scored against the rubric: ${summarise(scores)}.`, JSON.stringify(scores)],
+      ).lastInsertRowid;
+    });
+    return commitAct(tx, {
+      actor,
+      capability: "score_batch",
+      target: `role:${roleId}`,
+      summary: `Scored ${count}${stage ? ` at ${STAGE_LABEL[stage]}` : ""} against the rubric.`,
+      undo: { kind: "notes", noteIds },
+    });
+  });
+  refresh();
+  return { ok: true, message: `Scored ${count}.`, undoId };
 }
 
 /** AUTO. A note is the only place a judgement belongs before a stage changes. */
@@ -460,6 +507,9 @@ function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
   switch (undo.kind) {
     case "note":
       tx.run("DELETE FROM notes WHERE id = ?", [undo.noteId]);
+      return;
+    case "notes":
+      for (const id of undo.noteIds) tx.run("DELETE FROM notes WHERE id = ?", [id]);
       return;
     case "stage":
       return undoStage(tx, undo);
