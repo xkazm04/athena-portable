@@ -395,6 +395,16 @@
   gap: 48px;
   align-items: start;
 }
+/*
+ * A page opened afresh lays out its hero in the task that opens it and the sections under it when
+ * they come near the view, so the cold first layout stays inside the 50 ms budget (perf:chores,
+ * "press Enter"). A page drawn back where it was left (a saved scroll) is laid out whole, so the
+ * offset it is put back to lands on the same words.
+ */
+.pa-page[data-fresh] .pa-topic > section:not(.pa-hero) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
 .pa-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -465,6 +475,9 @@
   position: absolute;
   right: 10px;
   bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
   font-size: 13px;

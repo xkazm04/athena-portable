@@ -100,6 +100,30 @@ export function casesLine(state: CasesState): string {
   }
 }
 
+/**
+ * The Enlarge badge's mark, drawn rather than typed: a symbol the UI face lacks sends the engine
+ * through its font-fallback search on first use, a cold 25-30 ms inside the task that opens the
+ * page (`perf:chores`, "press Enter"; `topic.paint.test.tsx`).
+ */
+function EnlargeMark() {
+  return (
+    <svg
+      className="pa-shot__mark"
+      width={12}
+      height={12}
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 1.5h3.5V5M10.5 1.5 6.75 5.25M5 10.5H1.5V7M1.5 10.5l3.75-3.75" />
+    </svg>
+  );
+}
+
 function RunItem({ r }: { r: RunRow }) {
   return (
     <li className="pa-behind__run">
@@ -205,9 +229,17 @@ export default function Topic({
   }, [p.id]);
 
   const hero = stills[0];
+  // Opened afresh (no saved scroll), the sections under the hero are laid out as they come near the
+  // view, not in the task that opens the page (chores.css, `[data-fresh]`; `topic.paint.test.tsx`).
+  const [fresh] = useState(() => !scrolls.get(p.id));
 
   return (
-    <div className="pa-page" ref={root} onScroll={(e) => scrolls.set(p.id, e.currentTarget.scrollTop)}>
+    <div
+      className="pa-page"
+      ref={root}
+      data-fresh={fresh ? "" : undefined}
+      onScroll={(e) => scrolls.set(p.id, e.currentTarget.scrollTop)}
+    >
       <div className="pa-wrap pa-topic">
         <button type="button" className="pa-crumb focus-ring" onClick={back}>
           <span aria-hidden="true">←</span> All playbooks
@@ -242,7 +274,8 @@ export default function Topic({
               >
                 <img src={hero.url} alt={hero.caption} decoding="async" />
                 <span className="pa-shot__enlarge" aria-hidden="true">
-                  ⤢ Enlarge
+                  <EnlargeMark />
+                  Enlarge
                 </span>
               </button>
             ) : (
