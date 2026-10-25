@@ -56,3 +56,38 @@ describe("judge", () => {
     expect(judge({ ...smooth, frames: many }).ok).toBe(false);
   });
 });
+
+describe("judge names the step a long task ran under", () => {
+  it("reads the step and its offset from an attributed task", () => {
+    const r = judge({ ...smooth, longTasks: [{ duration: 54, step: 'click [data-go="notion"]', offset: 250 }] });
+    expect(r.ok).toBe(false);
+    expect(r.failures.join(" ")).toMatch(/a 54 ms task at click \[data-go="notion"\] \+250 ms is over the 50 ms budget/);
+    expect(r.metrics.longTaskMs).toBe(54);
+  });
+
+  it("names the longest task's step, wherever it ran", () => {
+    const r = judge({
+      ...smooth,
+      longTasks: [{ duration: 52, step: "press Escape", offset: 10 }],
+      idleLongTasks: [{ duration: 70, step: "the idle second", offset: null }],
+    });
+    expect(r.failures.join(" ")).toMatch(/a 70 ms task in the idle second is over the 50 ms budget/);
+  });
+
+  it("guard: plain-number tasks read as before, and the budgets are unchanged", () => {
+    expect(judge({ ...smooth, longTasks: [80] }).failures).toEqual(["a 80 ms task is over the 50 ms budget"]);
+    expect(judge({ ...smooth, idleLongTasks: [120] }).failures).toEqual(["a 120 ms task is over the 50 ms budget"]);
+    expect(judge({ ...smooth, frames: Array.from({ length: 60 }, () => 40) }).failures).toEqual([
+      "frame p95 40 ms is over 20 ms",
+      "100% of frames dropped, budget 5%",
+    ]);
+    expect(judge({ ...smooth, loopsPerFrame: 2 }).failures).toEqual(["2 frame loops ran at once, budget 1"]);
+    expect(judge({ ...smooth, idleFrameRequests: 60 }).failures).toEqual(["60 frame requests while idle, budget 2"]);
+    expect(judge(smooth)).toEqual({
+      ok: true,
+      metrics: { frames: 60, frameP95Ms: 16.7, droppedShare: 0, longTaskMs: 0, loopsPerFrame: 1, idleFrameRequests: 0 },
+      failures: [],
+    });
+    expect(BUDGETS).toEqual({ frameP95Ms: 20, droppedShare: 0.05, longTaskMs: 50, loopsPerFrame: 1, idleFrameRequests: 2 });
+  });
+});

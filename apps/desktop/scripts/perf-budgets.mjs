@@ -32,11 +32,14 @@ export function percentile(values, p) {
  *
  * @param {{
  *   frames: number[],            frame intervals while the scenario moved, ms
- *   longTasks: number[],         long-task durations over the whole scenario, ms
+ *   longTasks: Task[],           long tasks over the whole scenario
  *   loopsPerFrame: number,       the most callbacks that ran in a single frame
  *   idleFrameRequests: number,   frame callbacks requested during the idle second
- *   idleLongTasks: number[],     long tasks during the idle second
+ *   idleLongTasks: Task[],       long tasks during the idle second
  * }} samples
+ *   A Task is its duration in ms, or the same attributed to the drive step it ran under
+ *   (`perf-trace.mjs`): `{ duration, step, offset }`, offset in ms after the step or null. The
+ *   failure for the longest task then names its step, so a red says where, not only how long.
  * @returns {{ ok: boolean, metrics: Record<string, number>, failures: string[] }}
  */
 export function judge(samples, budgets = BUDGETS) {
@@ -45,7 +48,11 @@ export function judge(samples, budgets = BUDGETS) {
     samples.frames.length === 0
       ? 0
       : samples.frames.filter((f) => f > 33.4).length / samples.frames.length;
-  const longest = Math.max(0, ...samples.longTasks, ...samples.idleLongTasks);
+  const tasks = [...samples.longTasks, ...samples.idleLongTasks].map((t) =>
+    typeof t === "number" ? { duration: t } : t,
+  );
+  const worst = tasks.reduce((a, b) => (b.duration > a.duration ? b : a), { duration: 0 });
+  const longest = worst.duration;
 
   const metrics = {
     frames: samples.frames.length,
@@ -62,7 +69,7 @@ export function judge(samples, budgets = BUDGETS) {
   if (dropped > budgets.droppedShare)
     failures.push(`${round(dropped * 100)}% of frames dropped, budget ${budgets.droppedShare * 100}%`);
   if (longest > budgets.longTaskMs)
-    failures.push(`a ${round(longest)} ms task is over the ${budgets.longTaskMs} ms budget`);
+    failures.push(`a ${round(longest)} ms task${where(worst)} is over the ${budgets.longTaskMs} ms budget`);
   if (samples.loopsPerFrame > budgets.loopsPerFrame)
     failures.push(`${samples.loopsPerFrame} frame loops ran at once, budget ${budgets.loopsPerFrame}`);
   if (samples.idleFrameRequests > budgets.idleFrameRequests)
@@ -71,6 +78,16 @@ export function judge(samples, budgets = BUDGETS) {
     );
 
   return { ok: failures.length === 0, metrics, failures };
+}
+
+/**
+ * Where a task ran: ` at <step> +<offset> ms`; ` before the first step (page load)` or
+ * ` in the idle second`; nothing for a bare duration.
+ */
+function where(task) {
+  if (!task.step) return "";
+  if (typeof task.offset === "number") return ` at ${task.step} +${round(task.offset)} ms`;
+  return task.step.startsWith("before ") ? ` ${task.step}` : ` in ${task.step}`;
 }
 
 function round(n) {

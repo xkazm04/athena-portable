@@ -26,6 +26,7 @@ import path from "node:path";
 import { chromium } from "playwright-core";
 
 import { judge } from "./perf-budgets.mjs";
+import { attributeTasks, recordingPage } from "./perf-trace.mjs";
 
 const IDLE_MS = 1000;
 
@@ -54,8 +55,10 @@ function installProbes() {
 
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) {
-      if (probe.idle) probe.idleLongTasks.push(e.duration);
-      else if (probe.recording) probe.longTasks.push(e.duration);
+      // The start is kept, on the page's clock, so the gate can tie the task to the drive's step.
+      const task = { start: e.startTime, duration: e.duration };
+      if (probe.idle) probe.idleLongTasks.push(task);
+      else if (probe.recording) probe.longTasks.push(task);
     }
   }).observe({ type: "longtask", buffered: false });
 }
@@ -66,12 +69,17 @@ async function launch() {
   return chromium.launch({ channel: process.platform === "win32" ? "msedge" : "chrome" });
 }
 
-/** Run `drive` against an already-opened page and return the judged numbers. */
+/**
+ * Run `drive` against an already-opened page and return the judged numbers. The drive gets a
+ * recording page (`perf-trace.mjs`), so each long task is judged with the step it ran under.
+ */
 export async function measure(page, drive) {
-  await page.evaluate(() => {
+  const timeOrigin = await page.evaluate(() => {
     window.__perf.recording = true;
+    return performance.timeOrigin;
   });
-  await drive(page);
+  const recorded = recordingPage(page);
+  await drive(recorded.page);
   await page.evaluate(() => {
     const p = window.__perf;
     p.recording = false;
@@ -89,7 +97,15 @@ export async function measure(page, drive) {
       idleLongTasks: p.idleLongTasks,
     };
   });
-  return judge(samples);
+  return judge({
+    ...samples,
+    longTasks: attributeTasks(samples.longTasks, recorded.actions, timeOrigin),
+    idleLongTasks: attributeTasks(
+      samples.idleLongTasks.map((t) => ({ ...t, idle: true })),
+      recorded.actions,
+      timeOrigin,
+    ),
+  });
 }
 
 export async function runPage(browser, open, drive) {
