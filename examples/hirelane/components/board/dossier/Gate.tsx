@@ -28,6 +28,11 @@
  *     slot list is the set the action would book - this candidate's own held
  *     slots first - and not a narrower one recomputed here.
  *
+ * THE LETTER IS ON THE GATE. The two sends arm over the words that will reach the person - subject
+ * and full body, from `letterFor` in `tools/preview.ts`, the function the send composes with - and
+ * they change as the wording or the slot select changes. A wording's label is not what is being
+ * approved; the letter is (hitl-approval: the gate sees its target).
+ *
  * WHAT IT DOES CHANGE: arming takes over the whole bar. The reversible zone is
  * hidden for as long as an irreversible act is one click away, which is a
  * property the two-panel layout could not have — there, "Score again" sat live
@@ -45,9 +50,31 @@ import {
 } from "@/lib/constants";
 import { fmtWhen } from "../format";
 import type { BdCandidate } from "../model";
+import { letterFor } from "../tools/preview";
 import { useArm, useRun } from "../useRun";
 
-export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts: Acts }) {
+/** The letter a send would deliver, as the armed gate shows it: what is being approved. */
+function Letter({ subject, body }: { subject: string; body: string }) {
+  return (
+    <div className="bd-letter" aria-label="The message that will be sent">
+      <p className="bd-block-label">Subject: {subject}</p>
+      <p className="bd-arm-q" style={{ whiteSpace: "pre-wrap" }}>
+        {body}
+      </p>
+    </div>
+  );
+}
+
+export function DossierGate({
+  candidate,
+  roleTitle,
+  acts,
+}: {
+  candidate: BdCandidate;
+  /** The role's title, which every letter names: the same argument the send composes with. */
+  roleTitle: string;
+  acts: Acts;
+}) {
   const { pending, run } = useRun();
   const { armed, arm, disarm } = useArm();
   const [template, setTemplate] = useState<RejectionTemplate>("standard");
@@ -56,6 +83,7 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
   const [pick, setPick] = useState<string | null>(null);
   const slots = acts.schedule.slots;
   const slotId = (pick && slots.some((s) => s.id === pick) ? pick : slots[0]?.id) ?? "";
+  const chosen = slots.find((s) => s.id === slotId);
   // A shut act says why on its own face, in the words for its reason. The reason is the same one the
   // server refuses with; the label is the short form a button has room for.
   const shut = (act: Act): string =>
@@ -105,6 +133,7 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
             Send {candidate.name} a rejection at {candidate.email}, worded{" "}
             {REJECTION_TEMPLATE_LABEL[template]}. It reaches them and cannot be un-sent.
           </p>
+          <Letter {...letterFor(candidate, roleTitle, { kind: "rejection", template })} />
           <div className="bd-actions">
             <select
               className="bd-select"
@@ -138,6 +167,7 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
             Email {candidate.name} at {candidate.email} to book the slot below. It reaches them
             and cannot be un-sent.
           </p>
+          {chosen ? <Letter {...letterFor(candidate, roleTitle, { kind: "scheduling", slot: chosen })} /> : null}
           <div className="bd-actions">
             <select
               className="bd-select"

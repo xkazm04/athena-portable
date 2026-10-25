@@ -83,7 +83,7 @@ test("the annotations a browser agent reads carry the class the foot prints", ()
 });
 
 test("every read is readOnly, and no read is consequential", () => {
-  const reads = ["read_view", "read_applicants", "read_shortlist", "search_candidates", "set_filter"];
+  const reads = ["read_view", "read_applicants", "read_shortlist", "search_candidates", "set_filter", "preview_message"];
   for (const name of reads) {
     const capability = CAPABILITIES.find((c) => c.name === name)!;
     assert.ok(capability, `${name} is registered`);
@@ -132,6 +132,7 @@ test("search_candidates and set_filter take only pipeline facts, by name", () =>
     set_filter: ["role", "arguable"],
     read_applicants: ["role_id", "stage", "borderline"],
     read_shortlist: ["role_id"],
+    preview_message: ["applicant_id", "kind", "template", "slot_id"],
   };
   for (const [name, expected] of Object.entries(allowed)) {
     const capability = CAPABILITIES.find((c) => c.name === name)!;
@@ -174,6 +175,7 @@ test("each tool publishes as required only the arguments it truly cannot run wit
     set_filter: [],
     read_applicants: ["role_id"],
     read_shortlist: ["role_id"],
+    preview_message: ["applicant_id", "kind"],
   };
   assert.deepEqual(CAPABILITIES.map((c) => c.name).sort(), Object.keys(expected).sort());
   for (const c of CAPABILITIES) {

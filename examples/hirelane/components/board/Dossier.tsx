@@ -222,7 +222,7 @@ export function Dossier({
           variants={reduced ? DOSSIER_STILL : m.dossierPart}
         >
           <DossierActs key={`auto:${candidate.id}`} candidate={candidate} acts={acts} />
-          <DossierGate key={`gate:${candidate.id}`} candidate={candidate} acts={acts} />
+          <DossierGate key={`gate:${candidate.id}`} candidate={candidate} roleTitle={role.title} acts={acts} />
         </motion.div>
       </motion.div>
     </div>

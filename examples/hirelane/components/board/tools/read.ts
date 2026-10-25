@@ -79,8 +79,10 @@ function actsRead(candidate: BdCandidate, slots: readonly ActSlot[]) {
     move_stage: actRead(acts.move, candidate, { stage: acts.move.to }),
     propose_slots: actRead(acts.propose, candidate, {}),
     decide_stage: actRead(acts.offer, candidate, { stages: [...DECISION_STAGES] }),
-    send_rejection: actRead(acts.reject, candidate, {}),
+    // The two sends name the read that shows their letter, so a proposal can quote the words.
+    send_rejection: actRead(acts.reject, candidate, { read_the_letter_with: "preview_message" }),
     send_scheduling_email: actRead(acts.schedule, candidate, {
+      read_the_letter_with: "preview_message",
       slots: acts.schedule.slots.map((s) => ({
         id: s.id,
         interviewer: s.interviewer,

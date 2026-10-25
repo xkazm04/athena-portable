@@ -39,6 +39,7 @@ import type { ZoomNav } from "@athena/demo-kit/zoom";
 import { registration } from "@/lib/manifest";
 import { candidateOf, columnOf, groupId, splitGroup, type BdBoard } from "../model";
 import { boardGroups, boardRead, candidateRead, dossierRead, groupRead, roleRead } from "./read";
+import { previewMessage } from "./preview";
 import { readApplicants, readShortlist } from "./roster";
 import { searchBoard, type BoardQuery } from "./search";
 
@@ -189,6 +190,25 @@ export function BoardTools({
       "The applicants advanced to interview or offer on one role, as a page: a title, ready-to-paste markdown, and the same people as data. Every one of them carries the sentences they wrote that earned each score, quoted, so the shortlist can be argued with. Bounded: the result and the markdown both say how many it is showing of how many there are.",
     ...registration("read_shortlist"),
     handler: ({ role_id }) => readShortlist(board, String(role_id)),
+  });
+
+  /*
+   * The read in front of the two sends. A gated send is approved on what the reviewer can see, and
+   * until this existed the most an approval could quote was a wording's name. This returns the
+   * letter itself - the same function the send composes with - or the send's own refusal.
+   */
+  useWebMCPTool({
+    name: "preview_message",
+    description:
+      "Read the exact message send_rejection or send_scheduling_email would deliver to one applicant, before proposing it: to, subject and the full body, word for word, composed by the same function the send uses. Nothing is sent. kind rejection needs a template; kind scheduling needs a slot_id. If the send would be refused (already decided, too early to book, slot taken), this returns the same refusal and no letter. Quote the body in the approval you raise.",
+    ...registration("preview_message"),
+    handler: ({ applicant_id, kind, template, slot_id }) =>
+      previewMessage(board, {
+        applicant_id: String(applicant_id),
+        kind: String(kind),
+        ...(template === undefined ? {} : { template: String(template) }),
+        ...(slot_id === undefined ? {} : { slot_id: String(slot_id) }),
+      }),
   });
 
   return null;

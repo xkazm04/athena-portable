@@ -89,11 +89,18 @@ sets are mounted on the one route, so this table is the register the board's foo
 | `set_filter` | A | `role?`, `arguable?` | `{ ok, role, arguable_only }` |
 | `read_applicants` | A | `role_id`, `stage?`, `borderline?` | `{ ok, role_id, role, stage, showing, of, bounded, applicants }` |
 | `read_shortlist` | A | `role_id` | `{ ok, role_id, title, markdown, showing, of, bounded, applicants }` |
+| `preview_message` | A | `applicant_id`, `kind` (enum: `rejection`, `scheduling`), `template?` (enum as `send_rejection`), `slot_id?` | `{ ok, kind, to, subject, body, sent_by, note }`, or the send's own `{ ok: false, reason, why }` |
 
 One applicant in `read_applicants` is `{ id, name, email, employer, employer_domain, stage,
 borderline, gap, scored, score? }`. `score` is **absent** until somebody scored them — never a zero,
 because an unread application must not be rankable against a read one. A shortlist applicant adds
 `headline` and `evidence: [{ criterion, score, quote }]`.
+
+`preview_message` is the read in front of the two sends. It composes the letter with the same
+function `send_rejection` / `send_scheduling_email` use, or refuses with the send's own words, and
+writes nothing. The dossier's armed gate shows the same letter, so a send is approved on the words
+that will reach the person rather than on a wording's name. `test/preview.test.ts` compares the
+preview with the real send byte for byte.
 
 The list is `SHIPPED_CAPABILITIES` and `BOARD_CAPABILITIES` in `lib/manifest.ts`, and the
 registrations spread from it, so there is one list rather than three. The class is never typed out:

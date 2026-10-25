@@ -19,6 +19,7 @@
  */
 import {
   DECISION_STAGES,
+  MESSAGE_KINDS,
   MOVE_STAGES,
   REJECTION_TEMPLATES,
   STAGES,
@@ -145,6 +146,10 @@ export const SHIPPED_CAPABILITIES = [
  *
  * `read_applicants` and `read_shortlist` are here rather than beside the acts because they read
  * the board's own payload, which is the one dataset this route holds.
+ *
+ * `preview_message` is the read in front of the two sends: the exact letter `send_rejection` or
+ * `send_scheduling_email` would deliver, composed by the same function, or the refusal the send
+ * would give. It is AUTO because it composes and returns and writes nothing; the send stays GATED.
  */
 export const BOARD_CAPABILITIES = [
   { name: "read_view", reversible: true, sideEffects: "none", parameters: [] },
@@ -221,6 +226,28 @@ export const BOARD_CAPABILITIES = [
     reversible: true,
     sideEffects: "none",
     parameters: [ROLE_ID],
+  },
+  {
+    name: "preview_message",
+    reversible: true,
+    sideEffects: "none",
+    parameters: [
+      APPLICANT_ID,
+      { name: "kind", type: "string", enum: MESSAGE_KINDS, required: true, description: "Which send to preview" },
+      {
+        name: "template",
+        type: "string",
+        enum: REJECTION_TEMPLATES,
+        required: false,
+        description: "The rejection wording; required when kind is rejection",
+      },
+      {
+        name: "slot_id",
+        type: "string",
+        required: false,
+        description: "The slot to offer, from propose_slots or the dossier read; required when kind is scheduling",
+      },
+    ],
   },
 ] as const satisfies readonly Capability[];
 

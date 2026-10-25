@@ -59,11 +59,23 @@ export const STAGE_LABEL: Record<Stage, string> = {
 export const REJECTION_TEMPLATES = ["standard", "encouraging", "keep_in_touch"] as const;
 export type RejectionTemplate = (typeof REJECTION_TEMPLATES)[number];
 
+/**
+ * What each wording does, said of the letter `lib/mail.ts` actually writes. A label is what a
+ * reviewer approves a send on, so it may claim nothing the body does not say: "names the strengths"
+ * sat over a letter that names none (`test/preview.test.ts` checks every label against its body).
+ */
 export const REJECTION_TEMPLATE_LABEL: Record<RejectionTemplate, string> = {
   standard: "Standard - short and clear",
-  encouraging: "Encouraging - names the strengths",
+  encouraging: "Encouraging - warm, says it was a hard decision",
   keep_in_touch: "Keep in touch - invites a later application",
 };
+
+/**
+ * The two kinds of message that leave the building, as `preview_message` names them. An enum,
+ * because each one is the letter of a GATED send: `send_rejection` and `send_scheduling_email`.
+ */
+export const MESSAGE_KINDS = ["rejection", "scheduling"] as const;
+export type MessageKind = (typeof MESSAGE_KINDS)[number];
 
 /** Score labels for the 0-4 rubric scale. 0 means the CV carried no evidence either way. */
 export const SCORE_LABEL = ["no evidence", "thin", "partial", "solid", "strong"] as const;
