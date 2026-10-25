@@ -23,13 +23,14 @@
  * `VARIANTS.length > 1`, exactly as the view switcher is conditional on `views.length > 1` — one
  * rule, two axes. Round 6 hid it (one drawing); round 7 shows it (three finishes of that drawing).
  */
-import { useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRoving, type ZoomNav } from "@athena/demo-kit/zoom";
 
 import { componentById, type Lens, type ModelCounts } from "@/data";
 
+import { carrierAt, carriersOf, stepCarrier } from "./chrome/evidence";
 import { VARIANTS, type VariantSlug } from "./variants/contract";
-import { railLabel, type LevelMap } from "./variants/levels";
+import { railLabel, targetFor, type LevelMap } from "./variants/levels";
 import type { PublishedViews } from "./variants/viewBus";
 
 export function Mast({
@@ -59,6 +60,38 @@ export function Mast({
   const variantRoving = useRoving(variantBox, { selector: "[data-seg-btn]" });
   const viewBox = useRef<HTMLDivElement | null>(null);
   const viewRoving = useRoving(viewBox, { selector: "[data-seg-btn]" });
+
+  /* WALK THE LENS (chrome/evidence.ts). The read-out is a control: Previous and Next open each
+     carrier at L2 in model order, through the same door the pane's links use, so a drawn carrier
+     flies the camera and an undrawn one keeps the group the reader is in. */
+  const carriers = carriersOf(lens);
+  const at = carrierAt(lens, focus.item);
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      const here = nav.state.focus;
+      const stop = stepCarrier(lens, here.item, dir);
+      if (!stop) return;
+      const to = targetFor(levels, stop.id, here);
+      nav.openItem(to.group, to.item);
+    },
+    [lens, levels, nav],
+  );
+
+  /* `[` and `]` walk it from the keyboard while a lens is on - never while typing in a field. */
+  const walking = carriers.length > 0;
+  useEffect(() => {
+    if (!walking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "[" && e.key !== "]") return;
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      e.preventDefault();
+      step(e.key === "]" ? 1 : -1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [walking, step]);
 
   return (
     <header className="at-mast">
@@ -183,9 +216,37 @@ export function Mast({
           <span className="at-lens-on">
             <span className="at-part">{lens.concept.part}</span>
             <span>{lens.concept.name}</span>
-            <span className="at-fig">
-              {lens.components.size} of {counts.components}
-            </span>
+            {carriers.length > 0 ? (
+              <span
+                className="at-lens-step"
+                data-lens-step=""
+                role="group"
+                aria-label={`Walk the ${carriers.length} carriers of ${lens.concept.name}, ${carriers.length} of ${counts.components} components`}
+                title={`${carriers.length} of ${counts.components} components carry it. [ and ] step through them.`}
+              >
+                <button
+                  type="button"
+                  className="at-lens-step-btn"
+                  aria-label="Previous carrier"
+                  onClick={() => step(-1)}
+                >
+                  &lsaquo;
+                </button>
+                <span className="at-fig" aria-live="polite">
+                  {at ? at.index : "–"} of {carriers.length}
+                </span>
+                <button
+                  type="button"
+                  className="at-lens-step-btn"
+                  aria-label="Next carrier"
+                  onClick={() => step(1)}
+                >
+                  &rsaquo;
+                </button>
+              </span>
+            ) : (
+              <span className="at-fig">0 of {counts.components}</span>
+            )}
             <button type="button" className="at-lens-clear" onClick={() => setLens(null)}>
               clear
             </button>

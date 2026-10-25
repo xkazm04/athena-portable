@@ -42,7 +42,8 @@ import type { ZoomNav } from "@athena/demo-kit/zoom";
 import { CONCEPTS, SYSTEMS, type Lens } from "@/data";
 
 import { VARIANTS, type VariantSlug } from "../variants/contract";
-import { groupsFor, itemsFor, type LevelMap } from "../variants/levels";
+import { STEP_DIRECTIONS, stepLensRead, type StepDirection } from "../chrome/evidence";
+import { groupsFor, itemsFor, targetFor, type LevelMap } from "../variants/levels";
 import { readViews, requestView } from "../variants/viewBus";
 
 import {
@@ -264,6 +265,35 @@ export function AtlasTools({
       return lensRead(asked);
     },
     deps: [lensId, setLens, lens.concept?.id],
+  });
+
+  useWebMCPTool({
+    name: "step_lens",
+    description:
+      "Walk the current lens one carrier at a time: open the next (or previous) component that carries the claim, at full depth, in model order (layer, then system, then component), wrapping at both ends. From a part that does not carry the claim it opens the first carrier after it. Answers the carrier it leaves open, with its place in the walk (index of N). Needs a lens: set one with set_lens first.",
+    parameters: [
+      {
+        name: "direction",
+        type: "string",
+        required: false,
+        enum: [...STEP_DIRECTIONS],
+        description: "next (the default) or prev.",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ direction }) => {
+      const focus = nav.state.focus;
+      const dir: StepDirection = direction === "prev" ? "prev" : "next";
+      const answer = stepLensRead(lens, focus.item, dir);
+      if (!answer.ok) return answer;
+      /* The same door the mast's stepper and the pane's links use (ADR 0173): a drawn carrier opens
+         in its own group, an undrawn one keeps the group the reader is in. */
+      const to = targetFor(levels, answer.opened.id, focus);
+      nav.openItem(to.group, to.item);
+      return { ...answer, drawn: to.drawn };
+    },
+    deps: [lens, levels, nav.state.focus],
   });
 
   return null;

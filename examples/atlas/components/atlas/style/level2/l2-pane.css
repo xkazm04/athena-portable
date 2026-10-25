@@ -147,6 +147,50 @@
   color: var(--at-line-0);
 }
 
+/* UNDER THIS LENS: whether the part carries the claim, or which carriers lit it, and the walk's
+   two steps (chrome/evidence.ts). The section rule takes the mark, because it IS the lens. */
+.at-pane-lens .at-pane-section-head {
+  border-block-end-color: var(--at-mark);
+}
+
+.at-lens-why {
+  display: grid;
+  gap: var(--at-space-2);
+}
+
+.at-lens-walk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-2);
+  margin: var(--at-space-0);
+}
+
+/* A carrier one click away, and the walk's two steps: the chip's shape without its toggle, because
+   these open a part and never change the lens. */
+.at-lens-go {
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-plate);
+  color: var(--at-line-1);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--at-text-label);
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-lens-go:hover,
+.at-lens-go:focus-visible {
+  border-color: var(--at-mark);
+  color: var(--at-line-0);
+}
+
+.at-lens-go:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
 /* An edge, in or out. The verb is the figure face; the other end's name is the drawn voice. */
 .at-link {
   display: grid;

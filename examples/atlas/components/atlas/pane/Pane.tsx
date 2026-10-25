@@ -44,6 +44,7 @@ import {
   type Lens,
 } from "@/data";
 
+import { carrierAt, carriersOf, stepCarrier, systemsDrawnWith, whyLit } from "../chrome/evidence";
 import { useAtlasMotion } from "../motion";
 import { railLabel, targetFor, type LevelMap } from "../variants/levels";
 
@@ -97,6 +98,22 @@ export function Pane({
   const layer = layerOfComponent(component);
   const out = edgesOut(component.id);
   const into = edgesIn(component.id);
+
+  /* UNDER THIS LENS (chrome/evidence.ts): whether this part carries the claim and where it sits in
+     the walk, or which carriers in which of the systems drawn with it lit it. The drawing lights a
+     node by shared system, so without this block a reader can open a lit part whose claims do not
+     include the lens and never be told why. */
+  const carriers = carriersOf(lens);
+  const at = carrierAt(lens, component.id);
+  const why = lens.concept ? whyLit(lens, component.id, systemsDrawnWith(levels, component.id)) : null;
+  const open = (id: string) => {
+    const to = targetFor(levels, id, nav.state.focus);
+    if (to.group) nav.openItem(to.group, to.item);
+  };
+  const step = (dir: 1 | -1) => {
+    const stop = stepCarrier(lens, component.id, dir);
+    if (stop) open(stop.id);
+  };
 
   return (
     <>
@@ -181,6 +198,52 @@ export function Pane({
               </ul>
             )}
           </section>
+
+          {lens.concept && carriers.length > 0 ? (
+            <section className="at-pane-section at-pane-lens" data-lens-step="">
+              <h3 className="at-pane-section-head">
+                Under this lens <span className="at-part">{lens.concept.part}</span>
+              </h3>
+              {at ? (
+                <p className="at-label">
+                  Carrier <span className="at-fig">{at.index}</span> of{" "}
+                  <span className="at-fig">{at.of}</span> &mdash; it carries {lens.concept.name}.
+                </p>
+              ) : why && !why.carries && why.via.length > 0 ? (
+                <div className="at-lens-why">
+                  {why.via.map((v) => (
+                    <div key={v.system}>
+                      <p className="at-label">
+                        It does not carry {lens.concept?.name}. Lit because {v.name} holds{" "}
+                        {v.carriers.length === 1 ? "a carrier" : `${v.carriers.length} carriers`}:
+                      </p>
+                      <ul className="at-chips">
+                        {v.carriers.map((id) => (
+                          <li key={id}>
+                            <button type="button" className="at-lens-go" onClick={() => open(id)}>
+                              {componentById(id)?.name ?? id}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="at-label">
+                  It does not carry {lens.concept.name}, and nothing drawn with it does.
+                </p>
+              )}
+              <p className="at-lens-walk">
+                <button type="button" className="at-lens-go" onClick={() => step(-1)}>
+                  &lsaquo; Previous carrier
+                </button>
+                <button type="button" className="at-lens-go" onClick={() => step(1)}>
+                  Next carrier &rsaquo;
+                </button>
+              </p>
+            </section>
+          ) : null}
 
           <section className="at-pane-section">
             <h3 className="at-pane-section-head">

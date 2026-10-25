@@ -38,6 +38,7 @@ import {
 } from "@/data";
 import { READ_CAP } from "@/lib/constants";
 
+import { carrierAt, systemsDrawnWith, whyLit } from "../chrome/evidence";
 import { VARIANTS, type VariantSlug } from "../variants/contract";
 import { DATA_LEVELS, groupOf, type LevelMap } from "../variants/levels";
 import type { ViewDescriptor } from "../variants/viewBus";
@@ -320,7 +321,18 @@ export function viewDetail(
   };
 
   if (focus.level === 2) {
-    return { view: arrangement, lens: marked, component: componentRead(focus.item) };
+    /* Where the open part sits in the lens's walk, or why the drawing lights it - the same two
+       facts the pane's "Under this lens" block states, so an agent's account matches the reader's. */
+    const id = focus.item ?? "";
+    const why = marked ? whyLit(lens, id, systemsDrawnWith(levels, id)) : null;
+    const walked = marked
+      ? {
+          ...marked,
+          at: carrierAt(lens, focus.item),
+          why: why && !why.carries ? why.via : null,
+        }
+      : null;
+    return { view: arrangement, lens: walked, component: componentRead(focus.item) };
   }
   if (focus.level === 1 && levels !== DATA_LEVELS) {
     const group = groupOf(levels, focus.group);

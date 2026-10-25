@@ -201,6 +201,36 @@
   outline-offset: var(--at-rule-1);
 }
 
+/* WALK THE LENS: the count is a control. Previous and Next around "3 of 19" open each carrier at
+   L2 in model order (chrome/evidence.ts). Colour only on hover and focus - nothing travels. */
+.at-lens-step {
+  display: inline-flex;
+  gap: var(--at-space-1);
+  align-items: baseline;
+}
+
+.at-lens-step-btn {
+  padding: var(--at-space-0) var(--at-space-1);
+  border: var(--at-rule-1) solid transparent;
+  background: none;
+  color: var(--at-line-1);
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-label);
+  transition: border-color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-lens-step-btn:hover {
+  border-color: var(--at-mark);
+  color: var(--at-line-0);
+}
+
+.at-lens-step-btn:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
 .at-mast-counts {
   display: flex;
   gap: var(--at-space-3);
