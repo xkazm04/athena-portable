@@ -5,6 +5,10 @@ Date: 2026-10-18
 Amends [0030](0030-nebius-is-the-proving-ground-not-the-companion-engine.md), whose per-run caps
 ($1 Nemotron, $10 Claude) are the only stop on an unattended proving run.
 
+Applies to (2026-10-25): the chores-uat `--cap-usd` ([0132](0132-chores-are-certified-by-a-character-played-onboarding-and-rehearsal.md)),
+whose cap, resume, dumps and report now read ledger rows through `runlog.spend` and weigh an
+unpriced leg at `UNPRICED_CALL_USD["claude"]`.
+
 ## Context
 
 `Budget.charge` booked a call with no known cost as free: a Nemotron error chunk, a Claude timeout,

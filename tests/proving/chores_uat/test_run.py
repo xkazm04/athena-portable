@@ -14,15 +14,19 @@ from athena.adopt.prompts import AUDIT_SYSTEM, INTERVIEW_SYSTEM
 from athena.proving.chores_uat.__main__ import main
 from athena.proving.chores_uat.cast import case_path, load_case, load_characters, load_pairs
 from athena.proving.chores_uat.numbers import TAG, read_library
+from athena.proving.chores_uat.rig import Rig
 from athena.proving.chores_uat.run import (
     Job,
     dump_path,
     instrument,
+    ledger_spent,
     plan_jobs,
     run_pair,
     run_pairs,
 )
+from athena.proving.runlog import RunLog
 
+from ..adopt_tiers.conftest import FakeWarm, stream_lines
 from .conftest import (
     CARD,
     DERIVE,
@@ -305,6 +309,94 @@ def test_the_cap_stops_scheduling_new_pairs(tmp_path: Path) -> None:
     assert any(line.startswith("cap:") and "2 pairs not scheduled" in line for line in out)
     assert dump_path(rig.run_dir, ROSA.id).is_file()
     assert not dump_path(rig.run_dir, PAIRS[1].id).is_file()
+
+
+# --- legs that come back unpriced (ADR 0122 through runlog.spend) ---------------------------------
+
+
+def _unpriced(lines: list[str]) -> list[str]:
+    """The CLI's stream with the result turned into an error that printed no total."""
+    out = []
+    for line in lines:
+        record = json.loads(line)
+        if record.get("type") == "result":
+            record.pop("total_cost_usd", None)
+            record["is_error"] = True
+            record["subtype"] = "error_during_execution"
+        out.append(json.dumps(record))
+    return out
+
+
+class _UnpricedWarm(FakeWarm):
+    def send(self, line: str) -> None:
+        text = json.loads(line)["message"]["content"][0]["text"]
+        for out in _unpriced(stream_lines(self.model.answer(self.argv, text))):
+            self._lines.put(out)
+
+
+class _UnpricedTransport:
+    def __init__(self, model: FakeModel) -> None:
+        self.model = model
+
+    async def run(self, request: Any) -> Any:
+        for line in _unpriced(stream_lines(self.model.answer(request.argv, request.stdin))):
+            yield line
+
+
+def _unpriced_rig(run_dir: Path, model: FakeModel) -> Rig:
+    return Rig(
+        run_dir=run_dir,
+        transport=lambda: _UnpricedTransport(model),  # type: ignore[arg-type, return-value]
+        spawn_warm=lambda argv, cwd: _UnpricedWarm(model, argv),  # type: ignore[arg-type]
+        runlog=RunLog(run_dir / "ledger.jsonl"),
+        library=LIBRARY,
+        rehearse=stub_rehearsal(),
+    )
+
+
+def test_the_cap_binds_on_legs_that_all_come_back_unpriced(tmp_path: Path) -> None:
+    """Before: an unpriced leg cost $0 to the cap, so every pair of a failing run was scheduled."""
+    model = FakeModel(clearing_script())
+    rig = _unpriced_rig(tmp_path, model)
+    out: list[str] = []
+    jobs = [Job(ROSA, "pair") for _ in range(4)]
+    run_pairs(rig, jobs, _loader, workers=1, cap_usd=1.00, echo=out.append)
+    lines = (tmp_path / "ledger.jsonl").read_text("utf-8").splitlines()
+    rows = [json.loads(line) for line in lines]
+    assert rows and all("cost_usd" not in r for r in rows)
+    cap = [line for line in out if line.startswith("cap:")]
+    assert cap and "pairs not scheduled" in cap[0]
+    # At $0.50 an unpriced leg, the scheduler stops once two are booked.
+    assert len(rows) >= 2
+    assert "known" in cap[0] and "unpriced" in cap[0]
+
+
+def test_a_resumed_run_counts_its_unpriced_rows_before_the_first_job(tmp_path: Path) -> None:
+    ledger = tmp_path / "ledger.jsonl"
+    log = RunLog(ledger)
+    for _ in range(3):
+        log.record(role="interview", engine="claude", model="m", error_reason="timeout")
+    model = FakeModel(clearing_script())
+    rig = make_rig(tmp_path, model, rehearse=stub_rehearsal())
+    out: list[str] = []
+    before = ledger_spent(ledger)
+    assert (before.spent_usd, before.unpriced_calls, before.enforced_usd) == (0.0, 3, 1.5)
+    run_pairs(rig, [Job(ROSA, "pair")], _loader, cap_usd=1.00, spent_before=before, echo=out.append)
+    assert out[0].startswith("cap:") and "1 pairs not scheduled" in out[0]
+    assert model.calls == []
+
+
+def test_a_pair_whose_every_leg_is_unpriced_has_no_cost_and_counts_its_legs(
+    tmp_path: Path,
+) -> None:
+    model = FakeModel(clearing_script())
+    dump = run_pair(_unpriced_rig(tmp_path / "a", model), ROSA, CHARACTERS["rosa"], CASE, PLAYBOOK)
+    assert dump["ledger_rows"] > 0
+    assert "cost_usd" not in dump
+    assert dump["unpriced_legs"] == dump["ledger_rows"]
+    priced, _ = _run(tmp_path / "b", clearing_script())
+    assert priced["unpriced_legs"] == 0
+    assert priced["cost_usd"] == pytest.approx(0.001 * priced["ledger_rows"])
 
 
 def test_main_dry_over_the_fixture_spends_nothing(tmp_path: Path) -> None:

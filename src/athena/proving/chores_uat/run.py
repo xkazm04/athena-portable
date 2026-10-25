@@ -23,14 +23,14 @@ failed event is read off the session's log. The door is :attr:`~.rig.Rig.rehears
 ``proving-runs/chores-uat/<run-id>/pairs/``; a complete dump is skipped, a dump whose judge
 failed is judged again on its own, anything else runs again. A bench bug in one pair is that
 pair's ``failure``, never a dead pool. ``--cap-usd`` stops scheduling new pairs once the run's
-ledger passes it; in-flight pairs finish.
+ledger passes it, an unpriced leg weighed at the Claude purse's stated default (ADR 0122, read
+by :func:`~athena.proving.runlog.spend`); in-flight pairs finish.
 """
 
 from __future__ import annotations
 
 import copy
 import hashlib
-import json
 import shutil
 import subprocess
 import tempfile
@@ -66,7 +66,14 @@ from athena.proving.chores_uat.judge import (
     judge_view,
 )
 from athena.proving.chores_uat.numbers import number_row
-from athena.proving.chores_uat.rig import HARNESS_TIER, Rig
+from athena.proving.chores_uat.rig import (
+    HARNESS_TIER,
+    UNPRICED_LEG_USD,
+    Rig,
+    ledger_spend,
+    spend_words,
+)
+from athena.proving.runlog import RunLog, Spend
 
 if TYPE_CHECKING:
     from athena.adopt.session import AdoptSession
@@ -331,7 +338,9 @@ def _empty_dump(pair: Pair) -> dict[str, Any]:
         },
         "rehearsal": {"status": "skipped", "detail": ""},
         "judge": None,
+        # No leg has run: a known nothing. Each leg's rows are booked by _book.
         "cost_usd": 0.0,
+        "unpriced_legs": 0,
         "ledger_rows": 0,
         "wall_ms": 0,
     }
@@ -351,8 +360,22 @@ def _skipped(detail: str) -> dict[str, Any]:
     }
 
 
-def _cost(rows: Sequence[Mapping[str, Any]]) -> float:
-    return round(sum(float(r.get("cost_usd") or 0.0) for r in rows), 6)
+def _book(dump: dict[str, Any], rows: Sequence[Mapping[str, Any]]) -> None:
+    """Add ``rows`` to the dump's money: ``cost_usd`` is the known sum, absent (never 0.0) when
+    every leg came back unpriced; ``unpriced_legs`` counts the legs nobody priced."""
+    got = ledger_spend(rows)
+    known = dump.get("cost_usd")
+    known_usd = 0.0
+    if isinstance(known, int | float) and not isinstance(known, bool):
+        known_usd = float(known)
+    total = int(dump.get("ledger_rows") or 0) + got.calls
+    unpriced = int(dump.get("unpriced_legs") or 0) + got.unpriced_calls
+    dump["ledger_rows"] = total
+    dump["unpriced_legs"] = unpriced
+    if total and total == unpriced:
+        dump.pop("cost_usd", None)
+    else:
+        dump["cost_usd"] = round(known_usd + got.spent_usd, 6)
 
 
 def run_pair(
@@ -490,9 +513,7 @@ def run_pair(
     if not dump["failure"] and tested and not any(leg["ok"] for leg in tested):
         dump["failure"] = "no interview or audit leg succeeded (is the claude CLI signed in?)"
     onboarding["legs"] = legs
-    rows = ledger.snapshot()
-    dump["cost_usd"] = _cost(rows)
-    dump["ledger_rows"] = len(rows)
+    _book(dump, ledger.snapshot())
     if judge and not dump["failure"]:
         _judge_into(rig, dump, character, playbook, case)
     dump["complete"] = not dump["failure"] and dump["judge"] is not None
@@ -526,9 +547,7 @@ def _judge_into(
         check=check_judge(character.criteria, turns),
         conversation=f"chores-uat/{dump['pair']}/judge",
     )
-    rows = ledger.snapshot()
-    dump["cost_usd"] = round(float(dump.get("cost_usd") or 0.0) + _cost(rows), 6)
-    dump["ledger_rows"] = int(dump.get("ledger_rows") or 0) + len(rows)
+    _book(dump, ledger.snapshot())
     if result.ok and result.value is not None:
         dump["judge"] = judge_view(result.value, character.criteria)
         if dump["failure"].startswith("judge:"):
@@ -598,14 +617,17 @@ def run_pairs(
     *,
     workers: int = 4,
     cap_usd: float = 400.0,
-    spent_before: float = 0.0,
+    spent_before: Spend | None = None,
     rehearse: bool = True,
     echo: Callable[[str], None] = print,
 ) -> list[tuple[str, str]]:
     """Run ``jobs`` with at most ``workers`` at once, each dump written as it finishes. Stops
-    scheduling once the ledger (``spent_before`` plus this process's rows) passes ``cap_usd``.
+    scheduling once the ledger (``spent_before`` plus this process's rows) passes ``cap_usd``,
+    read as the core reads a purse: known spend plus each unpriced leg at
+    :data:`~.rig.UNPRICED_LEG_USD` (ADR 0122).
     ``load(pair)`` answers ``(character, case, playbook)`` or raises (a failed pair)."""
     rig.run_dir.mkdir(parents=True, exist_ok=True)
+    before = spent_before if spent_before is not None else ledger_spend([])
     failed: list[tuple[str, str]] = []
     lock = threading.Lock()
     total = len(jobs)
@@ -638,11 +660,13 @@ def run_pairs(
         running: dict[Future[str], Job] = {}
         while queue or running:
             while queue and len(running) < max(1, workers):
-                spent = spent_before + rig.spent_usd()
-                if spent >= cap_usd:
+                spent = before + rig.spent()
+                if spent.enforced_usd >= cap_usd:
                     stopped = len(queue)
                     echo(
-                        f"cap: ${spent:.2f} spent of ${cap_usd:.2f}; {stopped} pairs not scheduled"
+                        f"cap: ${spent.enforced_usd:.2f} weighed of ${cap_usd:.2f} "
+                        f"({spend_words(spent)} at ${UNPRICED_LEG_USD:.2f}); "
+                        f"{stopped} pairs not scheduled"
                     )
                     queue.clear()
                     break
@@ -665,29 +689,18 @@ def run_pairs(
                     if why:
                         line += f" ({job.kind} {job.pair.id}: {why[:200]})"
                     echo(line)
-    spent = spent_before + rig.spent_usd()
+    spent = before + rig.spent()
     echo(
         f"harvest: {done - len(failed)} of {total} done, {len(failed)} failed, "
-        f"{stopped} not scheduled, ${spent:.2f} ledgered"
+        f"{stopped} not scheduled, {spend_words(spent)} ledgered"
     )
     return failed
 
 
-def ledger_spent(path: Path) -> float:
-    """What a run's ``ledger.jsonl`` already holds (a resumed run counts it against the cap)."""
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return 0.0
-    total = 0.0
-    for line in lines:
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(row, dict):
-            total += float(row.get("cost_usd") or 0.0)
-    return total
+def ledger_spent(path: Path) -> Spend:
+    """What a run's ``ledger.jsonl`` already holds, unpriced legs included (a resumed run weighs
+    it against the cap)."""
+    return ledger_spend(RunLog.read(path))
 
 
 def stamp() -> str:

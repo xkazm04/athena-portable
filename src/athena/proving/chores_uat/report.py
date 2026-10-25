@@ -4,7 +4,8 @@ Dumps first, verdicts second: this module only reads what :mod:`.run` wrote. Per
 (complete, how the onboarding ended, approved, the rehearsal's status); margins by category,
 audience, Character and ended-state, worst first, each group's n shown; criteria pass rates per
 criterion text with n, where ``null`` is not evaluable and is never counted as a pass; would-adopt
-counts; the time-saved estimates; the findings by frequency; the cost and ledger rows.
+counts; the time-saved estimates; the findings by frequency; the cost and ledger rows, read by
+the core's :func:`~athena.proving.runlog.spend` (known spend and unpriced legs, never a bare $0).
 
 ``findings.json`` rows follow the uat finding schema minimally (``cert_level`` LC, ``verdict``
 ``uncertain``: a judge's finding is a lead until a person reads the transcript).
@@ -18,6 +19,10 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
+
+from athena.proving.chores_uat.rig import ledger_spend, spend_words
+from athena.proving.report import TEXT_ERRORS
+from athena.proving.runlog import RunLog
 
 __all__ = ["criteria_counts", "findings_rows", "load_dumps", "margins", "report_md", "write_report"]
 
@@ -144,21 +149,19 @@ def _table(head: Sequence[str], rows: Iterable[Sequence[Any]]) -> list[str]:
     return out
 
 
-def _ledger_rows(run_dir: Path) -> tuple[int, float]:
-    try:
-        lines = (run_dir / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return 0, 0.0
-    n, cost = 0, 0.0
-    for line in lines:
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(row, dict):
-            n += 1
-            cost += float(row.get("cost_usd") or 0.0)
-    return n, cost
+def _dumps_words(dumps: Sequence[Mapping[str, Any]]) -> str:
+    """The dumps' known cost and their unpriced legs; a dump with no ``cost_usd`` is unknown,
+    never $0 (an older dump without ``unpriced_legs`` counts none)."""
+    known = [
+        float(d["cost_usd"])
+        for d in dumps
+        if isinstance(d.get("cost_usd"), int | float) and not isinstance(d.get("cost_usd"), bool)
+    ]
+    unpriced = sum(int(d.get("unpriced_legs") or 0) for d in dumps)
+    legs = f"{unpriced} unpriced leg{'' if unpriced == 1 else 's'}"
+    if dumps and not known:
+        return f"no known cost, {legs}"
+    return f"${sum(known):.2f} known, {legs}"
 
 
 def report_md(run_dir: Path, dumps: Sequence[Mapping[str, Any]]) -> str:
@@ -168,14 +171,13 @@ def report_md(run_dir: Path, dumps: Sequence[Mapping[str, Any]]) -> str:
         run_meta = loaded if isinstance(loaded, dict) else {}
     except (OSError, json.JSONDecodeError):
         pass
-    rows_n, ledger_cost = _ledger_rows(run_dir)
+    ledger = ledger_spend(RunLog.read(run_dir / "ledger.jsonl"))
     complete = sum(1 for d in dumps if d.get("complete"))
     lines = [
         f"# Chores UAT — run {run_dir.name}",
         "",
-        f"{len(dumps)} pairs on disk, {complete} complete. Ledger: {rows_n} rows, "
-        f"${ledger_cost:.2f}. Pair dumps sum to "
-        f"${sum(float(d.get('cost_usd') or 0) for d in dumps):.2f}.",
+        f"{len(dumps)} pairs on disk, {complete} complete. Ledger: {ledger.calls} rows, "
+        f"{spend_words(ledger)}. Pair dumps sum to {_dumps_words(dumps)}.",
     ]
     instrument = run_meta.get("instrument")
     if isinstance(instrument, Mapping):
@@ -307,8 +309,14 @@ def report_md(run_dir: Path, dumps: Sequence[Mapping[str, Any]]) -> str:
 def write_report(run_dir: Path) -> tuple[Path, Path, int]:
     dumps = load_dumps(run_dir)
     md = run_dir / "report.md"
-    md.write_text(report_md(run_dir, dumps), encoding="utf-8")
+    # Model text can hold a lone surrogate; it goes out as its \uXXXX escape, as the core's report
+    # does, so the report of a paid run is never lost to one character.
+    md.write_text(report_md(run_dir, dumps), encoding="utf-8", errors=TEXT_ERRORS)
     fj = run_dir / "findings.json"
     rows = findings_rows(dumps, run_dir.name)
-    fj.write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    fj.write_text(
+        json.dumps(rows, indent=1, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        errors=TEXT_ERRORS,
+    )
     return md, fj, len(dumps)

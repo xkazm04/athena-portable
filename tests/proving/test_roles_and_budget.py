@@ -30,7 +30,7 @@ from athena.proving.roles import (
     load_env_file,
     subprocess_runner,
 )
-from athena.proving.runlog import EXCERPT_CHARS, RunLog
+from athena.proving.runlog import EXCERPT_CHARS, RunLog, Spend, spend
 
 from .conftest import FakeRole
 
@@ -270,6 +270,28 @@ def test_the_run_ledger_is_jsonl_on_disk(tmp_path: Path) -> None:
     log.record(role="judge", engine=CLAUDE, model="m", cost_usd=0.001, error_reason="weird")
     row = json.loads((tmp_path / "run" / "ledger.jsonl").read_text("utf-8"))
     assert row["error_reason"] == "unknown"  # the closed set, never a new column value
+
+
+def test_spend_weighs_an_unpriced_row_for_the_cap_and_never_books_it() -> None:
+    """ADR 0122 read off rows: known spend stays the sum of known costs, the cap sees the rest."""
+    rows = [{"cost_usd": 0.10}, {"is_error": True}, {"cost_usd": 0.20}]
+    assert spend(rows, assume_usd=0.50) == Spend(
+        spent_usd=0.30, calls=3, unpriced_calls=1, enforced_usd=0.80
+    )
+    assert spend([], assume_usd=0.50) == Spend(0.0, 0, 0, 0.0)
+    # None, a bool or a string is not a price; a zero is a known free call.
+    odd = [{"cost_usd": None}, {"cost_usd": True}, {"cost_usd": "1"}, {"cost_usd": 0}]
+    assert spend(odd, assume_usd=0.5) == Spend(0.0, 4, 3, 1.5)
+
+
+def test_runlog_read_skips_a_torn_line_and_keeps_the_rows(tmp_path: Path) -> None:
+    path = tmp_path / "ledger.jsonl"
+    path.write_text(
+        '{"role": "judge", "cost_usd": 0.1}\n{"role": "aud\n[1, 2]\n{"role": "persona"}\n',
+        encoding="utf-8",
+    )
+    assert RunLog.read(path) == [{"role": "judge", "cost_usd": 0.1}, {"role": "persona"}]
+    assert RunLog.read(tmp_path / "missing.jsonl") == []
 
 
 # --- model text that no UTF-8 file can hold ------------------------------------------------------

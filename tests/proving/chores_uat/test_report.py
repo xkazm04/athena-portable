@@ -127,3 +127,43 @@ def test_report_without_against_is_unchanged(tmp_path: Path) -> None:
     assert main(["report", "--base", str(tmp_path)], echo=lambda _: None) == 0
     assert (run_dir / "report.md").read_text("utf-8") == report_md(run_dir, DUMPS)
     assert not (run_dir / "compare.md").exists() and not (run_dir / "compare.json").exists()
+
+
+def _ledger(run_dir: Path, costs: list[float | None]) -> None:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    rows = [
+        {"role": "interview"} if c is None else {"role": "interview", "cost_usd": c} for c in costs
+    ]
+    (run_dir / "ledger.jsonl").write_text(
+        "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8"
+    )
+
+
+def test_the_header_names_known_spend_and_unpriced_legs_never_a_bare_zero(tmp_path: Path) -> None:
+    run_dir = tmp_path / "chores-uat" / "r1"
+    _ledger(run_dir, [0.25, 0.25, 0.25, 0.25, None, None])
+    text = report_md(run_dir, DUMPS)
+    assert "Ledger: 6 rows, $1.00 known, 2 unpriced legs." in text
+    unpriced = tmp_path / "chores-uat" / "r2"
+    _ledger(unpriced, [None, None, None])
+    bare = dict(DUMPS[0])
+    bare.pop("cost_usd")
+    bare["unpriced_legs"] = 3
+    text = report_md(unpriced, [bare])
+    assert "$0.00" not in text
+    assert "no known cost, 3 unpriced legs" in text
+
+
+def test_a_lone_surrogate_in_a_judge_voice_still_writes_the_report(tmp_path: Path) -> None:
+    lone = json.loads('"\\ud83d says the judge"')
+    dump = json.loads(json.dumps(DUMPS[0]))
+    dump["judge"]["voice"] = lone
+    dump["judge"]["findings"][0]["title"] = lone
+    dump["judge"]["criteria"][0]["text"] = lone
+    run_dir = _write_run(tmp_path, "r1", [])
+    path = dump_path(run_dir, dump["pair"])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(dump), "utf-8")
+    md, fj, n = write_report(run_dir)
+    assert n == 1 and "\\ud83d" in md.read_text("utf-8")
+    assert json.loads(fj.read_text("utf-8"))[0]["title"] == lone
