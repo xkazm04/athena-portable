@@ -70,8 +70,9 @@ export type FeedItem =
     }
   | { kind: "error"; key: string; reason: string; detail: string };
 
+/** `parked`: a conversation left mid-interview is on offer (ADR 0179); nothing is followed yet. */
 export type Conn =
-  "starting" | "live" | "retrying" | "lost" | "failed" | "closed";
+  "starting" | "live" | "retrying" | "lost" | "failed" | "closed" | "parked";
 
 /** The daemon's last word on a session that ended (DELETE, idle expiry): stop following, do not reconnect. */
 export const SESSION_CLOSED = "session_closed";
@@ -101,6 +102,10 @@ export interface StudioState {
   usage: { calls: number; ms: number };
   /** The saved case this session reopened (ADR 0123); `null` for a fresh conversation. */
   reopened: CaseSummary | null;
+  /** While `conn` is `parked`: how far the parked conversation got, said as the offer's line. */
+  offer: string;
+  /** A line about how this session began (an earlier one had ended); "" when none. */
+  notice: string;
   /** The case the last approval was saved to; "" before one. */
   caseId: string;
   /** Why the last approval was not saved as a case, or "". */
@@ -126,12 +131,16 @@ export const INITIAL: StudioState = {
   handedRev: null,
   usage: { calls: 0, ms: 0 },
   reopened: null,
+  offer: "",
+  notice: "",
   caseId: "",
   caseProblem: "",
 };
 
 export type Action =
-  | { t: "restart" }
+  | { t: "restart"; notice?: string }
+  | { t: "offer"; line: string }
+  | { t: "resume"; state: StudioState }
   | { t: "started"; sid: string; slots: Slot[]; reopened?: CaseSummary | null }
   | { t: "start_failed"; reason: string; detail: string }
   | { t: "event"; e: AdoptEvent }
@@ -155,7 +164,11 @@ export type Action =
 export function reduce(s: StudioState, a: Action): StudioState {
   switch (a.t) {
     case "restart":
-      return INITIAL;
+      return a.notice ? { ...INITIAL, notice: a.notice } : INITIAL;
+    case "offer":
+      return { ...INITIAL, conn: "parked", offer: a.line };
+    case "resume":
+      return { ...a.state, conn: "live", tries: 0, problem: null, offer: "" };
     case "started":
       return {
         ...s,

@@ -13,7 +13,9 @@
  * always about the draft on show.
  *
  * Escape and Close go back to the topic page; Escape asks first when something typed or picked was
- * not sent. Leaving closes the session.
+ * not sent. Leaving parks a conversation the person said something in (ADR 0179): coming back to
+ * the same studio offers Continue, where it stopped, or Start over. Leaving with nothing said, or
+ * after the hand-off, closes the session.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -154,6 +156,27 @@ export default function Studio({
     </header>
   );
 
+  if (deps && s.conn === "parked") {
+    return (
+      <div className="pa-page ad-page" ref={root}>
+        <div className="ad-wrap">
+          {head}
+          <div className="ad-problem ad-resume" role="group" aria-label="Your earlier conversation">
+            <p className="ad-banner">{s.offer}</p>
+            <div className="ad-head__acts">
+              <Button variant="primary" onClick={act.resume}>
+                Continue
+              </Button>
+              <Button variant="ghost" onClick={act.startOver}>
+                Start over
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!deps || s.conn === "failed") {
     const offline = !deps || s.problem?.reason === "offline";
     return (
@@ -211,6 +234,11 @@ export default function Studio({
         {s.conn === "closed" ? (
           <p className="ad-banner" role="status">
             {`This conversation has ended (${s.problem?.detail || "closed"}). Close it and start again to continue.`}
+          </p>
+        ) : null}
+        {s.notice ? (
+          <p className="ad-banner" role="status">
+            {s.notice}
           </p>
         ) : null}
         {s.reopened ? (

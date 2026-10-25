@@ -31,6 +31,8 @@ export interface AdoptDeps {
   dictation: Dictation | null;
   /** The reconnect's pause; resolves early when the signal aborts. */
   wait?: (ms: number, signal: AbortSignal) => Promise<void>;
+  /** The clock a parked conversation is aged by (ADR 0179); `Date.now` when absent. */
+  now?: () => number;
 }
 
 export const realWait = (ms: number, signal: AbortSignal) =>

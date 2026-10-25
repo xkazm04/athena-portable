@@ -30,9 +30,11 @@ import type {
 } from "@/modules/playbooks/model";
 
 import { fixtures } from "../fixtures";
+import { rememberIntro } from "../memory";
 import { adoptPath, chorePath } from "../model";
 import ChoresView from "../view";
 import type { AdoptDeps, Dictation } from "./deps";
+import { PARK_LIMIT_MS, forgetParked, parked } from "./park";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -70,11 +72,13 @@ class Stream {
 
 class FakeClient implements AdoptClient {
   calls: { route: string; body: unknown }[] = [];
+  intros: (string | undefined)[] = [];
   streams: Stream[] = [];
   startWith: () => Promise<StartReply> = () =>
     Promise.resolve({ ok: true, session_id: "s1", slots: [], case: null });
-  start(playbookId: string) {
+  start(playbookId: string, intro?: string) {
     this.calls.push({ route: "start", body: playbookId });
+    this.intros.push(intro);
     return this.startWith();
   }
   events(_sid: string, after: number, signal: AbortSignal) {
@@ -144,12 +148,13 @@ async function show(
     dictation,
     wait: (ms) => (waits.push(ms), Promise.resolve()),
   },
+  path: Path = adoptPath(ID),
 ) {
   act(() => {
     root.render(
       <ChoresView
         model={model()}
-        path={adoptPath(ID)}
+        path={path}
         go={go}
         adopt={deps ?? undefined}
       />,
@@ -264,6 +269,8 @@ const BRIEF = (rev: number) => ({
 });
 
 beforeEach(() => {
+  forgetParked();
+  rememberIntro(null);
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -777,6 +784,129 @@ describe("the brief's lifecycle, keyed by rev", () => {
   });
 });
 
+describe("leaving parks the interview, and coming back offers Continue", () => {
+  const OTHER = fixtures.shipped!.items.find((v) => v.id !== ID)!.id;
+
+  /** Seven of her events, one answered card and one composer line: something worth keeping. */
+  const talk = async (deps?: AdoptDeps) => {
+    await show(deps);
+    await feed({ kind: "adopt.say", text: "Let us start." }, CARD);
+    await click(button("Gmail"));
+    await click(button("Send"));
+    type(q<HTMLTextAreaElement>("#ad-say")!, "I paid with two cards.");
+    await click(button("Send"));
+    await feed(
+      { kind: "adopt.progress", text: "Looking it up" },
+      { kind: "adopt.slots", slots: SLOTS },
+      { kind: "adopt.say", text: "Thanks, that settles the mail." },
+      { kind: "adopt.progress", text: "Drafting" },
+      BRIEF(2),
+    );
+  };
+  const leave = async () => {
+    act(() => root.render(<div />));
+    await flush();
+  };
+
+  it("case 1: leaving after something was said parks the conversation instead of closing it", async () => {
+    await talk();
+    await leave();
+    expect(client.routes("close")).toEqual([]);
+    const p = parked(`${ID}/`)!;
+    expect(p.sid).toBe("s1");
+    expect(p.lastSeq).toBe(7);
+    expect(p.state.feed.some((f) => f.kind === "card" && f.answers !== null)).toBe(true);
+    expect(
+      p.state.feed.some((f) => f.kind === "you" && f.text === "I paid with two cards."),
+    ).toBe(true);
+  });
+
+  it("case 2: coming back offers Continue, which follows the same session from where it stopped", async () => {
+    await talk();
+    await leave();
+    await show();
+    expect(client.routes("start")).toEqual([ID]);
+    expect(text(".ad-resume")).toContain("2 answers, draft 2");
+    expect(button("Start over")).not.toBeNull();
+    await click(button("Continue"));
+    expect(client.streams.map((s) => s.after)).toEqual([0, 7]);
+    expect(text(".ad-receipt__line")).toBe("Gmail");
+    expect(text(".ad-you")).toBe("I paid with two cards.");
+    expect(text(".ad-convo")).toContain("Let us start.");
+    await feed({ kind: "adopt.say", text: "Welcome back." });
+    expect(text(".ad-convo")).toContain("Welcome back.");
+    type(q<HTMLTextAreaElement>("#ad-say")!, "One more thing.");
+    await click(button("Send"));
+    expect(client.routes("answer").at(-1)).toMatchObject({ sid: "s1" });
+  });
+
+  it("case 3: Start over closes the parked session and starts one fresh", async () => {
+    await talk();
+    await leave();
+    await show();
+    await click(button("Start over"));
+    expect(
+      client.calls.filter((c) => c.route === "start" || c.route === "close").map((c) => c.route),
+    ).toEqual(["start", "close", "start"]);
+    expect(client.routes("close")).toEqual(["s1"]);
+    expect(qa(".ad-you")).toHaveLength(0);
+    expect(q(".ad-receipt__line")).toBeNull();
+    expect(parked()).toBeNull();
+  });
+
+  it("case 4: opening another chore's studio closes the parked one before it starts", async () => {
+    await talk();
+    await leave();
+    expect(client.routes("close")).toEqual([]);
+    await show(undefined, adoptPath(OTHER));
+    expect(
+      client.calls.filter((c) => c.route === "start" || c.route === "close"),
+    ).toEqual([
+      { route: "start", body: ID },
+      { route: "close", body: "s1" },
+      { route: "start", body: OTHER },
+    ]);
+    expect(q(".ad-resume")).toBeNull();
+    expect(parked()).toBeNull();
+  });
+
+  it("case 5: Continue on a session the daemon no longer knows starts fresh with the intro, and says so", async () => {
+    rememberIntro({ id: ID, text: "I flew Delta twice." });
+    await talk();
+    await leave();
+    rememberIntro(null);
+    await show();
+    await click(button("Continue"));
+    client.live.push(new ApiError(404, "unknown_ref", "no adopt session 's1'"));
+    await flush();
+    expect(waits).toEqual([]);
+    expect(client.streams.map((s) => s.after)).toEqual([0, 7, 0]);
+    expect(client.intros).toEqual(["I flew Delta twice.", "I flew Delta twice."]);
+    expect(text(".ad-page")).toContain("earlier conversation had ended");
+    expect(button("Retry")).toBeNull();
+    expect(qa(".ad-you")).toHaveLength(0);
+  });
+
+  it("case 6: a conversation parked past the local limit is closed on return, with no offer", async () => {
+    let clock = 1_000;
+    const deps: AdoptDeps = {
+      client,
+      dictation,
+      wait: (ms) => (waits.push(ms), Promise.resolve()),
+      now: () => clock,
+    };
+    await talk(deps);
+    await leave();
+    expect(parked()).not.toBeNull();
+    clock += PARK_LIMIT_MS + 1;
+    await show(deps);
+    expect(client.routes("close")).toEqual(["s1"]);
+    expect(client.routes("start")).toEqual([ID, ID]);
+    expect(q(".ad-resume")).toBeNull();
+    expect(parked()).toBeNull();
+  });
+});
+
 describe("leaving, and the voice", () => {
   it("goes back on Close, and deletes the session when the studio goes", async () => {
     await show();
@@ -786,6 +916,7 @@ describe("leaving, and the voice", () => {
     act(() => root.render(<div />));
     await flush();
     expect(client.routes("close")).toEqual(["s1"]);
+    expect(parked()).toBeNull();
   });
 
   it("closes a session whose start was still in flight when the studio went", async () => {
