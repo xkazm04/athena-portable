@@ -210,9 +210,9 @@ test("every --ln-* token the TypeScript names is declared in the sheet", () => {
 /** The parts in cascade order, as `style/index.css` imports them. */
 const ORDER = [...readFileSync(join(STYLE, "index.css"), "utf8").matchAll(/@import "\.\/([^"]+)"/g)].map((m) => m[1]!);
 
-/** Rules in cascade order with the at-rule each sits in (`null` at the top level). */
-function cascade(): { selector: string; body: string; at: string | null }[] {
-  const out: { selector: string; body: string; at: string | null }[] = [];
+/** Rules in cascade order with the at-rule each sits in (`null` at the top level) and its part. */
+function cascade(): { selector: string; body: string; at: string | null; part: string }[] {
+  const out: { selector: string; body: string; at: string | null; part: string }[] = [];
   for (const name of ORDER) {
     const css = part(name);
     const stack: string[] = [];
@@ -224,7 +224,12 @@ function cascade(): { selector: string; body: string; at: string | null }[] {
       } else if (css[i] === "}") {
         const prelude = stack.pop() ?? "";
         if (prelude && !prelude.startsWith("@")) {
-          out.push({ selector: prelude, body: css.slice(start, i), at: stack.findLast((p) => p.startsWith("@")) ?? null });
+          out.push({
+            selector: prelude,
+            body: css.slice(start, i),
+            at: stack.findLast((p) => p.startsWith("@")) ?? null,
+            part: name,
+          });
         }
         start = i + 1;
       }
@@ -590,4 +595,165 @@ test("each role behind a replaced literal paints exactly the literal it replaced
     }
   }
   assert.deepEqual(off, [], "a role that does not paint the value it replaced");
+});
+
+/* ------------------------------------------------------- forced colours */
+
+/*
+ * Meaning survives the repaint (scan-sweep --challenge, ledgerbox-style-design/B, 2026-10-25).
+ * Under forced colours (Windows contrast themes) the platform forces background-color and
+ * border-color to system colours, drops gradient backgrounds and computes box-shadow to none.
+ * Every mark on this sheet was a `background: var(--tone)` button with border 0, the tails and the
+ * now-line were backgrounds, the lane spine a gradient and the `select` ring a box-shadow: a field
+ * of identical boxes with no lateness, no now and no working set. A system colour an author writes
+ * IS honoured, so one part of the sheet re-carries each meaning in system colours and structure.
+ */
+
+const FORCED = /\(\s*forced-colors\s*:\s*active\s*\)/;
+const SYSTEM_COLOURS = [
+  "Canvas",
+  "CanvasText",
+  "LinkText",
+  "Highlight",
+  "HighlightText",
+  "GrayText",
+  "Mark",
+  "ButtonText",
+  "ButtonBorder",
+  "AccentColor",
+];
+const SYSTEM = new RegExp(`(^|[\\s,(])(${SYSTEM_COLOURS.join("|")})(?=$|[\\s,)])`);
+const BORDER_STYLES = /^(none|solid|dashed|dotted|double)$/;
+const normal = (selector: string) => selector.replace(/\s+/g, " ").trim();
+
+/** The part of the sheet that holds the forced-colours rules, by its text, not by its name. */
+function forcedPart(): string {
+  const parts = ORDER.filter((name) => /forced-colors/.test(part(name)));
+  assert.equal(parts.length, 1, `forced-colours rules live in ${parts.length} parts: ${parts.join(", ")}`);
+  return parts[0]!;
+}
+
+/** The declarations the forced part gives one exact selector (later rules win, as they cascade). */
+function forcedFor(selector: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const rule of cascade()) {
+    if (!rule.at || !FORCED.test(rule.at)) continue;
+    if (!rule.selector.split(",").some((s) => normal(s) === normal(selector))) continue;
+    for (const d of rule.body.matchAll(/(?:^|;)\s*([a-z-]+)\s*:\s*([^;]+)/g)) out.set(d[1]!, d[2]!.trim());
+  }
+  return out;
+}
+
+/** (fill, border style) as the forced part draws a selector: what tells one state from another. */
+function forcedPair(selector: string): string {
+  const d = forcedFor(selector);
+  const fill = d.get("background-color") ?? d.get("background") ?? "-";
+  const style =
+    d.get("border-style") ?? (d.get("border") ?? "").split(/\s+/).find((w) => BORDER_STYLES.test(w)) ?? "-";
+  return `${fill} / ${style}`;
+}
+
+test("the sheet has a forced-colours part, every rule inside the media query, last in the cascade", () => {
+  const name = forcedPart();
+  const forcedRules = cascade().filter((r) => r.part === name);
+  assert.ok(forcedRules.length > 0, `style/${name} holds no rules`);
+  const outside = forcedRules.filter((r) => !r.at || !FORCED.test(r.at)).map((r) => r.selector);
+  assert.deepEqual(outside, [], `rules in style/${name} outside @media (forced-colors: active)`);
+  assert.equal(ORDER.at(-1), name, "the forced part must be the last import, so it beats the heat and ticked rules");
+  assert.ok(ORDER.indexOf(name) > ORDER.indexOf("chrome/ticked.css"), "imported before chrome/ticked.css");
+});
+
+test("under forced colours every heat draws its mark with a distinct system-colour fill and border", () => {
+  const table = heats();
+  assert.ok(table.size >= 5, `found ${table.size} heats in heat-in-one-place.css`);
+  const pairs = new Map<string, string>();
+  const wrong: string[] = [];
+  for (const heat of table.keys()) {
+    const pair = forcedPair(`.ln-mark[data-heat="${heat}"]`);
+    const [fill, style] = pair.split(" / ");
+    if (!(SYSTEM.test(fill!) || fill === "transparent")) wrong.push(`${heat}: fill ${fill} is not a system colour`);
+    if (!BORDER_STYLES.test(style!) || style === "none") wrong.push(`${heat}: no border style (${style})`);
+    if (pairs.has(pair)) wrong.push(`${heat} draws as ${pair}, the same as ${pairs.get(pair)}`);
+    pairs.set(pair, heat);
+  }
+  assert.deepEqual(wrong, [], "heats a forced-colours reader cannot tell apart");
+});
+
+test("every meaning the sheet paints with a background has a system-colour carrier under forced colours", () => {
+  // Population from the sheet: any rule whose background carries the state, the accent or the alert.
+  const carriers = new Set<string>();
+  for (const { selector, body, at } of cascade()) {
+    if (at && FORCED.test(at)) continue;
+    for (const d of body.matchAll(/(?:^|;)\s*(background(?:-color|-image)?)\s*:\s*([^;]+)/g)) {
+      if (/var\(--(tone|ln-accent|ln-alert)\b/.test(d[2]!)) {
+        for (const one of selector.split(",")) carriers.add(normal(one));
+      }
+    }
+  }
+  assert.ok(carriers.has(".ln-mark") && carriers.has(".ln-tail"), `read ${[...carriers].join(", ")}`);
+  const uncovered = [...carriers].filter((selector) => {
+    const d = forcedFor(selector);
+    const drawn = ["background-color", "background", "border", "border-color", "border-inline-start"]
+      .map((p) => d.get(p) ?? "")
+      .some((v) => SYSTEM.test(v));
+    return !drawn;
+  });
+  assert.deepEqual(uncovered, [], "painted by a background the forced-colours repaint discards, with no carrier");
+});
+
+test("every state the sheet draws only as a box-shadow ring gets an outline or border under forced colours", () => {
+  // Population from the sheet: a state selector (hover, open, picked, on) whose box-shadow is a ring.
+  const rings = new Set<string>();
+  for (const { selector, body, at } of cascade()) {
+    if (at && FORCED.test(at)) continue;
+    const shadow = /(?:^|;)\s*box-shadow\s*:\s*([^;]+)/.exec(body)?.[1] ?? "";
+    if (!/(^|,)\s*0 0 0 [0-9.]+px/.test(shadow)) continue;
+    for (const one of selector.split(",")) {
+      if (/:hover|\[data-(picked|open|on)="true"\]/.test(one)) rings.add(normal(one));
+    }
+  }
+  assert.ok(rings.has('.ln-mark[data-picked="true"]'), `read ${[...rings].join(", ")}`);
+  const unringed = [...rings].filter((selector) => {
+    const d = forcedFor(selector);
+    return !["outline", "border", "border-color"].some((p) => SYSTEM.test(d.get(p) ?? ""));
+  });
+  assert.deepEqual(unringed, [], "a state carried by box-shadow alone, which forced colours computes to none");
+});
+
+test("under forced colours the legend keys the same mapping as the marks", () => {
+  const off: string[] = [];
+  for (const heat of heats().keys()) {
+    const mark = forcedPair(`.ln-mark[data-heat="${heat}"]`);
+    const key = forcedPair(`.ln-legend [data-heat="${heat}"] i`);
+    if (mark !== key || mark === "- / -") off.push(`${heat}: mark ${mark}, legend ${key}`);
+  }
+  assert.deepEqual(off, [], "a legend swatch that does not key its mark");
+});
+
+test("the forced part speaks only system colours and never takes text out of the platform's hands", () => {
+  const name = forcedPart();
+  const css = part(name);
+  const bad: string[] = [];
+  for (const { selector, body } of rules(css)) {
+    for (const d of body.matchAll(/(?:^|;)\s*([a-z-]+)\s*:\s*([^;]+)/g)) {
+      const [prop, value] = [d[1]!, d[2]!.trim()];
+      const where = `${selector} { ${prop}: ${value} }`;
+      if (/var\(--ln-/.test(value) || hasRawLiteral(value)) bad.push(`${where} is not a system colour`);
+      if (prop === "forced-color-adjust" && value !== "auto") bad.push(`${where} opts out of the repaint`);
+      // Text keeps the platform's colours: the forced part sets none.
+      if (prop === "color" || prop === "-webkit-text-fill-color") bad.push(`${where} sets the text colour`);
+      if (!/color|background|border|outline|fill|stroke/.test(prop) || /width|offset|radius/.test(prop)) continue;
+      for (const word of value.split(/[\s,()]+/).filter(Boolean)) {
+        if (
+          SYSTEM_COLOURS.includes(word) ||
+          word === "transparent" ||
+          BORDER_STYLES.test(word) ||
+          /^-?[0-9.]+(px|rem|em|%)?$/.test(word)
+        )
+          continue;
+        bad.push(`${where}: ${word} is not a system colour keyword`);
+      }
+    }
+  }
+  assert.deepEqual(bad, [], "the forced part reaches past the system palette");
 });

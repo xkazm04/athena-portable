@@ -1,0 +1,133 @@
+/* --------------------------------------------------------- forced colours */
+
+/*
+ * MEANING SURVIVES THE REPAINT.
+ *
+ * Under forced colours (a Windows contrast theme) the platform repaints the page
+ * in the reader's own palette: background-color and border-color are forced to
+ * system colours, gradient backgrounds are dropped and box-shadow computes to
+ * none. On this sheet that left a field of identical boxes: every mark is a
+ * `background: var(--tone)` button with no border, the tails and the now-line
+ * are backgrounds, the lane spine is a gradient, and `select`'s ring and the
+ * open mark's ring are box-shadows. Position and width were all that survived.
+ *
+ * A system colour an author writes IS honoured, so this part re-carries each
+ * meaning in the reader's palette and in structure - fill, outline, dashed -
+ * the way reduced-motion.css re-carries the tilt: nothing is hidden, nothing
+ * new is said. It sets no text colour and never opts out of the repaint; text
+ * keeps the platform's colours. Every rule sits inside the media query, and it
+ * is the last import, so it beats the heat and ticked rules at equal weight.
+ *
+ * THE FIVE STATES, as fill and border. The legend keys the same pairs, and the
+ * clock's marks repeat them, so one mapping is learned once:
+ *   alert  CanvasText fill, solid border   (the strongest ink the theme has)
+ *   risk   Highlight fill, solid border
+ *   watch  LinkText fill, solid border
+ *   good   no fill, solid CanvasText border
+ *   inert  no fill, dashed GrayText border (void and draft are not in play)
+ * `test/ledgerbox-style-design.test.ts` holds the five pairs distinct.
+ */
+@media (forced-colors: active) {
+  /* -- the marks, the legend swatch and the clock's marks: one mapping ----- */
+
+  .ln-mark,
+  .ln-legend i,
+  .ln-clock-track i {
+    background-color: transparent;
+    border: 1px solid CanvasText;
+  }
+
+  .ln-mark[data-heat="alert"],
+  .ln-legend [data-heat="alert"] i,
+  .ln-clock-track i[data-heat="alert"] {
+    background-color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+
+  .ln-mark[data-heat="risk"],
+  .ln-legend [data-heat="risk"] i,
+  .ln-clock-track i[data-heat="risk"] {
+    background-color: Highlight;
+    border: 1px solid Highlight;
+  }
+
+  .ln-mark[data-heat="watch"],
+  .ln-legend [data-heat="watch"] i,
+  .ln-clock-track i[data-heat="watch"] {
+    background-color: LinkText;
+    border: 1px solid LinkText;
+  }
+
+  .ln-mark[data-heat="good"],
+  .ln-legend [data-heat="good"] i,
+  .ln-clock-track i[data-heat="good"] {
+    background-color: transparent;
+    border: 1px solid CanvasText;
+  }
+
+  .ln-mark[data-heat="inert"],
+  .ln-legend [data-heat="inert"] i,
+  .ln-clock-track i[data-heat="inert"] {
+    background-color: transparent;
+    border: 1px dashed GrayText;
+  }
+
+  /* -- lateness and now: the claim of the first level ---------------------- */
+
+  /* The tail runs from the due date to the now-line, in the theme's text ink. */
+  .ln-tail {
+    background-color: CanvasText;
+  }
+
+  /* The now-line, at full strength: every tail runs to it. */
+  .ln-axis-now,
+  .ln-now,
+  .ln-clock-now {
+    background-color: Highlight;
+    opacity: 1;
+  }
+
+  /* The spine is the share of the lane already late. Its gradient is dropped,
+     so the late share is drawn as its own length from the top. */
+  .ln-lane::before {
+    inset-block: 0 auto;
+    block-size: calc(var(--late, 0) * 100%);
+    background-color: CanvasText;
+  }
+
+  /* -- the second level's meters ------------------------------------------- */
+
+  .ln-node-meter,
+  .ln-field[data-mode="raised"] .ln-node::after {
+    background-color: CanvasText;
+  }
+
+  /* -- states that were rings: outlines, which forced colours keeps --------- */
+
+  .ln-mark:hover,
+  .ln-mark[data-open="true"] {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  /* The working set `select` assembled: a ring in the theme's highlight, set
+     further out than the open ring so a ticked, open mark shows both. */
+  .ln-mark[data-picked="true"],
+  .ln-node[data-picked="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+
+  /* The presence dot: an empty ring while the app is registered and waiting,
+     filled and ringed once a bridge is in the page. */
+  .ln-presence-dot {
+    background-color: transparent;
+    border: 1px solid CanvasText;
+  }
+
+  .ln-presence[data-on="true"] .ln-presence-dot {
+    background-color: CanvasText;
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
