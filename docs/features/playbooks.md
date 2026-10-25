@@ -381,6 +381,10 @@ receipt: expired cards and calls that may have completed first, then what was ap
 date) and declined, and the next due date. Main's dock shows one line per (case, due date), held
 in quiet hours (`rituals/quiet_hours/chores.md`, default 21:00 to 08:00, `POST
 /adopt/chores/quiet`), and after three unanswered the review asks "pause or slow this chore?".
+The line says how many more wait ("· 2 more due"), and a queued one whose review was answered
+elsewhere meanwhile is dropped before it is drawn. Pressed, it opens the staged review in place in
+the dock: what to check first, then **Open and prepare**, **Skip this one**, **Later** (no answer;
+the review stays open on the topic page) and **Open the chore** for the page itself.
 **Open and prepare** opens the chore's tabs (the playbook's addresses, else the one in her case;
 none is said, never guessed) and puts the case's command in Athena's composer; nothing is sent
 until she presses send, and that first turn's ledger row is `trigger_kind='schedule'`

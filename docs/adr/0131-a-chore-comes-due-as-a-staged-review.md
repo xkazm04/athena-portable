@@ -174,3 +174,22 @@ suggestion, written nowhere until she presses "Use the suggestion". An every-365
 a day per leap year; the 14-day lead absorbs that for over a decade, and a true yearly rule kind
 would change the contract, so it is left out. Tests: `tests/adopt/test_chores.py` case_1 to
 case_8.
+
+## Amended 2026-10-25: the dock line opens the review in place
+
+Decision 8's dock line opened the playbook's topic page, so a due chore cost five steps across two
+surfaces: press, land on the page, scroll to "Make it yours", find which case was due, then read
+and press. The notice already carries the case id and the review is a no-model read, so the line
+now opens the staged review in the dock itself (`console/due-notice.tsx`, scan-sweep challenge
+r6, desktop-tasks-and-due/B). Pressed, it reads `GET /adopt/cases/<proj>/review` and draws the
+same `ReviewView` the page draws (fetched on the first press, so the first frame pays nothing),
+its lines in `LINE_ORDER`, with **Open and prepare** (the pure `openAndPrepare`, the Browser's
+tabs and her composer), **Skip this one**, **Later** (no answer at all; the review stays open on
+the topic page and this window does not show the notice again) and **Open the chore** for the page.
+An ask-slow review keeps its "pause or slow it?" line and its "Pause it" and "Slow it" choice
+(Slow opens the page, where the rule form is). A failed read says one sentence and the notice
+stays. Before a queued notice is drawn its review is re-read: one answered elsewhere meanwhile, or
+gone, is dropped unstamped (`notice-delivery-decoupling`), and the line says how many more wait
+("· 2 more due"), answering decision 10's eight lines shown one at a time with a visible count.
+Decisions 8 (seen when drawn, never a raised window) and 12 (she sends) are otherwise unchanged.
+Tests: `apps/desktop/src/console/due-notice.test.tsx`.

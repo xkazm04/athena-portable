@@ -1,12 +1,112 @@
-/* A chore that came due (ADR 0131): one quiet line beside her in the dock, pressed to open it. */
+/* A chore that came due (ADR 0131): one quiet line beside her in the dock, pressed to open its review in place. */
 .due-notice {
+  position: relative;
+}
+.due-notice__line {
   padding: 4px 12px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--card-bg) 82%, transparent);
   color: var(--foreground);
+  font: inherit;
   font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
-.due-notice:hover {
+.due-notice__line:hover,
+.due-notice__line[aria-expanded="true"] {
   border-color: var(--accent);
+}
+
+/* The staged review, risen over the line: it reads and scrolls on its own, the dock stays put. */
+.due-notice__panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: min(440px, calc(100vw - 32px));
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line-strong);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+  font-size: 0.8125rem;
+  animation: due-notice-in var(--dur-depth) var(--ease-depth);
+}
+@keyframes due-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+:root[data-motion="calm"] .due-notice__panel {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .due-notice__panel {
+    animation: none;
+  }
+}
+
+.due-notice__said {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+.due-notice__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The review's own parts: the chores page styles them there; here, the dock's compact reading. */
+.due-notice__panel .pa-run {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.due-notice__panel .pa-run__line,
+.due-notice__panel .pa-muted {
+  margin: 0;
+}
+.due-notice__panel .pa-muted {
+  color: var(--muted-foreground);
+}
+.due-notice__panel .pa-run__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.due-notice__panel .pa-run__card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+.due-notice__panel .pa-run__status {
+  color: var(--muted-foreground);
+}
+.due-notice__panel .pa-run__action {
+  font-family: var(--font-mono);
+}
+.due-notice__panel .pa-run__params {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: 4px 8px;
+  border-left: 3px solid var(--border-emphasis);
+  white-space: pre-wrap;
+  font-size: 0.75rem;
+}
+.due-notice__panel .pa-adopt__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.due-notice__panel .pa-said:empty {
+  display: none;
 }
