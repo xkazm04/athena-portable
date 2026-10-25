@@ -110,26 +110,9 @@
   padding-block: var(--bk-s3);
 }
 
-.bk-spelling {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--bk-s2);
-  padding: var(--bk-s1) var(--bk-s3);
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
-  font-size: var(--bk-text-xs);
-}
-
-.bk-spelling b {
-  font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-2xs);
-  font-weight: 400;
-  color: var(--bk-graphite-2);
-}
-
-.bk-spelling[data-differs="true"] {
-  border-color: var(--bk-redline);
-  color: var(--bk-redline);
-}
+/* Each spelling is a `.bk-chip` button (chrome/rail-and-bar.css): the person picks the company's
+   real name from them, so they take the chip's 44px target and pressed state, and a deviant
+   spelling's count takes the chip's redline tone. */
 
 /*
  * The example rows. The one table on this sheet allowed its own horizontal

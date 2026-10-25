@@ -55,6 +55,7 @@ import { DossierChecks } from "./dossier/Checks";
 import { DossierGate } from "./dossier/Gate";
 import { DossierHead } from "./dossier/Head";
 import { DossierPair } from "./dossier/Pair";
+import { useSettle } from "./dossier/SettleChooser";
 import { useArm, useRun } from "./useRun";
 
 /**
@@ -115,6 +116,7 @@ export function Dossier({
 }) {
   const { pending, run } = useRun();
   const { armed, arm, disarm } = useArm();
+  const settle = useSettle(table);
   const [pairId, setPairId] = useState(table.pairs[0]?.id ?? "");
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -238,7 +240,7 @@ export function Dossier({
         <DossierHead table={table} closeRef={closeRef} onClose={onClose} />
 
         <div className="bk-dossier-body">
-          <DossierChecks table={table} failed={failed} />
+          <DossierChecks table={table} failed={failed} settle={settle} />
           {pair ? <DossierPair table={table} pair={pair} onPickPair={setPairId} /> : null}
         </div>
 
@@ -250,6 +252,7 @@ export function Dossier({
           armed={armed}
           arm={arm}
           disarm={disarm}
+          settle={settle}
         />
       </motion.div>
     </div>

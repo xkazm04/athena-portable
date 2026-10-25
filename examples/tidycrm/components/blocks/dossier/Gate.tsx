@@ -19,11 +19,14 @@ import {
   flagStaleAction,
   mergeAction,
   normalizeAction,
+  resolveCompanyAction,
   resolvePairAction,
 } from "@/app/actions";
 import { PHONE_RULES, TIDY_RULES } from "@/lib/acts";
 import type { BkPair, BkTable } from "../model";
 import { Band } from "./parts";
+import { settleAct } from "./settle";
+import type { Settle } from "./SettleChooser";
 import type { useArm, useRun } from "../useRun";
 
 /*
@@ -43,6 +46,7 @@ export function DossierGate({
   armed,
   arm,
   disarm,
+  settle,
 }: {
   table: BkTable;
   pair: BkPair | undefined;
@@ -51,10 +55,16 @@ export function DossierGate({
   armed: Arm["armed"];
   arm: Arm["arm"];
   disarm: Arm["disarm"];
+  /** The company-spelling repair: the chooser above decides, this bar fires (`settle.ts`). */
+  settle: Settle;
 }) {
   // Every control below is drawn from the table's acts: whether it is on offer, what it runs on,
   // and what it prints. The gate computes no availability of its own (lib/acts.ts, ADR 0149).
   const acts = table.acts;
+  // The fourth check's repair. Offered once a spelling is picked and its preview is in, with the
+  // preview's own count, because only the planner knows how many contacts the write rewrites.
+  const company = settleAct(settle.state);
+  const companyTarget = settle.state.kind === "ready" ? settle.state.spelling : null;
   return (
     <>
   {/* Everything here can be put back by undo, which is what buys the AUTO
@@ -100,6 +110,19 @@ export function DossierGate({
           onClick={() => run(() => resolvePairAction(pair.id, "kept_both"))}
         >
           {acts.keep_both.label}
+        </button>
+      ) : null}
+      {settle.state.kind !== "none" ? (
+        <button
+          type="button"
+          className="bk-btn"
+          data-auto="true"
+          disabled={pending || !company.enabled || companyTarget === null}
+          onClick={() => {
+            if (companyTarget !== null) run(() => resolveCompanyAction(table.domain, companyTarget));
+          }}
+        >
+          {company.label}
         </button>
       ) : null}
     </div>

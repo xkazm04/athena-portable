@@ -3,6 +3,10 @@
 /**
  * The four checks, the competing spellings, and the rows that failed them.
  *
+ * The spellings are a chooser, not a list: picking one previews what filing the table under it
+ * would change (`SettleChooser.tsx`), and the AUTO bar then offers that write. The conflict check is the
+ * fourth one, and it was the only one the dossier reported without a repair.
+ *
  * Every check is printed whether it passed or not, because a check that only
  * appears when it fails cannot tell a reader the difference between "clean" and
  * "never looked at". A passing one states the clause it satisfied.
@@ -16,13 +20,16 @@ import {
   type BkTable,
 } from "../model";
 import { Band, fmtDate } from "./parts";
+import { SettleChooser, type Settle } from "./SettleChooser";
 
 export function DossierChecks({
   table,
   failed,
+  settle,
 }: {
   table: BkTable;
   failed: Map<DeviationKind, Deviation>;
+  settle: Settle;
 }) {
   return (
       <div className="bk-dossier-main">
@@ -43,20 +50,13 @@ export function DossierChecks({
             );
           })}
         </div>
-        {table.spellings.length > 1 ? (
+        {settle.state.kind !== "none" ? (
           <>
             <Band
               label="Competing company spellings"
-              note="consensus first; the rest are the deviation"
+              note="consensus first; pick the company's real name to see what filing under it changes"
             />
-            <div className="bk-spellings">
-              {table.spellings.map((spelling, index) => (
-                <span key={spelling.company} className="bk-spelling" data-differs={index > 0}>
-                  {spelling.company}
-                  <b>×{spelling.n}</b>
-                </span>
-              ))}
-            </div>
+            <SettleChooser settle={settle} />
           </>
         ) : null}
         <Band label="Example rows" note="the deviant ones first, offending value marked" />
