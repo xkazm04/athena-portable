@@ -1,0 +1,9 @@
+{"card":"followup/D1","status":"landed","shas":["225e038dfb37ba29052e68c81114f6f74782feee"],
+ "tests_added":["examples/tidycrm/test/write-paths.model.test.ts::replay > cross-domain-pair.json (todo flipped to a real case)","examples/tidycrm/test/write-paths.model.test.ts::generator reach (new entry: open pair across two domains)","examples/tidycrm/test/write-paths.model.test.ts::random walk seeds 1..8 (generator widened to cross-domain pairs)"],
+ "guard_cases":[],
+ "cases_total":3,"cases_red_before":2,"cases_green_after":3,
+ "gates":{"pnpm --filter tidycrm typecheck":0,"pnpm --filter tidycrm lint":0,"pnpm --filter tidycrm test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":4,"lines_changed":40,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Over-cap fallback kept: a flagged record whose pair is not in the listed (capped, 200) set still counts as one, so the fix is 'attached pairs + flagged records no listed pair names' rather than dropping the record count entirely. Added a REACH entry so the widened generator cannot silently narrow again. The reach case passed before the fix by design (it measures the generator, not the sheet); the trace replay (61 vs 62) and the walks (seeds 2, 5, 7) were red before.",
+ "notes":"First root `pnpm typecheck` was red in examples/ledgerbox (test/ledgerbox-lanes-ui.test.ts, 'settling' on LnDetail) - a sibling's in-flight work, not ours; re-run after commit was green (exit 0). Seed walks after fix: 9/9 pass, cross-domain reach 114."}

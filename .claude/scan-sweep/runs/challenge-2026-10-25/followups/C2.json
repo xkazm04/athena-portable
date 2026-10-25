@@ -1,0 +1,32 @@
+{"card":"followup/C2","status":"landed","shas":["618683eb"],
+ "tests_added":[
+  "apps/desktop/src/scenes/waking/steps.test.ts::the act opens on the step she still needs (4 rows)",
+  "apps/desktop/src/scenes/waking/steps.test.ts::a kept position wins over the frontier; the reshow from Mind resets it",
+  "apps/desktop/src/scenes/waking/live.test.tsx::the act opens on the step still owed, and keeps the step the person was on across Later",
+  "apps/desktop/src/scenes/waking/live.test.tsx::the Voice step's door to the studio keeps the step and goes to the voice studio; coming back lands on Voice",
+  "apps/desktop/src/scenes/waking/view.test.tsx::the Voice step is a door to the studio",
+  "apps/desktop/src/scenes/waking/view.test.tsx::no opening step bypasses the gate (guard)",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::'Set up her voice in the studio' calls onVoice once",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::Wake her is reached by Next from any step, and stays gated (guard)",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::a step click and Next each report the step",
+  "apps/desktop/src/scenes/waking/interact.test.tsx::the frontier holds once the engine has answered (2)"
+ ],
+ "guard_cases":[4,5,6],
+ "cases_total":7,"cases_red_before":4,"cases_green_after":7,
+ "gates":{
+  "cd apps/desktop && npx vitest run src/scenes/waking (tests only, HEAD impl)":1,
+  "cd apps/desktop && npx vitest run src/scenes/waking (after)":0,
+  "cd apps/desktop && pnpm typecheck (first run, red only on C4's src/lib/face-signal.ts)":2,
+  "cd apps/desktop && pnpm lint (first run, red only on C4's src/lib/face-signal.ts)":1,
+  "cd apps/desktop && pnpm typecheck (after commit)":0,
+  "cd apps/desktop && pnpm lint (after commit)":0,
+  "cd apps/desktop && pnpm test (after commit; 1 red: C4's src/lib/face-signal.test.ts, first-paint green)":1,
+  "cd apps/desktop && npx eslint src/scenes/waking":0
+ },
+ "files_changed":10,"lines_changed":413,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "first_paint":{"measured_head_gzip":165902,"measured_after_gzip":166101,"delta_bytes":199,"ceiling":166251,"ceiling_raised":false,
+  "method":"production vite build via a scratchpad script with a pre-plugin serving HEAD content for every modified apps/desktop file outside scenes/waking (C4 face.ts/face-signal.ts, F3 Stage.tsx), then measureFirstPaint; same build with waking files also masked gives the HEAD figure"},
+ "adr":"docs/adr/0223-the-first-act-opens-on-its-frontier-and-keeps-its-place-for-the-session.md",
+ "deviations_from_card":"r2 patch re-applied on b84b727c: two import hunks (live.test.tsx, view.test.tsx) rejected on context drift and applied by hand; ADR number 0170 in the patch's comments became 0223. Otherwise as the r2 patch (click parts of case 3 in interact/live tests; factLine moved to steps.ts; the frontier-hold rule with 2 tests). waking.css, fixtures.ts, index.tsx not touched.",
+ "notes":"Share used: exactly 199 B; the wave's +150 B allowance is untouched by C2 (166,251 - 166,101 = 150 B left for C4/D2/F3 combined). Red-before: steps.test.ts could not load (no steps.ts) and 7 tests failed; guards 4-6 green before. Sibling reds seen: typecheck/lint on src/lib/face-signal.ts (CLOSURES unused) - green on re-run; pnpm test reds in src/lib/face-signal.test.ts, src/avatar/mouth.test.ts (C4) and src/stage/Stage.focus.dom.test.tsx (F3) - on the final run only one face-signal case remained red. Coordinator should run pnpm perf:all (first paint touched). apps/desktop/src/scenes/voice/* still show line-ending-only modifications, not mine, untouched."}

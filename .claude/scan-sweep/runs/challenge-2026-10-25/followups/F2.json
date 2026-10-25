@@ -1,0 +1,30 @@
+{
+  "card": "followup/F2",
+  "status": "landed",
+  "shas": [
+    "833cba07"
+  ],
+  "tests_added": [
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::every act the decision list offers on an open invoice is one the books take, and every one it holds back they refuse (flipped: awaitingCard gap removed)",
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::a covered invoice's decision list offers no Draft - it asks for the credit to be applied first, and names it",
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::an uncovered invoice still drafts",
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::an applied credit's row gives way to Draft, so focus goes to the list's heading, not the body"
+  ],
+  "guard_cases": [],
+  "cases_total": 4,
+  "cases_red_before": 4,
+  "cases_green_after": 4,
+  "gates": {
+    "pnpm --filter ledgerbox typecheck": 0,
+    "pnpm --filter ledgerbox lint": 0,
+    "pnpm --filter ledgerbox test (159/159)": 0,
+    "pnpm typecheck (root)": 0,
+    "pnpm lint (root)": 0
+  },
+  "files_changed": 9,
+  "lines_changed": 169,
+  "touched_python": false,
+  "touched_desktop_motion_or_first_paint": false,
+  "deviations_from_card": "The apply path exists (matchAction via the card door, as Evidence uses), so the act applies the credit rather than only naming it: on a covered invoice actSpecs puts an AUTO match_bank_line row ('Apply the credit first', reaches = memo, amount, date, bank line, short-by) in Draft's slot. actRefusal also refuses send_reminder on a covered invoice (the books refuse it too). LnDetail gained `settling: SettlingCredit | null`; chase.ts exports creditNamed, shared by chaseVerdict (message unchanged byte for byte). Added a fourth case: after the apply settles the row is gone, so a pending row focus falls to the heading (match_bank_line added to LIST_TOOLS; observe treats a missing row like a blocked one). Case 1 updated for the apply row. No ADR: follow-through of ADR 0197, owner decision recorded in triage and the commit body.",
+  "notes": "The seed has 13 OPEN invoices covered by a settling credit, not 14 as the triage said (settlingCredits holds one more that is not open); the new test asserts >= 10 rather than pinning a count. Card Evidence's own match settle now asks for focus on row:match_bank_line, which observe drops to 'heading' and Decide's mount clears - harmless when the list is closed. [coordinator: sha corrected from a misreported 51a74775, which is the peer flake commit]"
+}

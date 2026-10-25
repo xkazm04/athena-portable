@@ -1,0 +1,9 @@
+{"card":"followup/F4-flake","status":"landed","shas":["83ff2806","51a74775"],
+ "tests_added":["tests/proving/test_server.py::test_the_gauntlet_hint_counts_the_surfaces_the_registry_holds","tests/peer/test_listener.py::test_a_listener_without_the_flag_refuses_a_real_loopback_socket (hardened)"],
+ "guard_cases":[],
+ "cases_total":2,"cases_red_before":2,"cases_green_after":2,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,"uv run pytest tests/peer tests/proving/test_gauntlet.py tests/proving/test_gauntlet_cross_tab.py tests/proving/test_server.py -m \"not provider and not eval\"":0},
+ "files_changed":4,"lines_changed":40,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"F4: the copy was in src/athena/proving/server/static/index.html (the trigger page's KIND_HINT), not a gauntlet index.html. The count is now derived: the page carries a __GAUNTLET_SURFACES__ placeholder that page_html() (now functools.cache'd, registry imported lazily) fills with the number word for len(gauntlet.surfaces.REGISTRY). Flake: the listener was correct and is unchanged. verify_request refuses before reading and closes with the client's bytes unread, so TCP sends RST, and on Windows an RST that arrives before recv() discards the buffered 403 (WinError 10053). The test now treats ConnectionAbortedError/ConnectionResetError on sendall or recv as the refusal, and anything it does read must still equal REFUSAL.",
+ "notes":"Flake measured 10/30 red before the fix (WinError 10053 at recv, confirmed), then 20/20 consecutive green after, each a separate pytest invocation. No new module, so no atlas ledger change. No ADR or CHANGELOG (copy fix and a test-only change)."}

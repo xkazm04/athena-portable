@@ -1,0 +1,17 @@
+{"card":"followup/F3","status":"landed","shas":["dff78c64"],
+ "tests_added":[
+  "apps/desktop/src/stage/Stage.focus.dom.test.tsx::a dive issued before places.ts resolves ends with focus on the new layer",
+  "apps/desktop/src/stage/Stage.focus.dom.test.tsx::a reload at a depth focuses the restored layer once places.ts resolves",
+  "apps/desktop/src/stage/Stage.focus.dom.test.tsx::of two moves made before places.ts resolves, only the last one's layer takes focus, once",
+  "apps/desktop/src/stage/Stage.focus.dom.test.tsx::guard: once places.ts has landed, a dive focuses the new layer in the move's own commit",
+  "apps/desktop/src/stage/Stage.focus.dom.test.tsx::guard: the stage at the surface, with no move made, takes no focus when places.ts resolves"
+ ],
+ "guard_cases":[4,5],
+ "cases_total":5,"cases_red_before":3,"cases_green_after":5,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":1,"cd apps/desktop && npx vitest run src/stage scripts/first-paint.test.ts src/console/graph.test.ts":0},
+ "first_paint":{"before_gzip":166093,"after_gzip":166143,"delta_gzip":50,"delta_raw":96,"ceiling":166251,"ceiling_changed":false,
+  "method":"production vite build of the same working tree (siblings' WIP included) with HEAD Stage.tsx vs. the new Stage.tsx, measured with measureFirstPaint"},
+ "files_changed":3,"lines_changed":141,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Added a third red case (two queued moves: only the last lands, once) beside the two asked for. No ADR: the change restores the pre-67909b9f focus behaviour under the owner's triage decision; the decision is recorded in the commit body and CHANGELOG.",
+ "notes":"Full desktop suite red only in C4's in-flight paths (src/lib/face-signal.test.ts, src/avatar/mouth.test.ts; 1 then 5 failures across two runs 60 s apart), none mine; first-paint and graph tests green. Motion untouched (focus only). First paint +50 B gzip of the shared +150 B allowance. Gauge on the whole tree with siblings' WIP measured 166,143 B against 166,251 B."}

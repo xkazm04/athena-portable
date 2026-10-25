@@ -1,0 +1,9 @@
+{"card":"followup/F1","status":"landed","shas":["6e997c0f"],
+ "tests_added":["apps/desktop/src/scenes/voice/interact.test.tsx::a silent take says where another microphone is picked > the studio, which has no picker, points to Voice settings and its control dives there","apps/desktop/src/scenes/voice/interact.test.tsx::a silent take says where another microphone is picked > settings, which has the picker above the take, keeps its 'above' wording"],
+ "guard_cases":[1],
+ "cases_total":2,"cases_red_before":1,"cases_green_after":2,
+ "gates":{"apps/desktop pnpm typecheck":0,"apps/desktop pnpm lint":0,"apps/desktop pnpm test (203 files, 2904 tests, incl. first-paint)":0},
+ "files_changed":5,"lines_changed":78,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"none. mic.ts exports PICK_ABOVE (the silent-take sentence) so the studio recognises it without copying it; the view passes onSettings={() => go(SETTINGS)} to the studio so the depth path stays the view's (no studio->view import cycle). No ADR: copy change under ADR 0196, recorded in CHANGELOG.",
+ "notes":"All additions are in the lazy voice chunk (studio, view, mic.ts are already there); first-paint test passes, ceiling untouched. keys.test.ts and view.test.tsx line-ending noise left uncommitted as instructed."}

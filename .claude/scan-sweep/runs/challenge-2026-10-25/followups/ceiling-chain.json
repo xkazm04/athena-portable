@@ -1,0 +1,31 @@
+{"card":"followup/ceiling-chain","status":"partial",
+ "steps":[
+  {"item":"C1","title":"ratify the 165,412 B ceiling","status":"landed","shas":["915aa455"],
+   "measured_gzip":165247,"ceiling_after":165412,
+   "notes":"header comment only, no byte change; tree measured 165,247 B (165 B headroom)"},
+  {"item":"C3","title":"art-bell/A with a raise","status":"landed","shas":["2975a087"],
+   "cases_total":8,"cases_red_before":6,"cases_green_after":8,"guard_cases":[4,5],
+   "measured_gzip_before":165247,"measured_gzip_after":165426,"overshoot_bytes":14,"ceiling_after":165426,
+   "adr":"docs/adr/0222-the-bell-mirrors-her-face-phase.md",
+   "notes":"r5 patch re-applied; two import hunks (Console.tsx, surface/model.ts) adapted by hand, two comments reflowed; ADR number 0203 in the patch became 0222"},
+  {"item":"C2","title":"voice-waking/B only if it fits","status":"not-landed","shas":[],
+   "measured_gzip":165625,"ceiling":165426,"overshoot_bytes":199,
+   "notes":"r2 patch implementation applied on 2975a087 (two test hunks in live.test/view.test no longer apply; tests do not affect the build), typecheck 0; first paint 165,625 B, 199 B over the unraised 165,426 B ceiling (headroom was 0 after C3). Reverted, nothing committed. Landing it needs an owner raise of 199 B (to 165,625 B before C5, i.e. 166,101 B on the post-C5 gauge)."},
+  {"item":"C5","title":"count inline HTML scripts in the gauge","status":"landed","shas":["5b5191a2"],
+   "cases_total":1,"cases_red_before":1,"cases_green_after":1,
+   "measured_gzip_chunks":165426,"inline_boot_gzip":476,"inline_boot_raw":972,"measured_gzip_after":165902,
+   "headroom_before":0,"ceiling_after":165902,
+   "notes":"ceiling = new total 165,902 B + 0 B headroom that existed just before"}
+ ],
+ "shas":["915aa455","2975a087","5b5191a2"],
+ "tests_added":[
+  "apps/desktop/src/bell/pose.test.ts::case 1-5 (4 and 5 guards)",
+  "apps/desktop/src/bell/voice-phase.test.ts::case 6, case 7, stop/hold, FACE_EVENT pin",
+  "apps/desktop/src/bell/Bell.test.tsx::case 8: the Bell wears it, bell.css draws it, the current runs for it and the surface reaches it",
+  "apps/desktop/scripts/first-paint.test.ts::counts an inline script in the document by its gzip size, and a script with a src only once"
+ ],
+ "gates":{"cd apps/desktop && pnpm test (after C1)":0,"cd apps/desktop && pnpm typecheck (C3)":0,"cd apps/desktop && pnpm lint (C3)":0,"cd apps/desktop && pnpm test (C3)":0,"cd apps/desktop && npx tsc --noEmit (C2 trial)":0,"cd apps/desktop && pnpm typecheck (C5)":0,"cd apps/desktop && pnpm lint (C5)":0,"cd apps/desktop && pnpm test (C5)":0},
+ "files_changed":15,"lines_changed":401,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"C2 not landed: 199 B over without a raise. No full-suite rerun after C2 because the tree was reverted to the C3 commit, which had just run green.",
+ "notes":"Headroom after the chain: 0 B (165,902 B measured, 165,902 B ceiling), so the next byte added to the first frame goes red. The coordinator should run pnpm perf:bell / perf:all for C3 (new Bell pose, ripples). apps/desktop/src/scenes/voice/* show as modified with an empty content diff (line endings only); not mine, untouched. Measurements were taken with a scratchpad script calling measureFirstPaint on a production vite build."}
