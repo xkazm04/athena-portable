@@ -3,12 +3,13 @@
  *
  * `calm` is the spike's "calm" line (Kokoro af_heart, "Good morning. I read the three invoices that
  * came in overnight, and two of them are ready for you.") as its viseme timeline, with no audio: the
- * level is made up from each segment's shape so the face moves as it would while she speaks it.
+ * level is made up from each segment's shape so the face moves as it would while she speaks it,
+ * and `open` is what the producer's rule (`mouthTarget`) makes of the two.
  * `level` is the same line with no timeline (the level-only drive), `blink` is a neural track that
  * holds her eyes shut, and `none` is a face at rest in whatever phase the page names.
  */
 import type { FacePhase, FaceSignal, Viseme } from "./types";
-import { VISEME_SHAPES, VOWELS } from "./visemes";
+import { mouthTarget, VISEME_SHAPES, VOWELS } from "./visemes";
 
 /** [viseme, start s, end s], ordered and covering 0..CALM_DURATION (the timeline's own numbers). */
 export const CALM_VISEMES: readonly (readonly [Viseme, number, number])[] = [
@@ -62,11 +63,13 @@ export function fixtureSignal(f: Fixture, t: number, phase: FacePhase): FaceSign
   if (t >= CALM_DURATION) return { ...rest, phase: "idle", generation: 1 };
   const level = calmLevel(t);
   const seg = segmentAt(t);
+  const viseme = f === "calm" && seg ? seg[0] : null;
   return {
     phase: "speaking",
     level,
-    viseme: f === "calm" && seg ? seg[0] : null,
-    open: 0,
+    viseme,
+    // The producer's opening, from the one table (unsmoothed: the face's jaw smooths it).
+    open: mouthTarget(viseme, level),
     motion: null,
     generation: 1,
   };

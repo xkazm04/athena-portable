@@ -151,3 +151,35 @@ So the helper now:
 The title's "where a GPU allows" now reads "where the machine keeps up". Not verified: a real 4-core
 laptop (predicted to sit near the line, about 10 steps at 0.7-1.1 s), and how the 10-step motion
 looks on the owl and origami next to the 50-step track.
+
+## Measured, 2026-10-25: the producer owns the mouth, and a closure is held long enough to be seen
+
+Her mouth was computed twice by two rules: the producer (`lib/face-signal.ts`) shaped `open` from
+one copy of the viseme table with loudness normalised to `SPEECH_LEVEL` (0.7), and every face's
+driver threw it away and re-derived the mouth from a second copy with the raw level and a 35 ms lag
+(`aa` at level 0.5: 0.89 vs 0.79). Without a timeline the driver took the larger of its own level
+knee and `open`, so breath at 0.15 opened a mouth the producer held shut. And the closures that make
+speech read as speech never shut: the calm line's `PP` and `FF` last 40-50 ms, and the PP minimum on
+Main's 30 Hz mirror was 0.08 / 0.10 / 0.31 (a scratch replica of the driver at 60 fps).
+
+Decision 3's "speech opens the mouth" moves from the driver to the producer:
+
+- **One table, one rule.** `VISEME_SHAPES` and `mouthTarget` live in `src/avatar/visemes.ts`;
+  the producer, the preview face and the fixtures use them, and the second table is gone.
+- **The driver follows.** With a viseme its target is `mouthTarget(viseme, level)`, the producer's
+  rule on the signal it was sent; without one it is `open` as sent, floor included. The jaw opens
+  over 35 ms and closes over the producer's 12 ms.
+- **Closures carry a floor.** `face-timeline` holds each `PP` and `FF` for at least 60 ms when the
+  sentence arrives, borrowing the time from its touching neighbours (each keeps one 60 Hz frame, a
+  neighbouring closure its own floor), so the sentence keeps its ends, still tiles, and no sound is
+  merged away.
+- **A closure's first frame is news.** The mirror sends it at once, like a phase change, inside
+  the 30 Hz cap (30.5 signals a second on the calm line, from 30.1).
+
+After, on the calm fixture through the real producer and timeline: each of the 3 PPs holds at
+<= 0.05 for two frames or more on Main's mirror; level-only breath at 0.15 keeps the mouth at 0.
+Not reached: her window and Main agreeing within 0.05 at every segment's midpoint. Under the cap,
+11 of 55 midpoints differ by more (max 0.118; before 10 of 55, max 0.126), every closure midpoint
+agrees; the gap is a short vowel after a jump in level that the mirror sees a frame late. Sending
+every shape change at once measured 1 of 55 at 32.7 signals a second, which loosens ADR 0027's
+cap: left to the owner.

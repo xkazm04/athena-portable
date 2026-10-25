@@ -13,7 +13,8 @@
  *   mouth that shuts while her voice goes on reads as a recording.
  * - **Viseme** is the segment covering the playback sample (`lib/voice.ts`'s `playbackSample`),
  *   looked up `VISEME_LEAD_S` ahead: the mouth leads the sound slightly, as a face does.
- * - **Open** follows the shape, scaled by the level; without a timeline, the level alone.
+ * - **Open** follows the shape, scaled by the level; without a timeline, the level alone. This is
+ *   the one mouth: every face's driver follows it rather than shaping its own (ADR 0120, Measured).
  * - **Motion** is the neural frame at that instant, interpolated, or `null`.
  *
  * The loop is the window's one frame clock (`lib/motion.ts`), not a loop of its own (ADR 0092),
@@ -21,8 +22,8 @@
  * still shows her speaking while her own window is out of sight.
  */
 import type { FacePhase, FaceSignal } from "@/avatar/types";
+import { CLOSURES, mouthTarget, smoothOpen } from "@/avatar/visemes";
 import { FACE_MIRROR_HZ, athenaFace, publishLocalFace } from "@/lib/face";
-import { mouthTarget, smoothOpen } from "@/lib/face-preview";
 import { FACE_LINE_SINK, clearLine, faceTimeline, motionAt, visemeAt, type FaceTimeline } from "@/lib/face-timeline";
 import { LEVEL_FRAME_MS } from "@/lib/halo";
 import { haloPhase } from "@/lib/halo-signal";
@@ -152,6 +153,7 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   let open = 0;
   let lastAt: number | null = null;
   let lastPhase: FacePhase | null = null;
+  let lastViseme: FaceSignal["viseme"] = null;
   let lastKey = "";
   let due = Number.NEGATIVE_INFINITY;
   let stopLoop: (() => void) | null = null;
@@ -203,10 +205,16 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
     };
   };
 
-  /** Mirror a frame: a phase change at once, otherwise no faster than the cap; never twice the same. */
+  /**
+   * Mirror a frame: a phase change or a closure's first frame at once (a closure is shorter than two
+   * mirror periods, so waiting for the cap can lose it), otherwise no faster than the cap; never
+   * twice the same.
+   */
   const mirror = (signal: FaceSignal, now: number) => {
-    const changed = signal.phase !== lastPhase;
+    const onset = signal.viseme !== null && signal.viseme !== lastViseme && CLOSURES.has(signal.viseme);
+    const changed = signal.phase !== lastPhase || onset;
     lastPhase = signal.phase;
+    lastViseme = signal.viseme;
     const key = JSON.stringify(signal);
     if (key === lastKey) return;
     if (!changed && now < due - MIRROR_JITTER_MS) return;

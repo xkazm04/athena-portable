@@ -14,6 +14,7 @@
  */
 import type { RigFrame, Viseme } from "@/avatar/types";
 import { VISEMES } from "@/avatar/types";
+import { floorClosures } from "@/avatar/visemes";
 import type { VoiceMotion, VoiceVisemes } from "@/lib/events";
 
 /** One sentence's mouth shapes, in samples from the line's first sample. */
@@ -90,17 +91,21 @@ export function beginLine(generation: number, sampleRate: number): void {
   if (line) line.sampleRate = sampleRate;
 }
 
-/** `voice.visemes`: one sentence's mouth shapes. Unknown shapes read as `sil`. */
+/**
+ * `voice.visemes`: one sentence's mouth shapes. Unknown shapes read as `sil`. Each closure is held
+ * for at least `CLOSURE_FLOOR_S`, borrowed from its neighbours (`floorClosures`), once, here.
+ */
 export function addVisemes(event: VoiceVisemes): void {
   const line = timelineFor(event.generation, event.sample_rate);
   if (!line || event.visemes.length === 0) return;
-  const segments = event.visemes.map(
-    ([v, start, end]): [Viseme, number, number] => [
+  const segments = floorClosures(
+    event.visemes.map(([v, start, end]): [Viseme, number, number] => [
       (KNOWN.has(v) ? v : "sil") as Viseme,
       event.offset + start,
       event.offset + end,
-    ],
-  );
+    ]),
+    event.sample_rate,
+  ).map(([v, start, end]): [Viseme, number, number] => [v, Math.round(start), Math.round(end)]);
   const sentence: SentenceShapes = {
     start: segments[0][1],
     end: segments[segments.length - 1][2],

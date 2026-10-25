@@ -161,3 +161,47 @@ describe("the pose at a sample", () => {
     expect(motionAt(faceTimeline(), 5500)).toEqual({ yaw: 3, pitch: 0, roll: 0, blink: null, gazeX: 0, gazeY: 0 });
   });
 });
+
+describe("a closure is held long enough to be seen", () => {
+  const segmentsOf = () => faceTimeline()!.shapes[0].segments;
+  const tiles = (segments: Array<[string, number, number]>) =>
+    segments.every((s, i) => s[2] > s[1] && (i === 0 || segments[i - 1][2] === s[1]));
+
+  it("a 40 ms PP grows to 60 ms, borrowing from its neighbours; the sentence keeps its ends and still tiles", () => {
+    beginLine(7, 24_000);
+    addVisemes(visemes(7, 0, 0, [["aa", 0, 2400], ["PP", 2400, 3360], ["oh", 3360, 6000]]));
+    const segments = segmentsOf();
+    expect(segments.map((s) => s[0])).toEqual(["aa", "PP", "oh"]);
+    const [, pp] = segments;
+    expect(pp[2] - pp[1]).toBeGreaterThanOrEqual(1440);
+    // Borrowed from both sides: it starts earlier and ends later than it did.
+    expect(pp[1]).toBeLessThan(2400);
+    expect(pp[2]).toBeGreaterThan(3360);
+    expect(segments[0][1]).toBe(0);
+    expect(segments[2][2]).toBe(6000);
+    expect(faceTimeline()!.shapes[0].start).toBe(0);
+    expect(faceTimeline()!.shapes[0].end).toBe(6000);
+    expect(tiles(segments)).toBe(true);
+  });
+
+  it("neighbours that cannot spare the time keep one 60 Hz frame each; the closure is never merged away", () => {
+    const frame = 24_000 / 60; // 16.7 ms
+    beginLine(8, 24_000);
+    // kk 24 ms, PP 30 ms, DD 24 ms: each neighbour can spare 7.3 ms and no more.
+    addVisemes(visemes(8, 0, 0, [["kk", 0, 576], ["PP", 576, 1296], ["DD", 1296, 1872]]));
+    let segments = segmentsOf();
+    expect(segments.map((s) => s[0])).toEqual(["kk", "PP", "DD"]);
+    expect(segments[0][2] - segments[0][1]).toBeGreaterThanOrEqual(frame);
+    expect(segments[2][2] - segments[2][1]).toBeGreaterThanOrEqual(frame);
+    expect(segments[1][2] - segments[1][1]).toBe(1872 - 2 * frame);
+    expect(segments[0][1]).toBe(0);
+    expect(segments[2][2]).toBe(1872);
+    expect(tiles(segments)).toBe(true);
+
+    // kk 16 ms, PP 30 ms, DD 16 ms: nothing to spare, so nothing moves, and the PP stays.
+    beginLine(9, 24_000);
+    addVisemes(visemes(9, 0, 0, [["kk", 0, 384], ["PP", 384, 1104], ["DD", 1104, 1488]]));
+    segments = segmentsOf();
+    expect(segments).toEqual([["kk", 0, 384], ["PP", 384, 1104], ["DD", 1104, 1488]]);
+  });
+});

@@ -46,9 +46,9 @@ export interface FaceSignal {
   level: number;
   viseme: Viseme | null;
   /**
-   * The producer's mouth opening 0..1 (smoothed; closures dip). A face shapes its own mouth from
-   * `viseme` and `level` when a viseme is set, and falls back to `open` (with its level-derived
-   * opening, whichever is larger) when it is not - so a surface without the timeline still speaks.
+   * The producer's mouth opening 0..1 (smoothed; closures dip). The producer is the one mouth
+   * authority: with a viseme a face aims where the producer's rule (`visemes.ts` `mouthTarget`)
+   * aims on `viseme` and `level`; without one it follows `open` as sent, floor included.
    */
   open: number;
   /** `blink` is `null` when the motion track does not drive the eyelids: the face keeps its own blinks. */

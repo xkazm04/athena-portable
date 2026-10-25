@@ -6,57 +6,18 @@
  * first subscribe, in its own chunk: only the voice studio and Adopt play a preview, so Main's
  * first paint does not carry it.
  */
-import { RESTING, type FaceSignal, type FaceSource, type Viseme } from "@/avatar/types";
+import { RESTING, type FaceSignal, type FaceSource } from "@/avatar/types";
+import { mouthTarget, smoothOpen } from "@/avatar/visemes";
 import { hub } from "@/lib/face";
 import type { FrameFn } from "@/lib/motion";
 
 // -- the mouth ---------------------------------------------------------------------------------
 
-/** How far each mouth shape opens the jaw, 0..1 (the spike's rig table, `web/src/visemes.js`). */
-export const SHAPE_OPEN: Readonly<Record<Viseme, number>> = Object.freeze({
-  sil: 0,
-  PP: 0,
-  FF: 0.12,
-  TH: 0.2,
-  DD: 0.28,
-  kk: 0.33,
-  CH: 0.26,
-  SS: 0.14,
-  nn: 0.2,
-  RR: 0.24,
-  aa: 0.9,
-  E: 0.55,
-  ih: 0.38,
-  oh: 0.62,
-  ou: 0.32,
-});
-
-/** Her speaking voice's usual level on `rms`'s scale: the loudness a shape opens to its table value at. */
-export const SPEECH_LEVEL = 0.7;
-
-/** Jaw inertia: opening follows in 22 ms (the spike's), closing faster so a closure reads. */
-export const OPEN_TAU_MS = 22;
-export const CLOSE_TAU_MS = 12;
+// The one mouth rule lives beside the one viseme table (`avatar/visemes.ts`); re-exported for the
+// producer and the preview face, so no second table can drift from it.
+export { CLOSE_TAU_MS, OPEN_TAU_MS, SPEECH_LEVEL, mouthTarget, smoothOpen } from "@/avatar/visemes";
 
 const clamp01 = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0);
-
-/**
- * Where the mouth is heading: the shape's opening scaled by how loud she is (a stressed syllable
- * opens wider, a trailing one less), or, without a timeline, the level alone above a small floor,
- * so the breath between words closes it.
- */
-export function mouthTarget(viseme: Viseme | null, level: number): number {
-  const loud = Math.min(1.2, clamp01(level) / SPEECH_LEVEL);
-  if (viseme !== null) return clamp01(SHAPE_OPEN[viseme] * (0.6 + 0.55 * loud));
-  return clamp01((clamp01(level) - 0.2) / 0.6);
-}
-
-/** One step of the jaw toward `target` over `dtMs`. */
-export function smoothOpen(previous: number, target: number, dtMs: number): number {
-  if (!(dtMs > 0)) return previous;
-  const tau = target < previous ? CLOSE_TAU_MS : OPEN_TAU_MS;
-  return previous + (target - previous) * (1 - Math.exp(-Math.min(dtMs, 250) / tau));
-}
 
 // -- the preview face --------------------------------------------------------------------------
 

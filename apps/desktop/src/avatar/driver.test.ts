@@ -1,13 +1,13 @@
 /**
  * The face driver - ADR 0120 ("Athena has a face"), motion: seeded procedural motion, the speech
- * drive, the neural crossfade, and settling at rest.
+ * drive (the producer's mouth, followed), the neural crossfade, and settling at rest.
  */
 import { describe, expect, it } from "vitest";
 
-import { createDriver, mulberry32, type Pose } from "./driver";
+import { createDriver, mulberry32, speechTarget, type Pose } from "./driver";
 import { CALM_DURATION, fixtureSignal } from "./fixtures";
 import { RESTING, type FaceSignal } from "./types";
-import { levelOpen, visemeOpen } from "./visemes";
+import { mouthTarget } from "./visemes";
 
 const FRAME = 1 / 60;
 const signal = (s: Partial<FaceSignal>): FaceSignal => ({ ...RESTING, ...s });
@@ -66,40 +66,43 @@ describe("procedural motion is seeded", () => {
   });
 });
 
-describe("speech opens the mouth", () => {
-  it("a viseme's opening is scaled by the level and a closure dips to shut", () => {
-    expect(visemeOpen("aa", 1)).toBeGreaterThan(visemeOpen("aa", 0.3));
-    expect(visemeOpen("PP", 1)).toBe(0);
-    expect(visemeOpen("sil", 1)).toBe(0);
-    expect(visemeOpen("FF", 1)).toBeLessThan(visemeOpen("E", 1));
+describe("speech opens the mouth, as the producer shapes it", () => {
+  const said = (viseme: FaceSignal["viseme"], level: number) =>
+    signal({ phase: "speaking", level, viseme, open: mouthTarget(viseme, level) });
+
+  it("a shape's opening is the producer's rule: scaled by the level, and a closure shuts", () => {
+    expect(speechTarget(said("aa", 1))).toBeGreaterThan(speechTarget(said("aa", 0.3)));
+    expect(speechTarget(said("PP", 1))).toBe(0);
+    expect(speechTarget(said("sil", 1))).toBe(0);
+    expect(speechTarget(said("FF", 1))).toBeLessThan(speechTarget(said("E", 1)));
+    // A closure shuts even when the mirrored opening was still falling.
+    expect(speechTarget({ viseme: "PP", level: 0.8, open: 0.4 })).toBe(0);
   });
 
   it("an open vowel followed by a bilabial closes within a few frames", () => {
     const d = createDriver({ seed: 1 });
     let p: Pose = d.pose;
-    d.setSignal(signal({ phase: "speaking", level: 0.8, viseme: "aa" }));
+    d.setSignal(said("aa", 0.8));
     for (let i = 0; i < 10; i++) p = d.step(FRAME);
     const wide = p.open;
     expect(wide).toBeGreaterThan(0.7);
-    d.setSignal(signal({ phase: "speaking", level: 0.8, viseme: "PP" }));
-    for (let i = 0; i < 5; i++) p = d.step(FRAME);
-    expect(p.open).toBeLessThan(wide * 0.2);
+    d.setSignal(said("PP", 0.8));
+    for (let i = 0; i < 3; i++) p = d.step(FRAME);
+    expect(p.open).toBeLessThan(wide * 0.05);
   });
 
-  it("with no viseme the level alone opens it: fast attack, slower release", () => {
-    expect(levelOpen(0.02)).toBe(0);
+  it("with no shape it follows the producer's opening: it opens, and closes faster than it opened", () => {
     const d = createDriver({ seed: 1 });
-    d.setSignal(signal({ phase: "speaking", level: 0.7 }));
+    d.setSignal(signal({ phase: "speaking", level: 0.7, open: 0.8 }));
     let p: Pose = d.pose;
     for (let i = 0; i < 4; i++) p = d.step(FRAME); // 67 ms
-    const attacked = p.open / levelOpen(0.7);
-    d.setSignal(signal({ phase: "speaking", level: 0 }));
+    const attacked = p.open / 0.8;
+    d.setSignal(signal({ phase: "speaking", level: 0, open: 0 }));
     const top = p.open;
-    for (let i = 0; i < 4; i++) p = d.step(FRAME);
+    for (let i = 0; i < 1; i++) p = d.step(FRAME);
     const released = 1 - p.open / top;
     expect(attacked).toBeGreaterThan(0.85);
-    expect(released).toBeLessThan(attacked);
-    expect(released).toBeGreaterThan(0.2);
+    expect(released).toBeGreaterThan(1 - Math.exp(-FRAME / 0.035));
   });
 });
 

@@ -10,8 +10,10 @@
  *    the gaze, thinking slows the drift, looks off-centre and pulses softly, speaking nods on
  *    stressed vowels, the gate holds still and expectant. Profiles cross-blend, so a phase change
  *    never jumps. The spike's procedural head ran at 0.7x on the glow forms, so this does too.
- * 2. **Speech.** With a viseme the mouth opens to that shape scaled by the level (a closure dips);
- *    without one it opens from the level alone, with a fast attack and a slower release.
+ * 2. **Speech.** The producer is the one mouth authority (ADR 0120, Measured): with a shape the
+ *    target is its rule (`visemes.ts` `mouthTarget`, the one table, loudness against
+ *    `SPEECH_LEVEL`), never a second copy; without one it is the producer's `open` as sent, floor
+ *    and all. The jaw opens over 35 ms and closes over 12 ms, so a closure shuts.
  * 3. **Neural motion.** When `signal.motion` is set it takes the head, the gaze and (unless its
  *    `blink` is null: the track leaves the lids to her own blinks) the blinks over
  *    a 200 ms crossfade, and hands them back over another when it ends; breathing and the floating
@@ -22,7 +24,7 @@
  * (ADR 0089, 0092: none when nothing moves). Any new signal wakes it.
  */
 import type { FacePhase, FaceSignal, Viseme } from "./types";
-import { levelOpen, VISEME_SHAPES, visemeOpen, VOWELS } from "./visemes";
+import { CLOSE_TAU_MS, mouthTarget, VISEME_SHAPES, VOWELS } from "./visemes";
 
 /** One frame of the rig. Reused between frames: read it, do not keep it. */
 export interface Pose {
@@ -129,6 +131,22 @@ const PROFILES: Record<FacePhase, Profile> = {
 };
 const PROFILE_KEYS = Object.keys(PROFILES.idle) as (keyof Profile)[];
 
+/**
+ * Where the mouth heads for `signal`: with a shape, the producer's own rule on the shape and level
+ * (`mouthTarget`, so her window and Main aim where the producer aimed, and a closure's first frame
+ * shuts at once); without one, the producer's `open` as sent, so its floor holds.
+ */
+export function speechTarget(signal: Pick<FaceSignal, "viseme" | "level" | "open">): number {
+  if (signal.viseme !== null) return mouthTarget(signal.viseme, signal.level);
+  return clamp(Number.isFinite(signal.open) ? signal.open : 0, 0, 1);
+}
+
+/**
+ * The face's own jaw on top of the producer's: opening over 35 ms (softer than the producer's 22,
+ * which keeps a surface fed every frame and one fed the 30 Hz mirror close), closing over the
+ * producer's 12 ms so a closure reads.
+ */
+const OPEN_TAU_S = 0.035;
 const NEURAL_FADE_S = 0.2;
 const BLINK_S = 0.28;
 
@@ -322,12 +340,8 @@ export function createDriver(options: DriverOptions = {}): Driver {
 
     // speech
     const level = clamp(signal.level, 0, 1.2);
-    if (signal.viseme !== null) {
-      pose.open = approach(pose.open, visemeOpen(signal.viseme, level), dt, 0.035);
-    } else {
-      const target = Math.max(levelOpen(level), clamp(signal.open, 0, 1));
-      pose.open = approach(pose.open, target, dt, target > pose.open ? 0.03 : 0.12);
-    }
+    const mouth = speechTarget(signal);
+    pose.open = approach(pose.open, mouth, dt, mouth < pose.open ? CLOSE_TAU_MS / 1000 : OPEN_TAU_S);
     pose.voice = approach(pose.voice, level, dt, level > pose.voice ? 0.03 : 0.14);
     histAcc += dt;
     while (histAcc >= 0.025) {

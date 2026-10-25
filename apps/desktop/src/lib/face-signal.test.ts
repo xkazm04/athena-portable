@@ -8,6 +8,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { CALM_DURATION, CALM_VISEMES, calmLevel } from "@/avatar/fixtures";
 import type { FaceSignal } from "@/avatar/types";
 import { addVisemes, beginLine, faceTimeline, resetFaceTimelineForTests, type FaceTimeline } from "@/lib/face-timeline";
 import { PLAYER_KIT, type SocketLike } from "@/lib/voice";
@@ -192,6 +193,42 @@ describe("the producer, against fakes", () => {
     expect(f.local.at(-1)?.phase).toBe("idle");
     expect(f.mirrored.at(-1)?.signal.phase).toBe("idle");
     expect(f.loop.running()).toBe(false);
+  });
+
+  it("mirrors the frame a PP or FF begins at once, even inside the cap, and never the same signal twice", () => {
+    const f = fake();
+    stopFace = startFace(f.deps);
+    beginLine(1, 24_000);
+    addVisemes({
+      kind: "voice.visemes",
+      generation: 1,
+      sentence: 0,
+      offset: 0,
+      sample_rate: 24_000,
+      visemes: CALM_VISEMES.map(([v, a, b]) => [v, Math.round(a * 24_000), Math.round(b * 24_000)]),
+    });
+    f.line(faceTimeline());
+    f.sounding(true);
+    f.set({ voice: "speaking", generation: 1 });
+    const closure = (v: FaceSignal["viseme"]) => v === "PP" || v === "FF";
+    let onsets = 0;
+    let missed = 0;
+    for (let t = 1000 / 60; t < CALM_DURATION * 1000; t += 1000 / 60) {
+      f.sample(Math.round(t * 24));
+      f.level(calmLevel(t / 1000));
+      const before = f.local.at(-1)?.viseme ?? null;
+      f.at(t);
+      const now = f.local.at(-1)!;
+      if (!closure(now.viseme) || now.viseme === before) continue;
+      onsets += 1;
+      const last = f.mirrored.at(-1)!;
+      if (last.at !== t || last.signal !== now) missed += 1;
+    }
+    expect(onsets).toBeGreaterThanOrEqual(7);
+    expect(missed).toBe(0);
+    for (let i = 1; i < f.mirrored.length; i += 1) {
+      expect(JSON.stringify(f.mirrored[i].signal)).not.toBe(JSON.stringify(f.mirrored[i - 1].signal));
+    }
   });
 });
 
