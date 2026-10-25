@@ -118,6 +118,12 @@ export const OMISSIONS: Omission[] = [
     modules: 1,
   },
   {
+    path: "src/athena/contracts/reasons.py",
+    reason: "the closed set of tool-failure reasons the registry and harness contracts carry, a vocabulary rather than a seam",
+    source: "src/athena/contracts/reasons.py; ADR 0204",
+    modules: 1,
+  },
+  {
     path: "src/athena/core/brain/text.py",
     reason: "excerpt, slug and line rules the brain shares with the Personas writer, used by the store (C-045)",
     source: "src/athena/core/brain/text.py",
