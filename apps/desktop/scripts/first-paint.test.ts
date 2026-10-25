@@ -14,6 +14,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -70,6 +71,22 @@ describe("measureFirstPaint", () => {
     ]);
     expect(m.gzip).toBe(m.files.reduce((n, f) => n + f.gzip, 0));
     expect(m.gzip).toBeGreaterThan(0);
+  });
+
+  it("counts an inline script in the document by its gzip size, and a script with a src only once", () => {
+    const boot = `(function(){var d=document.documentElement;try{var a=JSON.parse(localStorage.getItem("a")||"{}");d.dataset.theme=a.theme||"dark";d.dataset.motion=a.motion||"full"}catch(e){}})();`;
+    const chunks = {
+      "assets/entry.js": `import{a}from"./shared.js";a();`,
+      "assets/shared.js": "export const a=()=>1;",
+    };
+    const plain = measureFirstPaint(fixture({ "chrome.html": HTML, ...chunks })) as Measured;
+    const withBoot = HTML.replace("<head>", `<head>\n<script>${boot}</script>`);
+    const booted = measureFirstPaint(fixture({ "chrome.html": withBoot, ...chunks })) as Measured & {
+      inline: { gzip: number }[];
+    };
+    expect(booted.inline.map((s) => s.gzip)).toEqual([gzipSync(boot).length]);
+    expect(booted.gzip).toBe(plain.gzip + gzipSync(boot).length);
+    expect(booted.files).toEqual(plain.files);
   });
 
   it("fails when the document, its module script or a chunk it loads is missing", () => {

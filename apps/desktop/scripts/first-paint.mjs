@@ -8,9 +8,10 @@
  *
  * What is counted: the JavaScript `chrome.html` loads before its first frame — its module script,
  * every `modulepreload` the build wrote beside it, and every chunk those import statically,
- * transitively. A chunk fetched by `import()` is a depth's lazy view and is not counted. Bytes are
- * gzip at zlib's default level, the transfer proxy the ADR's figure was taken in. Stylesheets are
- * reported, not judged.
+ * transitively; and every inline `<script>` in the document itself (the appearance boot, ADR 0165),
+ * each gzipped on its own. A chunk fetched by `import()` is a depth's lazy view and is not counted.
+ * Bytes are gzip at zlib's default level, the transfer proxy the ADR's figure was taken in.
+ * Stylesheets are reported, not judged.
  *
  * A missing document, a document with no module script, or a chunk it names that is not on disk
  * fails: a gate that cannot find its numbers must not pass on nothing.
@@ -40,15 +41,22 @@ import { gzipSync } from "node:zlib";
  * Raised 2026-10-25 to 165,426 B, the measured figure, owner-approved in triage 2026-10-25 (art-bell,
  * the Bell's speaking pose, ADR 0222): the tree stood at 165,247 B, and the Bell's mirror of her
  * face phase is first-frame code because both Bells read it (+179 B, 14 B over the ceiling).
+ *
+ * Re-based 2026-10-25 to 165,902 B, owner-approved in triage 2026-10-25: the gauge now counts the
+ * inline scripts in the document, which it had missed. The appearance boot (ADR 0165) is 476 B
+ * gzipped (972 B raw), so the same tree measures 165,902 B where it measured 165,426 B; the ceiling
+ * moves by exactly that, keeping the 0 B of headroom it had, so nothing is gained or lost.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 165_426,
+  ceilingBytes: 165_902,
   targetBytes: 125_000,
 };
 
 const MODULE_SCRIPT = /<script\b[^>]*\btype=["']module["'][^>]*\bsrc=["']([^"']+)["']/gi;
 const MODULE_PRELOAD = /<link\b[^>]*\brel=["']modulepreload["'][^>]*\bhref=["']([^"']+)["']/gi;
+// A script written into the document: no `src`, its text between the tags.
+const INLINE_SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 const STYLESHEET = /<link\b[^>]*\brel=["']stylesheet["'][^>]*\bhref=["']([^"']+)["']/gi;
 // A static import or re-export in a built chunk: `import{a}from"./x.js"`, `import"./x.js"`,
 // `export*from"./x.js"`. `import("./x.js")` has a parenthesis where these have a quote, so a lazy
@@ -61,7 +69,7 @@ const gz = (buf) => gzipSync(buf).length;
  * Measure the first frame of `entry` in the build at `outDir`.
  *
  * @returns {{ files: { file: string, raw: number, gzip: number }[], gzip: number, raw: number,
- *   css: { file: string, gzip: number }[] }}
+ *   inline: { raw: number, gzip: number }[], css: { file: string, gzip: number }[] }}
  */
 export function measureFirstPaint(outDir, entry = FIRST_PAINT.entry) {
   const html = path.join(outDir, entry);
@@ -82,14 +90,21 @@ export function measureFirstPaint(outDir, entry = FIRST_PAINT.entry) {
   for (const ref of [...roots, ...preloads]) visit(path.resolve(outDir, ref));
 
   const files = [...seen.values()].sort((a, b) => b.gzip - a.gzip);
+  const inline = [...text.matchAll(INLINE_SCRIPT)]
+    .filter((m) => !/\bsrc=/i.test(m[1]) && m[2].trim().length > 0)
+    .map((m) => {
+      const buf = Buffer.from(m[2], "utf8");
+      return { raw: buf.length, gzip: gz(buf) };
+    });
   const css = [...text.matchAll(STYLESHEET)].map((m) => {
     const abs = path.resolve(outDir, m[1]);
     return { file: m[1], gzip: existsSync(abs) ? gz(readFileSync(abs)) : 0 };
   });
   return {
     files,
-    gzip: files.reduce((n, f) => n + f.gzip, 0),
-    raw: files.reduce((n, f) => n + f.raw, 0),
+    gzip: [...files, ...inline].reduce((n, f) => n + f.gzip, 0),
+    raw: [...files, ...inline].reduce((n, f) => n + f.raw, 0),
+    inline,
     css,
   };
 }
