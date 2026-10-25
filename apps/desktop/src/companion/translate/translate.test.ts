@@ -9,7 +9,7 @@ import { expect, test } from "vitest";
 import type { TranscriptEntry } from "@/stores/run";
 
 import { describeDecision } from "./decision";
-import { buildContext, prettyRaw, translate, translateAll, type PlainMessage } from "./index";
+import { EMPTY_CONTEXT, buildContext, prettyRaw, translate, translateAll, type PlainMessage } from "./index";
 import data from "./sessions.fixture.json";
 
 interface Session {
@@ -103,7 +103,7 @@ test("a tool nobody wrote words for still reads as a humanised verb and what its
 
 test("a decision says what happens to whom, and whether it can be taken back", () => {
   const { s, entries } = session("chase-overdue");
-  const d = describeDecision(s.cards[0]!, buildContext(entries));
+  const d = describeDecision(s.cards[0]!, buildContext(entries), "", { reversible: false, side_effects: "external" });
   expect(d.title).toBe("Send a reminder for INV-118 to Northwind Traders");
   expect(d.effect).toBe("Northwind Traders will receive “INV-118 is 41 days past due”. Once it is sent it cannot be taken back.");
   expect(d.risk).toBe("outbound");
@@ -111,7 +111,8 @@ test("a decision says what happens to whom, and whether it can be taken back", (
   const mail = session("mail-connector");
   const m = describeDecision(mail.s.cards[0]!, buildContext(mail.entries), "mira@example.com");
   expect(m.effect).toContain("from mira@example.com");
-  expect(describeDecision({ action: "host.ledgerbox.void_invoice", params: { id: "inv_109" } }, buildContext([])).effect).toBe(
+  const permanent = { reversible: false, side_effects: "internal" };
+  expect(describeDecision({ action: "host.ledgerbox.void_invoice", params: { id: "inv_109" } }, buildContext([]), "", permanent).effect).toBe(
     "INV-109 is changed for good in Ledgerbox. It cannot be undone.",
   );
 });
@@ -121,4 +122,55 @@ test("the technical record keeps the raw text, with the JSON laid out", () => {
   expect(read.raw.startsWith("host.ledgerbox.read_inbox → {")).toBe(true);
   expect(prettyRaw(read.raw).split("\n")[0]).toBe("host.ledgerbox.read_inbox →");
   expect(shown(read)).not.toContain("host.ledgerbox");
+});
+
+// ADR 0189: the take-back promise is the tool's declared flags; the verb only chooses the sentence.
+test("case 0: a declared-irreversible tool whose verb reads mild says it cannot be undone", () => {
+  const { entries } = session("chase-overdue");
+  const d = describeDecision({ action: "host.ledgerbox.mark_paid", params: { id: "inv_118" } }, buildContext(entries), "", {
+    reversible: false,
+    side_effects: "internal",
+  });
+  expect(d.risk).toBe("destructive");
+  expect(d.declared).toBe(true);
+  expect(d.effect.endsWith("It cannot be undone.")).toBe(true);
+});
+
+test("case 1: a declared-external tool whose verb is not a send warns that it cannot be taken back", () => {
+  const d = describeDecision({ action: "connector.notion.create_page", params: {} }, EMPTY_CONTEXT, "mira@example.com", {
+    reversible: false,
+    side_effects: "external",
+  });
+  expect(d.risk).toBe("outbound");
+  expect(d.effect).toContain("cannot be taken back");
+});
+
+test("case 2: a declared-reversible tool whose verb is archive is not told it cannot be undone", () => {
+  const d = describeDecision({ action: "host.crm.archive_board", params: { id: "brd_4" } }, EMPTY_CONTEXT, "", {
+    reversible: true,
+    side_effects: "internal",
+  });
+  expect(d.risk).toBe("change");
+  expect(d.effect).not.toContain("cannot be undone");
+});
+
+test("case 3: an undeclared tool reads as the severe bucket and says the app did not declare", () => {
+  const d = describeDecision({ action: "host.tidycrm.merge_contacts", params: {} }, EMPTY_CONTEXT);
+  expect(d.declared).toBe(false);
+  expect(d.risk).toBe("destructive");
+  expect(d.effect).toContain("did not declare whether this can be undone");
+});
+
+test("guard 4: a declared send keeps its sentence word for word", () => {
+  const { s, entries } = session("chase-overdue");
+  const d = describeDecision(s.cards[0]!, buildContext(entries), "", { reversible: false, side_effects: "external" });
+  expect(d.effect).toBe("Northwind Traders will receive “INV-118 is 41 days past due”. Once it is sent it cannot be taken back.");
+});
+
+test("guard 5: a declared void keeps its sentence word for word", () => {
+  const d = describeDecision({ action: "host.ledgerbox.void_invoice", params: { id: "inv_109" } }, buildContext([]), "", {
+    reversible: false,
+    side_effects: "internal",
+  });
+  expect(d.effect).toBe("INV-109 is changed for good in Ledgerbox. It cannot be undone.");
 });

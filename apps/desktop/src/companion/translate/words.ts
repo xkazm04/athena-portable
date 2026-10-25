@@ -27,8 +27,11 @@ const IRREGULAR_PAST: Readonly<Record<string, string>> = {
   build: "built",
 };
 export const READ_VERBS: ReadonlySet<string> = new Set(["read", "list", "get", "find", "search", "recall", "fetch", "show", "open", "check", "look"]);
+/**
+ * Verbs whose decision sentence names a recipient ("will receive"). Only the sentence's shape: whether
+ * it can be taken back is the tool's declared flags (ADR 0189), never a verb list.
+ */
 export const OUTBOUND: ReadonlySet<string> = new Set(["send", "post", "publish", "share", "email", "reply", "forward", "submit", "invite"]);
-export const DESTRUCTIVE: ReadonlySet<string> = new Set(["void", "delete", "remove", "cancel", "archive", "close", "discard", "revoke", "purge", "reject"]);
 /** Verbs that take their object bare: "void invoice INV-109", not "void an invoice". */
 export const DIRECT: ReadonlySet<string> = new Set(["void", "delete", "remove", "cancel", "archive", "close", "mark", "reject", "revoke"]);
 const LEXICON: Readonly<Record<string, string>> = { mail: "email" };

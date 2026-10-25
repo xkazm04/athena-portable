@@ -43,7 +43,7 @@ import { shown, type By, type Choice, type Dock, type LedgerTab, type MachineSta
 import { plainFailure } from "./plain";
 import type { SealState } from "./seal";
 import { EMPTY_CONTEXT, buildContext, translate, translateAll, type PlainMessage, type TurnContext } from "./translate";
-import { describeDecision, type DecisionWords } from "./translate/decision";
+import { describeDecision, type DecisionWords, type ToolFlags } from "./translate/decision";
 
 // -- actions -----------------------------------------------------------------------------------
 
@@ -1013,10 +1013,21 @@ export function cardView(
     refusal: null,
     drift: context.drift ?? null,
     connector,
-    words: describeDecision(card, context.turn ?? EMPTY_CONTEXT, actsAs(card.origin, mirror)),
+    words: describeDecision(card, context.turn ?? EMPTY_CONTEXT, actsAs(card.origin, mirror), flagsFor(card, context.tools ?? [], mirror)),
     expires: card.expires_at ? clockOf(card.expires_at) : "",
     task: context.task ?? null,
   };
+}
+
+/**
+ * What the card's tool declared (ADR 0189): a page tool's row, or the connector's tool in the mirror.
+ * `undefined` when neither holds it, which the words read as undeclared.
+ */
+function flagsFor(card: DecisionRequested, tools: readonly ToolRow[], mirror: ConnectorsMirror | undefined): ToolFlags | undefined {
+  const row = card.origin.startsWith("connector:")
+    ? mirror?.items.find((item) => item.id === card.origin.slice(10))?.tools.find((t) => t.name === card.action.split(".").slice(2).join("."))
+    : tools.find((t) => t.name === card.action);
+  return row && row.side_effects !== undefined ? { reversible: row.reversible ?? null, side_effects: row.side_effects } : undefined;
 }
 
 /** The account a connector card acts as, when the mirror knows it (ADR 0116); "" otherwise. */

@@ -30,13 +30,16 @@ export function toolRows(found: TabTools | undefined, gated: GatedLists = NO_TIG
   const firstSight = app !== null && gated.gated_origins.includes(`host:${app}`);
   const row = (tool: BridgeTool, tier: 1 | 2): ToolRow => {
     const name = app ? `host.${app}.${tool.name}` : tool.name;
-    const fromFlags = classify(flagsOf(tool));
+    const flags = flagsOf(tool);
     return {
       name,
       origin: app ? `host:${app}` : "",
-      class: firstSight || gated.gated_tools.includes(name) ? "GATED" : fromFlags,
+      class: firstSight || gated.gated_tools.includes(name) ? "GATED" : classify(flags),
       tier,
       description: tool.description ?? "",
+      // The declaration rides along for the card's words (ADR 0189); the gate's fallback for a tool
+      // that declared nothing is not the app's word, so it is not passed off as one.
+      ...(flags.basis === "unknown" ? {} : { reversible: flags.reversible, side_effects: flags.side_effects }),
     };
   };
   // The manifest's own list (`withHands`), so the rows and what the daemon is sent cannot disagree:

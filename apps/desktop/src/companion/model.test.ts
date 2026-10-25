@@ -711,3 +711,23 @@ test("a card a delegated task filed is labelled with the task on every form of t
   expect(mine.task).toBeNull();
   expect(mine.where).toMatch(/^In /);
 });
+
+test("case 6: a card's words read the flags its tool declared, from the page's rows or the connector's mirror (ADR 0189)", () => {
+  const paid = { ...CARDS[0]!, action: "host.ledgerbox.mark_paid", params: { id: "inv_118" } };
+  const row: ToolRow = {
+    name: "host.ledgerbox.mark_paid",
+    origin: "host:ledgerbox",
+    class: "GATED",
+    tier: 1,
+    description: "Mark an invoice paid.",
+    reversible: false,
+    side_effects: "internal",
+  };
+  expect(cardView(paid, null, { tools: [row] }).words.risk).toBe("destructive");
+  const mail = { ...MAIL_CARD, action: "connector.gmail.notify", params: { to: "ap@northwind.example" } };
+  const mirror = { items: [gmail({ tools: [{ name: "notify", description: "", reversible: false, side_effects: "external" }] })], loaded: true, notice: "" };
+  expect(cardView(mail, null, { connectors: mirror }).words.risk).toBe("outbound");
+  const sent = cardView(MAIL_CARD, null, { connectors: { items: [MIRA], loaded: true, notice: "" } });
+  expect(sent.words.risk).toBe("outbound");
+  expect(sent.words.declared).toBe(true);
+});

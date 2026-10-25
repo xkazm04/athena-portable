@@ -53,3 +53,12 @@ test("the rows name the same tools, in the same order, as the manifest withHands
 
   expect(rows).toEqual(withHands(page).map((t) => t.name));
 });
+
+test("case 7: a row keeps the flags the page declared, while a first-sight origin still gates it (ADR 0189)", () => {
+  setHandsForTests([]);
+  const [row] = toolRows(tab([tool("tidy", { reversible: true, side_effects: "internal" })]), { gated_origins: ["host:ledger"], gated_tools: [] });
+
+  expect(row!.class).toBe("GATED");
+  expect(row!.reversible).toBe(true);
+  expect(row!.side_effects).toBe("internal");
+});

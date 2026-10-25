@@ -72,6 +72,13 @@ export interface ToolRow {
   class: "GATED" | "READ" | "AUTO";
   tier: number;
   description: string;
+  /**
+   * What the app declared about the tool (README section 3.3), kept beside the class so a card's
+   * words read the declaration while the class stays the gate's (ADR 0189). Absent when the page
+   * declared nothing, or a source does not carry them; `null` reversibility is undeclared too.
+   */
+  reversible?: boolean | null;
+  side_effects?: string;
 }
 
 /** One `execute` instruction from a resolved approval: a host tool the page has to run. */

@@ -2,9 +2,13 @@
  * A waiting decision in plain words: what will happen, to whom, and whether it can be taken back
  * (the contest's `describeDecision`). The card still carries every parameter; this is the sentence
  * above them, composed from the action's verb and what the turn has already shown.
+ *
+ * Whether it can be taken back is the tool's declared flags (ADR 0189), the same ones the gate
+ * classifies by; the verb only chooses the sentence's shape. A tool that declared nothing reads as
+ * the severe bucket and says so, so an unknown never shares a spelling with a mild change.
  */
 import { tidyContact, type Fact, type TurnContext } from "./payload";
-import { DESTRUCTIVE, DIRECT, OUTBOUND, READ_VERBS, article, brand, cap, money, parseTool, tidyId } from "./words";
+import { DIRECT, OUTBOUND, article, brand, cap, money, parseTool, tidyId } from "./words";
 
 export interface DecisionWords {
   /** "Send a reminder for INV-118 to Northwind Traders". */
@@ -12,12 +16,29 @@ export interface DecisionWords {
   /** "Northwind Traders will receive “INV-118 is 41 days past due”. Once it is sent it cannot be taken back." */
   effect: string;
   risk: "outbound" | "destructive" | "read" | "change";
+  /** False when the tool's flags were missing or `reversible` was null: `risk` is then the severe default. */
+  declared: boolean;
   facts: Fact[];
   /** The message that will go out, when the turn drafted one or the card carries it. */
   letter: { to: string; subject: string; body: string; cut: boolean } | null;
 }
 
+/** What the app declared about a tool (README section 3.3): the flags the gate's class comes from. */
+export interface ToolFlags {
+  reversible: boolean | null;
+  side_effects: string;
+}
+
 const text = (v: unknown): string => (typeof v === "string" ? v : "");
+const SIDE_EFFECTS: ReadonlySet<string> = new Set(["none", "internal", "external"]);
+
+/** The bucket the flags put a tool in, or `null` when they do not say (ADR 0189). */
+function riskOf(flags: ToolFlags | undefined): DecisionWords["risk"] | null {
+  if (!flags || typeof flags.reversible !== "boolean" || !SIDE_EFFECTS.has(flags.side_effects)) return null;
+  if (flags.side_effects === "external") return "outbound";
+  if (!flags.reversible) return "destructive";
+  return flags.side_effects === "none" ? "read" : "change";
+}
 
 /**
  * `from` is the account a connector card acts as (ADR 0116), "" otherwise. Pure: the card's action
@@ -27,6 +48,7 @@ export function describeDecision(
   card: { action: string; params: Readonly<Record<string, unknown>> },
   ctx: TurnContext,
   from = "",
+  flags?: ToolFlags,
 ): DecisionWords {
   const t = parseTool(card.action);
   const p = card.params;
@@ -36,7 +58,9 @@ export function describeDecision(
   const email = text(p.to);
   const person = email ? ctx.byEmail[email] : undefined;
   const whom = person ? person.who : email;
-  const risk = OUTBOUND.has(t.verb) ? "outbound" : DESTRUCTIVE.has(t.verb) ? "destructive" : READ_VERBS.has(t.verb) ? "read" : "change";
+  const declaredRisk = riskOf(flags);
+  // Undeclared: the severe bucket, an outbound shape for a sending verb, never the mild sentence.
+  const risk = declaredRisk ?? (OUTBOUND.has(t.verb) ? "outbound" : "destructive");
   const obj = t.object;
   const noun = obj
     ? DIRECT.has(t.verb)
@@ -49,13 +73,16 @@ export function describeDecision(
   const app = brand(t.app);
 
   let effect: string;
-  if (risk === "outbound") {
+  if (risk === "outbound" && (OUTBOUND.has(t.verb) || whom)) {
     effect = `${whom || "The recipient"} will receive ${subject ? `“${subject}”` : "it"}${from ? " from " + from : ""}. Once it is sent it cannot be taken back.`;
+  } else if (risk === "outbound") {
+    effect = `${cap(noun || "it")} goes out to ${app}${from ? " as " + from : ""}. Once it is done it cannot be taken back.`;
   } else if (risk === "destructive") {
     effect = `${cap(target || obj || "it")} is changed for good in ${app}. It cannot be undone.`;
   } else {
     effect = `${cap(obj || "it")}${target ? " " + target : ""} is changed in ${app}.`;
   }
+  if (!declaredRisk) effect += " The app did not declare whether this can be undone, so the card assumes it cannot.";
 
   const facts: Fact[] = [];
   if (whom) facts.push({ k: "To", v: person?.contact ? `${person.who} · ${person.contact}` : whom });
@@ -72,6 +99,7 @@ export function describeDecision(
     title: `${cap(t.verb)} ${noun}${whom ? " to " + whom : ""}`.replace(/\s+/g, " ").trim(),
     effect,
     risk,
+    declared: declaredRisk !== null,
     facts,
     letter: body ? { to: tidyContact(email, ctx), subject, body, cut: /\.\.\.\s*$/.test(body) } : null,
   };
