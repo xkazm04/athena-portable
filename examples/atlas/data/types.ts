@@ -107,12 +107,41 @@ export interface Component {
  */
 export type EdgeKind = "calls" | "implements" | "gates" | "streams" | "reads";
 
+/**
+ * What carries an edge — the evidence a reader would otherwise have to take on the arrow's word.
+ *
+ *   import  `from` imports `to`'s module (Python, or the TS/JS/Rust `use` of the same idea); with
+ *           `through`, by one named hop — `from` imports `through`, which imports `to` (a base
+ *           class, a re-export, the daemon object that holds the service)
+ *   port    `from` reaches a port (`through`: it imports it, or declares it itself) and the
+ *           composition root binds `to` behind it — the shape README §3.1 builds the lane and the
+ *           harness on: no concrete class imported. An edge that points AT the port (a structural
+ *           implementer, `through` is `to`'s file) is bound the other way round
+ *   wire    a protocol hop (`protocol`: HTTP, SSE, WebSocket, IPC); nothing imports anything
+ *
+ * `test/edges.test.ts` asks the tree whether each Python claim holds, and reports every edge it
+ * could not ask (a Rust, JS or Markdown end, a directory, a wire) as skipped with the reason.
+ */
+export type EdgeVia = "import" | "port" | "wire";
+
 export interface Edge {
   from: string;
   to: string;
   kind: EdgeKind;
   /** Why this edge exists, in a clause. */
   note: string;
+  /** What carries it. A drawn arrow is a claim; this says which claim. */
+  via: EdgeVia;
+  /** A `port` edge's port module, or an `import` edge's one intermediate module: a repo path. */
+  through?: string;
+  /** A `wire` edge: the protocol it travels over. */
+  protocol?: string;
+  /**
+   * The edge runs UP the stack (toward surfaces), on purpose. An up edge is a finding, so it is
+   * declared, never inferred: `test/model.test.ts` holds that the up edges are exactly these, and
+   * `test/edges.test.ts` that every up import the tree holds is one of them.
+   */
+  up?: true;
 }
 
 /** An ADR, as Atlas cites it. */

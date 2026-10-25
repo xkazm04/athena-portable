@@ -135,15 +135,24 @@ test("contracts reaches nothing below it — ADR 0002, the contracts import noth
   assert.deepEqual(links.down, [], "the bottom layer has a dependency below it");
 });
 
-test("no edge runs back up the stack", () => {
-  /* Not forbidden by the model, but there are none, and if one ever appears the margin rail will
-     draw it on the wrong side — this is the assertion that says which was intended. */
+test("the edges that run back up the stack are exactly the declared up edges", () => {
+  /* An up edge is a finding, so it is declared (`up: true`) rather than discovered on the margin
+     rail. Whether the tree holds an up import the model does not declare is test/edges.test.ts's
+     question; this one holds the model to its own flag in both directions. */
+  const depth = (id: string): number => {
+    const layer = systemById(componentById(id)?.system ?? null)?.layer;
+    return LAYER_ORDER.indexOf(layer as (typeof LAYER_ORDER)[number]);
+  };
+  for (const e of EDGES) {
+    const runsUp = depth(e.to) < depth(e.from);
+    assert.equal(e.up === true, runsUp, `${e.from}->${e.to}: up is ${e.up}, the layers say ${runsUp}`);
+  }
   for (const l of LAYERS) {
-    assert.deepEqual(
-      layerLinks(l.id).up,
-      [],
-      `${l.id} reaches back up the stack; check the edge and the rail`,
-    );
+    const declared = EDGES.filter(
+      (e) => e.up && systemById(componentById(e.from)?.system ?? null)?.layer === l.id,
+    ).length;
+    const drawn = layerLinks(l.id).up.reduce((n, link) => n + link.weight, 0);
+    assert.equal(drawn, declared, `${l.id}'s rail draws ${drawn} up, the model declares ${declared}`);
   }
 });
 
