@@ -27,6 +27,7 @@ HTML.
 
 from __future__ import annotations
 
+import functools
 import json
 import secrets
 import threading
@@ -70,10 +71,24 @@ _NONCE = "__CSP_NONCE__"
 _JSON_CSP = "default-src 'none'; frame-ancestors 'none'"
 
 
+#: Where the page names how many surfaces a Gauntlet run attacks; filled from the registry.
+_SURFACE_COUNT = "__GAUNTLET_SURFACES__"
+
+_NUMBER_WORDS = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+
+
+@functools.cache
 def page_html() -> str:
-    return (resources.files("athena.proving.server") / "static" / "index.html").read_text(
+    """The page, with the Gauntlet's surface count taken from its registry (ADR 0175): a surface
+    added there is counted here without touching the page."""
+    from athena.proving.gauntlet.surfaces import REGISTRY
+
+    count = len(REGISTRY)
+    said = _NUMBER_WORDS[count] if count < len(_NUMBER_WORDS) else str(count)
+    html = (resources.files("athena.proving.server") / "static" / "index.html").read_text(
         encoding="utf-8"
     )
+    return html.replace(_SURFACE_COUNT, said)
 
 
 def _page_csp(nonce: str) -> str:

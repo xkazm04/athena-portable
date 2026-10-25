@@ -853,3 +853,17 @@ def test_every_text_colour_on_the_page_reads_at_aa_contrast_in_both_themes() -> 
         if _contrast(tokens[name], tokens[surface]) < 4.5
     ]
     assert failing == []
+
+
+def test_the_gauntlet_hint_counts_the_surfaces_the_registry_holds() -> None:
+    """The kind hint says how many surfaces a run attacks; the number is the registry's, not a
+    word typed into the page (ADR 0175: a surface is one registry entry, so a fifth must not
+    leave the page saying four)."""
+    from athena.proving.gauntlet.surfaces import REGISTRY
+
+    script = page_html().split("<script", 1)[1]
+    hint = re.search(r'gauntlet: "Nemotron writes attacks on (\w+) surfaces', script)
+    assert hint is not None
+    words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+    said = hint.group(1)
+    assert (words.index(said) if said in words else int(said)) == len(REGISTRY)
