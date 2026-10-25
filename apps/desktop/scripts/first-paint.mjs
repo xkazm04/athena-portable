@@ -52,10 +52,15 @@ import { gzipSync } from "node:zlib";
  * 199 B over on the re-based gauge) and a +150 B allowance shared by the follow-up wave (the
  * stage's queued focus, the mouth's 40 Hz mirror). Those cards may not raise it again; whatever
  * they leave unused is headroom to lower at the next measurement.
+ *
+ * Raised 2026-10-25 to 167,000 B (+749 B), owner-approved for the Projects layer (ADR 0225): the
+ * Projects light, its glyph, the six-root grammar, the bar pill's lazy slot, the spaces glance and
+ * the run store's `space_id` measured 166,901 B with the spaces store and client already off the
+ * first frame. The 99 B above it is headroom, to lower at the next measurement.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 166_251,
+  ceilingBytes: 167_000,
   targetBytes: 125_000,
 };
 
