@@ -7,9 +7,14 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 
+import type { TranscriptEntry } from "@/stores/run";
+
 import { fixtures } from "./fixtures";
 import { Ledger } from "./ledger";
 import type { CompanionModel } from "./model";
+import { buildContext } from "./translate";
+import { describeDecision } from "./translate/decision";
+import sessionsData from "./translate/sessions.fixture.json";
 
 function working(over: Partial<CompanionModel["talk"]> = {}): CompanionModel {
   const base = fixtures.ledger();
@@ -51,4 +56,33 @@ test("the task strip is mounted above the composer, and draws nothing while no t
   // No tasks in the store: the strip renders nothing, and the foot still opens with the composer.
   expect(out).not.toContain("aw-tasks");
   expect(out).toMatch(/<div class="lg-foot"><form class="lg-compose"/);
+});
+
+// A card shows what the turn already read about its target, on the rail's Gate and on a sheet row.
+const chase = (sessionsData as { sessions: { id: string; entries: Omit<TranscriptEntry, "id">[] }[] }).sessions.find((s) => s.id === "chase-overdue")!;
+const chaseTurn = buildContext(chase.entries.map((e, i) => ({ ...e, id: `c-${i}` })));
+const wordsAbout = (id: string) =>
+  describeDecision({ action: "host.ledgerbox.send_reminder", params: { id } }, chaseTurn, "", { reversible: false, side_effects: "external" });
+
+test("standing case 6: the Gate and a sheet row each show the note; a card with no standing shows none", () => {
+  const base = fixtures.ledger();
+  const gate = { ...base, cards: base.cards.map((c) => ({ ...c, words: wordsAbout("inv_137") })) };
+  const gateOut = html(gate);
+  expect(gateOut).toMatch(/<[^>]*data-standing-note[^>]*role="note"|<[^>]*role="note"[^>]*data-standing-note/);
+  expect(gateOut).toContain("Client says the second revision was out of scope.");
+
+  const sheeted = fixtures["slip sheet"]();
+  const sheet = sheeted.sheet!;
+  const rowed = {
+    ...sheeted,
+    cards: sheeted.cards.map((c, i) => (i === 0 ? { ...c, words: wordsAbout("inv_137") } : c)),
+    sheet: { ...sheet, rows: sheet.rows.map((r, i) => (i === 0 ? { ...r, words: wordsAbout("inv_137") } : r)) },
+  };
+  const rowOut = html(rowed);
+  const row = rowOut.slice(rowOut.indexOf('class="sh-row"'), rowOut.indexOf("</li>"));
+  expect(row).toContain("data-standing-note");
+  expect(row).toContain("Client says the second revision was out of scope.");
+
+  const none = { ...base, cards: base.cards.map((c) => ({ ...c, words: wordsAbout("inv_999") })) };
+  expect(html(none)).not.toContain("data-standing-note");
 });

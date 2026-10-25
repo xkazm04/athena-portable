@@ -76,15 +76,23 @@ export type Detail =
   | { kind: "facts"; rows: Fact[] }
   | { kind: "quote"; text: string; meta: string };
 
+/** Which step last read a record, and when: the entry's stamp and the tool's name. */
+export interface Seen {
+  at: string;
+  tool: string;
+}
+
 /** What the turn has already shown, so a later line can name people and drafts. */
 export interface TurnContext {
   byId: Record<string, JsonObject>;
+  /** Per id in `byId`, the step that last read it: what a card about it stands on, and how old that is. */
+  seen: Record<string, Seen>;
   byEmail: Record<string, { who: string; contact: string | null }>;
   drafts: Record<string, JsonObject>;
   proposals: Record<string, JsonObject>;
 }
 
-export const EMPTY_CONTEXT: TurnContext = { byId: {}, byEmail: {}, drafts: {}, proposals: {} };
+export const EMPTY_CONTEXT: TurnContext = { byId: {}, seen: {}, byEmail: {}, drafts: {}, proposals: {} };
 
 const str = (v: Json | undefined): string | null => (typeof v === "string" ? v : null);
 const num = (v: Json | undefined): number | null => (typeof v === "number" ? v : null);

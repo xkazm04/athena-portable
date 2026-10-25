@@ -85,9 +85,10 @@ function fold(ctx: Ctx, add: Ctx, keys: readonly MapKey[]): Ctx {
   return out;
 }
 
-const ALL: readonly MapKey[] = ["byId", "byEmail", "drafts", "proposals"];
+const ALL: readonly MapKey[] = ["byId", "seen", "byEmail", "drafts", "proposals"];
+// `seen` is what a card stands on, never what a message says: a re-read alone re-translates nothing.
 const PAGE: readonly MapKey[] = ["byId", "byEmail", "drafts"];
-const empty = (): Ctx => ({ byId: {}, byEmail: {}, drafts: {}, proposals: {} });
+const empty = (): Ctx => ({ byId: {}, seen: {}, byEmail: {}, drafts: {}, proposals: {} });
 
 /**
  * A transcript, folded once. `buildContext` reads tool rows into `byId`, `byEmail` and `drafts`
@@ -163,7 +164,7 @@ export function createTranscriptCache(): TranscriptCache {
     const proposals = tail?.kind === "assistant" ? overlay(settled, buildContext([tail]).proposals) : settled;
     const ctxChanged = pageChanged || !sameKeys(proposals, said.proposals);
     if (ctxChanged) {
-      said = { byId: turn.byId, byEmail: turn.byEmail, drafts: turn.drafts, proposals };
+      said = { byId: turn.byId, seen: turn.seen, byEmail: turn.byEmail, drafts: turn.drafts, proposals };
       stats.full++;
       dirty = 0;
     }

@@ -76,11 +76,15 @@ export function extractOps(text: string): { ops: JsonObject[]; say: string; text
 
 /** People, drafts and proposals the turn has shown, so a later line can name them. */
 export function buildContext(entries: readonly TranscriptEntry[]): TurnContext {
-  const ctx: TurnContext = { byId: {}, byEmail: {}, drafts: {}, proposals: {} };
+  const ctx: TurnContext = { byId: {}, seen: {}, byEmail: {}, drafts: {}, proposals: {} };
+  let from = { at: "", tool: "" };
   const visit = (v: Json): void => {
     if (Array.isArray(v)) return v.forEach(visit);
     if (!isObj(v)) return;
-    if (typeof v.id === "string") ctx.byId[v.id] = v;
+    if (typeof v.id === "string") {
+      ctx.byId[v.id] = v;
+      ctx.seen[v.id] = from;
+    }
     const email = typeof v.contact_email === "string" ? v.contact_email : typeof v.email === "string" ? v.email : null;
     if (email) {
       const who = [v.client, v.name, v.contact_name].find((x): x is string => typeof x === "string") ?? email;
@@ -93,6 +97,7 @@ export function buildContext(entries: readonly TranscriptEntry[]): TurnContext {
     if (e.kind === "tool") {
       const at = e.text.indexOf(ARROW);
       const out = at >= 0 ? readJson(e.text.slice(at + ARROW.length)) : undefined;
+      from = { at: e.at ?? "", tool: at >= 0 ? e.text.slice(0, at) : "" };
       if (out !== undefined) visit(out);
     } else if (e.kind === "assistant") {
       for (const op of extractOps(e.text).ops) if (typeof op.action === "string") ctx.proposals[op.action] = op;

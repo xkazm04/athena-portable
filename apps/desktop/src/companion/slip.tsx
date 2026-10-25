@@ -13,6 +13,7 @@ import { readCapture, type CaptureRead } from "./capture";
 import { DetailView, RawRecord, fadeOnScroll } from "./detail";
 import { Icon, Sketch } from "./icons";
 import type { CardCapture, CardView, CompanionModel, SheetView } from "./model";
+import type { Standing } from "./translate/decision";
 
 type Actions = CompanionModel["actions"];
 
@@ -159,6 +160,34 @@ export function CardFull({ card, actions, capture = true }: { card: CardView; ac
       {capture ? <Capture capture={card.capture} /> : null}
       <RawRecord raw={() => `${card.action}\n${JSON.stringify(Object.fromEntries(card.params.map((p) => [p.key, p.value])), null, 2)}`} />
     </>
+  );
+}
+
+/**
+ * What the turn already read about the card's target (ADR 0199): its notes as a notice the person
+ * reads before signing, and one quiet line saying how old that reading is. Nothing when it read none.
+ */
+export function StandingNote({ standing }: { standing: Standing | null }) {
+  if (!standing) return null;
+  const asOf = standing.readBy ? `As she read it${standing.readAt ? ` at ${standing.readAt}` : ""}: ${standing.readBy}` : "";
+  const line = [...standing.facts.map((f) => `${f.k} ${f.v}`), asOf].filter(Boolean).join(" · ");
+  if (!standing.notes.length) {
+    return line ? (
+      <p className="sl-line" data-standing-asof>
+        {line}
+      </p>
+    ) : null;
+  }
+  return (
+    <div className="sl-notice" data-standing-note role="note">
+      <Icon name="warn" className="warn" />
+      {standing.notes.map((n) => (
+        <span key={n.k}>
+          <b>{n.k}:</b> {n.v}
+        </span>
+      ))}
+      {line ? <span className="sl-claim">{line}</span> : null}
+    </div>
   );
 }
 
@@ -319,6 +348,7 @@ function Front({ card, actions, mic }: { card: CardView; actions: Actions; mic: 
     <>
       <p className="sl-effect">{card.words.effect}</p>
       <p className="sl-why">Why: {card.rationale}</p>
+      <StandingNote standing={card.words.standing} />
       {facts.length ? (
         <div className="facts-inline">
           {facts.map((f) => (
@@ -366,6 +396,7 @@ export function SheetRows({ model, sheet, off }: { model: CompanionModel; sheet:
               <span className="sh-title">{row.words.title}</span>
             </label>
             {row.rationale ? <p className="sl-why">{row.rationale}</p> : null}
+            <StandingNote standing={row.words.standing} />
             <details className="sh-more">
               <summary>Every detail</summary>
               <CardFull card={row} actions={actions} capture={false} />

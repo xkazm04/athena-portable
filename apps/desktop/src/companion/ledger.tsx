@@ -14,7 +14,7 @@ import { Icon } from "./icons";
 import type { CompanionModel, ProjectView } from "./model";
 import { Depth, Pages } from "./pages";
 import { RichMessage } from "./rich";
-import { SheetRows, Sign } from "./slip";
+import { SheetRows, Sign, StandingNote } from "./slip";
 import { TaskStrip } from "./tasks";
 import type { PlainMessage } from "./translate";
 
@@ -168,7 +168,14 @@ function Gate({ model }: { model: CompanionModel }) {
       >
         <div className="eyebrow human">{`Waiting on you${card.task ? ` · for the task "${card.task}"` : ""}${n > 1 ? ` · ${n} decisions` : ""}`}</div>
         <h3 className="sl-title display">{sheet ? `${sheet.rows.length} requests in ${sheet.app}` : card.words.title}</h3>
-        {sheet ? <SheetRows model={model} sheet={sheet} off={card.sending} /> : <p className="sl-effect">{card.words.effect}</p>}
+        {sheet ? (
+          <SheetRows model={model} sheet={sheet} off={card.sending} />
+        ) : (
+          <>
+            <p className="sl-effect">{card.words.effect}</p>
+            <StandingNote standing={card.words.standing} />
+          </>
+        )}
         {card.refusal ? (
           <p className="sl-notice bad" data-refusal role="alert">
             <Icon name="warn" className="warn" />

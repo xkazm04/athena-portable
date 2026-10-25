@@ -6,9 +6,24 @@
  * Whether it can be taken back is the tool's declared flags (ADR 0189), the same ones the gate
  * classifies by; the verb only chooses the sentence's shape. A tool that declared nothing reads as
  * the severe bucket and says so, so an unknown never shares a spelling with a mild change.
+ *
+ * What the turn already read about the card's target rides with it as `standing` (ADR 0199): the
+ * record's notes and ages in the existing vocabulary, and which step read it at what clock.
  */
 import { tidyContact, type Fact, type TurnContext } from "./payload";
-import { DIRECT, OUTBOUND, article, brand, cap, money, parseTool, tidyId } from "./words";
+import { AGE_KEY, DIRECT, NOTE_KEY, OUTBOUND, appSuffix, article, brand, cap, clock, humanKey, money, objectPhrase, parseTool, past, tidyId } from "./words";
+
+/** What the turn read about a card's target before the card rose: the decider sees what she saw. */
+export interface Standing {
+  /** The record's NOTE_KEY fields: "dispute: Client says the second revision was out of scope." */
+  notes: Fact[];
+  /** The record's AGE_KEY fields, as the table formats them: "days overdue: 12 days". */
+  facts: Fact[];
+  /** `HH:MM` of the step that last read it, or "" when the entry carried no time. */
+  readAt: string;
+  /** That step in plain words: "Read the inbox in Ledgerbox". */
+  readBy: string;
+}
 
 export interface DecisionWords {
   /** "Send a reminder for INV-118 to Northwind Traders". */
@@ -21,6 +36,8 @@ export interface DecisionWords {
   facts: Fact[];
   /** The message that will go out, when the turn drafted one or the card carries it. */
   letter: { to: string; subject: string; body: string; cut: boolean } | null;
+  /** What the turn already read about the target, or `null` when it never read it. */
+  standing: Standing | null;
 }
 
 /** What the app declared about a tool (README section 3.3): the flags the gate's class comes from. */
@@ -38,6 +55,22 @@ function riskOf(flags: ToolFlags | undefined): DecisionWords["risk"] | null {
   if (flags.side_effects === "external") return "outbound";
   if (!flags.reversible) return "destructive";
   return flags.side_effects === "none" ? "read" : "change";
+}
+
+/** The record the turn read under `id`, its notes, ages and provenance; `null` when it read none. */
+function standingOf(id: string, ctx: TurnContext): Standing | null {
+  const record = id ? ctx.byId[id] : undefined;
+  if (!record) return null;
+  const notes: Fact[] = [];
+  const facts: Fact[] = [];
+  for (const [k, v] of Object.entries(record)) {
+    if (NOTE_KEY.test(k) && typeof v === "string" && v.trim()) notes.push({ k: humanKey(k), v });
+    else if (AGE_KEY.test(k) && typeof v === "number") facts.push({ k: humanKey(k), v: v === 1 ? "1 day" : `${v} days` });
+  }
+  const seen = ctx.seen[id];
+  const t = seen?.tool ? parseTool(seen.tool) : null;
+  const readBy = t ? `${past(t.verb)} ${objectPhrase(t, true)}${appSuffix(t)}`.replace(/\s+/g, " ").trim() : "";
+  return { notes, facts, readAt: clock(seen?.at), readBy };
 }
 
 /**
@@ -102,5 +135,6 @@ export function describeDecision(
     declared: declaredRisk !== null,
     facts,
     letter: body ? { to: tidyContact(email, ctx), subject, body, cut: /\.\.\.\s*$/.test(body) } : null,
+    standing: standingOf(id, ctx),
   };
 }

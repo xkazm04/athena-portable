@@ -174,3 +174,55 @@ test("guard 5: a declared void keeps its sentence word for word", () => {
   });
   expect(d.effect).toBe("INV-109 is changed for good in Ledgerbox. It cannot be undone.");
 });
+
+// A card shows what the turn already read about its target: the note, the age, and when.
+const fnv = (s: string): string => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
+  return h.toString(16);
+};
+const disputed = { action: "host.ledgerbox.send_reminder", params: { id: "inv_137" } };
+
+test("standing case 0: a card about a record the turn read carries the record's note", () => {
+  const { entries } = session("chase-overdue");
+  const d = describeDecision(disputed, buildContext(entries));
+  expect(d.standing?.notes).toEqual([{ k: "dispute", v: "Client says the second revision was out of scope." }]);
+});
+
+test("standing case 1: the record's age reads as the table reads it", () => {
+  const { entries } = session("chase-overdue");
+  expect(describeDecision(disputed, buildContext(entries)).standing?.facts).toContainEqual({ k: "days overdue", v: "12 days" });
+});
+
+test("standing case 2: the standing says which step read it, and at what clock", () => {
+  const { entries } = session("chase-overdue");
+  const s = describeDecision(disputed, buildContext(entries)).standing;
+  expect(s?.readAt).toBe("09:41");
+  expect(s?.readBy).toBe("Read the inbox in Ledgerbox");
+});
+
+test("standing case 3: a card about a record the turn never read has no standing", () => {
+  const { entries } = session("chase-overdue");
+  const d = describeDecision({ action: "host.ledgerbox.void_invoice", params: { id: "inv_999" } }, buildContext(entries));
+  expect(d.standing).toBeNull();
+});
+
+test("standing case 4: of two reads of one record, the latest is the one it stands on", () => {
+  const read = (at: string, days: number): TranscriptEntry => ({
+    id: at,
+    kind: "tool",
+    tier: 1,
+    ok: true,
+    at: `2026-10-23 ${at}:00`,
+    text: `host.ledgerbox.read_inbox → {"items":[{"id":"inv_137","days_overdue":${days},"dispute":"Out of scope."}]}`,
+  });
+  const s = describeDecision(disputed, buildContext([read("09:41", 12), read("09:50", 13)])).standing;
+  expect(s?.readAt).toBe("09:50");
+  expect(s?.facts).toContainEqual({ k: "days overdue", v: "13 days" });
+});
+
+test("standing guard 7: every fixture message reads byte for byte as it did (provenance is context, never text)", () => {
+  const all = sessions.flatMap((s) => translateAll(entriesOf(s))).map((m) => [m.title, m.sub, m.detail]);
+  expect(all).toHaveLength(31);
+  expect(fnv(JSON.stringify(all))).toBe("324f76fe");
+});
