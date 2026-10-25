@@ -39,18 +39,10 @@
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
-import {
-  CONCEPTS,
-  LAYERS,
-  SYSTEMS,
-  componentsOf,
-  componentsOfLayer,
-  systemsOf,
-  type Lens,
-} from "@/data";
-import { LEVELS, NOUNS } from "@/lib/constants";
+import { CONCEPTS, SYSTEMS, type Lens } from "@/data";
 
 import { VARIANTS, type VariantSlug } from "../variants/contract";
+import { groupsFor, itemsFor, type LevelMap } from "../variants/levels";
 import { readViews, requestView } from "../variants/viewBus";
 
 import {
@@ -74,6 +66,7 @@ export function AtlasTools({
   variant,
   setVariant,
   metaViews,
+  levels,
 }: {
   nav: ZoomNav;
   lens: Lens;
@@ -83,6 +76,12 @@ export function AtlasTools({
   setVariant: (next: VariantSlug) => void;
   /** `VariantMeta.views` of the mounted variant — the enum `set_view` advertises. */
   metaViews: readonly string[];
+  /**
+   * The mounted variant's level map (ADR 0173). The four zoom verbs speak ITS groups — the phases
+   * of the lane drawing — so `open_group` accepts exactly the ids the stage can fly to and
+   * `read_view` at L1 answers the group that is open. The data model's layers are the fallback.
+   */
+  levels: LevelMap;
 }) {
   /* The LIVE half of the second axis: whatever the mounted variant published this render. Read
      through the bus rather than kept here, so the shell never holds a stale copy of a variant's
@@ -94,25 +93,11 @@ export function AtlasTools({
 
   useZoomTools({
     nav,
-    levels: LEVELS,
-    nouns: NOUNS,
-    groups: () =>
-      LAYERS.map((l) => ({
-        id: l.id,
-        label: l.name,
-        count: componentsOfLayer(l.id).length,
-      })),
-    items: (group) =>
-      (group === null ? LAYERS : LAYERS.filter((l) => l.id === group)).flatMap((l) =>
-        systemsOf(l.id).flatMap((s) =>
-          componentsOf(s.id).map((c) => ({
-            id: c.id,
-            label: `${c.part} · ${c.name} · ${c.file}`,
-            group: l.id,
-          })),
-        ),
-      ),
-    detail: () => viewDetail(nav.state.focus, lensId, variant, currentView()),
+    levels: levels.levelNames,
+    nouns: levels.nouns,
+    groups: () => groupsFor(levels),
+    items: (group) => itemsFor(levels, group),
+    detail: () => viewDetail(nav.state.focus, lensId, variant, currentView(), levels),
   });
 
   useWebMCPTool({

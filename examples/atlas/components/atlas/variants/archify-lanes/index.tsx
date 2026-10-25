@@ -9,10 +9,11 @@
  * one the owner already chose.
  */
 import type { VariantMeta, VariantProps } from "../contract";
+import { LANES_LEVELS } from "../levels";
 
 import LanesDrawing, { VIEWS } from "./Drawing";
 
-export const meta: VariantMeta = { slug: "archify-lanes", views: [...VIEWS] };
+export const meta: VariantMeta = { slug: "archify-lanes", views: [...VIEWS], levels: LANES_LEVELS };
 
 export default function ArchifyLanes(props: VariantProps) {
   return <LanesDrawing {...props} preset="classic" />;

@@ -45,6 +45,7 @@ import {
 } from "@/data";
 
 import { useAtlasMotion } from "../motion";
+import { railLabel, targetFor, type LevelMap } from "../variants/levels";
 
 export function Pane({
   component,
@@ -52,6 +53,7 @@ export function Pane({
   lens,
   setLens,
   origin,
+  levels,
 }: {
   component: Component;
   nav: ZoomNav;
@@ -59,6 +61,8 @@ export function Pane({
   setLens: (id: string | null) => void;
   /** Measures where the part is on screen, in viewport pixels. Called once, on mount. */
   origin: () => { x: number; y: number } | null;
+  /** The mounted variant's level map (ADR 0173): where a link opens, and what Close goes back to. */
+  levels: LevelMap;
 }) {
   const m = useAtlasMotion();
   const paneRef = useRef<HTMLDivElement | null>(null);
@@ -185,7 +189,7 @@ export function Pane({
             {into.length === 0 ? (
               <p className="at-label">Nothing in the model reaches it. It is an entry point.</p>
             ) : (
-              into.map((edge) => <Link key={`${edge.from}-${edge.kind}`} id={edge.from} kind={edge.kind} note={edge.note} nav={nav} />)
+              into.map((edge) => <Link key={`${edge.from}-${edge.kind}`} id={edge.from} kind={edge.kind} note={edge.note} nav={nav} levels={levels} />)
             )}
           </section>
 
@@ -196,7 +200,7 @@ export function Pane({
             {out.length === 0 ? (
               <p className="at-label">Nothing. It bottoms out here.</p>
             ) : (
-              out.map((edge) => <Link key={`${edge.to}-${edge.kind}`} id={edge.to} kind={edge.kind} note={edge.note} nav={nav} />)
+              out.map((edge) => <Link key={`${edge.to}-${edge.kind}`} id={edge.to} kind={edge.kind} note={edge.note} nav={nav} levels={levels} />)
             )}
           </section>
 
@@ -223,7 +227,7 @@ export function Pane({
           </section>
 
           <footer className="at-pane-foot">
-            <span className="at-label">Esc, the scrim, or Close all go back to {layer?.name}.</span>
+            <span className="at-label">Esc, the scrim, or Close all go back to {railLabel(levels, nav.state.focus)}.</span>
             <button type="button" className="at-close" onClick={() => nav.up()}>
               Close (Esc)
             </button>
@@ -234,17 +238,26 @@ export function Pane({
   );
 }
 
-/** One edge, as a control: the other end is one click away and it opens at L2 directly. */
+/**
+ * One edge, as a control: the other end is one click away and it opens at L2 directly.
+ *
+ * IT OPENS IN A GROUP THE STAGE HAS (ADR 0173). The group comes from the mounted variant's level
+ * map: a component the drawing draws opens in its own group, so the camera flies to it; one the
+ * drawing does not draw keeps the group the reader is in and swaps the pane. It used to open in
+ * the component's LAYER, a group the lanes drawing has no box for.
+ */
 function Link({
   id,
   kind,
   note,
   nav,
+  levels,
 }: {
   id: string;
   kind: string;
   note: string;
   nav: ZoomNav;
+  levels: LevelMap;
 }) {
   const other = componentById(id);
   if (!other) return null;
@@ -253,7 +266,10 @@ function Link({
     <button
       type="button"
       className="at-link"
-      onClick={() => (layer ? nav.openItem(layer.id, other.id) : undefined)}
+      onClick={() => {
+        const to = targetFor(levels, other.id, nav.state.focus);
+        if (to.group) nav.openItem(to.group, to.item);
+      }}
     >
       <span className="at-link-kind">{kind}</span>
       <span>

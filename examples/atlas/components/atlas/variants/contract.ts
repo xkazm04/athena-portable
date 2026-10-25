@@ -20,6 +20,8 @@ import type { useLevelFlight } from "@athena/demo-kit/zoom";
 
 import type { Lens } from "@/data";
 
+import type { LevelMap } from "./levels";
+
 export type VariantSlug = "archify-lanes" | "archify-signal" | "archify-editorial";
 
 /**
@@ -70,4 +72,10 @@ export interface VariantMeta {
   slug: VariantSlug;
   /** Names of this variant's views, if it has them; the shell exposes them through `set_view`. */
   views?: readonly string[];
+  /**
+   * What this variant calls its levels and what its GROUPS are (`variants/levels.ts`, ADR 0173).
+   * The shell's tools, rail and pane links resolve a group through it; a variant that leaves it
+   * out gets the data model's layers (`DATA_LEVELS`).
+   */
+  levels?: LevelMap;
 }

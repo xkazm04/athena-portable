@@ -68,6 +68,7 @@ import { Pane } from "../pane/Pane";
 import { AtlasTools } from "../tools/AtlasTools";
 
 import { VARIANTS, type VariantProps, type VariantSlug } from "./contract";
+import { DATA_LEVELS, asLevelMap, type LevelMap } from "./levels";
 import { useChoice } from "./useChoice";
 import { useVariantViews } from "./viewBus";
 
@@ -228,27 +229,41 @@ export function Shell() {
   }, [variant]);
 
   /* `VariantMeta.views` — the STATIC half of the second axis, read straight off the module so the
-     tool's enum is right even before the variant has rendered once. The live half is the bus. */
-  const [metaViews, setMetaViews] = useState<{ slug: VariantSlug; views: readonly string[] }>({
-    slug: variant,
-    views: [],
-  });
+     tool's enum is right even before the variant has rendered once. The live half is the bus.
+
+     `VariantMeta.levels` rides in the same read (ADR 0173): the mounted variant's names for its
+     levels and its groups, which the tools, the rail and the pane's links resolve through. A
+     variant that declares none — or has not answered yet — gets the data model's layers. */
+  const [meta, setMeta] = useState<{
+    slug: VariantSlug;
+    views: readonly string[];
+    levels: LevelMap | null;
+  }>({ slug: variant, views: [], levels: null });
   useEffect(() => {
     let live = true;
     load(variant)
       .then((mod) => {
-        const asked = (mod as { meta?: { views?: readonly string[] } }).meta?.views;
-        if (live) setMetaViews({ slug: variant, views: Array.isArray(asked) ? asked : [] });
+        const declared = (mod as { meta?: { views?: readonly string[]; levels?: unknown } }).meta;
+        const asked = declared?.views;
+        if (live) {
+          setMeta({
+            slug: variant,
+            views: Array.isArray(asked) ? asked : [],
+            levels: asLevelMap(declared?.levels),
+          });
+        }
       })
       .catch(() => {
-        if (live) setMetaViews({ slug: variant, views: [] });
+        if (live) setMeta({ slug: variant, views: [], levels: null });
       });
     return () => {
       live = false;
     };
   }, [variant, attempt]);
   /* Derived, never cleared in an effect: a stale answer is one whose slug is not the current one. */
-  const toolViews = metaViews.slug === variant ? metaViews.views : [];
+  const fresh = meta.slug === variant;
+  const toolViews = fresh ? meta.views : [];
+  const levels: LevelMap = (fresh ? meta.levels : null) ?? DATA_LEVELS;
 
   /* -------------------------------------- the pane -------------------------------------- */
 
@@ -282,7 +297,14 @@ export function Shell() {
   }, [nav]);
 
   const pane = open ? (
-    <Pane component={open} nav={nav} lens={lens} setLens={setLens} origin={measureOrigin} />
+    <Pane
+      component={open}
+      nav={nav}
+      lens={lens}
+      setLens={setLens}
+      origin={measureOrigin}
+      levels={levels}
+    />
   ) : null;
 
   /* ------------------------------------- the mount ------------------------------------- */
@@ -311,6 +333,7 @@ export function Shell() {
         variant={variant}
         setVariant={setVariant}
         metaViews={toolViews}
+        levels={levels}
       />
       <div
         className="at-app"
@@ -327,6 +350,7 @@ export function Shell() {
           variant={variant}
           setVariant={setVariant}
           views={views}
+          levels={levels}
         />
 
         <div className="at-body">

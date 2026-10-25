@@ -8,3 +8,4 @@
  */
 export { default as LanesDrawing } from "./variants/archify-lanes/Drawing";
 export { VIEWS, type LanesPreset } from "./variants/archify-lanes/copy";
+export { LANES_LEVELS } from "./variants/levels";

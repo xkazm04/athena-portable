@@ -26,10 +26,10 @@
 import { useRef } from "react";
 import { useRoving, type ZoomNav } from "@athena/demo-kit/zoom";
 
-import { LEVELS } from "@/lib/constants";
-import { componentById, layerById, type Lens, type ModelCounts } from "@/data";
+import { componentById, type Lens, type ModelCounts } from "@/data";
 
 import { VARIANTS, type VariantSlug } from "./variants/contract";
+import { railLabel, type LevelMap } from "./variants/levels";
 import type { PublishedViews } from "./variants/viewBus";
 
 export function Mast({
@@ -40,6 +40,7 @@ export function Mast({
   variant,
   setVariant,
   views,
+  levels,
 }: {
   nav: ZoomNav;
   lens: Lens;
@@ -48,9 +49,10 @@ export function Mast({
   variant: VariantSlug;
   setVariant: (next: VariantSlug) => void;
   views: PublishedViews;
+  /** The mounted variant's level map (ADR 0173): the rail names ITS groups, not the model's. */
+  levels: LevelMap;
 }) {
   const focus = nav.state.focus;
-  const layer = layerById(focus.group);
   const open = componentById(focus.item);
 
   const variantBox = useRef<HTMLDivElement | null>(null);
@@ -139,7 +141,7 @@ export function Mast({
               disabled={focus.level === 0}
               onClick={() => nav.home()}
             >
-              {LEVELS[0]}
+              {levels.levelNames[0]}
             </button>
           </li>
           {focus.level > 0 ? (
@@ -155,7 +157,7 @@ export function Mast({
                   disabled={focus.level === 1}
                   onClick={() => nav.up()}
                 >
-                  {layer ? layer.name : LEVELS[1]}
+                  {railLabel(levels, focus)}
                 </button>
               </li>
             </>
@@ -167,7 +169,7 @@ export function Mast({
               </li>
               <li>
                 <button type="button" className="at-step" aria-current="step" disabled>
-                  {open ? open.name : LEVELS[2]}
+                  {open ? open.name : levels.levelNames[2]}
                 </button>
               </li>
             </>

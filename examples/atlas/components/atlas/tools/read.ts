@@ -39,6 +39,7 @@ import {
 import { READ_CAP } from "@/lib/constants";
 
 import { VARIANTS, type VariantSlug } from "../variants/contract";
+import { DATA_LEVELS, groupOf, type LevelMap } from "../variants/levels";
 import type { ViewDescriptor } from "../variants/viewBus";
 
 /** The one sentence AGENTS.md requires of any bounded output. */
@@ -294,12 +295,18 @@ export function lensRead(conceptId: string | null) {
  * Every projection also carries the VIEW, because the same focus looks different in each of a
  * variant's arrangements and an agent that cannot tell which one is on the sheet cannot describe
  * what a reader is seeing.
+ *
+ * L1 SPEAKS THE MOUNTED VARIANT'S GROUPS (ADR 0173). `levels` is the map the variant declared in
+ * `meta.levels`; with one, L1 answers the group the drawing has open (a phase, for the lanes
+ * drawing) and the components its items are. With none, or with the data model's own map, it
+ * answers the layer exactly as before. L0 and L2 do not depend on it.
  */
 export function viewDetail(
   focus: Focus,
   conceptId: string | null,
   variant: VariantSlug,
   view: ViewDescriptor | null,
+  levels: LevelMap = DATA_LEVELS,
 ) {
   const lens = lensFor(conceptId);
   const marked = lens.concept
@@ -314,6 +321,25 @@ export function viewDetail(
 
   if (focus.level === 2) {
     return { view: arrangement, lens: marked, component: componentRead(focus.item) };
+  }
+  if (focus.level === 1 && levels !== DATA_LEVELS) {
+    const group = groupOf(levels, focus.group);
+    if (!group) {
+      return {
+        view: arrangement,
+        lens: marked,
+        error: `No ${levels.nouns[0]} ${focus.group}.`,
+        available: levels.groups.map((g) => g.id),
+      };
+    }
+    const components = group.items.map((id) => componentById(id)).filter((c): c is Component => !!c);
+    return {
+      view: arrangement,
+      lens: marked,
+      level_name: levels.levelNames[1],
+      group: { id: group.id, noun: levels.nouns[0], label: group.label, note: group.note },
+      components: announced(components, componentRow),
+    };
   }
   if (focus.level === 1) {
     const layer = layerById(focus.group);

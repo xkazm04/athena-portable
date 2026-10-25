@@ -12,9 +12,9 @@
  */
 import type { VariantMeta, VariantProps } from "../contract";
 
-import { LanesDrawing, VIEWS } from "@/components/atlas/lanes";
+import { LANES_LEVELS, LanesDrawing, VIEWS } from "@/components/atlas/lanes";
 
-export const meta: VariantMeta = { slug: "archify-signal", views: [...VIEWS] };
+export const meta: VariantMeta = { slug: "archify-signal", views: [...VIEWS], levels: LANES_LEVELS };
 
 export default function ArchifySignal(props: VariantProps) {
   return <LanesDrawing {...props} preset="signal" />;

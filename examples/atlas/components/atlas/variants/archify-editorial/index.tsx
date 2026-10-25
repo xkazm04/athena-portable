@@ -12,9 +12,9 @@
  */
 import type { VariantMeta, VariantProps } from "../contract";
 
-import { LanesDrawing, VIEWS } from "@/components/atlas/lanes";
+import { LANES_LEVELS, LanesDrawing, VIEWS } from "@/components/atlas/lanes";
 
-export const meta: VariantMeta = { slug: "archify-editorial", views: [...VIEWS] };
+export const meta: VariantMeta = { slug: "archify-editorial", views: [...VIEWS], levels: LANES_LEVELS };
 
 export default function ArchifyEditorial(props: VariantProps) {
   return <LanesDrawing {...props} preset="editorial" />;
