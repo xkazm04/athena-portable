@@ -19,7 +19,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-__all__ = ["findings_rows", "load_dumps", "margins", "report_md", "write_report"]
+__all__ = ["criteria_counts", "findings_rows", "load_dumps", "margins", "report_md", "write_report"]
 
 _SEVERITY = {"blocker": 0, "major": 1, "minor": 2, "polish": 3}
 
@@ -41,7 +41,9 @@ def _judge(d: Mapping[str, Any]) -> Mapping[str, Any]:
     return j if isinstance(j, Mapping) else {}
 
 
-def _criteria_counts(dumps: Iterable[Mapping[str, Any]]) -> tuple[int, int, int]:
+def criteria_counts(dumps: Iterable[Mapping[str, Any]]) -> tuple[int, int, int]:
+    """Criteria (pass, fail, not evaluable) over ``dumps``: a ``null`` is never a pass. Shared by
+    the margins here and by :mod:`.compare`'s before/after."""
     passed = failed = unknown = 0
     for d in dumps:
         for c in _judge(d).get("criteria") or []:
@@ -73,7 +75,7 @@ def margins(dumps: Sequence[Mapping[str, Any]], key: str) -> list[dict[str, Any]
         groups[str(value or "?")].append(d)
     rows: list[dict[str, Any]] = []
     for value, members in groups.items():
-        passed, failed, unknown = _criteria_counts(members)
+        passed, failed, unknown = criteria_counts(members)
         adopt = Counter(str(_judge(d).get("adopt")) for d in members if _judge(d))
         rows.append(
             {

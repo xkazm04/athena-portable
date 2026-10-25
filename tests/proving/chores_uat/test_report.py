@@ -89,3 +89,41 @@ def test_report_md_and_main(tmp_path: Path) -> None:
     assert "from 3 pairs" in out[-1]
     md, fj, n = write_report(run_dir)
     assert n == 3 and md.is_file() and len(json.loads(fj.read_text("utf-8"))) == 3
+
+
+def _write_run(root: Path, run_id: str, dumps: list[dict[str, Any]]) -> Path:
+    run_dir = root / "chores-uat" / run_id
+    for d in dumps:
+        path = dump_path(run_dir, d["pair"])
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(d), "utf-8")
+    return run_dir
+
+
+def test_report_against_writes_compare_beside_head(tmp_path: Path) -> None:
+    _write_run(tmp_path, "base", DUMPS)
+    head = _write_run(tmp_path, "head", DUMPS[:2])
+    out: list[str] = []
+    argv = ["report", "--run-id", "head", "--against", "base", "--base", str(tmp_path)]
+    assert main(argv, echo=out.append) == 0
+    doc = json.loads((head / "compare.json").read_text("utf-8"))
+    assert doc["matched"] == ["a--rosa", "b--tom"] and doc["only_in_base"] == ["c--tom"]
+    assert "over 2 matched pairs" in (head / "compare.md").read_text("utf-8")
+    assert "compare.md" in out[-1]
+
+
+def test_report_against_a_run_with_no_pairs_exits_2(tmp_path: Path) -> None:
+    _write_run(tmp_path, "head", DUMPS)
+    (tmp_path / "chores-uat" / "empty").mkdir(parents=True)
+    out: list[str] = []
+    argv = ["report", "--run-id", "head", "--against", "empty", "--base", str(tmp_path)]
+    assert main(argv, echo=out.append) == 2
+    assert "empty" in out[-1]
+    assert not (tmp_path / "chores-uat" / "head" / "compare.md").exists()
+
+
+def test_report_without_against_is_unchanged(tmp_path: Path) -> None:
+    run_dir = _write_run(tmp_path, "r1", DUMPS)
+    assert main(["report", "--base", str(tmp_path)], echo=lambda _: None) == 0
+    assert (run_dir / "report.md").read_text("utf-8") == report_md(run_dir, DUMPS)
+    assert not (run_dir / "compare.md").exists() and not (run_dir / "compare.json").exists()

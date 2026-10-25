@@ -6,13 +6,15 @@
     uv run python -m athena.proving.chores_uat cases [--force] [--workers 4] [--dry] [selection]
     uv run python -m athena.proving.chores_uat run [--dry] [--workers 4] [--cap-usd 400]
         [--no-rehearse] [--wall-s 600] [--run-id ID] [selection]
-    uv run python -m athena.proving.chores_uat report [--run-id ID]
+    uv run python -m athena.proving.chores_uat report [--run-id ID] [--against BASE-ID]
 
 ``selection`` is ``--pairs ID.. --areas CATEGORY.. --characters ID.. --limit N``; ``--uat``,
 ``--pairs-file``, ``--library`` and ``--base`` move the inputs and the runs directory. ``numbers``
 spends nothing; ``cases`` and ``run`` spend subscription usage through the ``claude`` CLI (never
 the API, ADR 0007) unless ``--dry``. Runs land in ``proving-runs/chores-uat/<run-id>/``
-(``run-id`` a UTC stamp by default; ``report`` reads the latest). Exit codes: 0 done, 1 some
+(``run-id`` a UTC stamp by default; ``report`` reads the latest; ``--against`` also writes
+``compare.md`` and ``compare.json`` beside it: the delta over matched pairs, judge numbers marked
+mixed when the instrument moved). Exit codes: 0 done, 1 some
 pairs failed (named), 2 nothing could run.
 """
 
@@ -37,6 +39,7 @@ from athena.proving.chores_uat.cast import (
     load_pairs,
     select_pairs,
 )
+from athena.proving.chores_uat.compare import IDENTITY, compare, write_compare
 from athena.proving.chores_uat.numbers import audit, summary, write_numbers
 from athena.proving.chores_uat.numbers import read_library as read_numbers_library
 from athena.proving.chores_uat.report import write_report
@@ -55,17 +58,9 @@ from athena.proving.roles import claude_available
 
 __all__ = ["build_parser", "main"]
 
-#: The instrument keys that must match for a resumed run (``git_head`` is informational).
-_IDENTITY = (
-    "persona_system",
-    "judge_system",
-    "interview_system",
-    "audit_system",
-    "brief_system",
-    "tiers",
-    "persona_tier",
-    "judge_tier",
-)
+#: The instrument keys that must match for a resumed run (``git_head`` is informational); the
+#: same keys mark a ``report --against`` comparison's judge numbers mixed.
+_IDENTITY = IDENTITY
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -88,6 +83,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--wall-s", type=float, default=600.0, help="per onboarding")
     report = verbs.add_parser("report", help="write report.md and findings.json")
     _paths(report)
+    report.add_argument(
+        "--against", default="", help="a base run id: also write compare.md and compare.json"
+    )
     return parser
 
 
@@ -178,9 +176,26 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
         if not run_id or not (run_dir / "pairs").is_dir():
             say(f"no run with pair dumps under {(base / BENCH_DIRNAME).as_posix()}")
             return 2
+        base_dir = run_dir_for(base, args.against) if args.against else None
+        if base_dir is not None and not (base_dir / "pairs").is_dir():
+            say(f"--against {args.against}: no pair dumps in {base_dir.as_posix()}")
+            return 2
         md, fj, n = write_report(run_dir)
         say(f"wrote {md.as_posix()} and {fj.as_posix()} from {n} pairs")
-        return 0 if n else 2
+        if base_dir is None:
+            return 0 if n else 2
+        comparison = compare(base_dir, run_dir)
+        cmd, cfj = write_compare(comparison, run_dir)
+        say(
+            f"wrote {cmd.as_posix()} and {cfj.as_posix()}: {run_id} against {args.against}, "
+            f"over {comparison.n} matched pairs"
+            + (
+                f", instrument moved ({', '.join(comparison.instrument_moved)})"
+                if comparison.instrument_moved
+                else ""
+            )
+        )
+        return 0 if comparison.n else 2
 
     try:
         cast = _Cast(args, library)
