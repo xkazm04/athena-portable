@@ -84,7 +84,7 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
             bell
           ) : (
             <Suspense fallback={bell}>
-              <SurfaceFace avatar={model.avatar} size={420} label={`Athena, ${model.poseWord}`} />
+              <SurfaceFace avatar={model.avatar} size={420} label={`Athena, ${model.poseWord}`} fallback={bell} />
             </Suspense>
           )}
         </button>

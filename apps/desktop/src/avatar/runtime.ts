@@ -150,6 +150,8 @@ export function startFace(opts: {
   source: FaceSource;
   size: number;
   clock?: Clock;
+  /** Heard once when the face turns out not to draw here (no WebGL2, the form or its renderer failed). */
+  onUnavailable?: () => void;
 }): FaceHandle {
   const { root, canvas, avatar, source } = opts;
   let disposed = false;
@@ -162,6 +164,7 @@ export function startFace(opts: {
     root.setAttribute("data-face", "unavailable");
     canvas.style.visibility = "hidden";
     warnOnce(why);
+    opts.onUnavailable?.();
   };
 
   const size = (s: number) => {

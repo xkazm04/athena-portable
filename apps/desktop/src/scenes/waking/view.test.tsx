@@ -2,6 +2,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+// The face cards are offered only where WebGL2 can draw; this suite is about the act, not the machine.
+vi.mock("@/avatar/support", () => ({ canDrawFace: () => true }));
+
 import type { AvatarId } from "@/avatar/types";
 import { INERT_ACTIONS } from "@/modules/setup/model";
 import { fixtures as setup } from "@/modules/setup/fixtures";

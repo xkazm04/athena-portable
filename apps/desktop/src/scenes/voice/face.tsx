@@ -27,10 +27,11 @@ export interface HerProps {
   source: FaceSource;
 }
 
-/** The Bell for the halo, her face for anything else, in the same slot and size. */
+/** The Bell for the halo, her face for anything else, in the same slot and size; the Bell again where the face cannot draw. */
 export function Her({ avatar, pose, reach, size, lean = 0, source }: HerProps) {
-  if (avatar === "halo") return <Bell pose={pose} reach={reach} lean={lean} size={size} label="Athena" />;
-  return <Avatar avatar={avatar} size={size} source={source} className="vsc-face" />;
+  const bell = <Bell pose={pose} reach={reach} lean={lean} size={size} label="Athena" />;
+  if (avatar === "halo") return bell;
+  return <Avatar avatar={avatar} size={size} source={source} className="vsc-face" fallback={bell} />;
 }
 
 /** Her live face, as her own window mirrors it to Main. Made once per mount. */

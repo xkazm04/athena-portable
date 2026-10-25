@@ -7,7 +7,7 @@
  * The Avatar and the face sources are stood in for, so the test sees which source each face was
  * handed: the real ones are other packages' and are tested there.
  */
-import { act, type ReactElement } from "react";
+import { act, type ReactElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -19,6 +19,8 @@ const sources = vi.hoisted(() => ({
   main: { subscribe: () => () => {}, tag: "main" },
   preview: { subscribe: () => () => {}, tag: "preview" },
   players: [] as { level(): number; playing(): boolean }[],
+  /** The face cannot draw here: the stand-in shows what it was handed to fall back to. */
+  unavailable: false,
 }));
 
 vi.mock("@/lib/face", () => ({
@@ -30,13 +32,17 @@ vi.mock("@/lib/face", () => ({
 }));
 
 vi.mock("@/avatar/Avatar", () => ({
-  Avatar: ({ avatar, size, source }: { avatar: string; size: number; source: { tag: string } }) => (
-    <div data-avatar={avatar} data-size={size} data-source={source.tag} />
+  Avatar: ({ avatar, size, source, fallback }: { avatar: string; size: number; source: { tag: string }; fallback?: ReactNode }) => (
+    <div data-avatar={avatar} data-size={size} data-source={source.tag}>
+      {sources.unavailable ? fallback : null}
+    </div>
   ),
 }));
 
 const { fixtures } = await import("./fixtures");
 const { default: VoiceScene, SETTINGS, STUDIO } = await import("./view");
+const { Her } = await import("./face");
+const { default: Bell } = await import("@/bell/Bell");
 
 const ROOT: Path = { root: "voice" };
 const go = () => {};
@@ -74,6 +80,25 @@ describe("the Avatar replaces the Bell exactly when a face is chosen", () => {
     expect(out).not.toContain("data-avatar");
     expect(out).toContain('aria-label="How she appears"');
     for (const name of ["Owl of light", "Origami", "Just the halo"]) expect(out).toContain(name);
+  });
+});
+
+describe("a face that cannot draw hands her slot back to the Bell", () => {
+  afterEach(() => {
+    sources.unavailable = false;
+  });
+
+  it("Her() with the owl and the face unavailable renders the Bell; with the halo, the Bell exactly as before", () => {
+    const her = (avatar: AvatarId) =>
+      renderToStaticMarkup(<Her avatar={avatar} pose="resting" reach={[]} size={400} source={sources.main} />);
+    expect(her("b04-owl")).not.toContain('class="bell"');
+    sources.unavailable = true;
+    const owl = her("b04-owl");
+    expect(owl).toContain('data-avatar="b04-owl"');
+    expect(owl.match(/class="bell"/g)).toHaveLength(1);
+    // guard: the halo's markup is the Bell, unchanged
+    sources.unavailable = false;
+    expect(her("halo")).toBe(renderToStaticMarkup(<Bell pose="resting" reach={[]} lean={0} size={400} label="Athena" />));
   });
 });
 

@@ -78,3 +78,37 @@ describe("<Avatar> where WebGL2 is not there", () => {
     expect(html).toMatch(/aria-label="Athena, an origami figure of light"/);
   });
 });
+
+describe("<Avatar fallback> where WebGL2 is not there", () => {
+  it("renders the fallback in the box instead of an empty canvas, and warns once for any number of faces", async () => {
+    // a fresh runtime, so its warn-once has not already been spent by the test above
+    vi.resetModules();
+    const { Avatar: Fresh } = await import("./Avatar");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    const bell = (key: string) => <svg className="bell" data-fallback={key} />;
+    await act(async () => {
+      root.render(
+        <>
+          <Fresh avatar="b04-owl" size={240} source={source} fallback={bell("owl")} />
+          <Fresh avatar="d08-origami" size={240} source={source} fallback={bell("origami")} />
+          <Fresh avatar="b04-owl" size={120} source={source} fallback={bell("small")} />
+        </>,
+      );
+    });
+    await settle(host);
+    const boxes = [...host.querySelectorAll("[data-avatar]")] as HTMLElement[];
+    expect(boxes).toHaveLength(3);
+    for (const box of boxes) {
+      expect(box.getAttribute("data-face")).toBe("unavailable");
+      expect(box.querySelector("canvas")).toBeNull();
+      expect(box.querySelector(".bell")).not.toBeNull();
+    }
+    expect(boxes.map((b) => b.querySelector(".bell")!.getAttribute("data-fallback"))).toEqual(["owl", "origami", "small"]);
+    expect(boxes[2]!.style.width).toBe("120px");
+    expect(warn).toHaveBeenCalledTimes(1);
+    await act(async () => root.unmount());
+  });
+});

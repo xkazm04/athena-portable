@@ -168,6 +168,16 @@
   border-color: var(--accent);
   background: var(--wash);
 }
+/* a form this computer cannot draw: offered, not choosable */
+.waking__face[aria-disabled="true"] {
+  color: var(--muted-foreground);
+  border-color: var(--line);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.waking__face-blank {
+  display: block;
+}
 .waking__face-name {
   font-size: 0.875rem;
 }

@@ -9,6 +9,9 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// The face cards are offered only where WebGL2 can draw; this suite is about the act, not the machine.
+vi.mock("@/avatar/support", () => ({ canDrawFace: () => true }));
+
 import type { AvatarId } from "@/avatar/types";
 import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
 
