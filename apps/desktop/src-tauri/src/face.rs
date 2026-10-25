@@ -1,4 +1,4 @@
-//! Athena's face, mirrored to Main (the ADR on Athena's face; ADR 0026, ADR 0027's 30 Hz cap).
+//! Athena's face, mirrored to Main (the ADR on Athena's face; ADR 0026, ADR 0027's face cap, 40 Hz since its 2026-10-25 amendment).
 //!
 //! **One producer.** The `athena` window owns her voice, so it reduces the voice, its mouth
 //! timeline and its motion track to one `FaceSignal` a frame (`src/avatar/types.ts`) and calls

@@ -183,3 +183,7 @@ Not reached: her window and Main agreeing within 0.05 at every segment's midpoin
 agrees; the gap is a short vowel after a jump in level that the mirror sees a frame late. Sending
 every shape change at once measured 1 of 55 at 32.7 signals a second, which loosens ADR 0027's
 cap: left to the owner.
+
+Decided 2026-10-25, owner-approved in triage: ADR 0027's amendment of that date raises the face
+mirror's cap to 40 Hz and sends every shape change at once. All 55 midpoints now agree within
+0.05, at 32.7 signals a second.

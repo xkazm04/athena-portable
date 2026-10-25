@@ -16,7 +16,9 @@ import { Player } from "@/lib/voice-player";
 import { resetRunForTests, useRun } from "@/stores/run";
 import { applyVoiceConfig, resetVoiceForTests, setVoiceDeps, useVoice } from "@/stores/voice";
 
-import { MIRROR_PERIOD_MS, VISEME_LEAD_S, liveFaceDeps, startFace, type FaceDeps, type FaceInputs } from "./face-signal";
+import { FACE_MIRROR_HZ } from "@/lib/face";
+
+import { FACE_REFRESH_HZ, MIRROR_PERIOD_MS, VISEME_LEAD_S, liveFaceDeps, startFace, type FaceDeps, type FaceInputs } from "./face-signal";
 
 /** A frame loop the test steps; counts how many times one was started. */
 function steppedLoop() {
@@ -121,7 +123,13 @@ describe("the producer, against fakes", () => {
     expect(f.mirrored.every((m) => m.signal.level === 0 && m.signal.open === 0)).toBe(true);
   });
 
-  it("feeds her own window every frame but mirrors at most 30 a second, whatever the frame rate", () => {
+  it("the cap is pinned: 40 signals a second, the steady refresh 30 beneath it (ADR 0027, amended 2026-10-25)", () => {
+    expect(FACE_MIRROR_HZ).toBe(40);
+    expect(FACE_REFRESH_HZ).toBe(30);
+    expect(MIRROR_PERIOD_MS).toBeCloseTo(1000 / 30, 6);
+  });
+
+  it("feeds her own window every frame but mirrors at most 40 in any second, whatever the frame rate", () => {
     for (const frameMs of [1, 1000 / 60, 1000 / 144, 1000 / 30]) {
       const f = fake();
       stopFace = startFace(f.deps);
@@ -129,17 +137,25 @@ describe("the producer, against fakes", () => {
       expect(f.loop.running()).toBe(true);
       let frames = 0;
       for (let t = frameMs; t <= 3000; t += frameMs) {
-        f.level(0.3 + 0.4 * Math.abs(Math.sin(t / 37))); // a voice: every frame differs
+        f.level(0.3 + 0.4 * Math.abs(Math.sin(t / 37))); // a voice: every frame differs, and the mouth's target with it
         f.at(t);
         frames += 1;
       }
       const speaking = f.mirrored.filter((m) => m.signal.phase === "speaking");
       expect(f.local.length).toBeGreaterThanOrEqual(frames);
-      // Three seconds: at most 3 x 30, plus the frame that opened the window.
-      expect(speaking.length).toBeLessThanOrEqual(91);
-      // And no two frames closer than half a period, so the cap is not met by bursts.
+      // Three seconds: at most 3 x 40, plus the frame that opened the window.
+      expect(speaking.length, `${frameMs} ms frames`).toBeLessThanOrEqual(121);
+      // No one-second window over 40 (the opening frame aside), so the cap is not met by averaging.
+      const at = speaking.slice(1).map((m) => m.at);
+      for (let k = 0; k < at.length; k += 1) {
+        let n = 0;
+        while (k + n < at.length && at[k + n] < at[k] + 1000) n += 1;
+        expect(n, `${frameMs} ms frames, the second from ${at[k].toFixed(1)} ms`).toBeLessThanOrEqual(40);
+      }
+      // No two frames closer than half a cap period, and no gap past a cap window (200 ms) and a refresh.
       for (let i = 1; i < speaking.length; i += 1) {
-        expect(speaking[i].at - speaking[i - 1].at).toBeGreaterThanOrEqual(MIRROR_PERIOD_MS / 2 - 2);
+        expect(speaking[i].at - speaking[i - 1].at).toBeGreaterThanOrEqual(1000 / 40 / 2 - 0.01);
+        expect(speaking[i].at - speaking[i - 1].at).toBeLessThanOrEqual(200 + MIRROR_PERIOD_MS + frameMs);
       }
       if (frameMs <= 1000 / 60) expect(speaking.length).toBeGreaterThanOrEqual(85);
       stopFace();

@@ -1,7 +1,7 @@
 /**
  * One mouth (ADR 0120, "Measured"): the producer in the athena window shapes the opening from the
  * one viseme table, and every face's driver follows it, so her own window (every frame) and Main
- * (the 30 Hz mirror) draw the same mouth, and a closure shuts on both.
+ * (the 40 Hz mirror) draw the same mouth, and a closure shuts on both.
  *
  * The line is the calm fixture run through the real producer (`startFace`) and the real timeline
  * (`addVisemes`, closure floor included) on a stepped 60 fps clock, then through two drivers.
@@ -120,7 +120,7 @@ describe("one mouth table", () => {
 });
 
 describe("closures shut on every surface", () => {
-  it("Main, fed the 30 Hz mirror of the calm line: each PP holds <= 0.05 for two frames running", () => {
+  it("Main, fed the mirror of the calm line: each PP holds <= 0.05 for two frames running", () => {
     const { local, mirrored } = speak(CALM_DURATION, calmLine(), calmLevel);
     const main = drive(mirrored);
     const runs: number[][] = [];
@@ -154,8 +154,8 @@ describe("closures shut on every surface", () => {
       if (i < 1 || i >= local.length) continue;
       compared += 1;
       const gap = Math.abs(own[i] - main[i]);
-      // Measured 2026-10-25 on this line: max 0.118 across 55 midpoints (a 3-frame vowel after a
-      // jump in level, which the 30 Hz mirror sees one frame late).
+      // Measured 2026-10-25 on this line under the 30 Hz mirror: max 0.118 across 55 midpoints (a
+      // 3-frame vowel after a jump in level, seen one frame late). The full case is the next test.
       expect(gap, `${v} at frame ${i}`).toBeLessThanOrEqual(0.15);
       if (v !== "PP" && v !== "FF") continue;
       closures += 1;
@@ -165,10 +165,37 @@ describe("closures shut on every surface", () => {
     expect(closures).toBe(7);
   });
 
-  // The card's full case: <= 0.05 at EVERY midpoint. Not reachable under the 30 Hz mirror cap
-  // (11 of 55 midpoints over, the same order as before the change); mirroring every shape change
-  // at once measured 1 of 55 at 32.7 signals a second, which loosens ADR 0027's cap: owner's call.
-  it.todo("her window and Main differ by <= 0.05 at every segment's midpoint (needs every shape change mirrored at once)");
+  it("her window and Main differ by <= 0.05 at every segment's midpoint", () => {
+    const line = calmLine();
+    const { local, mirrored } = speak(CALM_DURATION, line, calmLevel);
+    const own = drive(local);
+    const main = drive(mirrored);
+    const lead = Math.round(VISEME_LEAD_S * RATE);
+    const over: string[] = [];
+    let compared = 0;
+    for (const [v, a, b] of line.shapes[0].segments) {
+      const i = Math.round(((a + b) / 2 - lead) / RATE / FRAME);
+      if (i < 1 || i >= local.length) continue;
+      compared += 1;
+      const gap = Math.abs(own[i] - main[i]);
+      if (gap > 0.05) over.push(`${v} at frame ${i}: ${gap.toFixed(3)}`);
+    }
+    expect(compared).toBeGreaterThan(50);
+    expect(over, `${over.length} of ${compared} midpoints over 0.05`).toEqual([]);
+  });
+
+  it("the calm line's mirror stays inside the 40 Hz cap: no one-second window carries more than 40 signals", () => {
+    const { mirrored } = speak(CALM_DURATION, calmLine(), calmLevel);
+    const at = mirrored.flatMap((s, i) => (s ? [i * FRAME_MS] : []));
+    let most = 0;
+    for (let k = 0; k < at.length; k += 1) {
+      let n = 0;
+      while (k + n < at.length && at[k + n] < at[k] + 1000) n += 1;
+      most = Math.max(most, n);
+    }
+    expect(at.length).toBeGreaterThan(CALM_DURATION * 30);
+    expect(most).toBeLessThanOrEqual(40);
+  });
 
   it("a level-only line: breath at 0.15 held 300 ms keeps the mouth shut, as the producer says", () => {
     const { local } = speak(0.3, null, () => 0.15);

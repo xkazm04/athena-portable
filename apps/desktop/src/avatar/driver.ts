@@ -143,7 +143,7 @@ export function speechTarget(signal: Pick<FaceSignal, "viseme" | "level" | "open
 
 /**
  * The face's own jaw on top of the producer's: opening over 35 ms (softer than the producer's 22,
- * which keeps a surface fed every frame and one fed the 30 Hz mirror close), closing over the
+ * which keeps a surface fed every frame and one fed the 40 Hz mirror close), closing over the
  * producer's 12 ms so a closure reads.
  */
 const OPEN_TAU_S = 0.035;

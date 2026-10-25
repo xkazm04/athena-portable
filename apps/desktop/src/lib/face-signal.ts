@@ -4,8 +4,9 @@
  * The `athena` window owns her voice, so it is the only place that knows what her face does. Each
  * frame while she listens or speaks, this file reduces the voice and run stores, the playback
  * level, the line's mouth timeline and its motion track to one `FaceSignal`; it hands every frame
- * to `localFaceSource` (her own window draws from it) and mirrors it to Main through `athenaFace`
- * at most `FACE_MIRROR_HZ` times a second. At rest it sends once per change and runs no loop.
+ * to `localFaceSource` (her own window draws from it) and mirrors it to Main through `athenaFace`:
+ * every shape change at once, a steady `FACE_REFRESH_HZ` between them, never more than
+ * `FACE_MIRROR_HZ` signals in any second. At rest it sends once per change and runs no loop.
  *
  * - **Phase** is her presence's (`createPresence` in `lib/halo.ts`, the one reducer the halo reads
  *   too): synthesis runs ahead of playback, so `voice.stopped` can arrive while the end of her line
@@ -22,7 +23,7 @@
  * still shows her speaking while her own window is out of sight.
  */
 import type { FacePhase, FaceSignal } from "@/avatar/types";
-import { CLOSURES, mouthTarget, smoothOpen } from "@/avatar/visemes";
+import { mouthTarget, smoothOpen } from "@/avatar/visemes";
 import { FACE_MIRROR_HZ, athenaFace, publishLocalFace } from "@/lib/face";
 import { FACE_LINE_SINK, clearLine, faceTimeline, motionAt, visemeAt, type FaceTimeline } from "@/lib/face-timeline";
 import { LEVEL_FRAME_MS, createPresence } from "@/lib/halo";
@@ -34,8 +35,28 @@ import { setFaceLineSink, useVoice, type VoicePhase } from "@/stores/voice";
 /** How far ahead of the sound the mouth shape is read: the spike's 35 ms. */
 export const VISEME_LEAD_S = 0.035;
 
-/** The mirror's period, and the slack a frame clock's jitter is allowed against it. */
-export const MIRROR_PERIOD_MS = 1000 / FACE_MIRROR_HZ;
+/**
+ * The mirror's steady refresh between shape changes (a level-only frame), and its period. The cap
+ * (`FACE_MIRROR_HZ`, 40) is the hard ceiling; the gap between the two is the room a shape change
+ * sent at once spends (ADR 0027, amendment 2026-10-25).
+ */
+export const FACE_REFRESH_HZ = 30;
+export const MIRROR_PERIOD_MS = 1000 / FACE_REFRESH_HZ;
+
+/** How far the mouth's target (`mouthTarget(viseme, level)`) moves before it counts as a new shape. */
+export const SHAPE_STEP = 0.1;
+
+/**
+ * The cap is counted over this window: no more than `CAP_PER_WINDOW` (`FACE_MIRROR_HZ` scaled to
+ * it, 8) signals in any one, so no second carries more than `FACE_MIRROR_HZ` (five windows tile
+ * it), and a burst of shape changes holds the refresh back for one window at most, never a second.
+ * Measured on the calm line: 200 ms holds none of its 7 closures back; 100 ms and 250 ms each
+ * held one or two, so this is not a free knob.
+ */
+const CAP_WINDOW_MS = 200;
+const CAP_PER_WINDOW = Math.round((FACE_MIRROR_HZ * CAP_WINDOW_MS) / 1000);
+/** The closest two signals ever go: half a cap period. */
+const MIN_GAP_MS = 1000 / FACE_MIRROR_HZ / 2;
 const MIRROR_JITTER_MS = 2;
 
 /** What the producer reads from the stores. */
@@ -155,6 +176,10 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   let lastViseme: FaceSignal["viseme"] = null;
   let lastKey = "";
   let due = Number.NEGATIVE_INFINITY;
+  /** When each signal in the last `CAP_WINDOW_MS` was mirrored, oldest first. */
+  const sent: number[] = [];
+  /** The mouth target of the last signal mirrored. */
+  let lastTarget = 0;
   let stopLoop: (() => void) | null = null;
 
   const phaseOf = (inputs: FaceInputs): FacePhase => presence.phase(inputs);
@@ -200,20 +225,29 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   };
 
   /**
-   * Mirror a frame: a phase change or a closure's first frame at once (a closure is shorter than two
-   * mirror periods, so waiting for the cap can lose it), otherwise no faster than the cap; never
-   * twice the same.
+   * Mirror a frame. A phase change goes at once, always. A shape change goes at once while the cap
+   * has room: a new viseme, or the mouth's target moved more than `SHAPE_STEP` since the last
+   * signal mirrored (Main's driver aims at `mouthTarget(viseme, level)`, so a level jump inside a
+   * vowel is a new shape to it; a 3-frame vowel cannot wait a refresh). Anything else waits for
+   * the steady refresh. No more than `FACE_MIRROR_HZ` signals in any second; never twice the same.
    */
   const mirror = (signal: FaceSignal, now: number) => {
-    const onset = signal.viseme !== null && signal.viseme !== lastViseme && CLOSURES.has(signal.viseme);
-    const changed = signal.phase !== lastPhase || onset;
+    const target = signal.phase === "speaking" ? mouthTarget(signal.viseme, signal.level) : 0;
+    const shape = signal.viseme !== lastViseme || Math.abs(target - lastTarget) > SHAPE_STEP;
+    const phased = signal.phase !== lastPhase;
     lastPhase = signal.phase;
     lastViseme = signal.viseme;
     const key = JSON.stringify(signal);
     if (key === lastKey) return;
-    if (!changed && now < due - MIRROR_JITTER_MS) return;
+    while (sent.length > 0 && sent[0] <= now - CAP_WINDOW_MS) sent.shift();
+    const spaced = sent.length === 0 || now - sent[sent.length - 1] >= MIN_GAP_MS;
+    const room = spaced && sent.length < CAP_PER_WINDOW;
+    const changed = phased || (shape && room);
+    if (!changed && (now < due - MIRROR_JITTER_MS || !room)) return;
     lastKey = key;
-    // On schedule the next slot is one period on; a late or first frame restarts the schedule.
+    lastTarget = target;
+    sent.push(now);
+    // On schedule the next slot is one period on; a change, a late or a first frame restarts it.
     due = !changed && now - due < MIRROR_PERIOD_MS ? Math.max(due + MIRROR_PERIOD_MS, now + MIRROR_PERIOD_MS / 2) : now + MIRROR_PERIOD_MS;
     deps.mirror(signal);
   };

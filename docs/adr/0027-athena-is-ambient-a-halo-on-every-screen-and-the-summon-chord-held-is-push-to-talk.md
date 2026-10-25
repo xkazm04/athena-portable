@@ -118,3 +118,35 @@ reduced motion and Calm lose nothing it says.
 - **What it says.** Always a sentence of hers, never the raw detail, which can carry a URL, a
   socket address or a key: ended-utterance sentences as they are, a run failure and a daemon turn
   error's code through `plainFailure`, and every other voice failure one fixed sentence.
+
+## Amendment, 2026-10-25: her face's mirror is capped at 40 Hz, and every mouth shape goes at once
+
+Owner-approved in triage 2026-10-25 (follow-up C4 of challenge-2026-10-25). Decision 7's 30 Hz is
+the halo's level frame and stays. Her face's mirror to Main (`athena_face`, ADR 0120 decision 4)
+used the same number, and under it Main's mouth could not keep up with her own window's: on the
+calm fixture, 11 of 55 segment midpoints differed by more than 0.05 (max 0.118), each a short
+vowel after a jump in level that the mirror saw a frame late. Mirroring every shape change at once
+measured 32.7 signals a second, over the old cap and well under the new one.
+
+- **The cap is 40 signals in any second** (`FACE_MIRROR_HZ`), counted over 200 ms windows of at
+  most 8, which five windows tile, so a burst holds the rest back for one window at most. No two
+  signals go closer than half a cap period (12.5 ms). Only a phase change ignores the cap; phases
+  change a few times a turn.
+- **Between shape changes the mirror refreshes at 30 Hz** (`FACE_REFRESH_HZ`), as before. The
+  extra 10 a second are for shape changes.
+- **A shape change goes at once while the cap has room.** That means a new viseme, or the mouth's
+  target (`mouthTarget(viseme, level)`, the target Main's driver aims at) moving more than 0.1 since
+  the last signal mirrored. This replaces the closure-only bypass of ADR 0120's "Measured" section.
+  A closure is a viseme change, so it still goes at once.
+- **Measured on the calm line:** all 55 midpoints within 0.05 (before: 11 over). 32.7 signals a
+  second on average at 60 fps, and no second over 34. 33.4 at 144 fps, no second over 36. 29.7
+  at 30 fps. All 7 closures are mirrored on the frame they begin. The window length is
+  not a free knob: 100 ms and 250 ms windows each held a closure back on this line.
+- **Pinned:** `face-signal.test.ts` asserts the constants (40 and 30). Under a voice that changes
+  every frame, at 1, 60, 144 and 30 fps, it checks that no second carries more than 40, no two
+  signals are closer than 12.5 ms, and no gap is longer than one window and a refresh.
+  `mouth.test.ts` asserts the midpoint agreement and the calm line's 40-a-second ceiling.
+
+Consequences: Main gets about 7% more `athena:face` events while she speaks (32.7 against 30.5
+a second on the calm line). Her own window and the halo are unchanged. The Bell reads only phase
+changes (ADR 0222), and the halo has its own 30 Hz loop.

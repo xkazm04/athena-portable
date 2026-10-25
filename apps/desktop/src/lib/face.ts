@@ -2,7 +2,7 @@
  * The face signal across windows (ADR on Athena's face; ADR 0026, 0027, 0092).
  *
  * The athena window owns her voice, so it produces the `FaceSignal` (`lib/face-signal.ts`) and
- * calls `athenaFace` (the Rust command `athena_face`, at most 30 times a second while she listens
+ * calls `athenaFace` (the Rust command `athena_face`, at most 40 times a second while she listens
  * or speaks, once on every phase change otherwise); Rust re-emits it to Main as the `athena:face`
  * event. Main surfaces read it through `mainFaceSource()`. Her own window reads the producer
  * directly through `localFaceSource()`, every frame, without the cap. A preview played inside
@@ -18,8 +18,11 @@ import { frames } from "@/lib/motion";
 /** The Tauri event Main receives. */
 export const FACE_EVENT = "athena:face";
 
-/** The most frames per second the athena window mirrors (ADR 0027's halo cap). */
-export const FACE_MIRROR_HZ = 30;
+/**
+ * The most frames the athena window mirrors in any second (ADR 0027, amended 2026-10-25: the face
+ * mirror's own cap, above the halo's 30 Hz, so every mouth shape change can go at once).
+ */
+export const FACE_MIRROR_HZ = 40;
 
 /** The Rust command behind `athenaFace`. */
 export const FACE_COMMAND = "athena_face";
@@ -97,7 +100,7 @@ let mirrorFailing = false;
 
 /**
  * Mirror one signal to Main (athena window only). Never throws: a refusal is counted and said once
- * per run of failures, because a shell from before the command refuses every frame at 30 Hz.
+ * per run of failures, because a shell from before the command refuses every frame at 40 Hz.
  * Without a shell there is no Main to mirror to and nothing is called.
  */
 export async function athenaFace(signal: FaceSignal): Promise<void> {
@@ -126,7 +129,7 @@ export function publishLocalFace(signal: FaceSignal): void {
 
 /**
  * The athena window's own view of her face: the producer's signals, every frame, without the
- * 30 Hz cap (her companion window draws from this, not from the mirror).
+ * 40 Hz cap (her companion window draws from this, not from the mirror).
  */
 export function localFaceSource(): FaceSource {
   return { subscribe: (listener) => local.add(listener) };
