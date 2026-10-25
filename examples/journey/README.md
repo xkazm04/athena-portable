@@ -206,7 +206,7 @@ JOURNEY_GRAVITONE=1 JOURNEY_GRAVITONE_LIVE=1 pnpm --filter @athena/journey exec 
   reaches the daemon only as `GRAVITONE_MCP_TOKEN`. The page enters through Gravitone's local entry.
 - **Daemon (`src/daemon.ts`).** `serve_scripted.py` with a recorded transcript, or the real
   `athena serve` for the live test, each with a temp `ATHENA_HOME` whose `mcp.json` names Gravitone
-  (ADR 0123). This file is the surface: it registers the page's manifest, runs a page tool call the
+  (ADR 0144). This file is the surface: it registers the page's manifest, runs a page tool call the
   turn hands out through the bridge, and returns its answer as `tool_results` on the next `/run`.
 - **A, the MCP link.** `connector.gravitone.gt_read` lists projects in-daemon; `gt_launch` compose
   files a card (a family tool is `GATED` when any of its ops is destructive or open-world), the

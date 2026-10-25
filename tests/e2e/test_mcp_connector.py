@@ -1,4 +1,4 @@
-"""An MCP server's tool, called from a turn of the real daemon (README §4; ADR 0123).
+"""An MCP server's tool, called from a turn of the real daemon (README §4; ADR 0144).
 
 ``serve_scripted.py`` with ``--no-connectors`` and ``--mcp-config`` pointing at a file that names
 the loopback fake of ``tests/connectors/mcp_fake.py``. The engine is a recorded transcript; the

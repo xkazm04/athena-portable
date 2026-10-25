@@ -1,4 +1,4 @@
-"""MCP servers as connector ports: an external server's tools in the catalog (README §4; ADR 0123).
+"""MCP servers as connector ports: an external server's tools in the catalog (README §4; ADR 0144).
 
 - :mod:`athena.connectors.mcp.config` — ``ATHENA_HOME/mcp.json``: which servers, where, and which
   environment variable holds each one's token.

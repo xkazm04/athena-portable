@@ -5,7 +5,7 @@
     its age, the setup guide, the tools it yields. ``records_notice`` is empty, or says in plain
     words that the connections file could not be read and where its bytes were kept. Nothing here
     is or names a credential; the record has no such field to leak. ``mcp_servers`` lists each
-    configured MCP server (ADR 0123): its id, origin, URL, token variable's name and whether it is
+    configured MCP server (ADR 0144): its id, origin, URL, token variable's name and whether it is
     set, health (``healthy``, ``broken`` or ``unknown``) and tools. With no vault
     (``--no-connectors``) and an MCP server configured, this route still answers, with no
     ``connectors`` and the servers alone.

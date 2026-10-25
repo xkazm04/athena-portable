@@ -239,7 +239,7 @@ test("athena establishes MCP with gravitone", async ({ page }, info) => {
 
   // `gt_launch` is GATED, not AUTO: in Gravitone's family projection a tool's annotations are the
   // most severe of its ops' (registry.ts), and gt_launch holds `discard` (destructiveHint) and the
-  // launches (openWorldHint), so ADR 0123's mapping files a card. The harness approves exactly that
+  // launches (openWorldHint), so ADR 0144's mapping files a card. The harness approves exactly that
   // card, as the user would, and the approved call runs in the daemon on `POST /decisions/<id>`.
   const turn = await exchange(
     daemon,

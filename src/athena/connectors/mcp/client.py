@@ -1,4 +1,4 @@
-"""A stdlib MCP client over Streamable HTTP: initialize, list, call (README §4; ADR 0123).
+"""A stdlib MCP client over Streamable HTTP: initialize, list, call (README §4; ADR 0144).
 
 Only the client half of MCP that a connector port needs, hand-rolled on ``urllib`` like the vault:
 

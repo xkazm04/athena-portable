@@ -1,4 +1,4 @@
-"""The MCP servers this Athena may list and call: ``ATHENA_HOME/mcp.json`` (README §4; ADR 0123).
+"""The MCP servers this Athena may list and call: ``ATHENA_HOME/mcp.json`` (README §4; ADR 0144).
 
 One file, one shape::
 

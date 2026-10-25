@@ -214,7 +214,7 @@ class AthenaLocal:
     adopt: AdoptStudio | None = None
     #: The peer host behind ``/devices`` and the overlay listener (ADR 0140), or ``None``.
     peer: PeerHost | None = None
-    #: One port per configured MCP server, by id (ADR 0123). Empty for none.
+    #: One port per configured MCP server, by id (ADR 0144). Empty for none.
     mcp: dict[str, McpService] | None = None
     #: This PC's room - probe, gate, sampler - behind ``/vitals`` and the hello (ADR 0143).
     vitals: VitalsService | None = None
@@ -297,7 +297,7 @@ def build_local(
     connect or disconnect re-merges at once. ``None`` — a test's default — is a deployment with
     no connector it may ever call, which is what rule 4 refuses closed.
 
-    ``mcp`` is the MCP servers configuration (``ATHENA_HOME/mcp.json``, ADR 0123): each server is
+    ``mcp`` is the MCP servers configuration (``ATHENA_HOME/mcp.json``, ADR 0144): each server is
     a connector port under ``connector:<id>``, its tools listed now and, while it holds none, again
     as a turn starts; rule 4 asks the server's own port whether it is live, and the vault for every
     other id. ``None`` — a test's default — is no MCP servers.
@@ -529,7 +529,7 @@ def _wire_connectors(
 def _wire_mcp(
     daemon: AthenaDaemon, catalog: Catalog, services: dict[str, McpService], *, routes: bool
 ) -> None:
-    """List every MCP server now, list again as a turn starts while one holds none (ADR 0123).
+    """List every MCP server now, list again as a turn starts while one holds none (ADR 0144).
 
     A listing the catalog refuses — a tool name that is not a slug, an array with no
     ``maxItems`` — is refused whole as a page's manifest is: the server holds no tools, its view

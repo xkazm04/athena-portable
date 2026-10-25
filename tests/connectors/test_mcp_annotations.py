@@ -1,4 +1,4 @@
-"""The annotation mapping table of ADR 0123, row by row (connectors/mcp/annotations.py)."""
+"""The annotation mapping table of ADR 0144, row by row (connectors/mcp/annotations.py)."""
 
 from __future__ import annotations
 

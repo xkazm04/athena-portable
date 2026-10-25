@@ -21,7 +21,7 @@ Four rules, evaluated in order, first refusal wins (Cedar's forbid-overrides-per
    every call rather than captured at merge time, so switching a connector off is immediate. A
    deployment with no vault has no connector it may call, and the refusal names the connector
    rather than saying "no". An MCP server's id is answered by that server's own port — live while
-   its token variable is set — through :class:`ConnectorStates` (ADR 0123).
+   its token variable is set — through :class:`ConnectorStates` (ADR 0144).
 
 Why these run before the validator rather than beside it: a validator answers "are these
 parameters acceptable for this tool", which presumes the tool is addressable here. Asking the
@@ -83,7 +83,7 @@ class ConnectorStatePort(Protocol):
 
 @dataclass(frozen=True)
 class ConnectorStates:
-    """Rule 4's one port over more than one owner of ``connector:`` ids (ADR 0123).
+    """Rule 4's one port over more than one owner of ``connector:`` ids (ADR 0144).
 
     ``owners`` maps an id to the port that answers for it alone — an MCP server answers for its
     own id — and every other id goes to ``fallback``, the vault, exactly as it would without

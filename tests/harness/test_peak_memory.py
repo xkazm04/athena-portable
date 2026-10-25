@@ -22,7 +22,9 @@ MEASURED = sys.platform == "win32" or sys.platform.startswith("linux")
 #: a Linux child's high-water mark between its stdout closing and its exit.
 ALLOCATE = (
     "import sys, time\n"
-    "block = bytearray(200 * 1024 * 1024)\n"
+    # A non-zero fill touches every page: ``bytearray(n)`` alone is calloc'd zero pages, which a
+    # Linux kernel never makes resident, so its VmHWM would stay at the interpreter's own size.
+    "block = bytearray(b'\\x01') * (200 * 1024 * 1024)\n"
     "print('done', flush=True)\n"
     "sys.stdout.close()\n"
     "time.sleep(0.5)\n"

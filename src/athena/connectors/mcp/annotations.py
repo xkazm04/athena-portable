@@ -1,4 +1,4 @@
-"""MCP tool annotations as the manifest flags the catalog classes by (README §3.3, §4; ADR 0123).
+"""MCP tool annotations as the manifest flags the catalog classes by (README §3.3, §4; ADR 0144).
 
 The catalog decides ``AUTO`` or ``GATED`` from ``reversible`` and ``side_effects`` and from nothing
 else (ADR 0004), so an MCP server's tool is classed by translating its MCP annotations into those
