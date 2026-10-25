@@ -69,6 +69,8 @@ export interface BdHistoryRow {
   /** The activity row id, which is what `undoAction` takes. */
   id: number;
   ts: string;
+  /** Who ran the act, as the band prints it: "Athena", "You", or "Hirelane" for the seed. */
+  by: string;
   action: string;
   summary: string;
   undone: boolean;

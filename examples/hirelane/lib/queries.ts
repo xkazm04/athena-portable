@@ -8,6 +8,8 @@ import "server-only";
  * never unused to tsc, and eslint-config-next tracks no cross-module reachability - so the
  * domain layer read as twice the size of the shipped surface for as long as nobody counted.
  */
+import type { Actor } from "@athena/demo-kit/activity";
+
 import { db } from "./db";
 import type {
   Applicant,
@@ -93,6 +95,8 @@ export function latestScorecards(roleId: string): Record<string, CriterionScore[
 export interface ApplicantActivity {
   id: number;
   ts: string;
+  /** Who ran it: the person, Athena through the same actions, or the seed. */
+  actor: Actor;
   action: string;
   summary: string;
   reversible: boolean;
@@ -115,8 +119,8 @@ interface ApplicantActivityRow extends Omit<ApplicantActivity, "reversible" | "u
  */
 export function applicantHistory(limit: number): Record<string, { rows: ApplicantActivity[]; total: number }> {
   const rows = db().all<ApplicantActivityRow>(
-    `SELECT id, ts, action, summary, reversible, undone, applicant_id, total FROM (
-       SELECT id, ts, action, summary, reversible, undone,
+    `SELECT id, ts, actor, action, summary, reversible, undone, applicant_id, total FROM (
+       SELECT id, ts, actor, action, summary, reversible, undone,
               substr(target, length('applicant:') + 1) AS applicant_id,
               ROW_NUMBER() OVER (PARTITION BY target ORDER BY id DESC) AS rn,
               COUNT(*) OVER (PARTITION BY target) AS total

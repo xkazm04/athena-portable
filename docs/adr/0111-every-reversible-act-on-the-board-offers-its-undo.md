@@ -42,6 +42,7 @@ and named that remedy ("use Undo on the activity row that made it"), although `d
   `applyUndo`'s existing behaviour. The band makes this reachable. It does not change it.
 - The `actor` column says `user` for acts the agent ran through the same actions, so the band
   does not print an actor rather than print a wrong one.
+  Closed by ADR 0205: every act now logs who ran it, and the band prints "Athena" or "You".
 - Rollback is one `git revert`. The kit's action argument is optional, so reverting only the
   hirelane side leaves the kit and its other consumers working. No schema change: the activity
   table and `undoActivity` already existed.

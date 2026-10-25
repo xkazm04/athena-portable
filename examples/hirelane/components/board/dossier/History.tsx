@@ -5,8 +5,8 @@
  *
  * It sits in the reading column and not in the action bar: ADR 0022 won the bar's height back for
  * the evidence, and a list of past acts is something to read, not a control to reach for. The acts
- * the agent ran are here too - they are the ones the reader most needs to find - and each
- * reversible, not-undone row carries its Undo. A row with no way back says why in words
+ * the agent ran are here too - they are the ones the reader most needs to find, so each row
+ * opens with who ran it, "Athena" or "You" - and each reversible, not-undone row carries its Undo. A row with no way back says why in words
  * (`components/board/history.ts` decides which, and what) instead of drawing a dead control.
  */
 import { fmtWhen } from "../format";
@@ -30,13 +30,15 @@ export function DossierHistory({ candidate }: { candidate: BdCandidate }) {
             {history.map((row) => (
               <li key={row.id} className="bd-history-row" data-undone={row.undone}>
                 <span className="bd-history-when">{fmtWhen(row.ts)}</span>
-                <span className="bd-history-what">{row.summary}</span>
+                <span className="bd-history-what">
+                  {row.by} - {row.summary}
+                </span>
                 {row.undoable ? (
                   <button
                     type="button"
                     className="bd-btn"
                     disabled={pending}
-                    aria-label={`Undo: ${row.summary}`}
+                    aria-label={`Undo: ${row.by} - ${row.summary}`}
                     onClick={() => undo(row.id)}
                   >
                     Undo

@@ -12,7 +12,11 @@
  *
  * An act with no way back says why in words rather than drawing a disabled control, because a
  * dead button reads as "not yet" and these are "never".
+ *
+ * Each row also says who ran the act. The agent runs the same actions the person does, and the
+ * band exists so the reader can find what she did; `app/commit.ts` writes the actor once per row.
  */
+import type { Actor } from "@athena/demo-kit/activity";
 import type { BdHistoryRow } from "./model";
 
 /** How many acts the History band shows. A band in a reading column, not a log. */
@@ -25,10 +29,18 @@ export const NO_UNDO = {
   undo: "the undo of an earlier act",
 } as const;
 
+/** Who ran an act, in the words the band prints before its summary. */
+export const BY: Record<Actor, string> = {
+  user: "You",
+  athena: "Athena",
+  system: "Hirelane",
+};
+
 /** An activity row, as `lib/queries.ts` hands it over. */
 export interface HistoryEntry {
   id: number;
   ts: string;
+  actor: Actor;
   action: string;
   summary: string;
   reversible: boolean;
@@ -40,6 +52,7 @@ export function historyRow(entry: HistoryEntry): BdHistoryRow {
   const base = {
     id: entry.id,
     ts: entry.ts,
+    by: BY[entry.actor],
     action: entry.action,
     summary: entry.summary,
     undone: entry.undone,

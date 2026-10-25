@@ -9,10 +9,16 @@
  * Each action's writes run in one `withTx`, the change and its activity row together, as
  * `examples/ledgerbox/app/actions.ts` does. A row that fails to log takes the change back with it,
  * so a rejection can never stand on file with no row saying it was sent (`test/atomic.test.ts`).
+ *
+ * Every row goes through `commitAct` (`app/commit.ts`), which writes who ran the act and derives
+ * its class from the manifest. Each action takes a trailing `actor`, "user" unless the agent's
+ * handler says "athena", and refuses anything else before it writes.
  */
 import { revalidatePath } from "next/cache";
-import { logActivity, undoActivity, type ActivityEntry, type UndoVerdict } from "@athena/demo-kit/activity";
+import { undoActivity, type ActivityEntry, type UndoVerdict } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
+
+import { actorRefusal, commitAct, type Actor, type Undo } from "./commit";
 
 import {
   canBook,
@@ -81,6 +87,12 @@ function refresh(): void {
   revalidatePath("/");
 }
 
+/** The refusal for an actor outside the closed set, as an action answers it. */
+function badActor(actor: unknown): ActionResult | null {
+  const refused = actorRefusal(actor);
+  return refused ? { ok: false, message: refused } : null;
+}
+
 function missing(id: string): ActionResult {
   return { ok: false, message: `No applicant ${id}. It may have been removed since this page loaded.` };
 }
@@ -123,7 +135,9 @@ function allSlots(): ActSlot[] {
 }
 
 /** AUTO. Writes a scorecard as a note. Never touches the stage - a score is not a decision. */
-export async function scoreAgainstRubric(applicantId: string): Promise<ActionResult> {
+export async function scoreAgainstRubric(applicantId: string, actor: Actor = "user"): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   const scores = scoreAgainst(listCriteria(applicant.role_id), applicant.cv_text, applicant.short_answer);
@@ -133,12 +147,11 @@ export async function scoreAgainstRubric(applicantId: string): Promise<ActionRes
       "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, ?, 'rubric', ?, ?)",
       [applicantId, new Date().toISOString(), "user", body, JSON.stringify(scores)],
     );
-    return logActivity(tx, {
-      actor: "user",
-      action: "score_against_rubric",
+    return commitAct(tx, {
+      actor,
+      capability: "score_against_rubric",
       target: `applicant:${applicantId}`,
       summary: `Scored ${applicant.name} against the ${applicant.role_id.replace("role_", "")} rubric.`,
-      reversible: true,
       undo: { kind: "note", noteId: lastInsertRowid },
     });
   });
@@ -147,7 +160,9 @@ export async function scoreAgainstRubric(applicantId: string): Promise<ActionRes
 }
 
 /** AUTO. A note is the only place a judgement belongs before a stage changes. */
-export async function addNote(applicantId: string, text: string): Promise<ActionResult> {
+export async function addNote(applicantId: string, text: string, actor: Actor = "user"): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   const body = text.trim();
@@ -157,12 +172,11 @@ export async function addNote(applicantId: string, text: string): Promise<Action
       "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, 'user', 'note', ?, NULL)",
       [applicantId, new Date().toISOString(), body],
     );
-    return logActivity(tx, {
-      actor: "user",
-      action: "add_note",
+    return commitAct(tx, {
+      actor,
+      capability: "add_note",
       target: `applicant:${applicantId}`,
       summary: `Note on ${applicant.name}: ${body.slice(0, 80)}`,
-      reversible: true,
       undo: { kind: "note", noteId: lastInsertRowid },
     });
   });
@@ -170,13 +184,13 @@ export async function addNote(applicantId: string, text: string): Promise<Action
   return { ok: true, message: "Note added.", undoId };
 }
 
-function writeStage(tx: Db, applicantId: string, to: Stage, reason: string): number {
+function writeStage(tx: Db, applicantId: string, to: Stage, reason: string, actor: Actor): number {
   const now = new Date().toISOString();
   const from = getApplicant(applicantId)?.stage ?? null;
   tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [to, applicantId]);
   const { lastInsertRowid } = tx.run(
-    "INSERT INTO stage_events (applicant_id, ts, from_stage, to_stage, actor, reason) VALUES (?, ?, ?, ?, 'user', ?)",
-    [applicantId, now, from, to, reason],
+    "INSERT INTO stage_events (applicant_id, ts, from_stage, to_stage, actor, reason) VALUES (?, ?, ?, ?, ?, ?)",
+    [applicantId, now, from, to, actor, reason],
   );
   return lastInsertRowid;
 }
@@ -189,19 +203,20 @@ function writeStage(tx: Db, applicantId: string, to: Stage, reason: string): num
  * `move_stage` reverses a GATED decision - a rejected candidate walks back into Screening, logged
  * reversible:true, with no arming step - which is exactly the distinction this app exists to make.
  */
-export async function moveStage(applicantId: string, stage: Stage): Promise<ActionResult> {
+export async function moveStage(applicantId: string, stage: Stage, actor: Actor = "user"): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   if (decidedReason(applicant.stage)) return { ok: false, message: REFUSAL.decided_move(applicant) };
   if (!isMoveStage(stage)) return { ok: false, message: REFUSAL.not_a_move(stage) };
   const { id: undoId } = db().withTx((tx) => {
-    const eventId = writeStage(tx, applicantId, stage, `Moved to ${stage}.`);
-    return logActivity(tx, {
-      actor: "user",
-      action: "move_stage",
+    const eventId = writeStage(tx, applicantId, stage, `Moved to ${stage}.`, actor);
+    return commitAct(tx, {
+      actor,
+      capability: "move_stage",
       target: `applicant:${applicantId}`,
       summary: `${applicant.name}: ${STAGE_LABEL[applicant.stage]} to ${STAGE_LABEL[stage]}.`,
-      reversible: true,
       undo: { kind: "stage", applicantId, stage: applicant.stage, eventId },
     });
   });
@@ -210,7 +225,9 @@ export async function moveStage(applicantId: string, stage: Stage): Promise<Acti
 }
 
 /** GATED. Offer and rejection end someone's process; the log records them as final. */
-export async function decideStage(applicantId: string, stage: Stage): Promise<ActionResult> {
+export async function decideStage(applicantId: string, stage: Stage, actor: Actor = "user"): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   if (!isDecisionStage(stage)) {
@@ -219,13 +236,12 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
   const already = decided(applicant);
   if (already) return already;
   db().withTx((tx) => {
-    writeStage(tx, applicantId, stage, `Decision: ${stage}.`);
-    logActivity(tx, {
-      actor: "user",
-      action: "decide_stage",
+    writeStage(tx, applicantId, stage, `Decision: ${stage}.`, actor);
+    commitAct(tx, {
+      actor,
+      capability: "decide_stage",
       target: `applicant:${applicantId}`,
       summary: `Decision on ${applicant.name}: ${STAGE_LABEL[stage]}.`,
-      reversible: false,
     });
   });
   refresh();
@@ -240,7 +256,9 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
  * `proposeReason` and the slots are `slotsToHold`, both `lib/acts.ts`'s, which is what the
  * dossier's Propose button is enabled by.
  */
-export async function proposeSlots(applicantId: string): Promise<ActionResult> {
+export async function proposeSlots(applicantId: string, actor: Actor = "user"): Promise<ActionResult> {
+  const wrongActor = badActor(actor);
+  if (wrongActor) return wrongActor;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   const slots = allSlots();
@@ -260,12 +278,11 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
     for (const id of ids) {
       tx.run("UPDATE slots SET status = 'proposed', applicant_id = ? WHERE id = ?", [applicantId, id]);
     }
-    return logActivity(tx, {
-      actor: "user",
-      action: "propose_slots",
+    return commitAct(tx, {
+      actor,
+      capability: "propose_slots",
       target: `applicant:${applicantId}`,
       summary: `Held ${count} for ${applicant.name}.`,
-      reversible: true,
       undo: { kind: "slots", slotIds: ids },
     });
   });
@@ -283,7 +300,13 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
  * slot predicate are `lib/acts.ts`'s, and the dossier's slot list is built from the same two, so
  * the human's option set is not a smaller one either (DESIGN-LAW §7.7).
  */
-export async function sendSchedulingEmail(applicantId: string, slotId: string): Promise<ActionResult> {
+export async function sendSchedulingEmail(
+  applicantId: string,
+  slotId: string,
+  actor: Actor = "user",
+): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   const early = scheduleReason(applicant.stage);
@@ -309,12 +332,11 @@ export async function sendSchedulingEmail(applicantId: string, slotId: string): 
       "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'scheduling', ?, ?, ?)",
       [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
     );
-    logActivity(tx, {
-      actor: "user",
-      action: "send_scheduling_email",
+    commitAct(tx, {
+      actor,
+      capability: "send_scheduling_email",
       target: `applicant:${applicantId}`,
       summary: `Emailed ${applicant.name} at ${mail.to} an interview time with ${slot.interviewer} (${when} UTC).`,
-      reversible: false,
     });
   });
   refresh();
@@ -325,7 +347,10 @@ export async function sendSchedulingEmail(applicantId: string, slotId: string): 
 export async function sendRejection(
   applicantId: string,
   template: RejectionTemplate,
+  actor: Actor = "user",
 ): Promise<ActionResult> {
+  const refused = badActor(actor);
+  if (refused) return refused;
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   // The template arrives as a free string on a POST endpoint. It is refused here, as a stage outside
@@ -346,21 +371,70 @@ export async function sendRejection(
     template,
   });
   db().withTx((tx) => {
-    writeStage(tx, applicantId, "rejected", `Rejection sent (${template}).`);
+    writeStage(tx, applicantId, "rejected", `Rejection sent (${template}).`, actor);
     tx.run(
       "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'rejection', ?, ?, ?)",
       [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
     );
-    logActivity(tx, {
-      actor: "user",
-      action: "send_rejection",
+    commitAct(tx, {
+      actor,
+      capability: "send_rejection",
       target: `applicant:${applicantId}`,
       summary: `Sent ${applicant.name} the ${template.replace("_", " ")} rejection at ${mail.to}.`,
-      reversible: false,
     });
   });
   refresh();
   return { ok: true, message: `Rejection sent to ${applicant.name} at ${mail.to}.`, mail };
+}
+
+/** A move's way back, unless a decision or a later move now stands in front of it. */
+function undoStage(tx: Db, undo: Extract<Undo, { kind: "stage" }>): UndoVerdict {
+  // Restore the stage only if the applicant is still where this action left them. An older
+  // move_stage undone after a decision would otherwise pull an offered or rejected candidate
+  // back to applied.
+  const now = tx.get<{ stage: Stage }>("SELECT stage FROM applicants WHERE id = ?", [undo.applicantId]);
+  if (now && isDecisionStage(now.stage)) {
+    return { refused: `a decision (${STAGE_LABEL[now.stage]}) was recorded after it` };
+  }
+  // A later move outranks this one the same way. Restoring this move's FROM stage after another
+  // move would reverse that move too, unlogged, and leave its own Undo pointing at a stage they
+  // are no longer in. The refusal names the later move's own row, whose undo is the way back.
+  const latest = tx.get<{ id: number; to_stage: Stage }>(
+    "SELECT id, to_stage FROM stage_events WHERE applicant_id = ? ORDER BY id DESC LIMIT 1",
+    [undo.applicantId],
+  );
+  if (latest && latest.id !== undo.eventId) {
+    const blocker = tx.get<{ id: number }>(
+      `SELECT id FROM activity
+        WHERE reversible = 1 AND undone = 0
+          AND json_extract(undo_json, '$.kind') = 'stage' AND json_extract(undo_json, '$.eventId') = ?
+        ORDER BY id DESC LIMIT 1`,
+      [latest.id],
+    );
+    const refused = `a later move (to ${STAGE_LABEL[latest.to_stage]}) was made after it`;
+    return blocker ? { refused, blockedBy: blocker.id } : { refused };
+  }
+  tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [undo.stage, undo.applicantId]);
+  tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
+  return;
+}
+
+/** A hold's way back: every slot it held that has not since been booked. */
+function releaseSlots(tx: Db, undo: Extract<Undo, { kind: "slots" }>): UndoVerdict {
+  let kept = 0;
+  for (const id of undo.slotIds) {
+    const { changes } = tx.run(
+      "UPDATE slots SET status = 'open', applicant_id = NULL WHERE id = ? AND status <> 'booked'",
+      [id],
+    );
+    if (changes === 0) kept += 1;
+  }
+  if (kept > 0) {
+    return {
+      partial: `released ${undo.slotIds.length - kept} of ${undo.slotIds.length} slots: ${kept} had already been booked and emailed about.`,
+    };
+  }
+  return;
 }
 
 /**
@@ -381,62 +455,21 @@ export async function sendRejection(
  * the kit's one compensating line says so.
  */
 function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
-  const undo = entry.undo as
-    | { kind: "note"; noteId: number }
-    | { kind: "stage"; applicantId: string; stage: Stage; eventId: number }
-    | { kind: "slots"; slotIds: string[] }
-    | null;
-  if (undo?.kind === "note") {
-    tx.run("DELETE FROM notes WHERE id = ?", [undo.noteId]);
-    return;
+  const undo = entry.undo as Undo | null;
+  if (!undo) throw new Error(`no undo strategy for ${entry.action}`);
+  switch (undo.kind) {
+    case "note":
+      tx.run("DELETE FROM notes WHERE id = ?", [undo.noteId]);
+      return;
+    case "stage":
+      return undoStage(tx, undo);
+    case "slots":
+      return releaseSlots(tx, undo);
+    default: {
+      const never: never = undo;
+      throw new Error(`no undo strategy for ${entry.action} (${JSON.stringify(never)})`);
+    }
   }
-  if (undo?.kind === "stage") {
-    // Restore the stage only if the applicant is still where this action left them. An older
-    // move_stage undone after a decision would otherwise pull an offered or rejected candidate
-    // back to applied.
-    const now = tx.get<{ stage: Stage }>("SELECT stage FROM applicants WHERE id = ?", [undo.applicantId]);
-    if (now && isDecisionStage(now.stage)) {
-      return { refused: `a decision (${STAGE_LABEL[now.stage]}) was recorded after it` };
-    }
-    // A later move outranks this one the same way. Restoring this move's FROM stage after another
-    // move would reverse that move too, unlogged, and leave its own Undo pointing at a stage they
-    // are no longer in. The refusal names the later move's own row, whose undo is the way back.
-    const latest = tx.get<{ id: number; to_stage: Stage }>(
-      "SELECT id, to_stage FROM stage_events WHERE applicant_id = ? ORDER BY id DESC LIMIT 1",
-      [undo.applicantId],
-    );
-    if (latest && latest.id !== undo.eventId) {
-      const blocker = tx.get<{ id: number }>(
-        `SELECT id FROM activity
-          WHERE reversible = 1 AND undone = 0
-            AND json_extract(undo_json, '$.kind') = 'stage' AND json_extract(undo_json, '$.eventId') = ?
-          ORDER BY id DESC LIMIT 1`,
-        [latest.id],
-      );
-      const refused = `a later move (to ${STAGE_LABEL[latest.to_stage]}) was made after it`;
-      return blocker ? { refused, blockedBy: blocker.id } : { refused };
-    }
-    tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [undo.stage, undo.applicantId]);
-    tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
-    return;
-  }
-  if (undo?.kind === "slots") {
-    let kept = 0;
-    for (const id of undo.slotIds) {
-      const { changes } = tx.run(
-        "UPDATE slots SET status = 'open', applicant_id = NULL WHERE id = ? AND status <> 'booked'",
-        [id],
-      );
-      if (changes === 0) kept += 1;
-    }
-    if (kept > 0) {
-      return {
-        partial: `released ${undo.slotIds.length - kept} of ${undo.slotIds.length} slots: ${kept} had already been booked and emailed about.`,
-      };
-    }
-    return;
-  }
-  throw new Error(`no undo strategy for ${entry.action}`);
 }
 
 /** What `undoAction` reports: whether it took, why not if not, and what was undone if it did. */

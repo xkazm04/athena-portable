@@ -82,6 +82,7 @@ test("an irreversible act says why it has no Undo instead of drawing one", async
     action: "decide_stage",
     summary: "Decision on Ada Byrne: Offer.",
     reversible: false,
+    actor: "user",
     undone: false,
   });
   assert.equal(row.undoable, false);
@@ -100,4 +101,28 @@ test("the History band is bounded and says by how much", async () => {
   assert.equal(meta.historyTotal, 12, "of the twelve that exist");
   assert.equal(historyNote(meta), "(showing 8 of 12)");
   assert.match(meta.history[0]!.summary, /Reading note 12/, "and they are the newest eight");
+});
+
+test("case 6: a History row names who ran the act - Athena or you - and an undo row keeps its reason", async () => {
+  const { historyRow } = await history();
+  const { applicantHistory } = await import("../lib/queries");
+  const z = applied(2);
+  assert.equal((await addNote(z.id, "Read by Athena.", "athena")).ok, true);
+  const logged = applicantHistory(8)[z.id]!.rows[0]!;
+  assert.equal(logged.actor, "athena", "the read carries the actor");
+  assert.equal(candidateOn(z.id).meta.history[0]!.by, "Athena", "and the board names her");
+
+  const entry = {
+    id: 9,
+    ts: "2026-09-07T09:00:00.000Z",
+    action: "move_stage",
+    summary: "Ada Lin: Applied to Screening.",
+    reversible: true,
+    undone: false,
+  };
+  assert.equal(historyRow({ ...entry, actor: "athena" }).by, "Athena");
+  assert.equal(historyRow({ ...entry, actor: "user" }).by, "You");
+  const undoRow = historyRow({ ...entry, action: "undo", reversible: false, actor: "user" });
+  assert.equal(undoRow.undoable, false);
+  assert.equal(undoRow.why, "the undo of an earlier act");
 });

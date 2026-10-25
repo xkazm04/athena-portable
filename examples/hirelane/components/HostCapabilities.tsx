@@ -47,6 +47,13 @@ import {
  * answer is the envelope — `to`, `subject`, `body` — not a sentence saying it went. A refusal has
  * no message and the three fields are simply absent.
  */
+/**
+ * Every act below is run BY the agent, through the same server actions the person's buttons call,
+ * so each one says so: the row it logs, and the stage event a move writes, name Athena rather than
+ * the person (`app/commit.ts`). The person's own buttons leave the argument off and are "user".
+ */
+const ATHENA = "athena" as const;
+
 const sent = (result: ActionResult) => ({
   ok: result.ok,
   message: result.message,
@@ -71,14 +78,14 @@ export function HostCapabilities() {
     description:
       "Score one applicant against their role's rubric and write the result as a note, with the sentences that earned each score quoted verbatim. Never changes the stage: a score is not a decision.",
     ...registration("score_against_rubric"),
-    handler: async ({ applicant_id: id }) => (await scoreAgainstRubric(String(id))).message,
+    handler: async ({ applicant_id: id }) => (await scoreAgainstRubric(String(id), ATHENA)).message,
   });
 
   useWebMCPTool({
     name: "add_note",
     description: "Add a free-text note to an applicant.",
     ...registration("add_note"),
-    handler: async ({ applicant_id: id, text }) => (await addNote(String(id), String(text))).message,
+    handler: async ({ applicant_id: id, text }) => (await addNote(String(id), String(text), ATHENA)).message,
   });
 
   useWebMCPTool({
@@ -87,7 +94,7 @@ export function HostCapabilities() {
       "Move one applicant to screening or interview. Reverses cleanly, so it is ordinary pipeline work. One applicant per call: there is no bulk move in this app.",
     ...registration("move_stage"),
     handler: async ({ applicant_id: id, stage }) =>
-      (await moveStage(String(id), stage as Stage)).message,
+      (await moveStage(String(id), stage as Stage, ATHENA)).message,
   });
 
   useWebMCPTool({
@@ -96,7 +103,7 @@ export function HostCapabilities() {
       "Record an offer or a rejection. Ends the candidate's process and is not reversible, so it is always gated.",
     ...registration("decide_stage"),
     handler: async ({ applicant_id: id, stage }) =>
-      (await decideStage(String(id), stage as Stage)).message,
+      (await decideStage(String(id), stage as Stage, ATHENA)).message,
   });
 
   useWebMCPTool({
@@ -105,7 +112,7 @@ export function HostCapabilities() {
       "Hold up to three open interview slots for an applicant. Nothing is sent. Returns the slot ids held and when each one starts, so a scheduling email can name one.",
     ...registration("propose_slots"),
     handler: async ({ applicant_id: id }) => {
-      const result = await proposeSlots(String(id));
+      const result = await proposeSlots(String(id), ATHENA);
       return { ok: result.ok, message: result.message, ...(result.slots ? { slots: result.slots } : {}) };
     },
   });
@@ -116,7 +123,7 @@ export function HostCapabilities() {
       "Email an applicant an interview time and book the slot. Only an applicant already at the interview stage can be booked - move them first. Returns the complete message - to, subject, body - because the send is carried by a mail connector outside this page. Gated.",
     ...registration("send_scheduling_email"),
     handler: async ({ applicant_id: id, slot_id: slotId }) =>
-      sent(await sendSchedulingEmail(String(id), String(slotId))),
+      sent(await sendSchedulingEmail(String(id), String(slotId), ATHENA)),
   });
 
   useWebMCPTool({
@@ -125,7 +132,7 @@ export function HostCapabilities() {
       "Send an applicant a rejection in one of the approved wordings and close their application. Returns the complete message - to, subject, body. One applicant per call; there is no bulk rejection. Gated.",
     ...registration("send_rejection"),
     handler: async ({ applicant_id: id, template }) =>
-      sent(await sendRejection(String(id), template as RejectionTemplate)),
+      sent(await sendRejection(String(id), template as RejectionTemplate, ATHENA)),
   });
 
   return null;
