@@ -34,6 +34,11 @@ verbatim: `acceptance`, `guard_cases`, `write_set`, `new_files`, `premise`, `bod
 - Example-app tests may only open a scratch database (the demo kit's openDb refuses any other
   file under test). The ledgerbox dev server may hold `examples/ledgerbox/data` - never touch it.
 - No machine paths in committed files.
+- **A new `src/athena/**/*.py` module must be accounted for in the atlas coverage ledger**
+  (`examples/atlas/data/omissions.ts`, or drawn in `components.ts`): `examples/atlas/test/coverage.test.ts`
+  fails on any module neither drawn nor omitted. Add the omission entry (path, one-line reason,
+  source, `modules`), or bump the enclosing directory entry's `modules` count, in the same
+  commit, and run `pnpm --filter atlas test`. That file is coupled, not out of scope.
 
 ## Order - do not skip or reorder
 
@@ -64,7 +69,10 @@ verbatim: `acceptance`, `guard_cases`, `write_set`, `new_files`, `premise`, `bod
      desktop suite: it holds the first-paint and source-guard tests). Do NOT run `pnpm perf:*`
      (it false-fails under sibling load, and `perf:chores` is red at the run base on this machine);
      say in `notes` if you touched motion or first paint and the coordinator runs it.
-   - Rust touched: from apps/desktop/src-tauri `cargo check`, `cargo clippy --all-targets`.
+   - Rust touched: from apps/desktop/src-tauri `cargo check`, `cargo clippy --all-targets`, AND from
+     apps/desktop `pnpm typecheck` and `pnpm test` - `src/lib/rust-mirrors.test.ts` pins every
+     Rust struct the UI reads to its TS interface, so a new field needs the TS mirror and fixtures
+     in the same commit.
    The repo keeps guards AWAY from what they guard (source-guard tests in sibling folders,
    import budgets). The full suite of every surface you touched, not just your folder, is the gate
    (Python excepted, as above). Never point a cache (uv, npm, cargo, pytest temp) inside the repo.

@@ -1,0 +1,18 @@
+{"card":"tidycrm-tests/B","status":"landed","shas":["c1dd3dfb","fb8c3415"],
+ "tests_added":[
+  "examples/tidycrm/test/tool-ledger.test.ts::coverage: every captured tool has a fixture, and a planted registration without one is named",
+  "examples/tidycrm/test/tool-ledger.test.ts::none means none: every sideEffects \"none\" handler leaves the four tables as it found them",
+  "examples/tidycrm/test/tool-ledger.test.ts::declared reversible is real: each reversible write logs one reversible row and the undo tool puts it back",
+  "examples/tidycrm/test/tool-ledger.test.ts::declared irreversible is real: merge_contacts, delete_contacts and undo each log a non-reversible row",
+  "examples/tidycrm/test/tool-ledger.test.ts::export: the anchor click reaches the real route, which logs one non-reversible export row, and the gap is a reasoned exception",
+  "examples/tidycrm/test/tool-ledger.test.ts::the ledger agrees with every declaration, export's reasoned exception aside",
+  "examples/tidycrm/test/tool-ledger.test.ts::negative control: a spec declaring sideEffects \"none\" around normalizeAction is caught",
+  "examples/tidycrm/test/tools.test.ts::the shell registers the whole surface, every preview and both non-merge verdicts (now reads captured objects)",
+  "examples/tidycrm/test/tools.test.ts::the class of every tool is the one the rule gives it (now reads captured objects)"],
+ "guard_cases":[1],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"cd examples/tidycrm && pnpm test":0,"cd examples/tidycrm && pnpm typecheck":0,"cd examples/tidycrm && pnpm lint":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":5,"lines_changed":514,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Revision applied: the commit body cites stabilize finding tidycrm-spatial-model-tools.jsonl:2 and that line is marked status built, built_in c1dd3dfb (separate chore commit fb8c3415, since the sha only exists after the first commit). Case 0 (15 captured names in order) is carried by tools.test.ts's existing whole-surface test now reading the capture rather than a duplicate in tool-ledger.test.ts. Stand-ins are scoped to HostCapabilities.tsx and app/actions.ts (not the whole shell dir: components/shell/pairs.ts needs the real kit webmcp). The registry driven is HostCapabilities' 15 as it stands; plan_repairs and the other r1-r3 growth live in BlocksTools.tsx, already driven by spatial-model-tools.test.ts. Root `pnpm test` not run (brief: tidycrm has no dependent workspace packages). No ADR: test-only, the export exception restates a decision already recorded in HostCapabilities.tsx.",
+ "notes":"Red-before was by harness absence: tool-ledger.test.ts run with capture-tools.ts moved aside fails to load (all 7 non-guard cases red); guard case 1 (GATED set) passes before and after. Mutation check by hand: making preview_merge's handler resolve its pair first turns 'none means none' and the ledger case red. First root pnpm typecheck was red on apps/desktop/src/companion/slip.tsx (sibling in-flight, not mine); re-run green. Sibling-staged files (src/athena/proving/forge/dossier.py, tests/proving/forge/test_dossier.py) were in the index; my commits used only-paths and did not include them. tidycrm suite: 198 tests, 197 pass, 0 fail (1 todo from slot A)."}

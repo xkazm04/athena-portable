@@ -1,0 +1,27 @@
+{"card":"contracts-seam/A","status":"landed","shas":["e927f2e3"],
+ "tests_added":[
+  "tests/contracts/test_channel.py::test_a_legacy_prefixed_error_names_its_reason_and_keeps_its_text",
+  "tests/contracts/test_channel.py::test_a_pages_free_sentence_is_reason_unknown_never_a_member",
+  "tests/contracts/test_channel.py::test_a_given_reason_is_normalized_and_rides_beside_the_error_on_the_wire",
+  "tests/contracts/test_channel.py::test_a_success_carries_no_reason",
+  "tests/contracts/test_registry.py::test_an_exec_results_reason_is_read_from_its_failure_and_is_none_on_success",
+  "tests/lane/test_turn_frame.py::test_a_surfaces_reason_rides_through_and_its_error_detail_is_capped",
+  "tests/lane/test_browser_lane.py::test_a_result_whose_reason_is_outcome_unknown_is_recorded_as_may_have_completed",
+  "tests/contracts/test_channel.py::test_a_tool_result_from_before_the_reason_reads_its_reason_from_its_error",
+  "tests/contracts/test_harness.py::test_the_vocabulary_is_one_object_wherever_it_is_imported"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{
+  "uv run ruff check .":0,
+  "uv run ruff format --check .":0,
+  "uv run mypy":0,
+  "uv run pytest <76 test files importing athena.contracts or athena.lane> tests/contracts tests/lane tests/test_refusal_parity.py -m \"not provider and not eval\"":0,
+  "apps/desktop pnpm typecheck":0,
+  "apps/desktop pnpm lint":0,
+  "apps/desktop pnpm test":0
+ },
+ "files_changed":15,"lines_changed":354,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of the card's three-commit series (the brief allows one). ADR number is 0204, not 0149 (next free under the lock). Guard cases 6 and 7 were red before as well: their new assertions need the reason field (pre-reason wire form derives a reason) and the reasons.py module (same-object check); their pre-existing halves (EVENTS round-trip, legacy outcome_unknown -> may have completed, refusal parity) were green before and stayed green. Case 3 is split across two test functions (ToolResult half in test_channel.py, ExecResult half in test_registry.py). reason_of_error is exact-match on the leading token (no lowercasing), so 'Timeout: ...' reads as unknown; recorded in the ADR. Also exported ERROR_DETAIL_CAP and reason_of_error from athena.contracts. browser_lane's answer ToolResult built from an ExecResult now passes reason explicitly.",
+ "notes":"First desktop pnpm test run was red only on scripts/first-paint.test.ts (165.6 kB vs 165.4 kB ceiling) with sibling desktop-art-bell work uncommitted in apps/desktop/src/bell and console; my events.ts change is type-only (0 bytes emitted). Re-run after ~2 min: 183/183 files green. Out of scope and left as follow-ups per the card: desktop execute.ts still folds the reason into the error text, and harness/rounds.py's refusal dedupe still keys on (name, error). Field names match the bridge reply (reason beside error, ADR 0146)."}

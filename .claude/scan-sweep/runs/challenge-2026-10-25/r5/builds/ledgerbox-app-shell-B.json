@@ -1,0 +1,16 @@
+{"card":"ledgerbox-app-shell/B","status":"landed","shas":["652891df"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::send case 1: a send naming a draft a later one replaced is refused, and names the replacement (cases 0,1)",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::send case 3: a letter whose figures moved comes back redrafted at the new balance, nothing sent (cases 2,3,4)",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::send case 6: a send naming a reminder already sent is refused as sent, and writes nothing (case 5)",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::send case 7 (guard): a disputed invoice refuses the send with the chase reason and is not redrafted (case 6)",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::send case 8: a send with no reminder id sends the current draft, as before (case 7, action half)",
+  "examples/ledgerbox/test/tool-handlers.test.ts::send_reminder passes reminder_id through when given, and sends as before without it (case 7, tool half)"
+ ],
+ "guard_cases":[1,6],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"pnpm --filter ledgerbox typecheck":0,"pnpm --filter ledgerbox lint":0,"pnpm --filter ledgerbox test":0,"pnpm typecheck (root)":2,"pnpm lint (root)":1},
+ "files_changed":11,"lines_changed":335,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Added examples/ledgerbox/components/lanes/card/acts.ts (one coupled file, 2 lines): since the card was written the Send issue moved from Decide.tsx:283 into acts.ts actSpecs, so the draft id rides ActIssue there and Decide's perform passes it. Rode as one commit, not three. The existing stale-send test in ledgerbox-app-shell.test.ts now expects 'redrafted, not sent' instead of 'Draft it again'. The ADR 0203 undo refusal for a deleted draft now says 'replaced by a later one' (dropped 'when it was sent', since a redraft also replaces). Redraft ids get an '_r' suffix so a same-millisecond redraft can never share the stale draft's id (which its undo row would then reach). Case 0 at the old tree: cases 3 and 4 sit in the same test as case 2 and were red with it.",
+ "notes":"Root pnpm typecheck/lint red only in apps/desktop src/avatar/* and src/lib/face-signal.ts (desktop-avatar/A sibling, in flight; re-run after ~60s still red, not my paths). pnpm -r --no-bail typecheck/lint: every other package green, ledgerbox and hirelane included. Guard case 1 sits inside the case-0 test, so it could not be observed separately before."}

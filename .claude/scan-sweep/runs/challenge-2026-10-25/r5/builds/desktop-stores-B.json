@@ -1,0 +1,20 @@
+{"card":"desktop-stores/B","status":"landed","shas":["461ae9c1"],
+ "tests_added":[
+  "apps/desktop/src/stores/run.reask.test.ts::staleOf > a card bound to tab 4 nav 2 while tab 4 reports nav 3 is moved; tab 4 gone is closed",
+  "apps/desktop/src/stores/run.reask.test.ts::staleOf > an unbound card, or tab 4 still at nav 2, has no entry",
+  "apps/desktop/src/stores/run.reask.test.ts::the slip says so before the press > a card whose tab moved offers Ask again here in place of Approve; Decline stays",
+  "apps/desktop/src/stores/run.reask.test.ts::the slip says so before the press > a card whose tab still holds its document offers Approve",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > on a moved card: one decline, no page call, then one POST /run with the re-ask line on the tab as it is now",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > on the head of a sheet whose three rows are bound to the moved tab: three declines, one POST /run naming all three in order",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > on a card whose tab still holds its document: false, nothing sent",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > while she is running: false, nothing sent",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > on a delegated task's card: one decline handed to its owner, and no POST /run in this window",
+  "apps/desktop/src/stores/run.reask.test.ts::reask > guard: approve on a moved card is still refused locally, and its grant is not spent"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"apps/desktop: pnpm typecheck":0,"apps/desktop: pnpm lint":0,"apps/desktop: pnpm test (189 files, 2618 tests, incl. first-paint)":0},
+ "files_changed":10,"lines_changed":627,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"(1) No store `stale` map and no new CardView.stale field: the model already derives BoundTabView.moved/open from the tabs store on every tabs:changed, so case 2 ('says so with no press') is pinned at the slip (Sign renders Ask again here in place of Approve) rather than as a duplicate store map that would cost first-frame bytes. (2) staleOf lives in the lazy stores/ran.ts and takes the run store's binding check (staleOf(cards, refused)) instead of (cards, tabs, byTab), so ran.ts imports only types from run.ts (a value import split a new 'gate' chunk into the first frame, +765 B). (3) To fit the ratchet, mergeCards/cardFromRow (only run after GET /decisions answered) moved from run.ts to ran.ts, loaded inside reconcile through the existing ./ran dynamic import (no new dynamic import); run.test.ts imports them from ./ran (test-only change outside the write set). (4) boundTabSentence keeps its wording and its tail now says 'Ask again here.' instead of 'Decline it and ask again'. (5) Two-commit rollback collapsed into one commit. ADR 0211 written.",
+ "notes":"First paint measured on an isolated build of HEAD (git archive into scratchpad, siblings excluded): 165,385 B before -> 165,127 B with this change (-258 B), so this commit frees ~258 B of headroom; the coordinator should run perf if wanted. The run.test.ts copy failure a sibling saw came from my in-flight sentence rewrite; the final sentence keeps 'reloaded or moved to another page' and run.test.ts is green. reconcile now awaits import('./ran') after the daemon answers (the lazy chunk is fetched just after the first frame). No sibling reds seen in the final full desktop run."}

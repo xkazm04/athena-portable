@@ -1,0 +1,17 @@
+{"card":"ledgerbox-app-shell/A","status":"landed","shas":["a04ee179","1eb6386d"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 1: undoing an older refile does not erase a later one, and says which invoice moved",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 2: a batch refile one of whose invoices moved since is reversed for none of them",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 3: undoing a match whose line has moved to another invoice leaves that invoice's money",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 4: undoing a draft since sent refuses - the letter went and cannot be taken back",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 5: undoing a draft a later send replaced refuses, and says it was replaced",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 6 (guard): a refile nothing has touched since undoes as before",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 7 (guard): a match nothing has touched since undoes as before, money and all",
+  "examples/ledgerbox/test/ledgerbox-app-shell.test.ts::undo case 8 (guard): an export undoes as before"],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":4,"cases_green_after":8,
+ "gates":{"pnpm --filter ledgerbox typecheck":0,"pnpm --filter ledgerbox lint":0,"pnpm --filter ledgerbox test":0,"pnpm lint":0,"pnpm typecheck":2},
+ "files_changed":5,"lines_changed":267,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Case 4 (index 3, sent draft) was already green on the tree: 7ea3b762 (r4) added the sent-draft refusal. It is pinned as a test but was not red before, so 4 of 5 non-guard cases were red, not 5. The stabilize finding ledgerbox-domain-lib.jsonl:1 is cited in a04ee179 and marked status built with built_in a04ee179 (the key the file's other built lines use) in 1eb6386d. Categories in the tests are design/development, because ledgerbox has no travel/software. The export period is 'quarter', because there is no 'q3'. One commit, not the two the card's rollback names: the tests ride with the behaviour, per the brief. Legacy match payloads (no payment_id) keep their unconditional reversal, but the payment delete is now scoped to the invoice. On the plain path that is the same row. The refusals name no blockedBy, and undoAction does not pass through (noted in ADR 0203).",
+ "notes":"Root `pnpm typecheck` exits 2, twice and more than 60 s apart, only in examples/tidycrm/test/write-paths.model.test.ts (missing ./model/ops): that is sibling tidycrm-tests/A's in-flight work, not my paths. The ledgerbox package typecheck, lint and test (150/150) are green, and root lint is green. ADR 0203 was claimed under the lock. Reminder ids are rem_<invoice>_<Date.now()>, so two drafts of one invoice in the same millisecond collide on the primary key. The tests space them by 5 ms. That is a latent defect outside this card."}

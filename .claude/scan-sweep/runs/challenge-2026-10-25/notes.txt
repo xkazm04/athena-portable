@@ -8,3 +8,7 @@ LANE C: r2 voice-waking/B demoted - first-paint ceiling overshoot 140 B gz; test
 FOLLOW-UP: a4d4e129 (r4 voice-ui/B) - 'Pick another input above' copy is wrong in the voice studio, which has no picker (studio.tsx outside write set; ADR 0196)
 FOLLOW-UP: dca80c20 (r4 ledgerbox-domain-lib/B) - card UI still offers Draft on the 14 invoices the chase now refuses (actRefusal follow-up, pinned in ledgerbox-lanes-ui.test.ts)
 FOLLOW-UP: 67909b9f (r4 stage-depth/B) - a move before the lazy rise module loads (incl. reload at depth) no longer focuses the layer
+DEFECT FOUND: 0cddf5af (r5 tidycrm-tests/A harness) - an open pair spanning two domains is counted twice in examples/tidycrm lib/blocks/index.ts (blocks show one more pair than countOpenPairs); 1-op repro committed as a todo test; generator restricted to same-domain pairs until fixed
+LANE C: r5 art-bell/A demoted - first-paint overshoot 178 B gz (lazy split costs ~430 B: a new import() splits the preload helper); patch r5/builds/desktop-art-bell-A.patch; owner raise needed
+FLAKE: tests/daemon/test_sleep failed once when a random id contained '0.93' (seen by r5 contracts-seam/B; passed alone)
+LANE C: r5 avatar/A partial (9f8a932b) - case 6 (segment midpoints agree within 0.05) needs mirroring every shape change at ~33 signals/s, loosening ADR 0027's 30 Hz cap; owner call; todo test committed

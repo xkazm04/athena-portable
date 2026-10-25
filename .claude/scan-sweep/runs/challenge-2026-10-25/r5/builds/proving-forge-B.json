@@ -1,0 +1,17 @@
+{"card":"proving-forge/B","status":"landed","shas":["3f562790"],
+ "tests_added":[
+  "tests/proving/forge/test_dossier.py::test_an_audited_variant_has_one_entry_per_item_with_its_row_label_why_and_state",
+  "tests/proving/forge/test_dossier.py::test_a_filed_trap_lists_its_cards_and_a_miss_counts_the_cards_on_its_tool",
+  "tests/proving/forge/test_dossier.py::test_the_rerun_command_benches_the_materialised_work_copy",
+  "tests/proving/forge/test_dossier.py::test_a_benched_variant_before_its_audit_lists_misses_and_filed_traps_unaudited",
+  "tests/proving/forge/test_dossier.py::test_the_diff_names_today_rows_per_table_and_the_new_trap_ids",
+  "tests/proving/forge/test_dossier.py::test_show_prints_one_variants_dossier_and_refuses_an_unknown_name",
+  "tests/proving/forge/test_dossier.py::test_report_findings_carry_table_row_and_rerun_and_the_md_has_a_review"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/proving -m \"not provider and not eval\"":0,"pnpm --filter atlas test":0},
+ "files_changed":6,"lines_changed":552,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Grew the write set by the coupled atlas ledger (examples/atlas/data/omissions.ts: proving/ modules 62->63), as the brief requires. The work copy now also gets the library's taxonomy.json: without it the card's rerun command is refused by the playbooks CLI (load_playbook reads the taxonomy from --dir), found while writing case 3. Report entries also carry label, filed params and cards_on_tool beside table/row/rerun. No ADR: the card names only CHANGELOG as a shared surface. test_run_dry.py unchanged (the new report assertions live in test_dossier.py).",
+ "notes":"Red-before: the 7 non-guard cases failed at collection (no athena.proving.forge.dossier module, no show stage, no report fields); the guard (case 8, test_absent_values_are_omitted_never_zero + dry proof lines) was green before and after. Full pytest suite not run per brief. No sibling reds seen."}

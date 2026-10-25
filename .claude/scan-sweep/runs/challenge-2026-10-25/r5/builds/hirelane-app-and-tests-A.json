@@ -1,0 +1,15 @@
+{"card":"hirelane-app-and-tests/A","status":"landed","shas":["370fbf74"],
+ "tests_added":[
+  "examples/hirelane/test/commit.test.ts::case 1: a move Athena ran is logged as Athena's, on the activity row and the stage event",
+  "examples/hirelane/test/commit.test.ts::case 2 (guard): a move with no actor is the person's own, as it always was",
+  "examples/hirelane/test/commit.test.ts::case 3: an actor outside the closed set is refused before anything is written",
+  "examples/hirelane/test/commit.test.ts::case 4: commitAct refuses an AUTO act with no undo and a GATED act with one, inside the transaction",
+  "examples/hirelane/test/commit.test.ts::case 5: every data act's logged class and its undo are the manifest's, and it names its actor",
+  "examples/hirelane/test/history.test.ts::case 6: a History row names who ran the act - Athena or you - and an undo row keeps its reason"],
+ "guard_cases":[1,6],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{"pnpm --filter hirelane typecheck":0,"pnpm --filter hirelane lint":0,"pnpm --filter hirelane test (171/171)":0,"pnpm lint (root)":0,"pnpm typecheck (root)":2},
+ "files_changed":12,"lines_changed":577,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"BdHistoryRow lives in components/board/model/candidates.ts (model.ts is a re-export barrel), so that file was edited instead of model.ts. Case 7 is the existing actions.test.ts suite, unchanged, rather than a new test. History band prints '<by> - <summary>' inside the existing .bd-history-what span (no CSS change). A new ADR 0205 rather than rewriting 0111; 0111 gets a one-line 'Closed by ADR 0205' under its actor consequence. notes.author is still written 'user' (not in the acceptance; the note's row and activity row carry the actor). Case 6's guard index refers to card case 7 (0-based guard_cases ['1','6'] = cases 2 and 7).",
+ "notes":"Root pnpm typecheck fails ONLY in apps/desktop on sibling in-flight work (first run: src/stores/trust.test.ts cannot find ./trust; re-run: src/stores/run.ts unused ContractTable/OriginsState) - desktop-stores/A, not mine; every other workspace package typechecks Done. No package imports hirelane, so no dependent test suites. hirelane changes from r1/r2 (37f0280 undo outcome, e9edff1 preview_message, 96a47ed evidence null) re-verified: premise still held (all seven logActivity calls and stage_events wrote 'user'). Slot B: actions now take a trailing actor and write through commitAct; a score_batch act would add a manifest row, a RUN entry in test/commit.test.ts case 5, and a 'notes' kind on the Undo union in app/commit.ts."}

@@ -1,0 +1,508 @@
+diff --git a/apps/desktop/src/bell/Bell.test.tsx b/apps/desktop/src/bell/Bell.test.tsx
+index 191ca690..860eadc9 100644
+--- a/apps/desktop/src/bell/Bell.test.tsx
++++ b/apps/desktop/src/bell/Bell.test.tsx
+@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
+ import { renderToStaticMarkup } from "react-dom/server";
+ import { describe, expect, it } from "vitest";
+ 
++import { INERT_ACTIONS, selectSurface } from "@/scenes/surface/model";
++import { POSE_SPEED } from "@/stage/loop-current";
++
+ import Bell, { rootX, type Reach } from "./Bell";
+ import { POSES } from "./pose";
+ 
+@@ -90,3 +93,32 @@ describe("the animation rule (ADR 0089)", () => {
+     expect(css).toMatch(/\[data-motion="calm"\] \.bell[\s\S]*animation: none/);
+   });
+ });
++
++describe("the speaking pose", () => {
++  const css = readFileSync(new URL("./bell.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
++
++  it("case 8: the Bell wears it, bell.css draws it, the current runs for it and the surface reaches it", () => {
++    expect(renderToStaticMarkup(<Bell pose="speaking" reach={[]} />)).toContain('data-pose="speaking"');
++    const rule = css.match(/\.bell\[data-pose="speaking"\]\s*\{([^}]*)\}/);
++    expect(rule?.[1]).toMatch(/--pulse:/);
++    expect(rule?.[1]).toMatch(/--ripple-on:\s*1/);
++    expect(css).toMatch(/\.bell\[data-pose="speaking"\] \.bell__ripple/);
++    expect(POSE_SPEED.speaking).toBeGreaterThan(0);
++    const surface = selectSurface({
++      athena: { state: "seal", cards: 0, line: "", voice: "speaking" },
++      windowVisible: true,
++      apps: [],
++      openTabs: 0,
++      accounts: [],
++      chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
++      voiceAvailable: true,
++      voiceKnown: true,
++      engine: { label: "Claude Code", standing: "done", checkFailed: false, summary: "Claude Code is ready" },
++      pendingRestart: null,
++      inShell: true,
++      actions: INERT_ACTIONS,
++    });
++    expect(surface.pose).toBe("speaking");
++    expect(surface.poseWord).toBe("speaking");
++  });
++});
+diff --git a/apps/desktop/src/bell/bell.css b/apps/desktop/src/bell/bell.css
+index 89412bfb..a2b11978 100644
+--- a/apps/desktop/src/bell/bell.css
++++ b/apps/desktop/src/bell/bell.css
+@@ -16,6 +16,8 @@
+ .bell[data-pose="working"] { --bell-core: var(--role-agent); --pulse: 1.6s; --sway: 2.2; }
+ .bell[data-pose="hearing"] { --bell-core: var(--role-external); --pulse: 1.2s; --sway: 1.6; --ripple-on: 1; }
+ .bell[data-pose="asking"] { --bell-core: var(--role-human); --pulse: 2.2s; --sway: 1.3; --ripple-on: 1; }
++/* Speaking: the house glow, a quicker breath, and ripples going out as her voice does. */
++.bell[data-pose="speaking"] { --bell-core: var(--accent); --pulse: 1.4s; --sway: 1.8; --ripple-on: 1; }
+ 
+ /* The body breathes: a slow squash in the pose's own tempo. Rooted at the top of the dome so the
+  * skirt swells, as a bell does. */
+@@ -40,7 +42,8 @@
+ .bell__core { opacity: 0.7; }
+ .bell[data-pose="working"] .bell__core,
+ .bell[data-pose="hearing"] .bell__core,
+-.bell[data-pose="asking"] .bell__core {
++.bell[data-pose="asking"] .bell__core,
++.bell[data-pose="speaking"] .bell__core {
+   opacity: 1;
+   animation: bell-glow calc(var(--pulse) * 0.5) ease-in-out infinite alternate;
+ }
+@@ -49,7 +52,7 @@
+   to { opacity: 1; }
+ }
+ 
+-/* Ripples leave the bell only while she is listening or asking. */
++/* Ripples leave the bell only while she is listening, speaking or asking. */
+ .bell__ripple {
+   fill: none;
+   stroke: var(--bell-core);
+@@ -59,7 +62,8 @@
+   transform-origin: 50% 50%;
+ }
+ .bell[data-pose="hearing"] .bell__ripple,
+-.bell[data-pose="asking"] .bell__ripple {
++.bell[data-pose="asking"] .bell__ripple,
++.bell[data-pose="speaking"] .bell__ripple {
+   animation: bell-ripple 2.6s ease-out infinite;
+ }
+ .bell__ripple--late { animation-delay: 1.3s !important; }
+diff --git a/apps/desktop/src/bell/pose.test.ts b/apps/desktop/src/bell/pose.test.ts
+index 109dba4f..21d590eb 100644
+--- a/apps/desktop/src/bell/pose.test.ts
++++ b/apps/desktop/src/bell/pose.test.ts
+@@ -25,8 +25,51 @@ describe("poseOf", () => {
+     expect(poseOf({ state: "hear", cards: 1, line: "" })).toBe("asking");
+   });
+ 
+-  it("has a word for every pose, and one pose each for the four things the mirror can say", () => {
+-    expect(POSES).toHaveLength(4);
++  it("has a word for every pose, and one pose each for the five things the mirror can say", () => {
++    expect(POSES).toHaveLength(5);
+     for (const p of POSES) expect(POSE_WORDS[p].length).toBeGreaterThan(0);
+   });
+ });
++
++describe("poseOf with her mirrored voice phase", () => {
++  it("case 1: speaks while her voice plays, in words too", () => {
++    expect(poseOf({ state: "seal", cards: 0, line: "", voice: "speaking" })).toBe("speaking");
++    expect(POSE_WORDS.speaking).toBe("speaking");
++    expect(POSES).toHaveLength(5);
++  });
++
++  it("case 2: her voice outranks work in flight, as haloPhase orders it", () => {
++    expect(poseOf({ state: "tape", cards: 0, line: "Filing", voice: "speaking" })).toBe("speaking");
++  });
++
++  it("case 3: the mirrored listening phase hears as the held key does", () => {
++    expect(poseOf({ state: "seal", cards: 0, line: "", voice: "listening" })).toBe("hearing");
++  });
++
++  it("case 4 (guard): a waiting card still wins over her voice on the Bell", () => {
++    expect(poseOf({ state: "seal", cards: 1, line: "", voice: "speaking" })).toBe("asking");
++  });
++
++  it("case 5 (guard): with no voice phase, every pose is what the status alone gives", () => {
++    const cases: [string, number, string, string][] = [
++      ["seal", 0, "", "resting"],
++      ["tab", 0, "", "resting"],
++      ["welcome", 0, "", "resting"],
++      ["ledger", 0, "", "resting"],
++      ["rest", 0, "", "resting"],
++      ["tape", 0, "", "working"],
++      ["ledger", 0, "Reading Invoices", "working"],
++      ["hear", 0, "", "hearing"],
++      ["seal", 1, "", "asking"],
++      ["tape", 2, "Filing", "asking"],
++      ["hear", 1, "", "asking"],
++    ];
++    for (const [state, cards, line, pose] of cases) {
++      expect(poseOf({ state, cards, line }), state).toBe(pose);
++      expect(poseOf({ state, cards, line, voice: null }), state).toBe(pose);
++      for (const voice of ["idle", "thinking", "gate"] as const) {
++        expect(poseOf({ state, cards, line, voice }), `${state} ${voice}`).toBe(pose);
++      }
++    }
++  });
++});
+diff --git a/apps/desktop/src/bell/pose.ts b/apps/desktop/src/bell/pose.ts
+index 7a5eb21f..b6ff157d 100644
+--- a/apps/desktop/src/bell/pose.ts
++++ b/apps/desktop/src/bell/pose.ts
+@@ -1,18 +1,22 @@
+ /**
+  * How Athena is carrying herself — README section 3.1 (surfaces), ADR 0026 and 0087.
+  *
+- * Main holds no run and no microphone (ADR 0026): it sees the mirror her window reports, which is
+- * her form, how many cards wait and the one line she is on. So a pose is a function of exactly
+- * that and of nothing else, and only the poses that can be told apart from it exist. Speaking is
+- * not one of them yet: the mirror does not say her voice is playing, and a pose the data cannot
+- * back would be a decoration pretending to be a status.
++ * Main holds no run and no microphone (ADR 0026): it sees two mirrors her window reports. One is
++ * `athena:status` (her form, how many cards wait, the one line she is on); the other is her face's
++ * phase on `athena:face`, the signal every face avatar speaks from (`lib/face.ts`), reduced to its
++ * phase by `./voice-phase.ts`. A pose is a function of exactly those and of nothing else, and only
++ * the poses that can be told apart from them exist: a pose the data cannot back would be a
++ * decoration pretending to be a status. Speaking is one since the face mirror says when her voice
++ * is playing (ADR 0203).
+  *
+  * Precedence is the halo's, for the same reason: what the person must act on wins over what she
+- * is doing, and what she is doing wins over rest.
++ * is doing, and what she is doing wins over rest. A waiting card still wins over her voice here;
++ * whether the halo's order (her voice first) should reach the Bell is an open question.
+  */
++import type { FacePhase } from "@/avatar/types";
+ import { isResting } from "@/stores/athena";
+ 
+-export const POSES = ["resting", "working", "hearing", "asking"] as const;
++export const POSES = ["resting", "working", "hearing", "asking", "speaking"] as const;
+ 
+ export type Pose = (typeof POSES)[number];
+ 
+@@ -23,12 +27,18 @@ export interface PoseInput {
+   cards: number;
+   /** The one line a running turn is on, or empty. */
+   line: string;
++  /** Her face's phase as `athena:face` mirrors it (`./voice-phase.ts`), or nothing known. */
++  voice?: FacePhase | null;
+ }
+ 
+-/** A card waiting is asking; a held key is hearing; any other work is working; the rest is rest. */
+-export function poseOf({ state, cards, line }: PoseInput): Pose {
++/**
++ * A card waiting is asking; a held key or her mirrored listening is hearing; her voice playing is
++ * speaking; any other work is working; the rest is rest.
++ */
++export function poseOf({ state, cards, line, voice }: PoseInput): Pose {
+   if (cards > 0) return "asking";
+-  if (state === "hear") return "hearing";
++  if (state === "hear" || voice === "listening") return "hearing";
++  if (voice === "speaking") return "speaking";
+   return isResting(state, line) ? "resting" : "working";
+ }
+ 
+@@ -38,4 +48,6 @@ export const POSE_WORDS: Readonly<Record<Pose, string>> = {
+   working: "working",
+   hearing: "listening",
+   asking: "waiting on you",
++  speaking: "speaking",
+ };
++
+diff --git a/apps/desktop/src/bell/voice-phase.test.ts b/apps/desktop/src/bell/voice-phase.test.ts
+new file mode 100644
+index 00000000..a6418cb0
+--- /dev/null
++++ b/apps/desktop/src/bell/voice-phase.test.ts
+@@ -0,0 +1,78 @@
++/** Tests for the Bell's mirror of her voice phase — README section 3.1, ADR 0026 and 0087. */
++import { afterEach, describe, expect, it, vi } from "vitest";
++
++import type { FacePhase, FaceSignal, FaceSource } from "@/avatar/types";
++
++import { FACE_EVENT as LIB_FACE_EVENT } from "@/lib/face";
++
++import { FACE_EVENT, STALE_MS, createVoicePhase } from "./voice-phase";
++
++/** A hand-fed source, as `mainFaceSource()` is fed by `athena:face`. */
++function fed() {
++  const listeners = new Set<(s: FaceSignal) => void>();
++  const source: FaceSource = {
++    subscribe(l) {
++      listeners.add(l);
++      return () => void listeners.delete(l);
++    },
++  };
++  let level = 0;
++  const send = (phase: FacePhase) => {
++    level = (level + 0.13) % 1;
++    for (const l of listeners) l({ phase, level, viseme: null, open: level, motion: null, generation: 1 });
++  };
++  return { source, send, listeners };
++}
++
++afterEach(() => {
++  vi.useRealTimers();
++});
++
++describe("createVoicePhase", () => {
++  it("case 6: tells its listener of a phase change only, never of every 30 Hz frame", () => {
++    const { source, send } = fed();
++    const seen: (FacePhase | null)[] = [];
++    createVoicePhase(source, (p) => seen.push(p));
++    send("idle");
++    for (let i = 0; i < 30; i++) send("speaking");
++    send("idle");
++    expect(seen).toEqual(["idle", "speaking", "idle"]);
++  });
++
++  it("case 7: falls back to no phase when the frames stop while she speaks", () => {
++    vi.useFakeTimers();
++    const { source, send } = fed();
++    const seen: (FacePhase | null)[] = [];
++    createVoicePhase(source, (p) => seen.push(p));
++    send("speaking");
++    vi.advanceTimersByTime(STALE_MS - 1);
++    expect(seen).toEqual(["speaking"]);
++    vi.advanceTimersByTime(1);
++    expect(STALE_MS).toBe(1500);
++    expect(seen).toEqual(["speaking", null]);
++  });
++
++  it("keeps speaking while frames keep coming, holds a rest phase without a timer, and stops listening", () => {
++    vi.useFakeTimers();
++    const { source, send, listeners } = fed();
++    const seen: (FacePhase | null)[] = [];
++    const stop = createVoicePhase(source, (p) => seen.push(p));
++    send("speaking");
++    for (let i = 0; i < 10; i++) {
++      vi.advanceTimersByTime(STALE_MS / 2);
++      send("speaking");
++    }
++    send("idle");
++    vi.advanceTimersByTime(STALE_MS * 4);
++    expect(seen).toEqual(["speaking", "idle"]);
++    stop();
++    expect(listeners.size).toBe(0);
++    send("speaking");
++    vi.advanceTimersByTime(STALE_MS * 2);
++    expect(seen).toEqual(["speaking", "idle"]);
++  });
++});
++
++it("listens on the event lib/face names, spelled once more so the first frame does not carry lib/face", () => {
++  expect(FACE_EVENT).toBe(LIB_FACE_EVENT);
++});
+diff --git a/apps/desktop/src/bell/voice-phase.ts b/apps/desktop/src/bell/voice-phase.ts
+new file mode 100644
+index 00000000..a8fd9944
+--- /dev/null
++++ b/apps/desktop/src/bell/voice-phase.ts
+@@ -0,0 +1,68 @@
++/**
++ * The Bell's mirror of her voice — README section 3.1, ADR 0026, 0087 and 0203.
++ *
++ * Her window mirrors her face to Main on `athena:face`, up to 30 frames a second while she listens
++ * or speaks (`lib/face.ts`). A face avatar needs every frame; a Bell needs only the phase. This
++ * reduces the stream to the phase and says it on a change only, so neither the console nor the
++ * surface re-renders per frame.
++ *
++ * The producer sends no rest frame when her window dies or reloads, so a phase that comes in a
++ * stream (listening, speaking) lapses to `null` once `STALE_MS` passes without a frame: a closed
++ * window cannot leave the Bell speaking forever. A rest phase is sent once per change and holds.
++ *
++ * It is first-frame code (both Bells read it), so it listens on `athena:face` itself, phase only,
++ * through `lib/ipc`: `lib/face` and its validation are no part of Main's first paint (ADR 0095).
++ */
++import { useEffect, useState } from "react";
++
++import type { FacePhase, FaceSignal } from "@/avatar/types";
++import { hasShell, on } from "@/lib/ipc";
++
++/** `lib/face.ts`'s `FACE_EVENT`, spelled here so the first frame does not carry `lib/face` (a test pins it). */
++export const FACE_EVENT = "athena:face";
++
++/** How long a streamed phase holds without a frame: some 45 mirrored frames. */
++export const STALE_MS = 1500;
++
++/** What a Bell reads of a face source: the phase of each signal, nothing else. */
++export interface PhaseSource {
++  subscribe(listener: (signal: Pick<FaceSignal, "phase"> | null) => void): () => void;
++}
++
++/** Follow `source`'s phase, telling `onPhase` of each change. Returns the stop. */
++export function createVoicePhase(source: PhaseSource, onPhase: (phase: FacePhase | null) => void): () => void {
++  let phase: FacePhase | null = null;
++  let lapse: ReturnType<typeof setTimeout> | undefined;
++  const set = (next: FacePhase | null) => {
++    if (next !== phase) onPhase((phase = next));
++  };
++  const off = source.subscribe((signal) => {
++    const next = signal?.phase ?? null;
++    clearTimeout(lapse);
++    set(next);
++    if (next === "listening" || next === "speaking") lapse = setTimeout(set, STALE_MS, null);
++  });
++  return () => {
++    clearTimeout(lapse);
++    off();
++  };
++}
++
++/**
++ * The running app's mirror: `athena:face`, read for its phase alone. The frame's other fields are
++ * the faces' to check (`mainFaceSource`); a phase that is neither listening nor speaking moves no
++ * pose (`poseOf`), so a malformed one is at worst no news.
++ */
++const shell: PhaseSource = {
++  subscribe(listener) {
++    const off = on<Pick<FaceSignal, "phase"> | null>(FACE_EVENT, listener);
++    return () => void off.then((f) => f());
++  },
++};
++
++/** Her mirrored face phase, for a Bell: `null` until `athena:face` says one, and outside the shell. */
++export function useVoicePhase(): FacePhase | null {
++  const [phase, setPhase] = useState<FacePhase | null>(null);
++  useEffect(() => (hasShell() ? createVoicePhase(shell, setPhase) : undefined), []);
++  return phase;
++}
+diff --git a/apps/desktop/src/console/Console.tsx b/apps/desktop/src/console/Console.tsx
+index 171479b7..76324349 100644
+--- a/apps/desktop/src/console/Console.tsx
++++ b/apps/desktop/src/console/Console.tsx
+@@ -9,6 +9,7 @@
+ import { lazy, Suspense, useCallback } from "react";
+ 
+ import { poseOf, POSE_WORDS } from "@/bell/pose";
++import { useVoicePhase } from "@/bell/voice-phase";
+ import WindowControls from "@/components/WindowControls";
+ import { shapeOf, type Labeller, type Path } from "@/depth/model";
+ import { useDepth } from "@/depth/store";
+@@ -52,6 +53,7 @@ export default function Console() {
+   const settle = useDepth((s) => s.settle);
+ 
+   const athena = useAthena();
++  const voice = useVoicePhase();
+   const hydrated = useSettings((s) => s.hydrated);
+   const onboarded = useSettings((s) => s.onboarded);
+   const problem = useSettings((s) => s.problem);
+@@ -60,7 +62,7 @@ export default function Console() {
+   const label = useLabeller();
+   useFollowShell();
+ 
+-  const pose = poseOf(athena);
++  const pose = poseOf({ ...athena, voice });
+   // A chore that came due (ADR 0131): its notice rides the dock, a lazy chunk off the first frame.
+   const notice = (
+     <Suspense fallback={null}>
+@@ -82,7 +84,7 @@ export default function Console() {
+       band={Band ? <Band /> : undefined}
+       presence={{
+         pose,
+-        text: athena.cards > 0 || pose !== "resting" ? pillText(athena) : POSE_WORDS.resting,
++        text: pose === "resting" || pose === "speaking" ? POSE_WORDS[pose] : pillText(athena),
+         waiting: athena.cards,
+         notice,
+       }}
+diff --git a/apps/desktop/src/scenes/surface/live.tsx b/apps/desktop/src/scenes/surface/live.tsx
+index 5300da71..1115af84 100644
+--- a/apps/desktop/src/scenes/surface/live.tsx
++++ b/apps/desktop/src/scenes/surface/live.tsx
+@@ -2,13 +2,14 @@
+  * The surface, as the running app uses it — the one file here that knows a store exists.
+  *
+  * It reads and starts nothing: the app root starts the stores (README 3.5). Nine are read here:
+- * her status (the mirror), the origins, the tabs, the connectors, the voice's availability, the
++ * her status (the mirror, with her face's phase beside it), the origins, the tabs, the connectors, the voice's availability, the
+  * engine's probe, the daemon (which engine it runs, and whether it started), the shipped playbooks
+  * and the settings. `useSurfaceModel` is a hook so the console can compose the same
+  * model into other views.
+  */
+ import { createElement, useEffect, useMemo } from "react";
+ 
++import { useVoicePhase } from "@/bell/voice-phase";
+ import { useDepth } from "@/depth/store";
+ import { athenaOffer, athenaShow, athenaToggle } from "@/lib/companion";
+ import { ENGINE_IDS, engineLabel } from "@/lib/engines";
+@@ -61,6 +62,7 @@ function totalsOf(items: readonly Playbook[] | null) {
+ 
+ export function useSurfaceModel(): SurfaceModel {
+   const athena = useAthena();
++  const voice = useVoicePhase();
+   const records = useOrigins((s) => s.records);
+   const known = useOrigins((s) => s.known);
+   const tabs = useTabs((s) => s.tabs);
+@@ -108,7 +110,7 @@ export function useSurfaceModel(): SurfaceModel {
+     });
+     const fact = engineFact(setup);
+     return selectSurface({
+-      athena: { state: athena.state, cards: athena.cards, line: athena.line },
++      athena: { state: athena.state, cards: athena.cards, line: athena.line, voice },
+       windowVisible: athena.visible,
+       apps: known.flatMap((origin) => {
+         const row = records[origin];
+@@ -145,6 +147,7 @@ export function useSurfaceModel(): SurfaceModel {
+     });
+   }, [
+     athena,
++    voice,
+     avatar,
+     records,
+     known,
+diff --git a/apps/desktop/src/scenes/surface/model.ts b/apps/desktop/src/scenes/surface/model.ts
+index b9870c10..7631b1e7 100644
+--- a/apps/desktop/src/scenes/surface/model.ts
++++ b/apps/desktop/src/scenes/surface/model.ts
+@@ -2,8 +2,8 @@
+  * The surface's view-model — README section 3.1 and 3.5, ADR 0026, 0087.
+  *
+  * The surface is Athena and the five lights beneath her. It is a **mirror** (decision D1, ADR 0087):
+- * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports,
+- * and talking to her is handing text to her own window. Nothing here pretends otherwise: the ask
++ * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports
++ * and the phase her face mirrors on `athena:face` (ADR 0203), and talking to her is handing text to her own window. Nothing here pretends otherwise: the ask
+  * box says it hands the words over, and the cards waiting are answered in her window.
+  *
+  * What needs the person is named on the surface, each one press from its item (`needs`): an
+@@ -16,7 +16,7 @@
+  */
+ import type { AvatarId } from "@/avatar/types";
+ import type { Reach } from "@/bell/Bell";
+-import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
++import { POSE_WORDS, poseOf, type Pose, type PoseInput } from "@/bell/pose";
+ import { ROOTS, ROOT_LABEL, type Path, type Root } from "@/depth/model";
+ import type { Standing } from "@/modules/setup/readiness";
+ import { pillText } from "@/stores/athena";
+@@ -36,7 +36,8 @@ export interface SurfaceActions {
+ }
+ 
+ export interface SurfaceSources {
+-  athena: { state: string; cards: number; line: string };
++  /** Her status mirror, and her face's phase when `athena:face` has said one. */
++  athena: PoseInput;
+   /** Her window is on the screen, as `athena:status` last said (`useAthena().visible`). */
+   windowVisible: boolean;
+   /** Apps she has been told about, switched on or off. */
+@@ -240,7 +241,8 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
+   return {
+     pose,
+     avatar: s.avatar ?? "halo",
+-    headline: s.athena.cards > 0 || pose !== "resting" ? pillText(s.athena) : "Athena is resting",
++    // `pillText` already says "Athena is resting" for the resting pose; only her voice is not its to say.
++    headline: pose === "speaking" ? "Athena is speaking" : pillText(s.athena),
+     poseWord: POSE_WORDS[pose],
+     waiting: s.athena.cards,
+     windowVisible: s.windowVisible,
+diff --git a/apps/desktop/src/stage/loop-current.ts b/apps/desktop/src/stage/loop-current.ts
+index 6553b13e..244ee725 100644
+--- a/apps/desktop/src/stage/loop-current.ts
++++ b/apps/desktop/src/stage/loop-current.ts
+@@ -31,7 +31,7 @@ export const LOOPS: readonly Loop[] = [
+ ];
+ 
+ /** How fast the current runs in each pose: the bell's own sway numbers. Resting flows only after a move. */
+-export const POSE_SPEED: Readonly<Record<Pose, number>> = { resting: 1, working: 2.2, hearing: 1.6, asking: 1.3 };
++export const POSE_SPEED: Readonly<Record<Pose, number>> = { resting: 1, working: 2.2, hearing: 1.6, asking: 1.3, speaking: 1.8 };
+ 
+ /** A pose in which the current keeps flowing with nothing moving on screen: she is busy. */
+ export function flowsAtRest(pose: Pose): boolean {

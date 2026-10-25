@@ -1,0 +1,17 @@
+{"card":"tidycrm-tests/A","status":"landed","shas":["0cddf5af3996fa2a08367165aa5d95067a62b641"],
+ "tests_added":[
+  "examples/tidycrm/test/write-paths.model.test.ts::oracle negative control: a conflict flag cleared by hand is named, with its domain",
+  "examples/tidycrm/test/write-paths.model.test.ts::oracle negative control: a pair flag flipped by hand and an open pair on a deleted record are both named",
+  "examples/tidycrm/test/write-paths.model.test.ts::oracle on the untouched seed: zero violations across all eight invariants",
+  "examples/tidycrm/test/write-paths.model.test.ts::random walk: seeds 1..8, 40 ops each, every invariant holds after every op",
+  "examples/tidycrm/test/write-paths.model.test.ts::undo round trip: a reversible op undone at once restores contacts and merge_pairs",
+  "examples/tidycrm/test/write-paths.model.test.ts::generator reach: the walks visit the states the seed cannot produce",
+  "examples/tidycrm/test/write-paths.model.test.ts::replay: every committed trace replays and holds every invariant after each step",
+  "examples/tidycrm/test/write-paths.model.test.ts::isolation: the snapshot restore returns all four tables to their seeded rows"],
+ "guard_cases":[2,7],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter tidycrm typecheck":0,"pnpm --filter tidycrm lint":0,"pnpm --filter tidycrm test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":8,"lines_changed":798,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) Premise partly moved: flag-drift.test.ts (f1e082f) already has a 3-seed walk checked by flagDrift(); this harness goes further (oracle restated from design, not from lib/flags.ts; pair liveness, 7 segments, sheet partition, pair attachment; undo round trip; reach tally; traces/replay; snapshot isolation), so it was built, not demoted. (2) conflict-flag.test.ts not edited (nothing hand-built there to move); pairs.test.ts uses ops.insertExtraPair. (3) insertExtraPair's generator proposes same-domain pairs only (the seed's matcher never makes cross-domain ones); the cross-domain case is the defect below, pinned as a todo trace. (4) No ADR: test-only, decisions documented in module headers. (5) Red-before is the module-not-found load failure for all 8 (no oracle/generator existed); guard cases 2 and 7 would pass before by design once the modules exist. By hand: removing resolvePair's restamp made 7/8 walks red with traces written (reverted). Round trips checked: 47; reach tally: two-pairs 144, domain emptied 136, refused undo 22, merge adopts phone 3, refused merge 9.",
+ "notes":"REAL DEFECT for tidycrm-domain-lib (not fixed, outside write set): lib/blocks/index.ts buildSheet counts a block's duplicate deviation in records (in_open_pair rows) when no open pair is attached to that block, so an open pair whose keep and drop sit on different domains is counted once as a pair on the keeper's block and again as a record on the drop's - the blocks' duplicate total exceeds countOpenPairs by one per such pair. Reproduces in one op: examples/tidycrm/test/model/traces/cross-domain-pair.json (todo; replay shows it as a todo, suite stays green). Reachable whenever the email_domain_shift match rule proposes a cross-domain pair. A fix should drop the todo field so the trace becomes a hard regression. No sibling reds seen. Full write-paths file runs ~14 s."}

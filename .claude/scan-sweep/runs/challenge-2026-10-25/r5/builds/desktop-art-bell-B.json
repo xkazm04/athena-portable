@@ -1,0 +1,19 @@
+{"card":"desktop-art-bell/B","status":"landed","shas":["51bb47bf","8fbfd17b"],
+ "tests_added":[
+  "apps/desktop/src/art/glyphs.test.tsx::case 1: the accounts drawing carries no warning when no account needs the person",
+  "apps/desktop/src/art/glyphs.test.tsx::case 2: an account under attention carries the warning as a shape, a dot and a ring, not by hue alone",
+  "apps/desktop/src/art/glyphs.test.tsx::case 3: the chores drawing wears the success mark only once something is tested",
+  "apps/desktop/src/art/glyphs.test.tsx::case 4: the apps drawing inks one window frame per app switched on, the rest muted outlines",
+  "apps/desktop/src/art/glyphs.test.tsx::case 5: a count that is not known (of: null) draws no status at all, for every root",
+  "apps/desktop/src/art/glyphs.test.tsx::case 6: the voice waves are dashed and muted until her voice is ready; Mind rings its core in the warning shape",
+  "apps/desktop/src/scenes/surface/model.test.ts::case 7: accounts carry attention and the connected count, apps the count on, chores not loaded draw no count",
+  "apps/desktop/src/scenes/surface/view.test.tsx::case 7: the view passes each light's facts to its glyph",
+  "apps/desktop/src/art/glyphs.test.tsx::case 8 (guard): every root in every state is decorative, floats, and uses tokens only; Mind and Engine draw the same facet"
+ ],
+ "guard_cases":[8],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"apps/desktop pnpm typecheck":0,"apps/desktop pnpm lint":0,"apps/desktop pnpm test (189 files, 2627 passed, incl. first-paint ratchet)":0},
+ "files_changed":7,"lines_changed":233,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"(1) The Mind/Engine facet was NOT made one exported definition: exporting it from glyphs.tsx (first-frame chunk) for the lazy mind.tsx cost 16 B gzipped of first paint, which took the build over the ceiling. art/mind.tsx is untouched; case 8 instead pins InstrumentArt 'engine' and Glyph 'mind' (no facts) to render identical markup. (2) Absent facts are drawn as a count not known (no status marks), not as today's markup; the only Glyph caller always passes facts. (3) A voice not known yet draws dashed muted waves like 'not set up' (no status colour); keeping a third look cost ~12 B. (4) GlyphFacts lives in art/glyphs.tsx; the model builds art without attention per light and adds the light's own attention in the final map (fewer bytes). Mind: of is null only while the engine check is in flight; a failed check is of:1 with attention, so it is drawn as a need. (5) The guard cases were all red before on this tree (case 2 lacked the ring, case 8's source assertion), so only case 8's final form is a guard by nature; recorded red-before is 8 of 8. (6) CHANGELOG went in a second commit (8fbfd17b): the first commit's CHANGELOG insert failed on the file's CRLF line endings and the commit landed without it.",
+ "notes":"FIRST PAINT: measured from a production build with scripts/first-paint.mjs's own measure: baseline 165,162 B at start (250 B headroom), after 165,398 B against the 165,412 B ceiling (+236 B, 14 B headroom left). The build measured included uncommitted peer changes in apps/desktop/src/scenes/voice (not mine). The coordinator should run perf:surface (the surface draws the glyphs); no motion changed (no new keyframes or transitions; glyphs.css untouched). No sibling reds seen."}

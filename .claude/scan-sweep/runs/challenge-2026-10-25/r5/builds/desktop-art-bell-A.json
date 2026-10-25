@@ -1,0 +1,18 @@
+{"card":"desktop-art-bell/A","status":"demoted","shas":[],
+ "tests_added":[
+  "apps/desktop/src/bell/pose.test.ts::case 1: speaks while her voice plays, in words too",
+  "apps/desktop/src/bell/pose.test.ts::case 2: her voice outranks work in flight, as haloPhase orders it",
+  "apps/desktop/src/bell/pose.test.ts::case 3: the mirrored listening phase hears as the held key does",
+  "apps/desktop/src/bell/pose.test.ts::case 4 (guard): a waiting card still wins over her voice on the Bell",
+  "apps/desktop/src/bell/pose.test.ts::case 5 (guard): with no voice phase, every pose is what the status alone gives",
+  "apps/desktop/src/bell/voice-phase.test.ts::case 6: tells its listener of a phase change only, never of every 30 Hz frame",
+  "apps/desktop/src/bell/voice-phase.test.ts::case 7: falls back to no phase when the frames stop while she speaks",
+  "apps/desktop/src/bell/Bell.test.tsx::case 8: the Bell wears it, bell.css draws it, the current runs for it and the surface reaches it"
+ ],
+ "guard_cases":[4,5],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"npx tsc --noEmit (apps/desktop, with the change)":0,"npx eslint src/bell src/console/Console.tsx src/scenes/surface src/stage/loop-current.ts":0,"npx vitest run src/bell src/stage src/scenes/surface src/console (24 files, 201 tests)":0,"first-paint measure (production build, scripts/first-paint.mjs)":1},
+ "files_changed":0,"lines_changed":0,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Not landed: the first-paint ceiling breach could not be removed. The built version differs from the card in three ways. (1) useVoicePhase lives in bell/voice-phase.ts and listens on athena:face itself through lib/ipc, reading the phase only. It does not use mainFaceSource, because a static lib/face import puts lib/face into the first frame. FACE_EVENT is spelled a second time and a test pins it to lib/face's constant. (2) createVoicePhase(source, onPhase) returns its stop. It does not take a clock argument; fake timers drive the global setTimeout. (3) The console's dock text and the surface headline say 'speaking' / 'Athena is speaking' when the pose is speaking, instead of pillText's 'Athena is resting'.",
+ "notes":"DEMOTED, first paint. Baseline at r5 start: 165,406 B against a 165,412 B ceiling (6 B headroom). Three builds were measured. A: the mirror lazy-loaded with import() from first-frame code and lib/face imported statically in the lazy chunk: 165,838 B (+432; rolldown moves vite's preload-helper out of the skins chunk into a chunk of its own, about +255 B, plus +177 B of root). B: the same lazy shape over lib/ipc instead of lib/face: 165,833 B (the helper split stays, so any new dynamic entry pays for it). C: the mirror as first-frame code, written as small as I could make it: 165,590 B. OVERSHOOT 178 B over the ceiling (+184 B over the baseline). The nearest thing to trim in the write set is surface-model UI copy, and changing that changes behaviour. The whole change, green on tsc, eslint and the bell/stage/surface/console tests, is saved as .claude/scan-sweep/runs/challenge-2026-10-25/r5/builds/desktop-art-bell-A.patch (git apply --check passes on the current tree). It still needs an ADR (0203 was the next free number when I looked) and a CHANGELOG line, and it lands only if the owner raises the ceiling by about 180 B or another change frees that many bytes. My working tree is reverted: none of my paths are modified. Separately: the producer drops a mirrored frame that is identical to the last one, so a silent stretch of more than 1.5 s inside one spoken line would briefly let the phase lapse to null. ADR material, not a blocker."}

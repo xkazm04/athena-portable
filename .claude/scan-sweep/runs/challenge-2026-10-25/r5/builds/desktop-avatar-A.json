@@ -1,0 +1,18 @@
+{"card":"desktop-avatar/A","status":"partial","shas":["9f8a932b"],
+ "tests_added":[
+  "apps/desktop/src/lib/face-timeline.test.ts::a 40 ms PP grows to 60 ms, borrowing from its neighbours; the sentence keeps its ends and still tiles",
+  "apps/desktop/src/lib/face-timeline.test.ts::neighbours that cannot spare the time keep one 60 Hz frame each; the closure is never merged away",
+  "apps/desktop/src/avatar/mouth.test.ts::the producer's mouthTarget is the driver's target for every viseme and level; SHAPE_OPEN is gone",
+  "apps/desktop/src/lib/face-signal.test.ts::mirrors the frame a PP or FF begins at once, even inside the cap, and never the same signal twice",
+  "apps/desktop/src/avatar/mouth.test.ts::Main, fed the 30 Hz mirror of the calm line: each PP holds <= 0.05 for two frames running",
+  "apps/desktop/src/avatar/mouth.test.ts::her window (every frame) and Main (the mirror) agree at every closure's midpoint, and nowhere drift past the mirror's staleness",
+  "apps/desktop/src/avatar/mouth.test.ts::(todo) her window and Main differ by <= 0.05 at every segment's midpoint",
+  "apps/desktop/src/avatar/mouth.test.ts::a level-only line: breath at 0.15 held 300 ms keeps the mouth shut, as the producer says"
+ ],
+ "guard_cases":[8],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":7,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":13,"lines_changed":531,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"(1) Case 6 not met as written: <= 0.05 at EVERY segment midpoint between her window and Main is not reachable under the 30 Hz mirror cap - after: 11 of 55 midpoints over (max 0.118, mean 0.028); before: 10 of 55 (max 0.126). The gap is a 3-frame vowel after a jump in level that the mirror sees one frame late. Measured alternatives: every viseme change mirrored at once -> 1 of 55 over at 32.7 signals/s (loosens ADR 0027's cap, owner call, not built); closure onset+offset -> 7-9 of 55. Committed instead: every closure midpoint agrees within 0.05 and no midpoint exceeds 0.15 (red before: PP at frame 166 0.083), plus an it.todo for the full case. (2) The driver's target with a viseme is mouthTarget(viseme, level) - the producer's rule on the signal, matching case 3's literal wording - rather than tracking signal.open; without a viseme it follows signal.open (case 7). Following open with a viseme measured worse on case 6 (max 0.172). Driver opening tau kept at 35 ms (the previous driver value; 22 ms measured 13/55 over), closing 12 ms. (3) Case 2's neighbours widened from 16 ms to 24 ms so the case can be red before (16 ms neighbours have nothing to spare, so nothing changes); the card's 16 ms variant is kept in the same test as an unchanged-guard. (4) Grew the write set by one coupled doc: avatar/types.ts FaceSignal.open comment (it described the old driver rule). (5) Fixtures now carry open = mouthTarget(viseme, level) so the preview harness and perf fixture still open the mouth.",
+ "notes":"First paint: none of the touched modules are in chrome.html's static graph (face-preview is a lazy chunk, face-signal/face-timeline are athena-window only, the driver is in the lazy avatar runtime); no new import() added; pnpm test (incl. first-paint ratchet) green. Touched the face's mouth motion constants: coordinator should run perf:all. The closure-onset bypass raises the calm line's mirror rate from 30.1 to 30.5 signals/s. No sibling reds seen. Uncommitted apps/desktop/src/scenes/voice/* and src-tauri/* and examples/ledgerbox/* changes in the tree are not mine and were left untouched."}

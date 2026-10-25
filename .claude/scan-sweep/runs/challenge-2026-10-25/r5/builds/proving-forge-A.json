@@ -1,0 +1,16 @@
+{"card":"proving-forge/A","status":"landed","shas":["d5ba07a99b218854a14f9297fd71702515cb96b2"],
+ "tests_added":[
+  "tests/proving/forge/test_baseline.py::test_a_latest_exceeds_short_in_half_its_comparable_runs_is_short_and_no_flip",
+  "tests/proving/forge/test_baseline.py::test_a_base_benched_under_another_key_is_not_comparable_and_counts_nowhere",
+  "tests/proving/forge/test_baseline.py::test_a_recall_drop_is_measured_from_the_bases_minimum_comparable_recall",
+  "tests/proving/forge/test_baseline.py::test_a_drop_below_a_steady_base_counts_and_the_row_carries_its_baseline",
+  "tests/proving/forge/test_baseline.py::test_another_approval_mode_is_another_instrument",
+  "tests/proving/forge/test_baseline.py::test_proof_2_is_n_a_with_no_comparable_base_and_names_its_smallest_n_on_pass",
+  "tests/proving/forge/test_pick.py::test_pick_draws_by_the_pooled_word_and_leaves_out_bases_with_no_comparable_run"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,"uv run pytest tests/proving/forge -m \"not provider and not eval\"":0},
+ "files_changed":9,"lines_changed":628,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Red-before was an ImportError of the new `baseline` symbol (all 7 non-guard cases fail at collection), not per-assertion. The baseline dict also carries `comparable: true` on comparable rows (card listed n/word/median/min). An unkeyed bench that names a different engine/model/approve is treated as not comparable (small extension of the guard rule; the make_library fixture names none). Base reads now go through ledger.view so bench.runs.json records pool when present (none are committed today). report.flips gains n_variants_comparable and bases_not_comparable; models.bench is now engine/model/approve. No new src module, so no atlas ledger change. ADR 0208 taken under the lock.",
+ "notes":"Premise re-verified on the current tree (line numbers drifted, facts held: clinic-denials latest exceeds, comparable set short 2 of 4). A dry `all` over the real library now draws clinic-denials into the short pool; proof-2 status domain and ids unchanged. Slot B builds on report.py/run.py: build_report takes config=BenchConfig, the per-pid Baseline is `bl` inside the loop, and _proof now takes a Counts dataclass. Full pytest not run per brief; no sibling reds seen."}
