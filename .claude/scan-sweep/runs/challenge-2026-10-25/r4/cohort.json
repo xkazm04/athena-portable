@@ -1,0 +1,67 @@
+{
+  "cohort": [
+    {
+      "name": "core-sleep-and-vitals",
+      "group": "Agent Core",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "proving-playbooks-bench",
+      "group": "Proving Ground",
+      "files": 12,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-voice-ui",
+      "group": "Desktop Companion",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-companion-surfaces",
+      "group": "Desktop Companion",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-stage-depth",
+      "group": "Desktop Companion",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "tidycrm-style",
+      "group": "Example Apps",
+      "files": 20,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "ledgerbox-domain-lib",
+      "group": "Example Apps",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "ledgerbox-model-tools",
+      "group": "Example Apps",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "atlas-data-and-app",
+      "group": "Example Apps",
+      "files": 16,
+      "reason": "never challenged",
+      "riders": []
+    }
+  ]
+}

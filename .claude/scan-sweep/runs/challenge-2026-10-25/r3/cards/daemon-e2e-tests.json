@@ -1,0 +1,120 @@
+{
+  "host": "daemon-e2e-tests",
+  "cards": [
+    {
+      "context": "daemon-e2e-tests",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Scripted transcripts become an audited contract: per-turn and teardown accounting",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "tests/e2e/serve_scripted.py",
+        "tests/e2e/conftest.py",
+        "tests/e2e/test_connectors.py",
+        "tests/e2e/test_connectors_journey.py"
+      ],
+      "new_files": [
+        "tests/e2e/test_transcript_accounting.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "a scripted daemon with 2 rounds whose only turn asks for 1 (one plain reply) -> Spawn's teardown check fails naming 'round 2 of 2 was never asked for' (leftover rounds are a moved premise, not a spare)",
+        "a scripted daemon with 1 round whose turn is a refused op (unknown connector name, ADR 0041 feeds the refusal back) -> the check fails naming 'round 2 was asked for; the script has 1' even though the turn's tool.result frame looks correct",
+        "Daemon.run(message, rounds=2) on a turn that consumed exactly 2 recorded rounds -> passes; the same call with rounds=1 -> AssertionError naming asked 2, expected 1 and the turn's message",
+        "serve_scripted writes one NDJSON line per provider invocation under ATHENA_HOME/scripted/asked.ndjson with {index, available, served}; after an overdraft the line has served=false and the ledger row of that turn has error_reason engine_error (the two readings agree)",
+        "Spawn.scripted(..., exact=False) with leftover rounds -> no teardown failure (an explicit, greppable opt-out for a test that deliberately over-supplies)",
+        "test_with_the_vault_on_and_nothing_connected_each_connector_reports_its_health_honestly with its transcript corrected to 2 rounds -> passes under exact accounting and its ledger row is is_error False",
+        "test_a_grant_revoked_mid_run_shows_needs_reauth_and_the_next_call_is_refused with the told-refusal reply round added -> passes under exact accounting",
+        "every other existing tests/e2e scripted test (turn, decisions, reads, voice, journey) -> still green unchanged under exact accounting"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "src/athena/harness/transports.py:324 - a round the script does not have raises TransportError ('the script has N round(s); round M was asked for')",
+        "src/athena/harness/cli_harness.py:422 - that OSError is swallowed into a turn that ends ('engine_error', sentence): the SSE stream still closes with turn.finished and the test sees a 200",
+        "tests/e2e/conftest.py:461 - the spawner's own docstring promises 'a round the script does not have raises', but the raise happens in a subprocess and nothing in the harness ever reads it back",
+        "tests/e2e/conftest.py:530 - stop_all only kills; no check that the transcript was consumed exactly, so over-supplied rounds are also silent",
+        "tests/e2e/serve_scripted.py:136 - the transport is built once per daemon from the transcript; consumption state lives only in the child process",
+        "docs/adr/0041-a-refusal-is-told-to-the-model-in-the-same-turn.md:25 - a refused op is fed back and the model gets one more round; :40 says tests that scripted one reply per refused turn must script the follow-up",
+        "tests/e2e/test_connectors.py:370 - the no-vault test scripts that follow-up round for an unknown connector op ('The drop is told in the same turn (ADR 0041)')",
+        "tests/e2e/test_connectors.py:410 - the vault-on test scripts ONE round for the same refused op, then asserts only results[0].error and ledger rows[0].origin (:459-462), never is_error - so its turn very likely ends engine_error on a missing round 2 and still passes",
+        "tests/e2e/test_connectors_journey.py:255 - the revoke test's third round is a SEARCH that becomes unknown_ref (:271-272) with no follow-up round scripted; the test asserts only the tool.result"
+      ],
+      "rollback": "Three commits (recorder in serve_scripted, accounting in conftest + negative-control test file, transcript corrections in two test files); git revert of the series in reverse order restores the old silent behaviour with no product file touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Turn-shaped transcripts: Spawn.scripted(turns=[[r1, r2], [r3]]) so a test that adds a turn cannot shift every later round by one (partly folded in as Daemon.run(rounds=n)).",
+      "body": "## Summary\nMake the recorded engine of the e2e suite a contract the harness audits: every provider invocation the spawned daemon makes is recorded, each turn can declare how many rounds it spends, and teardown fails when a transcript was overdrawn or left unconsumed.\n\n## Description\nThe scripted daemon replays a transcript in a subprocess. When a turn asks for a round the transcript lacks, ScriptedTransport raises TransportError, which the CLI harness turns into an engine_error turn; the HTTP reply is still a 200 SSE stream that ends with turn.finished. Tests that assert only on a tool.result frame therefore pass on a turn whose premise moved, and tests that over-supply rounds are never told either. ADR 0041 changed how many rounds a refused turn costs, and at least two e2e tests (vault-on connectors, revoke-then-retry journey) still script the pre-0041 count. The fix is a thin recorder in serve_scripted.py (a ScriptedTransport subclass that appends {index, available, served} to ATHENA_HOME/scripted/asked.ndjson), and accounting in conftest.py: Daemon.rounds_asked(), an optional rounds= on Daemon.run checked by the delta, and an exact check in the spawn fixture's teardown with an explicit exact=False opt-out. Production code is untouched; the seam stays the production transport factory (test-harness / recorded-interaction-fixtures), and a guard that never fires is made loud (absent-guard-is-loud).\n\n## Flow\n- serve_scripted installs a recording ScriptedTransport (same replay, plus one NDJSON line per invocation)\n- Daemon.run(..., rounds=n) reads the asked count before and after the turn and asserts the delta\n- Spawn.stop_all, before killing, compares asked vs available for each exact scripted daemon and raises with the overdraft or leftover rounds named\n- negative controls prove the check fails on an overdraft and on a leftover; the two stale transcripts are corrected\n\n## Expected impact\nThe whole class 'a scripted e2e test passes on an engine_error turn' closes, and the next ADR that changes the round loop shows up as a named failure in the tests whose transcripts it invalidated instead of as silent drift.\n\n## Evaluation\nClaim: overdrawn or unconsumed transcripts fail the test that owns them\nBefore: 0 of 5 accounting cases pass (the harness has no accounting; cases 1-5)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "transports.py:324-327 `if index >= len(self.rounds): raise TransportError(f\"the script has {len(self.rounds)} round(s); round {index + 1} was asked for\")`; cli_harness.py:422-426 `except OSError as exc: return \"\", (\"engine_error\", f\"{type(exc).__name__}: {exc}\"), None`; transports.py:143 `class TransportError(OSError)`. test_connectors.py no-vault test: 2 rounds for one refused SEARCH_MAIL op (comment 'The drop is told in the same turn (ADR 0041)'); vault-on test: `[claude_round(\"Searching your mail.\\n\" + op(SEARCH_MAIL, query=\"invoice\"))]` - one round, same refused op, assertions on results[0].error and rows[0].origin only. ADR 0041:40 'Tests that scripted one model reply per refused turn now script the reply she gives after'. grep of tests/e2e for 'is_error' in those two tests: none. conftest.py stop_all (530-532) only calls daemon.stop()."
+    },
+    {
+      "context": "daemon-e2e-tests",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A failing e2e test explains itself: daemon forensics attached to the report",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "tests/e2e/conftest.py"
+      ],
+      "new_files": [
+        "tests/e2e/forensics.py",
+        "tests/e2e/test_forensics.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "a spawned daemon's stderr is drained continuously by a reader thread into a bounded tail (last 200 lines / 16 KB): a daemon child that writes 200 KB to stderr keeps answering /health instead of blocking on a full pipe",
+        "forensics(daemon) on a live scripted daemon whose last turn hit a missing round -> a section naming argv, alive, the ledger's last rows with trigger/is_error/error_reason and the line 'turn ended engine_error'",
+        "forensics(daemon) for a fake_providers daemon -> includes the last 20 lines of ATHENA_HOME/fake-providers/log.ndjson with method, host, path, status (and no Authorization value - the log never holds one)",
+        "a test that fails while a daemon is alive -> the pytest report carries one 'athena daemon <n>' section per started daemon, collected BEFORE teardown kills it (pytest_runtest_makereport hookwrapper on the call phase)",
+        "a test that passes -> no daemon section is collected and no extra /ledger request is made (zero cost on green)",
+        "the ready-line failure path (_first_line) still raises its AssertionError with exit code and stderr tail exactly as today"
+      ],
+      "guard_cases": ["4", "5"],
+      "premise": [
+        "tests/e2e/conftest.py:501 - stdout and stderr are both PIPE and, after the ready line, neither is ever read again: the daemon's '[daemon] ... raised' lines (src/athena/daemon/server.py:587) are discarded, and a chatty child could block on a full pipe",
+        "tests/e2e/conftest.py:555 - stderr is read only when the ready line never came; once a daemon starts, nothing it says reaches the person reading a failure",
+        "tests/e2e/conftest.py:566 - the spawn fixture's finally kills every daemon, so by the time pytest prints a failure the only witness (the live daemon's /ledger, its home) is gone",
+        "src/athena/harness/cli_harness.py:422 - an engine failure becomes a ledger error_reason, not an HTTP error: the failing assertion is typically 'assert results == [...]' with no hint that the turn itself broke",
+        "tests/e2e/test_connectors_journey.py:76 - the fake-provider log is the far-side oracle, yet on failure its contents are only visible if a test happened to assert them"
+      ],
+      "rollback": "Two commits (stderr drain + forensics module with its tests; the report hook in conftest); reverting the hook commit alone restores today's report, reverting both restores today's harness. No product file is touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "A --e2e-keep-failed mode that copies a failed daemon's ATHENA_HOME (brain, transcript, fake log, ledger) to a named folder so the failure can be replayed by hand.",
+      "body": "## Summary\nWhen an e2e test fails, the pytest report should say what each spawned daemon did: its argv, whether it is alive, its stderr tail, the ledger's last rows with their error reasons, and the fake providers' request log. Today the report shows only the failing assert, and the daemon that could explain it is killed before anyone looks.\n\n## Description\nThe person reading a red e2e run is the operator of this suite, and the report is their surface. Every daemon here is a subprocess whose stderr is piped and never read after startup, and whose state is destroyed by the fixture's finally. Turn-level failures (engine_error from a missing round, a refused replay) arrive as HTTP 200s, so the assert that fails is several steps away from the cause. A new tests/e2e/forensics.py builds one bounded text section per daemon (ledger via the daemon's own /ledger route - assert-through-the-reader - plus the fake log tail and the drained stderr tail); conftest.py drains stderr on a reader thread from spawn time and registers a pytest_runtest_makereport hookwrapper that, only on a failed call phase, collects the sections while daemons are still alive and adds them to the report. Green runs pay nothing.\n\n## Flow\n- _start launches a daemon reader thread on stderr into a bounded deque\n- the spawn fixture exposes its Spawn on the test item\n- on a failed call phase the hook calls forensics(daemon) for each started daemon and attaches 'athena daemon <n>' sections\n- teardown kills the tree as today\n\n## Expected impact\nA failing e2e test goes from 'assert [] == [...]' to the turn that broke and why, without re-running under a debugger; the pipe-full stall class closes as a side effect.\n\n## Evaluation\nClaim: a failed test's report carries the daemon's own account of the failure, at zero cost on green\nBefore: 0 of 4 behaviour cases pass (cases 0-3; no drain, no forensics, no hook)\nAfter: 6 of 6\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "conftest.py:501-509 `subprocess.Popen(list(argv), stdout=subprocess.PIPE, stderr=subprocess.PIPE, ...)`; the only reads are _first_line (548-559: one stdout line, stderr only if the process already exited) and stop() closing the pipes (238-240). server.py:587 `print(f\"[daemon] {method} {path} raised {type(exc).__name__}\", file=sys.stderr, flush=True)`. conftest.py:566-573 fixture `finally: spawner.stop_all()`. No pytest_runtest_makereport anywhere under tests/e2e (grep)."
+    }
+  ],
+  "rehomed": [
+    "stderr pipe never drained (potential child stall on a full pipe) - S on its own, folded into slot B",
+    "fixture-economics: share one daemon per module for read-only claims (manifest, CORS, health) - unmeasured spawn cost and it weakens the per-test isolation rule the suite states; needs a timing measurement first",
+    "test_mcp_connector.py sits in tests/e2e but outside this context's paths - context-map gap for a rescan, not a card"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["test-harness"],
+    "techniques": ["recorded-interaction-fixtures", "assert-through-the-reader", "far-side-oracle", "negative-control-tests"]
+  },
+  "files_read": 22
+}

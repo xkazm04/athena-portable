@@ -1,0 +1,134 @@
+{
+  "host": "proving-playbooks-bench",
+  "cards": [
+    {
+      "context": "proving-playbooks-bench",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One append-only run ledger for bench and follow-through; bench.json becomes a view",
+      "size": "M",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/proving/playbooks/bench.py",
+        "src/athena/proving/playbooks/followthrough.py",
+        "src/athena/proving/playbooks/rank.py",
+        "src/athena/proving/playbooks/evidence.py",
+        "src/athena/proving/playbooks/__main__.py",
+        "tests/proving/test_playbooks.py",
+        "tests/proving/test_playbooks_rank.py",
+        "tests/proving/test_playbooks_followthrough.py",
+        "docs/features/playbooks.md"
+      ],
+      "new_files": [
+        "src/athena/proving/playbooks/ledger.py",
+        "tests/proving/test_playbooks_ledger.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-playbooks-runs-are-an-append-only-ledger-and-bench-json-is-its-view.md (amends ADR 0128's 'bounded by HISTORY' consequence)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "13 keyed runs of one playbook written through write_bench under one key -> ledger.pool(root, key) returns 13 runs and rank_all's row says bench.runs.n == 13 (today: 12, the oldest evicted by HISTORY)",
+        "a rescore of the latest run -> the ledger gains one correction line referencing run_at, the run count stays 13, and the pooled set has 13 entries with the rescored score under the new key (today the correction spends a history line and evicts a run)",
+        "a playbook with bench.json but no bench.runs.json -> ledger.pool falls back to bench.json latest + history and returns exactly what comparable_runs returns today (seeded read, nothing written)",
+        "committed library unchanged -> `rank --check` exits 0 and ranking.json is byte-identical (no ledger files exist yet, so every read falls back)",
+        "followthrough record_run + record_correction through ledger.append / ledger.correct -> followthrough.runs.json bytes identical to today's writer for the same inputs, and tally() returns the same k-of-n",
+        "bench.json written after the 14th run -> still carries the latest summary and at most HISTORY history lines (the desktop's reader is unchanged), plus a `pool` block {key, n, exceeds} computed from the ledger",
+        "a ledger line edited in place (an earlier run's score changed on disk) -> ledger.verify reports it, because each appended line carries the sha256 of the line before",
+        "evidence narration for a playbook with a 13-run ledger -> says '... of 13 test runs', the same n the ranking row carries"
+      ],
+      "guard_cases": ["2", "3", "4", "5"],
+      "premise": [
+        "src/athena/proving/playbooks/bench.py:1070 HISTORY = 12 - the comparable pool is a rolling window of bench.json",
+        "src/athena/proving/playbooks/bench.py:1178 summary[\"history\"] = history[-HISTORY:] - older runs fall out of the pool silently",
+        "src/athena/proving/playbooks/bench.py:1156 a rescore appends a superseded_by line into the same 12-line window, so a correction evicts a run",
+        "src/athena/proving/playbooks/followthrough.py:723 _read_results/_write_results/record_run/record_correction/tally: a second, append-only run log with newest-correction-wins, written beside bench.json by a different rule",
+        "src/athena/proving/playbooks/bench.py:1102 comparable_runs and apps/desktop/src/lib/playbooks.ts:209 comparableRuns: the pooling rule implemented twice, both bounded by the window",
+        "src/athena/proving/playbooks/rank.py:78 runs_of reads only bench.json",
+        "src/athena/proving/playbooks/evidence.py:338 _runs counts the narration's 'n test runs' from the same window",
+        "docs/adr/0128-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md:63 records the bound as a known cost",
+        "tiger/backlog.md:27 '`bench.json` keeps 12 history lines, so a correction spends one' - open follow-up"
+      ],
+      "rollback": "Revert the series: the ledger files are only created on a new bench/rescore and every reader falls back to bench.json, so removing ledger.py and its callers restores today's behaviour; any bench.runs.json written meanwhile is inert and can be deleted.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "uv run python -m athena.proving.playbooks rank --check"
+      ],
+      "runner_up": "An errored run is `inconclusive`, not `short` (the recorded conformance-checking deviation at bench.py:890): rank excludes it from the pool and counts it, exit 3, the gauntlet's INCONCLUSIVE as precedent.",
+      "body": "## Summary\nA playbook's runs live in a 12-line rolling window inside bench.json, and follow-through keeps its runs in a different, append-only file with its own correction rule. Make one module, `ledger.py`, the only writer of run records for both: append-only lines and corrections in `playbooks/<id>/bench.runs.json` (and follow-through's existing file), newest correction wins, pooled by key. bench.json stays as the desktop reads it, a derived view of the latest run plus the last HISTORY lines and a `pool` block.\n\n## Description\nThe ranking (ADR 0128) pools every comparable run, but the pool is whatever survives `history[-HISTORY:]`. One playbook already holds 11 history lines, and 20 have n >= 3; `bench --runs k`, which ADR 0128 asks for, fills the window fast, and a rescore's correction takes a line and pushes a real run out. The audit-logging standard's append-only-design technique says a record is never dropped to make room and a correction refers to what it corrects; follow-through already does exactly that (followthrough.py:784-823) with its own copy of read/append/correct/tally. One ledger module removes the duplicate rule, removes the bound, and adds a hash chain so an edited line is caught. Readers fall back to bench.json when no ledger exists, so the committed library and ranking.json do not change until a playbook is benched again; no data migration is in the write set.\n\n## Flow\n- ledger.append(root, filename, line) / ledger.correct(root, filename, mark, was, now) / ledger.pool(root, key) / ledger.verify(root, filename)\n- write_bench appends the run's headline to bench.runs.json, then derives bench.json's history and `pool` from the ledger\n- rescore appends a correction, never a history line\n- rank.runs_of and evidence._runs read ledger.pool (fallback: bench.json)\n- followthrough's record_run/record_correction/tally call the ledger, file format unchanged\n\n## Expected impact\nThe ranking and the narration stand on every run benched under the key, however many; a rescore never costs a run; two run-record implementations become one; an edited history line is detectable. The desktop's own comparableRuns (another context) can later read the `pool` block instead of recomputing.\n\n## Evaluation\nClaim: the pool is unbounded and corrections cost nothing, with today's outputs unchanged where no ledger exists.\nBefore: 0 of 4 new-behaviour acceptance cases pass (cases 0, 1, 6, 7); guards 2-5 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases, offline with the existing scripted_model world factory, plus `rank --check`\nResult: better\nGate: none",
+      "evidence": "bench.py:1070 `HISTORY = 12`; bench.py:1177-1178 `if history: summary[\"history\"] = history[-HISTORY:]`; committed library (node scan of playbooks/*/bench.json): 95 benched, 92 with history, max history 11 lines, pool sizes {n=1: 75, n=3: 18, n=4: 2}, 0 superseded lines; followthrough.py:742 tally() newest-correction-wins vs bench.py:1156-1171 superseded_by-in-window; ADR 0128:63 'A comparable set is bounded by bench.json's history (HISTORY, twelve lines), and a rescore's correction takes a line'; tiger/backlog.md:27."
+    },
+    {
+      "context": "proving-playbooks-bench",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Every missed item says whether she saw it: seen-and-passed vs never surfaced",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "src/athena/proving/playbooks/bench.py",
+        "src/athena/proving/playbooks/page.py",
+        "src/athena/proving/playbooks/__main__.py",
+        "tests/proving/test_playbooks.py",
+        "docs/features/playbooks.md"
+      ],
+      "new_files": [
+        "src/athena/proving/playbooks/attribution.py",
+        "tests/proving/test_playbooks_attribution.py"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "a scripted run that reads the page holding eligible item K and files no card for K -> report['attribution']['missed'] has K with seen: true, read_by: ['host.<app>.<tool>'] and the CLI prints 'missed K - seen on <tool>, not filed'",
+        "a scripted run that never pages past page 1 when K is on page 2 -> K is seen: false and the CLI prints 'missed K - never surfaced (page 2 of 2 of <tool> not read)'",
+        "a filed trap T -> attribution.traps lists T with the read that showed it, so a trap is told apart from an unfounded guess",
+        "rescore of a saved report.json written before this change (transcript calls carry name+params, no outputs) -> attribution is rebuilt by replaying each recorded READ through SimulatedPortals and equals the live run's attribution for the same cards",
+        "attribution never reads truth inside the page: SimulatedPortals has no access to truth.json and its answers are byte-identical with attribution on or off",
+        "score() output, SCORER_VERSION, verdict reasons and the comparability key are unchanged for the same cards -> rank --check stays green and evidence --verify reports no narration drift",
+        "summary_of(report) carries `attribution` {missed_seen, missed_unseen, by_item} into bench.json; headline() and history lines are unchanged"
+      ],
+      "guard_cases": ["4", "5"],
+      "premise": [
+        "src/athena/proving/playbooks/bench.py:604 the transcript keeps each call's name and params, never what the page answered",
+        "src/athena/proving/playbooks/bench.py:741 `missed` lists action, key, value and required - nothing about whether she ever saw the item",
+        "src/athena/proving/playbooks/bench.py:868 a short verdict says 'found N% of the value' - the operator cannot tell a coverage failure (page, search, pagination) from a judgement failure (seen, passed) without opening the transcript",
+        "src/athena/proving/playbooks/page.py:118 _read is a pure function of the world's tables and the call's params, so every read a saved run made can be replayed offline",
+        "src/athena/proving/playbooks/page.py:12 the page knows nothing of truth.json - attribution must live outside it",
+        "src/athena/proving/playbooks/followthrough.py:277 FollowPortals already keeps a read_log of every read and its output: the precedent, not yet in the bench",
+        "src/athena/proving/playbooks/evidence.py:485 narration quotes verdict reasons, so reasons must not change wording",
+        "docs/features/playbooks.md:163 a real case: 'was short, 4 of 9, the order list could not be paged' - found by hand"
+      ],
+      "rollback": "Revert the series: attribution is an additive key in report.json and bench.json that no reader requires; score, verdict and keys never changed, so ranking.json and the evidence indexes are unaffected.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "uv run python -m athena.proving.playbooks rank --check"
+      ],
+      "runner_up": "Bench and rescore print what moved since the previous comparable run (items newly found, newly missed, traps newly filed) and per-item k-of-n over --runs.",
+      "body": "## Summary\nAfter a short run the operator reads 'found 4 of 9 items' and has to open a 4,000-character-per-turn transcript to learn whether Athena never saw the other five (a world, page or pagination problem: fix the playbook) or saw them and walked past (a judgement problem: fix the prompt or accept the model). The bench already has everything to say which, per item; it just never joins the reads to the truth.\n\n## Description\nA new pure module `attribution.py` takes the playbook and a report: it replays every READ call the transcript recorded through SimulatedPortals (pure over world.json, page.py:118), collects the rows she was shown, and for every missed eligible item and every filed trap says seen or never surfaced, which read showed it, and for an unseen paged item which page was never read. It runs after score() in run_bench and rescore, outside the page (which must not know the truth, page.py:12), and outside score() so SCORER_VERSION and every comparability key stay put. The CLI prints one line per missed item; bench.json carries the counts and per-item rows so the desktop's run view can show them later. Technique: eval-harness failure-signatures-beside-the-pass-rate (count each failing item by the family of failure beside the recall) feeding failure-attribution (it makes the manual sample choosable).\n\n## Flow\n- run_bench / rescore -> score(cards) unchanged -> attribute(playbook, report) -> report['attribution']\n- __main__.bench prints 'missed K - seen on X, not filed' or 'missed K - never surfaced (page p of n of X not read)'\n- summary_of keeps attribution in bench.json; headline/history untouched\n\n## Expected impact\nEvery short run names its failure family per item on the line the operator already reads: the resale-certificate playbook's 'the order list could not be paged' diagnosis that docs/features/playbooks.md:163 records as found by hand becomes the bench's own output, and rescore after a world fix shows the item flip from unseen to found.\n\n## Evaluation\nClaim: a missed item's failure family is printed and recorded, with score, verdict and keys unchanged.\nBefore: 0 of 5 new-behaviour cases pass (0, 1, 2, 3, 6); guards 4-5 green\nAfter: 7 of 7\nMethod: gate - the acceptance cases with the existing scripted_model world factory, offline\nResult: better\nGate: none",
+      "evidence": "bench.py:603-607 transcript calls = [{name, params}] only; bench.py:741-754 missed rows = {action, key, value_usd, required}; page.py:118-168 _read deterministic over tables + params; followthrough.py:278 `self.read_log` precedent; docs/features/playbooks.md:163 'was short, 4 of 9, the order list could not be paged'; evidence.py:485-487 narration embeds reasons[:3]."
+    }
+  ],
+  "rehomed": [
+    "Add the run loop (MAX_CONTINUATIONS, NUDGE, follow_ups, a DRIVER_VERSION) to the bench's comparability key, as follow-through's drive_digest has (followthrough.py:670) - S in code, but it re-keys all 90 keyed playbooks and unranks the library: a direction call for the owner, not a card",
+    "rank takes the latest run's minutes while recall is the pooled median (rank.py:162) - S, and ADR 0128 decided it explicitly"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["audit-logging", "conformance-checking", "eval-harness"],
+    "techniques": ["append-only-design", "failure-signatures-beside-the-pass-rate", "failure-attribution", "finding-severity-ladder"]
+  },
+  "files_read": 21
+}

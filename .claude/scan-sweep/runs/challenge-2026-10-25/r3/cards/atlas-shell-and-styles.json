@@ -1,0 +1,143 @@
+{
+  "host": "atlas-shell-and-styles",
+  "cards": [
+    {
+      "context": "atlas-shell-and-styles",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The shell asks the mounted variant for its levels: phases at L1, not layers",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "examples/atlas/components/atlas/variants/contract.ts",
+        "examples/atlas/components/atlas/variants/Shell.tsx",
+        "examples/atlas/components/atlas/variants/archify-signal/index.tsx",
+        "examples/atlas/components/atlas/variants/archify-editorial/index.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/index.tsx",
+        "examples/atlas/components/atlas/lanes.ts",
+        "examples/atlas/components/atlas/Mast.tsx",
+        "examples/atlas/components/atlas/pane/Pane.tsx",
+        "examples/atlas/components/atlas/tools/AtlasTools.tsx",
+        "examples/atlas/components/atlas/tools/read.ts",
+        "examples/atlas/test/tools.test.ts"
+      ],
+      "new_files": [
+        "examples/atlas/components/atlas/variants/levels.ts",
+        "examples/atlas/test/levels.test.ts"
+      ],
+      "shared_surfaces": [
+        "examples/atlas/components/atlas/variants/archify-lanes/index.tsx (owned by atlas-lanes-drawing, scouted in r1: a one-line `levels: LANES_LEVELS` added to its `meta`; no r1 card writes this file)",
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "viewDetail at L1 with focus {level:1, group:'arrive'} and the lanes level map -> no `error`; the detail names group id 'arrive', label 'Arrive', and lists exactly the components of the lane nodes in phase arrive (today: `{ error: 'No layer arrive.' }`, read.ts:320)",
+        "groupsFor(LANES_LEVELS).map(g => g.id) deep-equals the drawing's own GROUPS (Drawing.tsx:687: arrive, compose, record) -> the ids open_group accepts are the ids the drawing can fly to (today: the six LAYERS ids, AtlasTools.tsx:100)",
+        "itemsFor(LANES_LEVELS, null) -> exactly 12 rows, one per NODE, each id a COMPONENTS id, each row's group the phase of that node's column; itemsFor(LANES_LEVELS, 'compose') -> only compose's nodes",
+        "railLabel(LANES_LEVELS, {level:1, group:'record', item:null}) -> 'Run and record' and the level names come from the map (today Mast.tsx:53/158 resolves layerById('record') to undefined and prints the generic 'One layer')",
+        "targetFor(LANES_LEVELS, <a component no node draws>, {level:2, group:'compose', item:<drawn>}) -> {group:'compose', item:<that id>, drawn:false}; targetFor of a drawn component -> {group:<its node's phase>, drawn:true}; never a layer id (today Pane.tsx:256 opens nav.openItem(layer.id, ...), a group the lane plan has no box for)",
+        "with no `meta.levels` (the DATA_LEVELS fallback), viewDetail at L1 with a layer id answers the layer, its nested systems and the flat list exactly as today",
+        "viewDetail at L0 and L2 is unchanged and still names the variant first in `view`, with and without a level map",
+        "parity: every NODE of the lanes drawing appears in LANES_LEVELS exactly once, under the phase phaseOfCol(node.col) names, and every group id in the map is a PHASES id"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "examples/atlas/components/atlas/Atlas.tsx:20",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:118",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:423",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:687",
+        "examples/atlas/components/atlas/variants/archify-lanes/poses.ts:111",
+        "examples/atlas/components/atlas/tools/AtlasTools.tsx:100",
+        "examples/atlas/components/atlas/tools/read.ts:320",
+        "examples/atlas/components/atlas/Mast.tsx:53",
+        "examples/atlas/components/atlas/pane/Pane.tsx:256",
+        "examples/atlas/lib/constants.ts:29",
+        "examples/demo-kit/src/webmcp/zoomTools.ts:130",
+        "examples/atlas/components/atlas/variants/contract.ts:72"
+      ],
+      "rollback": "Three commits (levels.ts + its test; the contract field and the three variant metas; the shell, mast, pane and tool wiring). Reverting them in reverse order restores the layer-only vocabulary; `levels` is optional on VariantMeta, so any one revert leaves a compiling app on the DATA_LEVELS fallback.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter atlas typecheck",
+        "pnpm --filter atlas lint",
+        "pnpm --filter atlas test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "One axis declaration ({name, values, read, set}) generates set_variant, set_view and set_lens, the mast switchers and read_view's arrangement block - the three hand-copied read/refuse/changed handlers and the toggle-vs-set trap at AtlasTools.tsx:278 collapse into one (KIT-GAPS R4-1's `axes`, written in the app).",
+      "body": "## Summary\nAtlas claims \"one model, one level semantics, N drawings\" (Atlas.tsx:20), but the shell's level vocabulary is the data model's (layer > system > component) while the only drawing it mounts - in all three finishes - groups by PHASE (arrive, compose, record) over twelve nodes. Every shell surface that names a group therefore speaks a vocabulary the stage does not have. Move the level vocabulary to where it is true: a variant declares its levels in `meta`, and the shell's tools, mast rail and pane links resolve through that declaration, with the data model as the fallback.\n\n## Description\nToday a reader clicks a phase and the stage calls `nav.openItem(phase, node.item)` / `openGroup(phase)` (Drawing.tsx:423), so `focus.group` is 'arrive'. Then:\n- `read_view` at L1 calls `layerById('arrive')`, finds nothing and answers `{ error: 'No layer arrive.' }` (read.ts:320) - an agent cannot read L1 in the only drawing that exists.\n- `open_group` advertises and accepts the six layer ids (AtlasTools.tsx:100, zoomTools.ts:130), so an agent's successful `open_group('core')` puts the drawing into a group its plan has no box for (poses.ts:111 treats focus.group as a phase): a success the screen contradicts (mcp-tools / tool-schema-design: failed calls reading as successes).\n- The mast rail resolves the group as a layer (Mast.tsx:53) and prints the generic 'One layer' at L1 of a phase.\n- The pane's edge links open `nav.openItem(layer.id, ...)` (Pane.tsx:256); measured at base, 39 of the 67 edges touching a drawn node lead to a component no node draws, and every one of them leaves the drawing with a layer id for a group.\n\nThe move: `VariantMeta.levels?: LevelMap` ({ levelNames, groupNoun, itemNoun, groups: [{ id, label, note, items: componentId[] }] }), a pure `variants/levels.ts` (DATA_LEVELS fallback from LAYERS; groupsFor, itemsFor, railLabel, targetFor, groupDetail), `LANES_LEVELS` derived in `lanes.ts` from PHASES and NODES (never retyped), and the three variant metas pointing at it. The shell already reads `meta.views` off the lazily imported module (Shell.tsx:240); it reads `meta.levels` in the same effect and hands one map to AtlasTools (groups, items, detail, levels, nouns), Mast (rail label) and Pane (link target). A pane link to an undrawn component keeps the current group and swaps the pane, rather than inventing a layer group.\n\n## Flow\n- Variant module exports `meta = { slug, views, levels }`.\n- Shell loads meta once per slug and attempt (existing effect), keeps `{ slug, views, levels }`, discards a stale slug's answer as today.\n- `useZoomTools` gets `groups/items/levels/nouns` from the map; `viewDetail(focus, lens, variant, view, levels)` answers L1 from `groupDetail`.\n- Mast rail label = `railLabel(map, focus)`; Pane Link onClick = `nav.openItem(targetFor(map, id, focus))`.\n- No map -> DATA_LEVELS -> today's behaviour.\n\n## Expected impact\nAn agent can read and open every level of the drawing that is actually mounted; the reader's rail names the phase they are in; a pane link never strands the camera in a group the stage cannot draw. The class \"the shell and the stage disagree about what a group is\" closes for every future variant, because a variant that groups differently declares it once.\n\n## Evaluation\nClaim: the shell's group vocabulary is the mounted variant's, with the data model as the fallback.\nBefore: 0 of 8 acceptance cases pass as a whole (cases 6 and 7 pin today's behaviour and are green before by design; 1-5 and 8 fail - the functions and LANES_LEVELS do not exist, and the equivalent of case 1 today returns 'No layer arrive.').\nAfter: 8 of 8\nMethod: gate - the acceptance cases under `node --test` (pure functions over data/ and workflow.ts, no DOM)\nResult: better\nGate: none",
+      "evidence": "Atlas.tsx:20 'One model, one level semantics, one details destination, N drawings.' | workflow.ts:118 'They are also this variant's L1 GROUPS: opening a phase is opening two columns' ; PHASES ids arrive/compose/record | Drawing.tsx:423 `nav.openItem(phase, node.item);` | Drawing.tsx:687 `export const GROUPS = PHASES.map((p) => p.id);` | AtlasTools.tsx:100 `groups: () => LAYERS.map(...)` (six layers: surfaces, channels, lane, harness, core, contracts) | read.ts:320 `if (!layer) return { view: arrangement, lens: marked, error: `No layer ${focus.group}.` };` | Mast.tsx:53 `const layer = layerById(focus.group);` and :158 `{layer ? layer.name : LEVELS[1]}` | Pane.tsx:256 `nav.openItem(layer.id, other.id)` | lib/constants.ts:29 LEVELS = ['The sheet','One layer','One component'] | zoomTools.ts:130 open_group finds `wanted` in spec.groups() and dispatches it | probe at base (node --test over data + workflow): 12 nodes, 68 components, 119 edges; edges touching a drawn node 67, to a drawn node 28."
+    },
+    {
+      "context": "atlas-shell-and-styles",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Walk the lens: step through its carriers, and the pane says why a part is lit",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/atlas/components/atlas/Mast.tsx",
+        "examples/atlas/components/atlas/pane/Pane.tsx",
+        "examples/atlas/components/atlas/variants/Shell.tsx",
+        "examples/atlas/components/atlas/tools/AtlasTools.tsx",
+        "examples/atlas/components/atlas/tools/read.ts",
+        "examples/atlas/components/atlas/style/chrome/mast.css",
+        "examples/atlas/components/atlas/style/level2/l2-pane.css",
+        "examples/atlas/test/tools.test.ts",
+        "examples/atlas/test/shell.test.ts"
+      ],
+      "new_files": [
+        "examples/atlas/components/atlas/chrome/evidence.ts",
+        "examples/atlas/test/evidence.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "carriersOf(lensFor('inv-gate')) -> 19 component ids in model order (layer, then system, then component), every one in lens.components; carriersOf(NO_LENS) -> []",
+        "stepCarrier(lens, null, +1) -> the first carrier with {index:1, of:19}; +1 from the last wraps to the first; -1 from the first wraps to the last",
+        "stepCarrier(lens, <a component that does not carry the claim>, +1) -> the first carrier AFTER it in model order, not the first carrier of the model",
+        "whyLit(lensFor('inv-disk'), <a lane node's component lit only because it shares a system>) -> {carries:false, via:[{system, carriers:[...]}]} with every listed carrier in lens.components and in that system; whyLit of a carrier -> {carries:true}",
+        "stepLensRead(no lens) -> ok:false naming set_lens as the way in; stepLensRead(lens, current, 'next') -> ok:true naming the target id, name, index and of - the component the handler LEAVES open, not the one open before the call",
+        "viewDetail at L2 on a carrier with that lens -> `lens.at` is {index, of} matching stepCarrier; on a non-carrier -> `lens.at` is null and `lens.why` names the via systems",
+        "lensRead and the existing set_lens cases are unchanged: the lens a reader sets still lights the same components, systems and layers",
+        "with no lens set, the mast and the pane render no stepper (a source check on Mast.tsx/Pane.tsx conditional on the carriers count, as shell.test.ts already checks other controls)"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        "examples/atlas/components/atlas/Mast.tsx:185",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:397",
+        "examples/atlas/components/atlas/pane/Pane.tsx:150",
+        "examples/atlas/components/atlas/pane/Pane.tsx:162",
+        "examples/atlas/components/atlas/chrome/Claims.tsx:34",
+        "examples/atlas/data/index.ts:108",
+        "examples/atlas/components/atlas/tools/read.ts:305"
+      ],
+      "rollback": "Two commits (evidence.ts + its tests; the mast stepper, pane section, step_lens tool and read_view field). Reverting the second leaves an unused pure module; reverting both restores today's read-only count.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter atlas typecheck",
+        "pnpm --filter atlas lint",
+        "pnpm --filter atlas test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A trail in the L2 pane: following 'who calls it / what it reaches' links builds A > B > C with a Back step inside the pane, instead of Escape dropping the reader to L1 and losing the path they walked.",
+      "body": "## Summary\nA lens today is a count and a glow. The mast reports '19 of 68' (Mast.tsx:185) and offers only 'clear'; to see the nineteen, a reader hunts the sheet. Worse, the drawing lights a lane node when ANY of its systems holds a carrier (Drawing.tsx:397), so a reader who opens a lit node can be shown a pane whose 'Claims it carries' does not include the lens at all (Pane.tsx:150). Turn the read-out into a control: a '< 3 of 19 >' stepper that opens each carrier at L2 in model order, and a pane section that says, under a lens, whether this part carries the claim or which carriers in which of its systems lit it.\n\n## Description\nMeasured at base over data/ and the lane workflow: for 7 of the 17 claims, the lane nodes that light carry the claim zero times themselves (inv-disk lights 2 nodes, 0 carry it; inv-provenance 2/0; tier-act 2/0; act-setup 5/0; act-record 2/0; dec-module-first 1/0). The drawing is making a claim the pane then contradicts, and the reader is never told why. The data to reconcile them is already in the shell: `lensFor` has the carrier set (data/index.ts:108), the systems set, and componentsOf for every system.\n\nA pure `chrome/evidence.ts`: carriersOf(lens) in model order, stepCarrier(lens, current, dir) with wrap and 'next after a non-carrier', whyLit(lens, componentId), and stepLensRead for the tool. The mast's lens read-out gains prev/next around the count (radio-free: two buttons and a live figure; `[` and `]` as keys while a lens is on). The pane gains, under a lens, a 'Under this lens' block: 'Carrier 3 of 19' with prev/next, or 'Lit because <system> holds 2 carriers: A, B' with each carrier one click away. `step_lens` (AUTO: a move, reversible, no side effects) gives an agent the same walk, and read_view's `lens` block carries `at` / `why` so an agent's description matches the pane (canvas-graph / canvas-accessibility: the name counts the graph, not the drawing, and states both).\n\n## Flow\n- Reader picks a claim -> mast shows '< - of 19 >'.\n- Next -> nav opens the first carrier at L2; the pane says 'Carrier 1 of 19'.\n- Next again -> the pane swaps to the second carrier; the camera follows whatever the variant's poseFor does for it.\n- Reader opens a lit node that does not carry the claim -> the pane says which carriers lit it, each a link; Next from there goes to the first carrier after it.\n- Clear -> stepper gone.\n\n## Expected impact\nFrom 'nineteen things glow, find them' to one key per piece of evidence, and the lit-but-does-not-carry contradiction (7 of 17 claims on the mounted drawing) explained in place instead of silently disagreeing. Agents get the same walk and the same explanation.\n\n## Evaluation\nClaim: a lens can be walked carrier by carrier, and a lit part says why it is lit.\nBefore: 0 of 8 acceptance cases pass as a whole (case 7 pins today's lens arithmetic and is green before by design; the rest need evidence.ts, step_lens and the read_view field, which do not exist).\nAfter: 8 of 8\nMethod: gate - the acceptance cases under `node --test`\nResult: better\nGate: none\n\nSequencing note: if slot A lands first, the stepper opens a carrier through A's targetFor (keeping the current phase for an undrawn carrier); otherwise through the layer, as the pane's links do today.",
+      "evidence": "Mast.tsx:185 `{lens.components.size} of {counts.components}` followed only by a 'clear' button | Drawing.tsx:397 `if (node?.systems.some((s) => lit.has(s))) return \"lens\";` - lit by shared system, not by carrying | Pane.tsx:150 'Claims it carries' lists component.concepts only | data/index.ts:108 `if (!c.concepts.includes(conceptId)) continue;` - the carrier set | probe at base (node --test over data + workflow.ts), per claim comps/litNodes/drawnCarriers: inv-disk 6/2/0, inv-provenance 2/2/0, inv-gate 19/10/8, tier-act 4/2/0, act-setup 8/5/0, act-record 3/2/0, dec-module-first 3/1/0 (7 of 17 claims light nodes none of which carry them)."
+    }
+  ],
+  "rehomed": [
+    "set_view's handler predicts its own answer because the bus has not re-rendered (AtlasTools.tsx:131) - a correct workaround already commented; S, no challenge.",
+    "Lens held in the URL so a marked-up sheet survives reload and can be shared - close kin of the excluded demo-kit-zoom-engine/B 'level is a place' direction (backlog-challenge-2026-10-15); not proposed.",
+    "Claims rail count states the drawn figure beside the model figure ('6 modules, lights 2 steps here') - S once card A's level map exists; folded into card B's read_view `why`.",
+    "Mast clipping at phone width, pane edge-link scroll/focus, 11 px text roles - already open stabilize-2026-10-16 findings for this context; void."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["design-tokens", "mcp-tools", "canvas-graph"],
+    "techniques": ["tool-schema-design", "ambient-selection-is-not-an-argument", "canvas-accessibility", "token-taxonomy"]
+  },
+  "files_read": 31
+}

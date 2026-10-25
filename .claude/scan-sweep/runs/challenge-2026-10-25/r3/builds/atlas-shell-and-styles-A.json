@@ -1,0 +1,17 @@
+{"card":"atlas-shell-and-styles/A","status":"landed","shas":["87cda507"],
+ "tests_added":[
+  "examples/atlas/test/levels.test.ts::case 1: read_view at L1 on a phase answers the phase and its nodes' components",
+  "examples/atlas/test/levels.test.ts::case 2: the groups open_group accepts are the phases the drawing flies to",
+  "examples/atlas/test/levels.test.ts::case 3: the items are one per node, each a component, each in its node's phase",
+  "examples/atlas/test/levels.test.ts::case 4: the rail names the phase, and the level names come from the map",
+  "examples/atlas/test/levels.test.ts::case 5: a pane link resolves to a phase, never to a layer",
+  "examples/atlas/test/levels.test.ts::case 6 (guard): with no level map, L1 on a layer answers exactly as before",
+  "examples/atlas/test/levels.test.ts::case 7 (guard): L0 and L2 are unchanged and name the variant first, with or without a map",
+  "examples/atlas/test/levels.test.ts::case 8: parity — every node is in the map once, under its column's phase"],
+ "guard_cases":[5,6],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"pnpm --filter atlas typecheck":0,"pnpm --filter atlas lint":0,"pnpm --filter atlas test":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":14,"lines_changed":488,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"LANES_LEVELS is derived in variants/levels.ts, not components/atlas/lanes.ts: lanes.ts re-exports Drawing.tsx, which node --test cannot load, and the parity case must import the published map; lanes.ts re-exports it for Signal/Editorial. LevelMap uses a `nouns` tuple (matching useZoomTools) instead of separate groupNoun/itemNoun. No separate groupDetail export: the L1 group answer lives in viewDetail (read.ts). Shipped as one commit rather than three. test/tools.test.ts unchanged (all cases in the new levels.test.ts). Pane footer 'go back to' now uses railLabel too (was the layer name, wrong for a phase).",
+ "notes":"Red-before: the new test file failed to load on the base tree (levels.ts absent); cases 1-5 and 8 need new code (case 1's equivalent returned 'No layer arrive.'), cases 6 and 7 pin today's behaviour. open_item now offers the 12 drawn components, not 68 (read_component still reads any). Root pnpm test not run (brief: root typecheck+lint; no workspace package imports atlas). archify-lanes/index.tsx: only the meta line + one import added; r1's commits did not touch it. ADR 0173 and CHANGELOG taken under the lock."}

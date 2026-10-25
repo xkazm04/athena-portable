@@ -1,0 +1,130 @@
+{
+  "host": "atlas-data-and-app",
+  "cards": [
+    {
+      "context": "atlas-data-and-app",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Every edge carries its evidence: import, port or wire, checked against the tree",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/atlas/data/types.ts",
+        "examples/atlas/data/edges.ts",
+        "examples/atlas/data/index.ts",
+        "examples/atlas/test/model.test.ts"
+      ],
+      "new_files": [
+        "examples/atlas/test/source-imports.ts",
+        "examples/atlas/test/edges.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-an-atlas-edge-names-how-it-is-carried-and-the-tree-is-asked.md (the model stops being able to assert 'no edge runs up the stack' on its own word)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "edges.test: for every edge whose `via` is \"import\" and whose two ends are src/athena/*.py files, the from-file's text holds an `import`/`from` of the to-file's dotted module (top-level or local) -> 0 unbacked (today, read as imports, 26 of 70 such edges are unbacked: e.g. hooks->catalog, lane->cli-harness, prompt->recall)",
+        "edges.test: every edge whose `via` is \"port\" names `through` (a path in the tree); the from-file imports `through`, and src/athena/wiring.py imports the to-file's module (the composition root is where the port is bound) -> hooks->catalog through src/athena/harness/ports.py passes; a port edge whose `through` the from-file never imports fails",
+        "edges.test: an edge declared `via: \"import\"` from A to B where B's module is imported BY A's opposite (cmp-prompt->cmp-catalog while src/athena/core/catalog.py:46 imports athena.core.prompt) fails with 'drawn backwards' -> the prompt/catalog edge is corrected to catalog->prompt",
+        "edges.test: scanning every modeled built .py component, each import of a component in a HIGHER layer (toward surfaces) must be a declared edge with `up: true` and a note -> src/athena/daemon/server.py:1052 `from athena.wiring import build_local` (channels -> surfaces) is either declared as the model's one up edge or the test names it; today the model asserts 'no edge runs back up the stack' without asking the tree",
+        "edges.test: the checker reports three populations - checked, failed (subset of checked), skipped-with-reason (a .js/.rs/.md/directory end, or `via: \"wire\"` naming an HTTP/SSE/WebSocket/IPC protocol) - and checked + skipped === EDGES.length; a skipped edge with an empty reason fails",
+        "source-imports unit: the pure scanner, given fixture Python text with `from athena.core import catalog`, `from athena.core.catalog import X`, a parenthesised multi-line import and a function-local import, returns all four dotted targets; given `# from athena.x import y` in a comment it returns none",
+        "guard: every existing model.test case except 'no edge runs back up the stack' passes unchanged (endpoints exist, no duplicate edge of one kind, contracts reach nothing below, derived system edges, counts)",
+        "guard: lanes.model / lanes.routing / tools tests stay green - COUNTS.edges changes only by the edges the corrections add or reverse, and no component, system or concept is added"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/atlas/data/types.ts:110 - Edge is {from,to,kind,note}: nothing says whether a 'calls' edge is an import, a port the composition root binds, or an HTTP route",
+        "examples/atlas/data/edges.ts:9 - 'An edge that runs UP the stack is a finding, not a feature; the test does not forbid one, but there are none here'",
+        "examples/atlas/test/model.test.ts:138 - 'no edge runs back up the stack' reads only the model's own list",
+        "src/athena/daemon/server.py:1052 - `from athena.wiring import build_local`: a channels module importing the surfaces-layer composition root (local import, commented at :1048 as deliberate)",
+        "examples/atlas/data/edges.ts:112 - hooks->catalog 'gates'; src/athena/harness/hooks.py:24 imports athena.harness.ports, never athena.core.catalog (src/athena/harness/ports.py:3 'athena.harness never imports a core service')",
+        "src/athena/core/catalog.py:46 - `from athena.core.prompt import BUDGETS`; edges.ts has cmp-prompt -> cmp-catalog 'reads' and src/athena/core/prompt.py:43-44 imports only contracts: the drawn arrow is reversed",
+        "examples/atlas/test/data.test.ts:22 - the tree-reading test checks that cited FILES exist, never that an EDGE exists"
+      ],
+      "rollback": "Three commits (scanner + its unit test; `via`/`through`/`up` on Edge and the annotated edges.ts; the tree-checked edges.test replacing the model-only up-stack assertion). Revert in reverse order; the optional fields default to absent so reverting the test leaves a compiling model.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter atlas typecheck",
+        "pnpm --filter atlas lint",
+        "pnpm --filter atlas test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Derive SYSTEM_EDGES and layerLinks from the Python import graph outright (scrape, not annotate) - rejected as the slot pick because 108 real imports between modeled modules have no edge and the model is deliberately sparse; drawing all of them buries the argument.",
+      "body": "## Summary\nAtlas's 120 edges are hand-typed claims with no evidence field. Give each one a `via` (import | port + `through` | wire + protocol) and an optional `up`, and add a test that asks the Python tree whether the claim holds, reporting checked / failed / skipped.\n\n## Description\nThe model's one content rule is that every entry cites its source (data/types.ts header), and test/data.test.ts holds files to the tree. Edges escape it: an edge is `{from,to,kind,note}`, so whether `cmp-hooks -> cmp-catalog` is an import, a Protocol the composition root binds, or an HTTP hop is unstated, and nothing checks it. Scraping the imports of the 43 modeled src/athena modules shows three kinds of drift that no test can see today: 26 of 70 py->py edges have no import behind them (most are ports, which is the architecture README §3.1 is proudest of, and the model hides it); prompt->catalog is drawn backwards (catalog.py:46 imports prompt); and daemon/server.py:1052 imports wiring, a channels->surfaces up-edge, while model.test asserts 'no edge runs back up the stack' against the model's own list. The card follows docs-sync's source-as-data-without-the-app (strategy A: pattern-scrape the source, no Python run), checked-vs-skipped-denominators (an edge with a .rs/.js/.md end is skipped with a reason, never counted clean), and machine-authored-documentation's declared-truth-boundary (an edge says what carries it, so a reader does not read an authored arrow as a call graph).\n\n## Flow\n- test/source-imports.ts: a pure scraper `importsOf(text) -> Set<dotted>` (top-level, parenthesised, local) and `moduleOf(path)`\n- data/types.ts: `EdgeVia = \"import\" | \"port\" | \"wire\"`, `through?: string`, `protocol?: string`, `up?: true` on Edge\n- data/edges.ts: annotate every edge; correct prompt/catalog direction; declare the server->wiring up edge with its note, or leave it and let the test name it\n- test/edges.test.ts: the three-population check + up-stack check against the tree; model.test's model-only up assertion becomes 'the up edges are exactly the declared ones'\n\n## Expected impact\nA drawn arrow becomes a checked claim: the class 'edge the code does not have / edge drawn backwards / undeclared up-stack import' closes for the Python half, and the ports architecture becomes data a later pane or read tool can print. read_view's layerLinks `up` list stops being empty by assertion.\n\n## Evaluation\nClaim: quality - every py->py edge's carriage is stated and verified against the tree\nBefore: 0 of 6 non-guard acceptance cases pass (26/70 py edges unbacked as imports, 1 reversed, 1 undeclared up import)\nAfter: 6 of 6, guards green\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "Scrape (node, regex over `^\\s*(from X import ...|import X)`) of the 43 src/athena component files against edges.ts: 'py-py edges ok 44 unbacked 26 skipped 49'. Unbacked include cmp-hooks->cmp-catalog, cmp-hooks->cmp-policy, cmp-hooks->cmp-ledger, cmp-hooks->cmp-approvals, cmp-lane->cmp-cli-harness, cmp-cli-harness->cmp-hooks, cmp-prompt->cmp-recall, cmp-prompt->cmp-catalog, cmp-daemon-routes->cmp-lane. Reverse: src/athena/core/catalog.py:46 `from athena.core.prompt import BUDGETS`. Up: src/athena/daemon/server.py:1048-1052 '# Local import, and the only one in this module: athena.wiring composes ...' / `from athena.wiring import build_local`. Ports: src/athena/harness/hooks.py:24 `from athena.harness.ports import (`; src/athena/harness/ports.py:3 '``athena.harness`` never imports a core *service*'. Also 108 imports between modeled modules have no edge (not a target of this card)."
+    },
+    {
+      "context": "atlas-data-and-app",
+      "slot": "B-architecture (no UI surface)",
+      "lens": "architecture-challenger",
+      "title": "Coverage ledger: every src/athena module is drawn or a declared omission",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/atlas/data/components.ts",
+        "examples/atlas/data/edges.ts",
+        "examples/atlas/data/adrs.ts",
+        "examples/atlas/data/systems.ts",
+        "examples/atlas/data/types.ts",
+        "examples/atlas/data/index.ts",
+        "examples/atlas/test/data.test.ts",
+        "examples/atlas/README.md"
+      ],
+      "new_files": [
+        "examples/atlas/data/omissions.ts",
+        "examples/atlas/test/coverage.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "coverage.test: every git-tracked src/athena/**/*.py except __init__/__main__ is covered by a component's `file` (exact or directory prefix) or by an OMISSIONS entry's path prefix -> today 141 of 184 modules are covered by neither (99 of them in adopt/, peer/, proving/, vitals/), so the test lists them and fails",
+        "coverage.test: every OMISSIONS path exists in the tree, carries a non-empty `reason` and a `source` citation, and covers no component's file (an omission that contradicts a drawn component, or names a deleted path, fails) -> a seeded omission of src/athena/core/catalog.py fails 'omits a drawn component'",
+        "coverage.test: each LAYERS blurb equals its README.md §3.1 row (the text after the layer word, continuation lines joined, whitespace normalised) -> today surfaces (no 'the halo') and harness (no 'an API engine ... ADR 0031') fail; after the blurbs are re-copied, 6 of 6 match",
+        "coverage.test: every part README §3.1 names that has a module in the tree has a component -> a halo component under sys-shell (apps/desktop/src-tauri/src/halo.rs, ADR 27) and an API-engine component under sys-runner (src/athena/harness/api_harness.py, ADR 31) exist; ADRS lists 27 and 31 under their own H1s (data.test's H1 check holds them)",
+        "coverage.test: the coverage numbers are a three-way split printed by the test - drawn / omitted / uncovered of the total module count - and the test fails when uncovered > 0; COVERAGE (exported from data/index.ts) carries the same three figures so a reader and a tool can say 'N modules drawn, M declared out of scope'",
+        "guard: no system is added (SYSTEMS.length stays 19), so lanes.model's SYSTEM_KIND-covers-SYSTEMS and KIND_COUNTS cases stay green with the two new components inheriting their systems' kinds",
+        "guard: model.test integrity cases (endpoints exist, unique part numbers, every concept lights a component, no edge runs up as declared) pass with the new components and their edges"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "examples/atlas/data/types.ts:35 - 'an atlas of a machine that silently omits the parts that were designed and not built is a sales brochure' - yet nothing records the parts that ARE built and not drawn",
+        "examples/atlas/data/systems.ts:21 and :46 - the surfaces and harness blurbs, claimed 'verbatim where they fit', stop before README.md:137 'the halo (screen-edge light, ADR 0027)' and README.md:140-141 'an API engine (`nebius` ...) behind the `ModelFn` port (ADR 0031)'",
+        "examples/atlas/test/data.test.ts:22 - the tree test asks whether CITED paths exist, never whether the tree holds modules nobody cited",
+        "src/athena/ - 184 tracked modules; 43 are component files; adopt/ (15), peer/ (15), proving/ (65), vitals/ (4) have no system and no statement that they are out of scope",
+        "src/athena/harness/api_harness.py:1 - 'An engine that is a function, behind the same round loop (README §3.1, §3.2; ADR 0031)' - built, uncited by the model",
+        ".ai/registry-map.json - atlas-data-and-app x docs-sync is a recorded deviation: citation drift the tests did not catch"
+      ],
+      "rollback": "Two commits: (1) omissions.ts + coverage.test + COVERAGE; (2) the halo and API-engine components, their edges, ADRs 27/31, the re-copied blurbs and the README count. Reverting (2) alone turns the coverage test red with a named list, which is the intended signal; reverting both restores today's tree exactly.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter atlas typecheck",
+        "pnpm --filter atlas lint",
+        "pnpm --filter atlas test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Pin each concept's `claim` against README §2/§1's own sentence (the invariants table and the ladder), so a reworded invariant fails the build - narrower: 17 strings, one surface.",
+      "body": "## Summary\nAtlas maps 43 of src/athena's 184 modules and says nothing about the other 141. Add a declared-omissions ledger and a coverage test so every module is either drawn or omitted with a reason, re-pin the layer blurbs to README §3.1 verbatim, and draw the two parts §3.1 already names (the halo, the API engine). Adopts the open stabilize-2026-10-16 finding 'Model the halo and the nebius engine README 3.1 now names' (M, backlog).\n\n## Description\nThe model's header promises it does not silently omit planned parts; it silently omits built ones. Four whole packages (adopt, peer, proving, vitals: 99 modules) and ~42 modules inside drawn packages (harness/ports.py, api_harness.py, core/setup.py, daemon/tasks.py, connectors/oauth.py, voice backends...) appear nowhere, and no test can tell a deliberate omission from drift. This is docs-sync's source-doc-mapping rule 'the map is the real gate: coverage, not membership' and checked-vs-skipped-denominators: the atlas currently reports its membership as if it were its coverage. The omission ledger is data (`{path, reason, source}`), prefix-matched so four package entries and a few dozen module entries cover the tree; nothing new is drawn except what README §3.1 itself names, and no system is added, so the lanes drawing (another context) needs no new kind.\n\n## Flow\n- data/types.ts: `Omission {path, reason, source}`; data/omissions.ts: the ledger\n- data/index.ts: `COVERAGE = {drawn, omitted, total}` computed from a module list the test supplies (the bundle never reads fs; COVERAGE's module list is a test-side input, the ledger is the bundle-side data)\n- test/coverage.test.ts: walk git-tracked src/athena/**/*.py, classify, fail on uncovered, stale or contradictory omissions; blurb-vs-README check\n- data/components.ts / edges.ts / adrs.ts / systems.ts: C-069 halo (sys-shell, ADR 27), C-070 API engine (sys-runner, ADR 31), their edges, the two blurbs re-copied\n- examples/atlas/README.md: 'sixty-eight components' -> the new count (the coupled doc)\n\n## Expected impact\nThe atlas can no longer fall behind the tree without a red test naming the module; an omitted package is a stated scope decision rather than an absence. Prose counts in other contexts' comments (Claims.tsx:18, read.ts:289, workflow.ts:16, DESIGN.md) go stale as words - noted for the coordinator, not edited here.\n\n## Evaluation\nClaim: quality - every module in src/athena is accounted for (drawn or declared omitted) and the layer blurbs are README §3.1's words\nBefore: 0 of 5 non-guard acceptance cases pass (141 of 184 modules unaccounted; 2 of 6 blurbs differ from README)\nAfter: 5 of 5, guards green\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "git ls-files 'src/athena/*.py' minus __init__ = 184; grep -c 'file: \"src/athena' examples/atlas/data/components.ts = 43; per package: adopt 15, peer 15, proving 65, vitals 4. Unmodeled inside drawn packages: voice backends.py config.py ether.py face.py home.py install.py kokoro.py speech.py whisper.py; connectors addresses.py health.py oauth.py seal.py; contracts adopt.py; core case_turns.py setup.py; brain text.py; daemon decisions.py sleep.py tasks.py voice.py; harness api_harness.py ports.py rounds.py tokenfactory.py vision.py; lane fleet.py. README.md:136-141 names the halo (ADR 0027) and the nebius API engine (ADR 0031); docs/adr/0027-athena-is-ambient-... and docs/adr/0031-a-token-factory-modelfn-is-a-third-engine-behind-the-same-gate.md exist. src-tauri/src/halo.rs exists. lanes.model.test.ts asserts SYSTEM_KIND covers SYSTEMS exactly, hence no new system."
+    }
+  ],
+  "rehomed": [
+    "check-tokens names the token whose value matches a raw px/ms and offers --fix for exact matches (the script already parses every declared value) - operator UX, but S / effort 4",
+    "check-tokens suggests the nearest declared name for an undeclared --at-* typo - S",
+    "app/error.tsx styled boundary, athena:app meta tag, seconds hole in the duration law - already open stabilize-2026-10-16 findings for this context; void",
+    "Halo and nebius components alone - adopted inside slot B rather than proposed separately (stabilize-2026-10-16 copy-auditor finding)"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["docs-sync", "machine-authored-documentation", "quality-gates"],
+    "techniques": ["source-as-data-without-the-app", "checked-vs-skipped-denominators", "source-doc-mapping", "declared-truth-boundary", "negative-claims-are-pinned"]
+  },
+  "files_read": 34
+}

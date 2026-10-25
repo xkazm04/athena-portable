@@ -1,0 +1,122 @@
+[
+  [
+    {
+      "key": "desktop-playbooks-panel/A",
+      "host": "desktop-playbooks-panel",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-perf-gate/B",
+      "host": "desktop-perf-gate",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-setup-module/A",
+      "host": "desktop-setup-module",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-halo/B",
+      "host": "desktop-halo",
+      "slot": "B",
+      "revise": "Drop the 'rehearsal and demo script gain one trouble step' clause from the body (lib/halo-rehearsal.ts is outside the write set and no case covers it).",
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-console/B",
+      "host": "desktop-console",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-tasks-and-due/B",
+      "host": "desktop-tasks-and-due",
+      "slot": "B",
+      "revise": "Add one guard case: an ask_slow notice keeps its 'is due again: pause or slow it?' line and still reaches the pause/slow choice (in place or via 'Open the chore').",
+      "py": false
+    },
+    {
+      "key": "desktop-console/A",
+      "host": "desktop-console",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-e2e/A",
+      "host": "desktop-e2e",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-e2e/B",
+      "host": "desktop-e2e",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-halo/A",
+      "host": "desktop-halo",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-mind-devices-sleep/A",
+      "host": "desktop-mind-devices-sleep",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-perf-gate/A",
+      "host": "desktop-perf-gate",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-mind-devices-sleep/B",
+      "host": "desktop-mind-devices-sleep",
+      "slot": "B",
+      "revise": "Restrict stageAll to 'keep' (Keep all) and drop the bulk-forget path; forgets stay per-row, each staged behind the Undo window.",
+      "py": false
+    },
+    {
+      "key": "desktop-tasks-and-due/A",
+      "host": "desktop-tasks-and-due",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-playbooks-panel/B",
+      "host": "desktop-playbooks-panel",
+      "slot": "B",
+      "revise": "Reword guard case 6 to pin that this card leaves verdictOf's output unchanged (same inputs, before vs after this card's diff) rather than pinning today's shipped strings, since card A changes two shipped verdicts.",
+      "py": false
+    },
+    {
+      "key": "desktop-setup-module/B",
+      "host": "desktop-setup-module",
+      "slot": "B",
+      "revise": "Case 2's micRemedy must not present the OS switch as the only path: the Windows sentence also names re-allowing at Athena's own microphone prompt (WebView2 keeps a per-origin denial that Windows Settings does not undo), with a case asserting both are named.",
+      "py": false
+    }
+  ]
+]

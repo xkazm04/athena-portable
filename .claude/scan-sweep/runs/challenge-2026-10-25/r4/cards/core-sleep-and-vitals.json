@@ -1,0 +1,130 @@
+{
+  "host": "core-sleep-and-vitals",
+  "cards": [
+    {
+      "context": "core-sleep-and-vitals",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A failing sleep window backs off, halves its take, and quarantines a poison episode",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/core/sleep/__init__.py",
+        "src/athena/core/sleep/admission.py",
+        "src/athena/core/sleep/book.py",
+        "src/athena/core/sleep/cycle.py",
+        "src/athena/core/sleep/window.py",
+        "src/athena/core/sleep/legs.py",
+        "tests/core/sleep/conftest.py",
+        "tests/core/sleep/test_sleep_cycle.py",
+        "tests/core/sleep/test_sleep_admission.py"
+      ],
+      "new_files": [
+        "tests/core/sleep/test_sleep_failures.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0149-a-sleep-window-that-keeps-failing-backs-off-shrinks-and-quarantines.md (amends ADR 0143 decision 2: the fixed 1 h failed backoff)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "two consecutive failed cycles over the same boundary (compress parse_error) -> admission answers failed_recently at 1.5 h after the second failure (backoff 2 h, not 1 h), and the verdict text names '2 cycles in a row'",
+        "four consecutive failures over the same boundary -> backoff 8 h; ten -> capped at 24 h (FAILED_BACKOFF_CAP_H)",
+        "after one compress parse_error or timeout over a 120-episode window, the next cycle's compress prompt carries 60 episodes (take limit halves per consecutive failure on that boundary, floor 1); the failed row's stats record failure='parse_error' and take=120",
+        "consecutive engine_error failures (the CLI could not run) back off but never shrink the take: the next prompt still carries 120 episodes",
+        "a one-episode take that failed parse_error or timeout twice on the same boundary -> the next cycle makes NO leg call, settles 'partial' with consumed_through at that episode, stats skipped=1, and the journal has a 'Skipped' section naming the episode id; the episode is still indexed and recallable (episode count unchanged)",
+        "a completed or partial cycle resets the count: a failure after it backs off exactly FAILED_BACKOFF_H (1 h) and the take is full again",
+        "guard: a single failure still holds exactly 1 h and the existing ladder order test (test_every_refusal_answers_in_ladder_order) stays green",
+        "guard: a crashed 'running' row is never counted as a failure, and a forced cycle still skips the backoff (but uses the shrunken take)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/core/sleep/__init__.py:80 FAILED_BACKOFF_H = 1 is a fixed constant: no escalation exists",
+        "src/athena/core/sleep/admission.py:224 failed_recently reads only the newest failed row; no count of consecutive failures over one boundary",
+        "src/athena/core/sleep/cycle.py:130 a failed compress finishes 'failed' and leaves the boundary, so the next cycle re-reads the identical window",
+        "src/athena/core/sleep/window.py:255 Window.take always takes up to COMPRESS_EPISODES; nothing can shrink it",
+        "src/athena/core/sleep/legs.py:217 a leg failure is flattened to a sentence (_failure) and its error_reason class is lost to the cycle row",
+        "src/athena/core/sleep/admission.py:244 pressure/stale re-admit the same window every hour after its backoff, forever"
+      ],
+      "rollback": "Each step is its own commit (failure class on the row, escalating backoff, halving take, quarantine) touching only core/sleep and its tests; git revert of the series restores the fixed 1 h backoff with no schema change (failure/take live in stats_json).",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Index each episode's device stamp on companion_node so the window is one SQL SUM (drops SCAN_ROWS/EPISODE_FETCH and the header-read cache) - needs core-brain schema/reconcile files owned by another context.",
+      "body": "## Summary\nA sleep window that keeps failing is retried every hour, forever, at full size, and memory never consolidates again. Make repeated failure a state the cycle reasons about: escalating backoff, a take that halves to isolate the bad material, and a quarantine that walks the boundary past a single episode that fails alone.\n\n## Description\nToday a failed compress writes nothing and leaves the boundary where it was (cycle.py:130). That is right for one failure and wrong for the tenth: the next admission re-measures the same window, admits it on pressure or stale, and runs the same 120-episode, 30k-character opus leg over the same episodes after exactly FAILED_BACKOFF_H = 1 h. An episode that reliably makes the leg time out or answer unparseably (a huge pasted log, a refusal-triggering body) is a poison message: the cycle burns a 300 s model call every hour and the boundary never moves, so nothing after that episode is ever distilled. The failure class (timeout / parse_error / engine_error) is flattened into a sentence by legs._failure, so nothing downstream can tell 'the CLI is missing' from 'this window is bad'.\n\nThe move follows background-jobs/tick-isolation layer 4 (consecutive failures per loop -> escalating backoff -> loud quarantine, success resets) and retry-backoff/error-classification-for-retry (only content-shaped failures shrink the work):\n- the cycle row's stats carry `failure` (the leg's error_reason) and `take` (episodes sent);\n- SleepBook.failures_since_settled(boundary) counts consecutive failed rows over the current boundary since the newest settled one (a running row is never counted);\n- admission's failed_recently backs off FAILED_BACKOFF_H * 2^(n-1), capped at a declared FAILED_BACKOFF_CAP_H = 24, and says the count in its sentence;\n- Window.take(limit) halves per consecutive parse_error/timeout on that boundary (engine_error never shrinks);\n- a one-episode take that failed twice is quarantined: the next cycle settles partial past it with no leg call, counts `skipped`, and journals the id under 'Skipped'. The episode is not deleted or hidden: it stays indexed and recallable; it is only not distilled.\n\n## Flow\n- cycle N fails parse_error over 120 episodes -> row stats {failure: parse_error, take: 120}\n- admission: 1 failure -> 1 h; cycle N+1 takes 60 -> fails -> 2 h; takes 30 -> succeeds -> partial, boundary moves past the 30, counters reset\n- if the halving reaches one episode that fails twice -> next cycle quarantines it, settles partial, journal says so\n- engine_error: 1 h, 2 h, 4 h ... 24 h, take unchanged, verdict text says the model could not be run N times\n\n## Expected impact\nA poison episode can no longer stop consolidation on a PC for good, an absent CLI stops costing a ledger row every hour, and the person reads 'failed 4 cycles in a row; next try in 8 h' instead of the same one-hour sentence. Closes the class 'a deterministic leg failure pins the boundary'.\n\n## Evaluation\nClaim: repeated failure over one boundary escalates, shrinks and finally quarantines, and a success resets it.\nBefore: 0 of 6 non-guard acceptance cases pass (2 guards green)\nAfter: 8 of 8\nMethod: gate - the acceptance cases with the existing FakeDoor/failing() fixtures and the Clock\nResult: better\nGate: none",
+      "evidence": "__init__.py:79-80 '#: Hours a failed cycle holds the next one back ... FAILED_BACKOFF_H = 1'; admission.py:224-232 'failed = self.book.last_failed() ... if failed_since < FAILED_BACKOFF_H: return Verdict(False, \"failed_recently\" ...)'; cycle.py:130-135 'if compressed.error is not None: # Nothing written, the boundary where it was: these episodes are the next cycle's. self._finish(cycle_id, \"failed\", stats, reason=compressed.error)'; window.py:264 'if body is None or len(reads) >= COMPRESS_EPISODES'; legs.py:429-437 _failure maps error_reason to prose only; grep 'consecutive\\|quarantin\\|skipped' src/athena/core/sleep -> 0 hits."
+    },
+    {
+      "context": "core-sleep-and-vitals",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A proposal shows both memories' words and their source, not two raw node ids",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "src/athena/core/sleep/book.py",
+        "src/athena/daemon/sleep.py",
+        "tests/core/sleep/test_sleep_proposals.py",
+        "tests/daemon/test_sleep.py",
+        "apps/desktop/src/lib/sleep.ts",
+        "apps/desktop/src/scenes/mind/sleep.tsx",
+        "apps/desktop/src/scenes/mind/sleep.test.tsx"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/lib/sleep.ts, apps/desktop/src/scenes/mind/sleep.tsx, apps/desktop/src/scenes/mind/sleep.test.tsx are owned by desktop-mind-devices-sleep (the ProposalView wire type and its card); the Python half lands first and is additive, so the desktop half can be sequenced after"
+      ],
+      "generated": [],
+      "acceptance": [
+        "GET /sleep/proposals with one open contradiction -> the proposal carries `memories` of length 2 in node_ids order, each {id, kind, key, text, scope, created_at, sources, recalled_at, faded, quote, live}, text = the memory's body excerpt (<= EXCERPT_CHARS, one line)",
+        "a forget proposal over a fact faded 3 steps and never recalled -> its memory has faded=3, recalled_at=null; after a recall hit (companion_recall_seen) recalled_at is that last_at",
+        "quote is the first LIVE source episode's body, flattened to one line and cut to EXCERPT_CHARS; null when no cited episode is live; sources is len(sources_of(id))",
+        "a decided proposal whose memory has since been superseded -> that memory entry is {id, live: false, text: null, ...} and the route still answers 200 (no raise)",
+        "guard: every existing ProposalView key (id, cycle_id, kind, node_ids, summary, status, created_at) is unchanged, and test_the_routes_are_the_wire_contract stays green",
+        "bounded: 20 open contradictions + 20 decided -> the /sleep/proposals answer stays under 64 KB and the detail is read in one read connection (no per-memory connection), no confidence figure appears in any memory entry (pending-beliefs-live-apart: no confidence dressed as measurement)",
+        "desktop (vitest, sleep.test.tsx): a contradiction card renders both memories' text and source quote side by side with a 'Forget this one' button under each, and no button label contains a raw node id"
+      ],
+      "guard_cases": ["4"],
+      "premise": [
+        "src/athena/core/sleep/book.py:115 ProposalRow.view() carries node_ids and a summary only - no memory text, no date, no source",
+        "src/athena/core/sleep/cycle.py:235 the contradiction summary names the two KEYS (often near-identical: a contradiction is a near-copy) and never the two values that disagree",
+        "src/athena/core/sleep/cycle.py:331 a forget summary is just the key and 'has not been recalled for months'",
+        "apps/desktop/src/scenes/mind/sleep.tsx:338 the person chooses which side to forget by buttons labelled `Forget ${id}` - a raw node id",
+        "src/athena/core/sleep/book.py:405 SleepBook.memory and Brain.sources_of / live_episode_ids already hold every figure the card needs; book.py:521 companion_recall_seen and companion_fade hold recall and fade"
+      ],
+      "rollback": "Two commits: the additive `memories` field (book + daemon + tests) and the desktop card. Reverting the desktop commit leaves an unused field; reverting both restores today's view byte for byte - no table or file changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Undo a forget: a 'restore' action on a forgotten proposal that supersedes the marker with a copy of the original memory, lifting the bar without asking Athena for an approved write_fact.",
+      "body": "## Summary\nThe one decision the sleep cycle hands a person - which of two disagreeing memories to forget, or whether a faded one may go - is made blind. Put the words of each memory, when it was learned, how often it was used and the sentence it came from on the proposal, so the choice is a comparison instead of a guess between two ids.\n\n## Description\nA contradiction proposal is opened with a summary of the two KEYS (cycle.py:235). Because a contradiction is usually a near-copy of the belief it overturns, the keys are often the same words ('acme payment terms' and 'acme payment terms'), and the values that actually disagree are nowhere on the card. The desktop then asks 'Which one goes?' with buttons labelled `Forget nod_...` (sleep.tsx:338). A forget proposal says only the key and 'has not been recalled for months'. The daemon already has every figure the person needs: the body excerpt (SleepBook.memory), scope and created_at, the cited episodes (Brain.sources_of, live_episode_ids), the last recall (companion_recall_seen) and the fade steps (companion_fade).\n\nRegistry: agent-memory/pending-beliefs-live-apart, 'The review surface shows the utterance above the extraction' - the card carries the original sentence as the quote and must not carry a confidence number dressed as a measurement; hitl-approval/oracle-before-gate - a reviewer must be shown what to check the item against.\n\nThe change: SleepBook.proposal_memories(rows) reads, in one connection, each named memory's key, text excerpt, scope, created_at, source count, first live source quote, recalled_at and fade steps (live=false for a superseded one). The `/sleep/proposals` view adds `memories` beside the unchanged keys. The desktop card renders the two sides as a compare pair (text, 'learned 12 Oct from: \"...\"', 'used 3 days ago' / 'never used', 'faded 3 of 3') with 'Forget this one' under each, and the forget card shows the memory's text and quote above Keep / Forget.\n\n## Flow\n- cycle opens a contradiction (unchanged)\n- GET /sleep/proposals -> each proposal now has memories[2] with text + quote + dates\n- card shows both sides; the person reads 'net 30' vs 'net 45', sees which came from last week's call, clicks 'Forget this one' under the stale side -> POST /sleep/proposals/<id> {action: forget, node_id} (unchanged route)\n\n## Expected impact\nA contradiction is settled on its content in one look instead of by picking an id; forget offers stop being approved or refused on a key alone. No new action or route, no data sent anywhere new, the decision path is the existing one.\n\n## Evaluation\nClaim: the proposal view carries both memories' words, provenance quote and use, bounded, and the card decides by them.\nBefore: 0 of 6 non-guard acceptance cases pass (1 guard green)\nAfter: 7 of 7\nMethod: gate - pytest cases on SleepBook/SleepService plus one vitest case on the card\nResult: better\nGate: none",
+      "evidence": "book.py:115-125 ProposalRow.view returns {id, cycle_id, kind, node_ids, summary, status, created_at}; cycle.py:235-239 summary = f'\"{key}\" ({ref.id}) and \"{old.key}\" ({id}) cannot both be true. Keep both, or forget one.'; sleep.tsx:338-341 '{proposal.node_ids.map((id) => (<Button ... onClick={() => answer(\"forget\", id)}>{`Forget ${id}`}</Button>'; lib/sleep.ts ProposalView has no text field; book.py:405-418 memory() already returns key + excerpt; store.py:469/502 live_episode_ids / sources_of exist."
+    }
+  ],
+  "rehomed": [
+    "Observation clock: the compress prompt prints each episode's instant but never tells the distiller to resolve relative time against it, nor states 'now' (legs.py:200, agent-memory/observation-clock; a recorded deviation) - S, a prompt line plus one test.",
+    "STATS_KEYS hand-list claims every key present from the start, but cycle.py adds unknown_ids, rejected, refused, supersedes_dropped, proposals_dropped, merge_degraded, journal_error ad hoc - a typed CycleStats closes it; S/M with impact under 7.",
+    "The sleep state vocabulary ('never','idle','sleeping','failed') is spelled in four places (vitals SleepSummary, daemon SleepState, gate.clean_view tuple, lib/vitals) - S.",
+    "GET /sleep re-walks the whole window (up to 20,000 rows, a full file read per uncached header) on every request and every sleep.changed re-read - a perf finding to measure first, not a challenge card."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["agent-memory", "background-jobs", "retry-backoff", "hitl-approval", "admission-queue"],
+    "techniques": ["tick-isolation", "error-classification-for-retry", "pending-beliefs-live-apart", "oracle-before-gate", "observation-clock", "consolidation"]
+  },
+  "files_read": 24
+}

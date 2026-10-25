@@ -1,0 +1,124 @@
+{
+  "host": "core-brain-memory",
+  "cards": [
+    {
+      "context": "core-brain-memory",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One pure value model ranks both distilled lanes, so a fade never hides a match",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "src/athena/core/recall.py",
+        "tests/core/test_recall.py"
+      ],
+      "new_files": [
+        "src/athena/core/brain/value.py",
+        "tests/core/test_brain_value.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0143-each-pc-knows-its-room-and-sleeps-on-what-it-wrote.md (amend decision 7: 'ranks by importance - steps' becomes 'ranks by the value model, whose decay axis is the fade step'; the never-hides promise is kept and now held by a test)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "keyword lane, 6 unfaded importance-3 facts that each match only the common word 'invoice' plus 1 fact faded 1 step that matches all of 'invoice overdue penalty' (query 'invoice overdue penalty', keyword_slots=6) -> the faded fact is among the 6 shown and ranks first (today: ORDER BY importance-steps puts it 7th, so it is hidden)",
+        "keyword lane, two facts with identical bodies and no fade, confidence 0.9 and 0.3 -> the 0.9 fact ranks first, and swapping the write order does not change that (today confidence is never read)",
+        "value.score(match=1.0, confidence=c, steps=s, hits=h) is pure: same arguments -> same float, takes no clock, and a missing/None confidence uses DEFAULT_CONFIDENCE (0.7), never 0",
+        "value.score usage term is sub-linear and bounded: score(hits=1000) / score(hits=0) <= 1.5 at equal other axes, so a hit count never overturns a confidence gap of 0.9 vs 0.3",
+        "always tier with 9 every_turn facts (cap 8), one at confidence 0.2 and one faded 2 steps -> the one dropped is the lowest-valued, and the block footer still reads (showing 8 of 9)",
+        "guard: tests/core/sleep/test_sleep_memory.py::test_a_faded_memory_ranks_lower_and_is_still_recalled and ::test_the_always_tier_ranks_by_importance_less_fade stay green unchanged (a 2-step fade with a modest match edge still ranks lower)",
+        "guard: a superseded fact and a retired fact are never served by either lane, and the keyword block's M (total) is unchanged by the re-rank for the same query",
+        "keyword lane reads a bounded candidate page (at most keyword_slots * 8 rows by bm25) before re-ranking -> a query matching 500 facts issues one SELECT with LIMIT 48, not an unbounded read"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "src/athena/core/recall.py:92 - FADED_RANK = (n.importance - COALESCE(fd.steps, 0)), the whole value model is one SQL literal",
+        "src/athena/core/recall.py:597 - the keyword lane orders ORDER BY FADED_RANK DESC, bm25 ASC: match strength is only a tie-break inside one importance-minus-fade bucket",
+        "src/athena/core/brain/text.py:142 - terms are joined with OR (ADR 0042), so any one shared word makes a match and weak matches are plentiful enough to fill all 6 slots ahead of a 1-step-faded exact match",
+        "src/athena/core/recall.py:33 - the module promises 'a fade never hides anything'; docs/adr/0143-each-pc-knows-its-room-and-sleeps-on-what-it-wrote.md:213 says 'Fade ranks memories and never hides them' - false once 6 unfaded weak matches exist",
+        "src/athena/core/brain/schema.py:56 - companion_fact.confidence and schema.py:64 companion_procedural.confidence are stored (sleep writes the model's 0-1 at src/athena/core/sleep/cycle.py:271) and no recall SELECT reads them",
+        "src/athena/core/recall.py:560 - the always tier ranks by the same literal with created_at as the only other axis",
+        "src/athena/core/sleep/book.py:541 - forget_candidates values memories by a third, separate predicate (importance <= default AND steps >= 3): recall and forgetting already answer 'what is this worth' differently",
+        ".ai/registry-map.json core-brain-memory / agent-memory - recorded deviation 'src/athena/core/recall.py:597 the keyword lane ranks by fade step before match strength and never reads confidence' (evaluated 2026-10-24)"
+      ],
+      "rollback": "Two commits: (1) value.py + its unit tests, unused - reverts alone with no behaviour change; (2) recall.py lanes call it + recall tests + ADR 0143 amendment + CHANGELOG - git revert of (2) restores the FADED_RANK ordering exactly; no schema or on-disk change in either.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Recall never counts a use on its own; the turn and core.recall record use with an explicit Brain.note_recalled call, so machine readers (adopt research's brain_recall, tests, a future probe) stop holding facts off the fade (probe-without-write-back) - M but touches wiring.py and adopt/research.py, impact ~6.",
+      "body": "## Summary\nReplace the one-line SQL ranking `importance - fade steps, then bm25` with a small pure value model in `athena.core.brain.value` - match strength x confidence x decay(fade steps) x a bounded log usage bonus - and have both distilled recall lanes rank through it. It makes ADR 0143's own promise true (a fade ranks, never hides) and closes the recorded agent-memory deviation at recall.py:597.\n\n## Description\nToday the keyword lane sorts by `importance - steps` first and BM25 second. With any-word matching (ADR 0042), six unfaded facts that share one common word with the question outrank a fact faded a single step that matches every word, so the fact the person asked about is not shown at all - the opposite of 'fade never hides'. Confidence, which every fact and procedural stores (the sleep cycle writes the model's 0-1, a forget marker 1.0), is never read by any lane. And forgetting values memories with a third predicate in sleep/book.py. The memory-value-model technique names the cure: one pure, explicitly argued score over the item's own stored properties (trust = confidence, decay = fade steps as a half-life per step, sub-linear proven usefulness = companion_recall_seen.hits), the clock injected, unknown confidence defaulting to the stated default. The keyword lane fetches a bounded BM25 page (slots x 8) and re-ranks it in Python with the model; the always tier ranks its importance>=4 population by the same model. The function is exported so the sleep cycle's forget_candidates can adopt it in its own context later (not in this write set) - the janitor imports the read path's model, never the reverse.\n\n## Flow\n- write value.py: score(match, confidence, steps, hits) and a per-kind half-life table in one place (fact, procedural, default)\n- keyword lane: SELECT the candidate page with bm25, confidence (LEFT JOIN companion_fact / companion_procedural), fade steps and hits; normalise bm25 to the page's best; sort by score; take slots; M (total) unchanged\n- always lane: same model with match = 1.0\n- amend ADR 0143 decision 7; CHANGELOG line\n\n## Expected impact\nA strongly matching memory is never pushed out of the keyword lane by fade alone; a confident memory beats an unsure one at equal match; the ranking claim lives in one reviewable table instead of a SQL literal; forgetting gets a single function to adopt.\n\n## Evaluation\nClaim: the distilled lanes rank by one pure value model that reads match, confidence, fade and use, and a faded exact match is no longer hidden.\nBefore: 0 of 6 new acceptance cases pass (cases 0-4 and 7); guards 5 and 6 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "recall.py:92 `FADED_RANK = \"(n.importance - COALESCE(fd.steps, 0))\"`; recall.py:597 `ORDER BY {FADED_RANK} DESC, bm25(companion_fts) ASC LIMIT ?`; recall.py:560 `ORDER BY {FADED_RANK} DESC, n.created_at DESC LIMIT ?`; text.py:142 `return \" OR \".join(fts_quote(term) for term in fts_terms(query))`; grep of src for 'confidence' outside brain/ and recall.py finds only writers (sleep/cycle.py:271,281, wiring.py:162) and schemas - no reader; registry-map agent-memory state=deviation evidence names recall.py:597. Not a re-proposal: ad8b82e/fd42e84 (reverted) touched supersede-by-key and recall_whole packing, not ranking; no backlog or ADR proposes reading confidence."
+    },
+    {
+      "context": "core-brain-memory",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Doctor and reconcile preview drift both ways and repair only what drifted",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/core/brain/reconcile.py",
+        "tests/core/test_brain_reconcile.py",
+        "src/athena/cli.py",
+        "tests/test_cli.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "src/athena/cli.py and tests/test_cli.py are owned by the CLI and Wiring context (the doctor index stage at cli.py:129 and cmd_reconcile at cli.py:273); the change there is ~60 lines"
+      ],
+      "generated": [],
+      "acceptance": [
+        "a fact file on disk whose index rows were deleted (the crash between _write_file and write_txn) -> reconcile.drift(brain).unindexed == [its rel path], and `athena doctor` index stage is 'warn' naming '1 memory on disk is not indexed' (today it says 'ok: every indexed row has its file on disk')",
+        "a fact file whose body a person edited in an editor -> drift(brain).edited == [its id] (content_hash differs from sha256 of the text as the rebuild reads it); after repair(brain, drift) a keyword recall for the new wording returns it and one for the removed wording does not",
+        "a row whose file is gone -> drift(brain).orphaned == [its id], equal to missing_files(brain); repair deletes that id's rows from every INDEX_TABLES table and nothing else",
+        "parity: a tree with one unindexed, one edited, one orphaned and one moved memory -> after repair(brain, drift(brain)), index_fingerprint(brain) == index_fingerprint of a copy rebuilt with reconcile_from_disk",
+        "targeted: after repair, every memory that was not in the drift keeps its companion_node rowid and updated_at (the full rebuild re-inserts all of them)",
+        "a drift walk that hits its file budget -> unindexed and edited are None with budget_hit=True ('not computed'), never [] and never counted as clean",
+        "`athena brain reconcile --check` on a drifted brain prints the drift JSON, exits 1 and leaves index_fingerprint unchanged; on a clean brain exits 0; `--repair` applies only the drift and prints what it touched",
+        "guard: plain `athena brain reconcile` keeps its report keys and exit codes (tests/test_cli.py reconcile tests stay green), and the doctor still warns with 'athena brain reconcile' for a missing file"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "src/athena/core/brain/store.py:6 - 'A crash between the two leaves a findable file and a missing row - which the next reconcile_from_disk repairs': the only repair is a full rebuild a person must think to run",
+        "src/athena/cli.py:129 - the doctor's index stage checks one direction only (missing_files: rows whose file is gone) and reports 'ok' for a brain with files the index never saw",
+        "src/athena/core/brain/reconcile.py:316 - missing_files is the only consistency read; nothing compares disk to index the other way or by content_hash",
+        "src/athena/core/brain/reconcile.py:110 - reconcile_from_disk deletes every INDEX_TABLES row and re-inserts the whole tree in one writer transaction; there is no preview and no targeted mode",
+        "src/athena/cli.py:300 - cmd_reconcile always runs the full rebuild; grep finds no other caller of reconcile_from_disk in src (no daemon start-up repair)",
+        "src/athena/core/brain/store.py:961 - every row stores content_hash = sha256(file_text), so a hand edit or a replaced file is detectable without parsing semantics",
+        "src/athena/core/brain/paths.py:3 - 'laid out so a human can read it' - the tree is meant to be opened and edited, and an edit is invisible to recall until a full rebuild"
+      ],
+      "rollback": "Two commits: (1) reconcile.drift + reconcile.repair + their tests (no caller, inert); (2) doctor index stage and `brain reconcile --check/--repair` in cli.py + CLI tests + CHANGELOG. Reverting (2) restores today's operator surface; reverting both leaves reconcile.py as before. No schema or on-disk change.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "The recall preview says what it hid and why - per memory its lane, value, fade and confidence, plus counts of superseded and retired memories the query matched (stale-served-versus-stale-answered) - needs the desktop preview files of another context.",
+      "body": "## Summary\nGive the operator a preview and a targeted fix for the brain's index: `reconcile.drift(brain)` compares disk to index in both directions and by content hash, `reconcile.repair(brain, drift)` re-indexes only what drifted through the same per-file `index_file` the rebuild uses, and the doctor and `athena brain reconcile --check|--repair` surface them.\n\n## Description\nThe doctor today reports one direction - a row whose file is gone - and calls everything else 'ok'. The silent direction (lane-reconciliation's 'absent where declared present') is never reported: a memory file written before a crash, copied in by hand, or edited in an editor is either invisible to recall or served with its old words, and the only remedy is a full rebuild the person must already suspect they need. That rebuild deletes and re-inserts every row in one writer transaction with no preview of what it will change. This card turns the report into an action: the doctor names the drift by class (unindexed, edited, moved, orphaned, duplicate), `--check` previews it without writing, and `--repair` touches only those memories, proven equal to a full rebuild by fingerprint. A walk that runs out of budget says 'not computed', never zero (unknown-is-not-a-value).\n\n## Flow\n- drift(): walk reconcile.WALK with the rebuild's own parse rules; read companion_node (id, file_path, content_hash) once; set algebra -> Drift(unindexed, edited, moved, orphaned, duplicates, budget_hit)\n- repair(): one write_txn; for each orphaned/moved/edited id delete its rows in INDEX_TABLES; index_file for each unindexed/edited/moved file\n- doctor index stage: warn on any drift class with a count sentence and the command that fixes it\n- `athena brain reconcile --check` (read-only, exit 1 on drift) and `--repair` (targeted); bare command unchanged\n\n## Expected impact\nAn operator sees a memory that recall cannot reach before a person notices it missing, previews what a repair changes, and fixes it without rebuilding the whole index.\n\n## Evaluation\nClaim: drift is computed in both directions and by content, previewed read-only, and repaired in place with rebuild parity.\nBefore: 0 of 7 new acceptance cases pass (cases 0-6); guard 7 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "cli.py:138 `missing = reconcile.missing_files(brain)` is the whole index stage; cli.py:145 'every indexed row has its file on disk' is the ok text; reconcile.py:111-112 `for table in INDEX_TABLES: con.execute(f\"DELETE FROM {table}\")`; `grep -rn reconcile_from_disk src` outside core/brain -> only src/athena/cli.py:300; store.py:961 `sha256(file_text)` stored per row. Not in any backlog, stabilize finding or ADR (0003 and 0081 decide rebuild-from-disk and set-aside, not detection or targeted repair)."
+    }
+  ],
+  "rehomed": [
+    "recall_whole skips an oversized episode and keeps packing instead of stopping (recorded agent-memory deviation recall.py:454) - S, and a fix was landed then reverted whole in fd42e84; already a stabilize finding",
+    "refuse write_fact/write_procedural importance >= ALWAYS_IMPORTANCE without every_turn - S policy-tighten, already the stabilize-2026-10-16 parity-auditor finding",
+    "recall counts no use for machine callers (uncounted read + explicit note_recalled) - kept as slot A runner-up; impact ~6 and its write set is mostly wiring.py / adopt/research.py"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["agent-memory", "companion-identity"],
+    "techniques": ["memory-value-model", "recall-injection", "decay-and-forgetting", "lane-reconciliation", "probe-without-write-back", "disk-truth-db-index"]
+  },
+  "files_read": 24
+}

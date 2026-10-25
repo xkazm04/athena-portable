@@ -1,0 +1,120 @@
+{
+  "host": "desktop-stage-depth",
+  "cards": [
+    {
+      "context": "desktop-stage-depth",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A leaving layer is a still, not a live scene: one live scene at any moment",
+      "size": "M",
+      "effort": 7,
+      "impact": 7,
+      "risk": 7,
+      "write_set": [
+        "apps/desktop/src/stage/Stage.tsx",
+        "apps/desktop/src/stage/layers.ts",
+        "apps/desktop/src/stage/layers.test.ts",
+        "apps/desktop/src/stage/Stage.dom.test.tsx",
+        "apps/desktop/src/stage/stage.css"
+      ],
+      "new_files": [
+        "apps/desktop/src/stage/still.ts",
+        "apps/desktop/src/stage/still.dom.test.ts",
+        "docs/adr/NNNN-a-leaving-layer-is-a-still-and-only-the-arriving-scene-is-live.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-leaving-layer-is-a-still-and-only-the-arriving-scene-is-live.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "jsdom, Stage wired as in Stage.dom.test.tsx, a scene component counting mounts in an effect: go from #/ to #/apps -> before any animationend, the #/ scene's effect cleanup has run and exactly 1 scene component is mounted (today 2 until the leave ends or SAFETY_MS flushes)",
+        "same move -> the leaving section[data-phase^='leave-'] still holds the left scene's text and markup (a static copy) until its animationend, then it is removed; the arriving layer is the only one rendered by React",
+        "a scene that adds a document keydown listener in an effect (no inert guard): after go to another place, a keydown on document reaches only the arriving scene's listener, never the leaving one",
+        "three moves inside one act() with no animationend -> at every step at most 1 live scene component is mounted, and at most MAX_LEAVING (2) stills plus 1 arriving layer are in .stage__scenes",
+        "a left scene that holds a <canvas> (getContext mocked to return a fake 2d context): its still holds a canvas whose context received drawImage with the source canvas, so a waveform or a sky does not blank during the leave",
+        "guard: calm=true move -> one layer at rest, the new scene rendered live, no still created",
+        "guard: a move that plays no animation is still flushed after SAFETY_MS and onSettle(seq) is called once (the existing 'settles a move that plays no animation' case stays green)",
+        "guard: a chrome-only change (presence, trailing) redraws no scene (the existing 'redraws no scene when only the chrome changes' case stays green)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "apps/desktop/src/stage/Stage.tsx:208 every layer, leaving ones included, renders <SceneOf path render> - a full live scene tree with its effects, subscriptions and document listeners",
+        "apps/desktop/src/stage/Stage.tsx:288 a leaving layer is only aria-hidden and inert: its React subtree keeps running until animationend or the SAFETY_MS flush",
+        "apps/desktop/src/stage/layers.ts:56 up to two leaving layers are kept, so up to three live copies of scenes can run at once during an interrupted move",
+        "apps/desktop/src/scenes/voice/studio.tsx:63 'A layer that is leaving is inert: it must not take a key meant for the one arriving' - hand guard",
+        "apps/desktop/src/scenes/chores/topic.tsx:138 the same closest('[inert]') guard, again at apps/desktop/src/scenes/chores/replay.tsx:110 and :126, apps/desktop/src/scenes/chores/intake/intake.tsx:69, apps/desktop/src/scenes/chores/adopt/studio.tsx:98",
+        "docs/adr/0092-the-voice-scene-has-one-frame-loop-and-reopens-a-finished-studio-on-arrival.md:32 the one-loop budget is kept per scene by remembering to ignore a leaving layer, not by structure"
+      ],
+      "rollback": "Revert the commit series (ADR, still.ts + test, Stage/layers changes) in reverse order; the six per-scene inert guards are untouched by this card, so behaviour returns exactly to today's double-live leave.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (motion and the move's first frame are touched; perf:stage measures the clone cost at the move start)"
+      ],
+      "runner_up": "Retire the store's from/settle handshake: `from` is read only to null itself (Stage.tsx:96), so the 'is a move in flight' fact lives in two machines; make the layer machine its one owner.",
+      "body": "## Summary\nDuring every depth move the stage keeps the place you left as a fully live React scene until its leave animation ends, so two (up to three) scenes run their effects, listeners, fetches and frame loops at once. Make the leaving layer a static still captured at the move's start and unmount its live tree immediately, so exactly one scene is live at any moment by construction.\n\n## Description\n`layers.ts` already says what each layer is doing; `Stage.tsx` renders every layer through `SceneOf`, so a leaving layer is a live scene that is merely `inert`. The consequence is a rule every scene must remember: five scene files carry six hand-copied `closest('[inert]')` guards so a leaving copy does not answer a key, and ADR 0092's one-loop budget depends on the Voice studio remembering it. Effects without a guard (a poll, a subscription, a mic stop on unmount, a lightbox) still run twice for the length of the leave, and an interrupted move keeps up to three copies alive. The move: a pure `still.ts` that turns a layer's DOM into a static copy (deep clone, canvases copied by drawImage, ids and autofocus stripped, no listeners), a `live` flag on `Layer` (true only for the arriving or resting layer), and a `SceneLayer` that renders the still for a non-live layer instead of `SceneOf`. The snapshot is taken from the outgoing top layer's section at the moment the move is derived, before React commits the unmount. CSS keeps animating the section exactly as today (transform and opacity only, ADR 0089). The scene guards become dead code that a later pass in their own contexts may delete; this card does not touch them.\n\n## Flow\n- move derived in render (seq changed) -> snapshot the current top section into a still -> dispatch move -> React unmounts the left scene's tree (effects clean up now, not at animationend)\n- leaving section shows the still and plays leave-*; arriving section mounts the one live scene\n- animationend / SAFETY_MS flush removes the still; settle as today\n- calm: no still, one layer at rest (unchanged)\n\n## Expected impact\nA whole class of defect closes: a leaving scene can no longer take a key, fire a fetch, keep a frame loop or a mic alive, or double a subscription during a move, for every scene present and future, with no guard to remember. Also halves React work during a move (one live tree instead of two or three). Technique: module-design locality-and-leverage (one rule at the stage instead of six copies in the scenes), motion performance-discipline (one loop, compositor-only leave).\n\n## Evaluation\nClaim: during and after a move exactly one scene is live, the leave still looks the same, and settle/flush/calm/chrome behaviour is unchanged.\nBefore: 3 of 8 acceptance cases pass (the three guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases, plus pnpm perf:stage for the clone cost at the move start\nResult: better\nGate: none",
+      "evidence": "Stage.tsx:208-218 `{layers.map((l, i) => (<SceneLayer ...><SceneOf path={l.path} render={renderScene} /></SceneLayer>))}`; Stage.tsx:286-289 `aria-hidden={leaving || undefined} inert={leaving || undefined}`; layers.ts:32 `const MAX_LEAVING = 2;` and :56 `.slice(-MAX_LEAVING)`; grep `closest(\"[inert]\")` in apps/desktop/src/scenes -> 6 hits in 5 files (voice/studio.tsx:63, chores/topic.tsx:138, chores/replay.tsx:110,126, chores/intake/intake.tsx:69, chores/adopt/studio.tsx:98); 7 document/window listeners in scenes (chores adopt/studio, intake, replay, topic, voice parts, voice studio x2); Stage.dom.test.tsx:160 asserts 2 `.stage__layer` mid-move, both live today."
+    },
+    {
+      "context": "desktop-stage-depth",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Rise lands where you left: every depth restores its scroll and the row you dived from",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/stage/Stage.tsx",
+        "apps/desktop/src/stage/Stage.dom.test.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/stage/places.ts",
+        "apps/desktop/src/stage/places.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "places.ts (pure): record 30 places keyed by formatHash -> only the 24 most recent are kept, and reading one refreshes its recency (bounded, no orphans piling up)",
+        "jsdom: a scene whose scroller (overflow auto) is scrolled to 400, go to a child place, rise -> once the arriving layer is drawn, that scroller's scrollTop is 400 (today 0)",
+        "jsdom: focus the 'item-5' button in a scene and press it to dive, then press Escape -> document.activeElement is the re-rendered 'item-5' button, not the layer section (today the section, Stage.tsx:123)",
+        "jsdom: the returning scene first renders short (scrollHeight 200) and grows (scrollHeight 2000, ResizeObserver fires) -> scroll is applied once the content can hold it; if a wheel or key scroll happened first, the restore is abandoned",
+        "jsdom: the remembered row no longer exists on return -> focus falls back to the layer section, nothing throws",
+        "guard: a down move (a dive) to a place recorded earlier starts at the top with focus on the layer, as today",
+        "guard: an across move via a dock root focuses the arriving layer, as today",
+        "guard: page shape (apps/<app>/page) records and restores nothing and calls no focus (the existing page-shape cases stay green)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "apps/desktop/src/stage/Stage.tsx:123 every settled move focuses the whole new layer section, so a keyboard user rising from an item restarts Tab from the top of the depth",
+        "apps/desktop/src/stage/Stage.tsx:208 each move mounts the arriving place as a new layer keyed by seq, so the scene's scrollers are fresh and start at 0",
+        "apps/desktop/src/scenes/chores/topic.tsx:149 one scene hand-rolls this with its own module map (apps/desktop/src/scenes/chores/memory.ts:36 `scrolls`), proving the need and the drift: Apps, Accounts, Mind, Voice, Surface and the Chores catalogue have none",
+        "apps/desktop/src/scenes/apps/apps.css:6 overflow auto (likewise accounts.css:12, mind.css:6, surface.css:12, voice.css:13): the depths that lose their place are scrollers",
+        "apps/desktop/src/depth/store.ts:7 replaceState and no history by decision, so Rise and Escape are the only way back and must carry the restore promise themselves"
+      ],
+      "rollback": "Revert the commit; places.ts and its test are new files, and the Stage change is one hook call plus the focus branch at the existing focus effect.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A crumb opens its siblings (host-1 -> host-2, one chore -> the next) in one move instead of rise-then-dive; needs each scene's labeller to enumerate items, a scenes/types.ts contract change.",
+      "body": "## Summary\nRising from a depth today lands at the top of the place you came from with focus on the whole layer, so a person who dived into the fifth app, the third account or a Mind section scrolls and tabs back down every time. Make Rise and Escape keep the restore promise: the stage remembers each place's scroll and the element you left it from, and an up move restores both.\n\n## Description\nA pure `places.ts` holds a bounded, recency-ordered memory keyed by `formatHash(path)`: per place, the scrollTop of each scroller in the layer (by DOM order) and a locator for the element that had focus or was pressed when the move left (a data attribute or text-and-role locator, then a child-index path). The stage records the outgoing top layer at the move's start and, when an up move arrives at a recorded place, restores after the layer is drawn: scroll is applied when the content can hold it (a ResizeObserver retry with a short bound, abandoned on the person's own wheel, key or pointer scroll, so restored scroll never snaps back or fights the user), and focus goes to the remembered element, falling back to the layer. Down and across moves keep today's behaviour (a dive starts fresh). Page shape is untouched. Chores' topic keeps its own finer map; the two agree because both restore the same offset. Technique: session-resume layered-place-restoration (which layers restore, content-late snap-back, bounded records), app-shell lazy-section-loading warm return (returning lands where the user left), navigation-model (a move the user perceives as back returns them where they were).\n\n## Flow\n- dive from item-5 at scroll 400 -> places records #/apps {scroll:[400], focus:item-5}\n- Escape / Rise / crumb (up move) -> arriving layer drawn -> scroll 400 applied when content is tall enough -> focus item-5\n- dive again -> starts at top (unchanged)\n\n## Expected impact\nEvery depth's way back becomes one press instead of rise-scroll-find-tab; a keyboard or screen-reader user returns to the row they acted on. The one hand-rolled copy (chores topic) is no longer the only place that keeps its place.\n\n## Evaluation\nClaim: an up move restores the left place's scroll and focus across all scenes, without changing dives, across moves or the page shape.\nBefore: 3 of 8 acceptance cases pass (the guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "Stage.tsx:122-124 `useEffect(() => { if (state.seq > 0 && shape === \"scene\") top.current?.focus({ preventScroll: true }); }, [state.seq, shape]);`; grep scrollTop|scrollTo in apps/desktop/src/scenes and console (non-test) -> 1 site, chores/topic.tsx:150 restoring from memory.ts:36 `export const scrolls = new Map<string, number>()`; overflow:auto roots in apps.css:6, accounts.css:12, mind.css:6, surface.css:12, voice.css:13, chores.css:22. Both cards edit Stage.tsx: if both are built, sequence A first (B records the outgoing layer's scroll before A's still replaces it, at the same move-start hook)."
+    }
+  ],
+  "rehomed": [
+    "One exported depth grammar the preview derives from (preview.tsx:34 re-encodes GRAMMAR and already lacks mind/devices): S, and a recorded module-design deviation, impact under 7",
+    "Exhaustive enumeration of move/ended/flush sequences for layers.ts (recorded test-input-generation deviation): S, test-only",
+    "startDepth's seq-bumping setState bypasses the reducer (store.ts:66): an 'arrive' action in reduce - S",
+    "Dock exit eased (backlog-2026-10-13 line 7) - already on the backlog, S-M polish"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["app-shell", "session-resume", "motion", "module-design", "test-input-generation"],
+    "techniques": ["navigation-model", "lazy-section-loading", "layered-place-restoration", "performance-discipline", "locality-and-leverage", "exhaustive-when-bounded"]
+  },
+  "files_read": 31
+}

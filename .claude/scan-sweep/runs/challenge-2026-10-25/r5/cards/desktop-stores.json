@@ -1,0 +1,121 @@
+{
+  "host": "desktop-stores",
+  "cards": [
+    {
+      "context": "desktop-stores",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One trust verdict per tab: fold five hand-written origin-row readers into one",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 6,
+      "write_set": [
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/origins.ts",
+        "apps/desktop/src/stores/run.tabs-read.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/stores/trust.ts",
+        "apps/desktop/src/stores/trust.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0105-read-a-trusted-tab-by-name-and-hold-the-rest-of-the-turn-to-cards.md (amendment note: a catalog-form row switched off also refuses a tabs_read, as ADR 0106 already refuses it for open_apps)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "trustOf(table, tab, byTab) table-driven matrix -> {app, state}: no rows -> first-sight; web-origin row enabled -> trusted; web-origin row off -> off; host:<derived> row enabled, no web row -> trusted; host:<derived> off -> off; web row enabled + host:<derived> off -> off; page claims slug X, host:X enabled, no web row -> first-sight (a claimed slug inherits nothing, ADR 0065); loaded:false -> unread; problem set -> unread",
+        "openTabOf(BANK_URL, tabs, byTab, {records:{[BANK]:enabled, 'host:<derived of BANK>':disabled}, known:[both], loaded:true}) -> trusted:false, and a tabs_read of that url in a turn is foreign_origin with empty output and no hands_call (today: trusted:true, the switched-off app's text is read)",
+        "parity property over the matrix: a tab is trusted for tabs_read (openTabOf) iff trustedAppOf offers it as an open_app iff contractDriftsOf reads its contracts; and no tab offered as an open_app has its host:<app> in disabledOriginsOf or gated_origins",
+        "the fold is per accessor, explicit: unread -> gatedListsOf counts the app first-sight (fail closed), trustedAppOf/openTabOf/contractDriftsOf trust nothing, disabledOriginsOf still lists every switched-off row it holds; each fold is a named function in trust.ts and the test pins its unread arm",
+        "guard: gatedListsOf and disabledOriginsOf return byte-identical lists for every fixture in run.test.ts, run.cross-tab.test.ts and contracts.test.ts (green before and after)",
+        "guard: setEnabled('host:<derived>', true) accepts the contracts of a tab whose derived id it is and not of a tab that merely claims that slug (origins.ts listedAt, now through trustOf; green before and after)",
+        "guard: the existing suites run.cross-tab.test.ts, run.tabs-read.test.ts, contracts.test.ts, origins.test.ts pass unchanged"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        "apps/desktop/src/stores/run.ts:309 openTabOf trusts on the web-origin row alone and never looks at a switched-off host:<app> row",
+        "apps/desktop/src/stores/run.ts:748 trustedAppOf refuses when any present row (web or host:<app>) is switched off",
+        "apps/desktop/src/stores/run.ts:867 contractDriftsOf re-derives the same trusted/off rule a second time, inline",
+        "apps/desktop/src/stores/run.ts:1025 gatedListsOf re-derives it a third time (rows = web row + derived catalog row)",
+        "apps/desktop/src/stores/run.ts:612 disabledOriginsOf a fourth time, reading records without the known/loaded checks the others use",
+        "apps/desktop/src/stores/origins.ts:247 listedAt a fifth time ('the same rule gatedListsOf applies a catalog-form row by' - a comment, not a shared function)",
+        "apps/desktop/src/stores/origins.ts:106 load() caches a row into records without adding it to known, so records and known are two indices of one table that the readers consult differently",
+        "apps/desktop/src/stores/voice.ts:60 and apps/desktop/src/stores/task-runner.ts:62 and apps/desktop/src/companion/live.tsx:53 import these readers from run.ts; run.ts keeps re-exporting them so no other context's file changes"
+      ],
+      "rollback": "Two commits: (1) trust.ts + trust.test.ts with run.ts/origins.ts delegating to it, behaviour-preserving; (2) openTabOf switched to the shared verdict (the tightening) with its tabs_read case. git revert of (2) restores the old tabs_read rule alone; reverting both restores the five inline readers. No data, contract or wire change.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "One mirror() lifecycle helper for the six start-once/subscribe-before-read/store:changed-reread stores (daemon, tabs, tools, origins, settings, athena), with one test reset, per client-state singleton-lifecycle.",
+      "body": "## Summary\nThe rule 'which origins-table rows decide this tab's app, and what state that puts it in' is written five times across run.ts and origins.ts, each with its own handling of an unread table and of a catalog-form row. They have already drifted: tabs_read trusts a tab whose host:<app> row is switched off, which open_apps, the contract check and the gate all refuse.\n\n## Description\nAdd stores/trust.ts with one pure resolver, trustOf(table, tab, byTab) -> {app, state: 'unread'|'first-sight'|'trusted'|'off', rows}, and one accessor per fold direction (authorization: one-accessor-per-fold-direction): firstSightFold (unread -> first-sight, for gated_origins), trustFold (unread -> untrusted, for open_apps / tabs_read / contract drift), offFold (for disabled_origins). gatedListsOf, disabledOriginsOf, trustedAppOf, contractDriftsOf, openTabOf and origins.ts listedAt become thin callers. run.ts re-exports the same names, so voice.ts, task-runner.ts and live.tsx do not change. One row accessor reads records through known, so the two indices of one table stop being read differently.\n\n## Flow\n- write trust.test.ts matrix + parity property first; watch it fail (module absent, openTabOf divergence)\n- implement trust.ts; delegate the five readers; keep the exported names and signatures\n- switch openTabOf to trustFold (the tightening): a catalog-form switched-off app's tab is foreign_origin for tabs_read\n- run the existing suites unchanged as the guard\n\n## Expected impact\nA whole class closes: a new reader of the origins table (the next surface that needs 'is this app trusted') calls one function with a named fold instead of writing a sixth copy. run.ts loses about 180 lines of policy derivation. The one fail-open drift found today is fixed in the direction that refuses (authorization: failure-direction).\n\n## Evaluation\nClaim: every trust reader agrees with every other on every row combination, and tabs_read refuses an app switched off by its catalog-form row.\nBefore: 0 of 4 new acceptance cases pass (trust.ts absent; openTabOf returns trusted:true for case 2)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: policy-tighten",
+      "evidence": "run.ts:309-314 `const trusted = origin !== \"\" && origins.loaded && origins.problem === null && origins.known.includes(origin) && origins.records[origin]?.enabled === true;` vs run.ts:748 `if ([origin, `host:${app}`].some((k) => row(k)?.enabled === false)) return null;` vs run.ts:869 `const off = [origin, `host:${app}`].some((k) => origins.known.includes(k) && origins.records[k]?.enabled === false);` vs run.ts:1025 `const rows = [rowOf(origin), app === derivedIdOf(origin) ? rowOf(`host:${app}`) : undefined]` vs run.ts:612-625 (records only, no known/loaded check) vs origins.ts:247 `const named = key === origin || (key.startsWith(\"host:\") && app !== null && key === `host:${app}` && app === derivedIdOf(origin));`. grep: gatedListsOf/disabledOriginsOf imported by stores/voice.ts:60-64, stores/task-runner.ts:62-63, companion/live.tsx:53. ADR 0105 section 3: 'Only the web-origin row counts; a catalog-form row does not trust a tab' (trust, not refusal); ADR 0106 / trustedAppOf: 'any row present and switched off refuses'."
+    },
+    {
+      "context": "desktop-stores",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A card whose page moved says so before the press, and re-asks in one press",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/slip.tsx",
+        "apps/desktop/src/companion/live.tsx",
+        "apps/desktop/src/companion/plain.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/stores/run.reask.test.ts"
+      ],
+      "shared_surfaces": [
+        "apps/desktop/src/companion/model.ts, slip.tsx, live.tsx, plain.ts are owned by desktop-companion-pane (one CardView field, one button, one action wire, one sentence) - sequence after that context's builder",
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "staleOf(cards, tabs, byTab): card bound to tab 4 nav 2 while tab 4 reports nav 3 -> {[id]: 'moved'}; tab 4 gone -> 'closed'; unbound card, or tab 4 still nav 2 -> no entry",
+        "useRun.getState().stale updates when the tabs store emits a new nav for a bound tab, with no press: set tab nav 2 -> 3 -> stale[id] === 'moved'; nav unchanged -> {}",
+        "reask(id) on a moved card -> exactly one POST /decisions/<id> with the decline option, no deps.call on any tab, then exactly one POST /run whose message is the fixed re-ask line naming the card's action, carrying tab_id and tab_nav of the tab as it is now; the card leaves cards and the record holds it as declined",
+        "reask(id) on the head of a sheet whose three rows are bound to the moved tab -> three declines, one POST /run naming all three actions in proposal order",
+        "reask(id) on a card whose tab still holds its document -> returns false; no POST /decisions, no POST /run",
+        "reask(id) while she is running -> returns false and sends nothing (the person can stop her first)",
+        "reask(id) on a delegated task's card -> one decline, owner.release({approved:false, execute:[]}) called, and no POST /run in this window",
+        "guard: approve on a moved card is still refused locally with boundTabSentence('moved') and its grant is not spent (run.cross-tab.test.ts 'a row whose bound tab reloaded stops the walk before its grant is spent' stays green)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/companion/plain.ts:58 the only way out today is a sentence: 'Decline it and ask again.' - the person declines, then retypes a request the model already holds",
+        "apps/desktop/src/stores/run.ts:1762 the binding is only checked when Approve is pressed; until then a dead card looks approvable",
+        "apps/desktop/src/stores/run.ts:1749 a local binding refusal keeps the card on screen and at the daemon, so it waits there with no route to run",
+        "apps/desktop/src/stores/run.ts:681 bindingRefusal is pure and needs only the card and the tab now, which the tabs store already holds (stores/tabs.ts nav on every tabs:changed)",
+        "apps/desktop/src/companion/model.ts:795 the card view carries a refusal only after a press (refusals[card.id])",
+        "apps/desktop/src/stores/run.ts:82 a fixed model-facing continuation line (CONTINUE) is the precedent for a sentence the person did not type"
+      ],
+      "rollback": "Two commits: (1) staleOf + stale map + reask action in run.ts with run.reask.test.ts; (2) CardView.stale, the 'Ask again here' button on the slip and the plain.ts sentence. Reverting (2) leaves an unused store action; reverting both restores today's press-then-refuse flow. No daemon, contract or wire change: reask uses the existing decline route and a normal POST /run.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A queued mid-turn message gets 'send now': promote one line of queued to an interrupt (halt(true) then run it next), instead of take-back-and-retype.",
+      "body": "## Summary\nA card bound to a tab that reloaded or navigated (ADR 0103) can never run, but it looks approvable until the person presses Approve, and then the only way forward is 'Decline it and ask again' - decline, then retype what they asked. The store already knows, from the tabs store, the moment the binding breaks. This card makes the slip say so before the press and offers one action that declines the dead card(s) and asks her to propose them again on the page as it is now.\n\n## Description\nrun.ts gains a pure staleOf(cards, tabs, byTab) built on bindingRefusal, a `stale` map kept current from a tabs-store subscription started in startRun, and a `reask(id)` action. reask declines every stale row of the card's sheet through answerOne (a decline needs no tab and spends no grant), then starts one exchange with a fixed line - '(these could not run because the page they were proposed on changed since: <actions>; propose them again on the page as it is now)' - so the new cards are bound to the current document. Under a remote exchange it continues under that via; a task card hands the decline to its owner and starts nothing here. The slip shows the stale state in place of Approve with 'Ask again here' as the primary action (hitl-approval: resume-after-decision - what runs on approval is what was shown; a stale card is never silently re-targeted, it is re-proposed and re-shown).\n\n## Flow\n- tab reloads -> stale[id] = 'moved' -> slip reads 'This page changed since she asked' with Ask again here / Decline\n- Ask again here -> declines at the daemon -> one POST /run with the re-ask line -> new card(s) bound to tab 4 nav 3\n- Approve on a stale card stays refused locally (guard)\n\n## Expected impact\nA dead card stops being a trap: the person sees it is dead before pressing, and a reload during a six-row sheet costs one press instead of a decline plus a retyped request. No policy moves: the old grant is declined, the new proposal goes through the gate and its own card.\n\n## Evaluation\nClaim: the store marks a card stale the moment its bound tab moves and re-asks it in one action without spending its grant.\nBefore: 0 of 7 new acceptance cases pass (no stale map, no reask)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "plain.ts:55-58 boundTabSentence -> \"Not run: the tab this was proposed on reloaded or moved to another page since. Decline it and ask again.\"; run.ts:1762-1765 `if (card && choice === \"approve\") { const refused = bindingRefusal(card, ...); if (refused) return refuse(refused.reason, boundTabSentence(refused.why)); }`; run.ts:1749 `cards: reason === \"unknown_ref\" && local === null ? s.cards.filter(...) : s.cards` (a local refusal keeps the card); run.cross-tab.test.ts:324-337 shows a reloaded tab leaving the row on screen with consumed 0. No backlog or ADR proposes a re-ask action; ADR 0103 only fixes that a moved card must not run."
+    }
+  ],
+  "rehomed": [
+    "Settings writes that fail leave the choice painted but unstored (settings.ts:128-187, registry deviation) - void: already a stabilize-2026-10-16 desktop-stores finding.",
+    "Misplaced stampOf docstring at run.ts:1039 - S, already in tiger/backlog.md small follow-ups.",
+    "reconcile only adds cards, never drops ones the daemon no longer holds (run.ts:2238) - void: stabilize-2026-10-16 finding.",
+    "Athena pill 'N waiting' cannot act (athena.ts:27) - S and the surface is the status-pill view, not this store."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["authorization", "hitl-approval", "client-state", "settings", "data-access"],
+    "techniques": ["one-accessor-per-fold-direction", "failure-direction", "resume-after-decision", "singleton-lifecycle", "optimistic-write-path"]
+  },
+  "files_read": 22
+}

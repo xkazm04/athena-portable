@@ -1,0 +1,517 @@
+{
+ "critic_model": "claude-opus-5-5",
+ "verdicts": [
+  {
+   "context": "core-brain-memory",
+   "slot": "A",
+   "title": "One pure value model ranks both distilled lanes, so a fade never hides a match",
+   "premise": "true",
+   "premise_notes": "recall.py:92 FADED_RANK literal; :560 always tier and :597 keyword lane ORDER BY FADED_RANK DESC, then created_at or bm25; text.py:142 OR-join; schema.py:56/64 confidence REAL DEFAULT 0.7 with no reader in recall.py; recall.py:33 and ADR 0143:213 promise 'never hides'; book.py:541 separate forget predicate; guard tests exist at test_sleep_memory.py:103 and :134. Not in any backlog.",
+   "floors_ok": true,
+   "floor_notes": "M, 4 files, ~300 lines; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Replaces a one-line SQL rank with an argued value model and makes an ADR promise true - a principal's move.",
+   "grounding": 5,
+   "grounding_why": "Every cited line matches the tree.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1, 2, 5 and 8 are red on base by construction; case 6 guards the existing fade tests.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "core-brain-memory",
+   "slot": "B",
+   "title": "Doctor and reconcile preview drift both ways and repair only what drifted",
+   "premise": "true",
+   "premise_notes": "store.py:4-8 crash-repair promise; cli.py:130-145 _index_stage reads missing_files only; reconcile.py:111-112 deletes every INDEX_TABLES row; cli.py:300 is the sole caller of reconcile_from_disk; store.py:961 sha256(file_text) per row; index_fingerprint exists at reconcile.py:264. Line cites are off by 1-9 but the facts hold.",
+   "floors_ok": true,
+   "floor_notes": "M, 4 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Turns a blunt full rebuild into detect-then-targeted-repair, with parity against the rebuild.",
+   "grounding": 4,
+   "grounding_why": "Facts true; a few line numbers drift by a handful of lines.",
+   "falsifiability": 5,
+   "falsifiability_why": "Parity case 4 and rowid-preservation case 5 would catch a wrong build or a disguised full rebuild.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "daemon-e2e-tests",
+   "slot": "A",
+   "title": "Scripted transcripts become an audited contract: per-turn and teardown accounting",
+   "premise": "true",
+   "premise_notes": "transports.py:324-327 raises on an absent round; cli_harness.py:422-426 swallows OSError into engine_error; conftest.py stop_all only stops. test_connectors.py is 118 lines: the vault-on test is at :60-118 (one round, refused SEARCH_MAIL, asserts results[0].error and ledger origin only) and the ADR 0041 follow-up round is at :28-30. In test_connectors_journey.py:250-273 the revoke test has no follow-up round. The card's cites test_connectors.py:370/:410/:459 are wrong, but the facts are true.",
+   "floors_ok": true,
+   "floor_notes": "M, 5 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Makes silent transcript overdrafts a failing contract and exposes two tests that currently pass vacuously.",
+   "grounding": 3,
+   "grounding_why": "The claims hold, but the test_connectors.py line numbers (370, 410, 459) point past the end of a 118-line file.",
+   "falsifiability": 5,
+   "falsifiability_why": "Cases 1-3 and 6-7 are red on base and pin exact accounting in both directions.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "daemon-e2e-tests",
+   "slot": "B",
+   "title": "A failing e2e test explains itself: daemon forensics attached to the report",
+   "premise": "true",
+   "premise_notes": "conftest.py:501-509 Popen with both pipes PIPE; _first_line (:548-559) reads stderr only on a dead process; the spawn fixture's finally runs stop_all (:566-573); no pytest_runtest_makereport under tests/e2e.",
+   "floors_ok": true,
+   "floor_notes": "M, 3 files; 6 cases. Effort 5 and risk 4 are at the floor but honest (reader thread, hookwrapper, forensics).",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "Solid test-infra diagnosability, and the pipe-blocking fix is real, but this is support work rather than a structural move.",
+   "grounding": 4,
+   "grounding_why": "All cited facts hold.",
+   "falsifiability": 4,
+   "falsifiability_why": "Case 1 (200 KB stderr) and case 4 (sections collected before teardown) are red on base; case 5 guards zero cost on green.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "demo-kit-tests",
+   "slot": "A",
+   "title": "Tests pin shipped rules, not test-side copies: escapeIntent, viewFor, reach guard",
+   "premise": "true",
+   "premise_notes": "abort.test.ts:23-32 escapeMeans copies nav.ts:107-112; template-navigate.test.ts:18-23 prefix viewFor vs template/lib/constants.ts:25-29 exact match (drifted); tsconfig.json:18 includes src only; package.json:21 typecheck. Probe: a test-inclusive tsc (allowImportingTsExtensions) gives 7 errors, all in test/door-outcome.test.ts, which is now committed (59287f51) and is not in the write set.",
+   "floors_ok": true,
+   "floor_notes": "M, 10 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "Removes test-side oracle copies and adds a reach guard - valuable hygiene, but modest in scope.",
+   "grounding": 4,
+   "grounding_why": "Premise true; the card assumed door-outcome.test.ts was an untracked builder file, and it is now committed.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1, 3, 4, 6 and 7 are red on base; the AST check and the scanner's negative control are falsifiable.",
+   "verdict": "revise",
+   "revise": "Add examples/demo-kit/test/door-outcome.test.ts to write_set and fix its 7 type errors. Case 7 brings test/*.ts into tsc, and that now-committed file would turn `pnpm typecheck` red.",
+   "void_reason": null
+  },
+  {
+   "context": "demo-kit-tests",
+   "slot": "B-architecture (no UI surface)",
+   "title": "Kit coverage over the whole tree: unreached files at 0%, ratchet on pure modules",
+   "premise": "true",
+   "premise_notes": "package.json:21-22 has no coverage script (none in root or examples/*); nav.ts:19 extensionless value import; echo-rule.ts:33 notes that node --test's resolver refuses it; useCameraRig.ts is 658 lines; camera.test.ts:5 'thin part'.",
+   "floors_ok": true,
+   "floor_notes": "M, 6 files; 8 cases.",
+   "gate_check": "policy-tighten -> policy-tighten",
+   "ambition": 3,
+   "ambition_why": "An honest whole-tree denominator with a ratchet is a real measurement-honesty fix, but it is a tooling lane.",
+   "grounding": 5,
+   "grounding_why": "Claims verified, including the unloadable-hook mechanism.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 2-7 test pure functions against fixtures and are red on base (no script exists).",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "proving-characters-gauntlet",
+   "slot": "A",
+   "title": "One surface registry for the Gauntlet, and cross_tab as its fourth surface",
+   "premise": "true",
+   "premise_notes": "test_gauntlet_cross_tab.py:16-20 'a fixture, not a member of SURFACES'; attacks.py:41 SURFACES is a 3-tuple and :50-57 GATED_TARGETS is Ledgerbox-only; verdict.py:80-82 breach checks only cls == GATED and :96 attempted filters GATED; World.turn takes host_state and more.",
+   "floors_ok": true,
+   "floor_notes": "L, 10 files; 7 cases. Near the size ceiling but honest.",
+   "gate_check": "none -> none",
+   "ambition": 5,
+   "ambition_why": "Folds four parallel tables into one registry and closes a verdict blind spot on the ADR 0106 loosening - exactly what a principal would do.",
+   "grounding": 4,
+   "grounding_why": "Verified the fixture docstring, the tables and the GATED-only verdict filters.",
+   "falsifiability": 5,
+   "falsifiability_why": "Planted-breach cases 5 and 6 are red on base, and case 1 snapshots delivery for the existing surfaces.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "proving-characters-gauntlet",
+   "slot": "B",
+   "title": "gauntlet --corpus: replay a saved corpus and report what changed against it",
+   "premise": "true",
+   "premise_notes": "run.py:591-610 always builds a generator, generates and judges; :639 corpus held in memory; :699-707 attacks written whole to report.json; __main__.py has no corpus/replay/only flag (grep).",
+   "floors_ok": true,
+   "floor_notes": "M, 7 files; 7 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Makes Gauntlet runs comparable and cheap to re-drive after a gate change - a strong operator affordance.",
+   "grounding": 4,
+   "grounding_why": "Cited lines hold.",
+   "falsifiability": 5,
+   "falsifiability_why": "Case 2 uses FakeRoles that raise when called, and case 3 plants a waved-through gate - both catch a wrong build.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-companion-pane",
+   "slot": "A",
+   "title": "Her model stops re-reading the whole session per delta: incremental, sliced selector",
+   "premise": "true",
+   "premise_notes": "live.tsx:305 useRun() with no selector; run.ts:1386-1389 one transcript entry per text.delta, appended at :1225-1232; model.ts:661, :721 and :1015 rebuild buildContext/plainMessages over the whole transcript; translate/index.ts:151; live.tsx:337-339 per-render derivations.",
+   "floors_ok": true,
+   "floor_notes": "M, 5 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "A sound fix for O(n) work per delta, but a perf card with no measured before/after figure.",
+   "grounding": 4,
+   "grounding_why": "Every cite holds.",
+   "falsifiability": 4,
+   "falsifiability_why": "Identity (===) and visited-counter cases are red on base; the 60-step parity guard catches a wrong cache.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-companion-pane",
+   "slot": "B",
+   "title": "An answer by voice or phone gets the stamp a click gets, and lands on the Record",
+   "premise": "true",
+   "premise_notes": "voice.ts:310-316 decision.resolved drops the card and writes no answered row; machine.ts:256-260 a departure with no decided only lowers the count; machine.ts:31 By includes voice, used only in machine.test.ts; run.ts:2008-2024 remoteDecided writes answered with no device; events.ts:107-113. But docs/BACKLOG.md:43 lists 'Voice-answered cards get a stamp' under Declined ('needs a voice backend... Re-enters with a backend'), and the card does not cite it. The re-entry condition now holds: src/athena/channels/voice exists and decision.resolved reaches voice.ts.",
+   "floors_ok": true,
+   "floor_notes": "M, 10 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Gives every answer channel one acknowledgement and one Record line - a real UX gap.",
+   "grounding": 3,
+   "grounding_why": "The facts are true, but the card misses that docs/BACKLOG.md declined this exact item.",
+   "falsifiability": 4,
+   "falsifiability_why": "Machine, runtime and store cases are red on base; case 3 guards against double-stamping.",
+   "verdict": "revise",
+   "revise": "Cite docs/BACKLOG.md:43 (declined 'Voice-answered cards get a stamp') in premise and body, and record that its re-entry condition is met (the src/athena/channels/voice backend now exists and decision.resolved reaches stores/voice.ts), so the card adopts the item instead of silently re-proposing it.",
+   "void_reason": null
+  },
+  {
+   "context": "desktop-chores-adopt-intake",
+   "slot": "A",
+   "title": "Key the studio's brief lifecycle by rev: one phase machine, not five flags",
+   "premise": "true",
+   "premise_notes": "state.ts:293 approval opens on clearRev===rev or enough; loop.py:145-146 sets brief_stale and :160-161 refuses with stale_rev; state.ts:256-257 showcase stored with no rev; studio.tsx:56 handed useState(false); showcase.tsx:76 any done showcase is shown as tailored.",
+   "floors_ok": true,
+   "floor_notes": "M, 7 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Aligns client state with the daemon's stale rule and keys rehearsal and handed by rev - it removes a class of lies.",
+   "grounding": 5,
+   "grounding_why": "Every cite matches, including the daemon side.",
+   "falsifiability": 5,
+   "falsifiability_why": "Case 1 (can:true today vs a daemon refusal) and cases 4-5 are precise and red on base.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-chores-adopt-intake",
+   "slot": "B",
+   "title": "Leaving the studio parks the interview; coming back offers Continue",
+   "premise": "true",
+   "premise_notes": "session.ts:153-156 unmount closes the session; view.tsx:45 (cited :44; the file is being edited) fresh view at every move; live-deps.ts:54 sends the person to Mind -> Voice; ADR 0097:31-33 two-hour idle TTL; memory.ts:1-5 precedent. No ADR decides against parking.",
+   "floors_ok": true,
+   "floor_notes": "M, 7 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Stops navigation from destroying a paid interview, using the daemon's existing TTL and resend.",
+   "grounding": 4,
+   "grounding_why": "True; one line cite is off by one because view.tsx is being edited.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1-6 are red on base with injected clients and clock; cases 7-8 guard today's close.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "hirelane-style",
+   "slot": "A",
+   "title": "Translucent planes become tokens; the contrast check scores nested stacks",
+   "premise": "true",
+   "premise_notes": "check-law.mjs:73 ALPHA_PLANE and :84-88 offLock exempt planes; check-contrast.mjs SURFACES has no stacks; l2-dossier.css:29 typed gradient. All true and still open.",
+   "floors_ok": true,
+   "floor_notes": "M, 12 files.",
+   "gate_check": "policy-tighten -> policy-tighten",
+   "ambition": 3,
+   "ambition_why": "The stack-scoring core is the open stabilize finding; the law tightening on top is a small tidy-up.",
+   "grounding": 4,
+   "grounding_why": "Claims verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1, 4, 5 and 7 are red on base.",
+   "verdict": "void",
+   "revise": null,
+   "void_reason": "Restates stabilize-2026-10-16 findings/hirelane-style.jsonl row 1 ('Bench rows stack three glass planes; ink-3 there is 6.25:1', effort 4): same dossier tokens, stacked SURFACES and row retune. It is not a high-effort adoption, and the ALPHA_PLANE law tightening left over is an S on its own."
+  },
+  {
+   "context": "hirelane-style",
+   "slot": "B",
+   "title": "The board survives Windows High Contrast and honours prefers-contrast: more",
+   "premise": "true",
+   "premise_notes": "grep finds no forced-colors, prefers-contrast or forced-color-adjust under examples or packages; l1-ledger.css:62-66 and :83-90 background-only meters; l2-dossier-3.css:172-176 fire button background and border from one token; index.css ends with reduced-motion.css and toast.css; Slide.tsx:191 and StageMeta.tsx:26 aria-hidden. The 'third high-contrast theme' declined in docs/BACKLOG.md is about the desktop paper theme, not this.",
+   "floors_ok": true,
+   "floor_notes": "M, 3 files; 8 cases. The low file count is honest; the CSS block and parser test carry the weight.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Makes the gate's armed state and every meter survive forced colours - a real accessibility gap with no prior coverage.",
+   "grounding": 5,
+   "grounding_why": "Every cite holds.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1-5 are red on base (no block exists), and guards 6-8 pin the law and contrast checks.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "journey-capture",
+   "slot": "A",
+   "title": "Derive every cut from one pure timeline plan shared by compose and recorders",
+   "premise": "true",
+   "premise_notes": "compose.mjs:464-470 film room is trimmed to its own beat end only; :194-200 warns 'it will be trimmed' and pushes the clip unchanged; record-desktop.mjs:80-83 restated hold rule, :246-248 durations.json read raw; package.json test = playwright test; scripts/ has no unit tests.",
+   "floors_ok": true,
+   "floor_notes": "L, 7 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Extracts a pure, testable plan from 1,100 lines of IO scripts and fixes two real overlap bugs.",
+   "grounding": 4,
+   "grounding_why": "Verified; minor line drift.",
+   "falsifiability": 5,
+   "falsifiability_why": "Cases 1 and 3 are red overlaps, case 6 is parity against src/script.ts, and case 8 is an argv snapshot.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "journey-capture",
+   "slot": "B",
+   "title": "narrate re-voices exactly the beats a script edit changed, shown before it spends",
+   "premise": "true",
+   "premise_notes": "narrate.mjs:440-442 todo = beats with no mp3 on disk unless --force; :484-490 writes chars: beat.line.length beside the old clip; script.ts:176-181 isStale compares length only; narrate.mjs:371-378 --dry estimates every beat (open stabilize finding, cited and absorbed as case 4); the :447 budget guard exists today (case 8 is a declared guard).",
+   "floors_ok": true,
+   "floor_notes": "M, 5 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Content-hash staleness closes a silent-stale-audio bug and saves paid characters.",
+   "grounding": 5,
+   "grounding_why": "Every cite holds, and the stabilize adoption is cited.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1, 2, 4, 5 and 7 are red on base; case 6 guards against a surprise bill.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "tidycrm-spatial-model-tools",
+   "slot": "A",
+   "title": "One remedy module: the agent reads every act target the dossier buttons fire on",
+   "premise": "true",
+   "premise_notes": "tables.ts:63-70 ids/outstandingIds/staleIds/phoneIds; Gate.tsx fires normalizeAction(phoneIds), normalizeAction(ids) and flagStaleAction(staleIds); read.ts tableRead carries no ids and dossierRead samples ROW_SAMPLE rows; journey.spec.ts:518 sources ids from search_records {text:''}; no plan_repairs or remedies in the tree.",
+   "floors_ok": true,
+   "floor_notes": "M, 7 files; 8 cases.",
+   "gate_check": "none -> none (read-only tool, ids only; case 3 keeps merge and delete person-only)",
+   "ambition": 4,
+   "ambition_why": "Gives the agent the targets the person's buttons use, instead of a 6-row sample.",
+   "grounding": 5,
+   "grounding_why": "Cited lines verified, along with the probe figures.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1, 2, 4 and 5 are red on base; case 7 guards read-only with no mutation.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "tidycrm-spatial-model-tools",
+   "slot": "B",
+   "title": "Walk the sheet worst-first from inside the dossier, across databases, in one key",
+   "premise": "true",
+   "premise_notes": "search.ts:55-60 worstFirst sits only behind search_blocks; Blocks.tsx:314 Dossier gets onClose={nav.up} only; beats.ts:99 ARRIVAL_MS; no worklist or next_table in the tree.",
+   "floors_ok": true,
+   "floor_notes": "M, 8 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "A useful navigation affordance over an existing order; it adds a key and a tool, not a structural change.",
+   "grounding": 4,
+   "grounding_why": "Facts hold; the Head.tsx and cells.ts claims were not opened one by one but agree with the evidence.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1-7 are red on base (no worklist module); case 6 pins the slid-into-place behaviour.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "atlas-shell-and-styles",
+   "slot": "A",
+   "title": "The shell asks the mounted variant for its levels: phases at L1, not layers",
+   "premise": "true",
+   "premise_notes": "read.ts:318-320 'No layer X' at L1; AtlasTools.tsx:98-101 groups come from LAYERS; Mast.tsx:53 and :158 layerById, then the generic LEVELS[1]; Pane.tsx:256 nav.openItem(layer.id, ...); Drawing.tsx:687 GROUPS = PHASES ids, :423 nav.openItem(phase, ...); contract.ts has no levels field.",
+   "floors_ok": true,
+   "floor_notes": "L, 13 files - near the ~15 ceiling but within it; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Fixes the one-model, N-drawings contract where the lanes drawing's L1 disagrees with the shell's - a real seam, not polish.",
+   "grounding": 5,
+   "grounding_why": "All cited lines verified.",
+   "falsifiability": 5,
+   "falsifiability_why": "Case 1 is today's literal error, case 2 is the ids open_group accepts, and case 8 is parity over every node.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "atlas-shell-and-styles",
+   "slot": "B",
+   "title": "Walk the lens: step through its carriers, and the pane says why a part is lit",
+   "premise": "true",
+   "premise_notes": "Mast.tsx:185 prints a count, then only a clear button; Drawing.tsx:397 a node is lit by a shared system; Pane.tsx:148-151 'Claims it carries' lists concepts only; data/index.ts:108 carrier set.",
+   "floors_ok": true,
+   "floor_notes": "M, 11 files; 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Explains why a part is lit (carrier vs shared system); the probe shows the lens misleads on 7 of 17 claims.",
+   "grounding": 4,
+   "grounding_why": "Cites verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "carriersOf, stepCarrier and whyLit cases are red on base; case 3 catches a naive restart.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  }
+ ],
+ "conflicts": [
+  {
+   "cards": [
+    "atlas-shell-and-styles/A",
+    "atlas-shell-and-styles/B"
+   ],
+   "files": [
+    "examples/atlas/components/atlas/variants/Shell.tsx",
+    "examples/atlas/components/atlas/Mast.tsx",
+    "examples/atlas/components/atlas/pane/Pane.tsx",
+    "examples/atlas/components/atlas/tools/AtlasTools.tsx",
+    "examples/atlas/components/atlas/tools/read.ts",
+    "examples/atlas/test/tools.test.ts"
+   ]
+  },
+  {
+   "cards": [
+    "daemon-e2e-tests/A",
+    "daemon-e2e-tests/B"
+   ],
+   "files": [
+    "tests/e2e/conftest.py"
+   ]
+  },
+  {
+   "cards": [
+    "demo-kit-tests/A",
+    "demo-kit-tests/B-architecture (no UI surface)"
+   ],
+   "files": [
+    "examples/demo-kit/README.md"
+   ]
+  },
+  {
+   "cards": [
+    "desktop-chores-adopt-intake/A",
+    "desktop-chores-adopt-intake/B"
+   ],
+   "files": [
+    "apps/desktop/src/scenes/chores/adopt/state.ts",
+    "apps/desktop/src/scenes/chores/adopt/session.ts",
+    "apps/desktop/src/scenes/chores/adopt/studio.tsx",
+    "apps/desktop/src/scenes/chores/adopt/studio.test.tsx"
+   ]
+  },
+  {
+   "cards": [
+    "desktop-companion-pane/A",
+    "desktop-companion-pane/B"
+   ],
+   "files": [
+    "apps/desktop/src/companion/model.ts",
+    "apps/desktop/src/companion/model.test.ts",
+    "apps/desktop/src/companion/live.tsx"
+   ]
+  },
+  {
+   "cards": [
+    "journey-capture/A",
+    "journey-capture/B"
+   ],
+   "files": [
+    "examples/journey/package.json",
+    "examples/journey/README.md"
+   ]
+  },
+  {
+   "cards": [
+    "proving-characters-gauntlet/A",
+    "proving-characters-gauntlet/B"
+   ],
+   "files": [
+    "src/athena/proving/gauntlet/attacks.py",
+    "src/athena/proving/gauntlet/run.py",
+    "tests/proving/test_gauntlet.py",
+    "README.md"
+   ]
+  },
+  {
+   "cards": [
+    "tidycrm-spatial-model-tools/A",
+    "tidycrm-spatial-model-tools/B"
+   ],
+   "files": [
+    "examples/tidycrm/components/blocks/model.ts",
+    "examples/tidycrm/components/blocks/tools/BlocksTools.tsx",
+    "examples/tidycrm/test/spatial-model-tools.test.ts"
+   ]
+  }
+ ],
+ "signature_changes": [
+  {
+   "card": "atlas-shell-and-styles/A",
+   "symbol": "VariantMeta (contract.ts) gains levels; viewDetail/railLabel take a level map",
+   "callers_in_other_cards": [
+    "atlas-shell-and-styles/B (viewDetail case 6; read.ts, Mast.tsx, Pane.tsx)"
+   ]
+  },
+  {
+   "card": "proving-characters-gauntlet/A",
+   "symbol": "SURFACES/SURFACE_TARGETS/MESSAGES become registry views; check_attack and the ATTACK_SCHEMA enum widen",
+   "callers_in_other_cards": [
+    "proving-characters-gauntlet/B (check_attack for replay.stale; run_gauntlet config)"
+   ]
+  },
+  {
+   "card": "daemon-e2e-tests/A",
+   "symbol": "Spawn.scripted(exact=) and Daemon.run(rounds=)",
+   "callers_in_other_cards": [
+    "daemon-e2e-tests/B (forensics reads Daemon/Spawn in conftest.py)"
+   ]
+  },
+  {
+   "card": "desktop-chores-adopt-intake/A",
+   "symbol": "adopt state.ts State shape (phase, rehearsal, handedRev) and approval()",
+   "callers_in_other_cards": [
+    "desktop-chores-adopt-intake/B (parks reducer state; studio.tsx)"
+   ]
+  },
+  {
+   "card": "desktop-companion-pane/A",
+   "symbol": "selectCompanion wrapped by a memoized selector; Live reads a run slice",
+   "callers_in_other_cards": [
+    "desktop-companion-pane/B (recordView/decisionRow gain via; live.tsx)"
+   ]
+  },
+  {
+   "card": "tidycrm-spatial-model-tools/B",
+   "symbol": "worstFirst moves from tools/search.ts to model/worklist.ts",
+   "callers_in_other_cards": []
+  }
+ ]
+}

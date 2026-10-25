@@ -1,0 +1,126 @@
+{
+  "host": "desktop-halo",
+  "cards": [
+    {
+      "context": "desktop-halo",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One presence reducer: the halo follows her audible voice, as her face does",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/lib/halo-signal.ts",
+        "apps/desktop/src/lib/halo-signal.test.ts",
+        "apps/desktop/src/lib/halo.ts",
+        "apps/desktop/src/lib/halo.test.ts",
+        "apps/desktop/src/lib/face-signal.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "apps/desktop/src/lib/face-signal.ts (desktop-avatar: a ~10-line swap of its private phaseOf for the shared reducer; fallback if the coordinator refuses it: halo-only adoption plus the parity case [5], which imports face-signal read-only)",
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "[0] halo-signal.test: createPresence({sounding}) fed voice=idle, run=idle, cards=0, generation=null after it last saw generation 7, with sounding(7)=true -> 'speaking'; sounding(7)=false -> 'idle'",
+        "[1] halo.test producer: voice speaking (generation 7, speakingText 'Two are late.') then the voice.stopped state (voice idle, generation null, speakingText '') while sounding(7) is true -> no idle frame is sent; the last frame is phase 'speaking' with the level read from deps.level",
+        "[2] halo.test producer: the level loop keeps polling through that tail; when sounding(7) turns false the next tick sends phase 'idle' and vi.getTimerCount() is 0 (rest still costs nothing)",
+        "[3] halo.test producer: a card arriving during the tail keeps phase 'speaking' with cards:1, and the frame after the tail ends is 'gate', not 'idle'",
+        "[4] halo.test producer: a press during the tail (voice 'listening') sends 'listening' at once: listening still wins over the tail",
+        "[5] halo.test parity: one scripted sequence of store inputs and sounding values fed to startHalo and startFace with fake deps yields the same phase sequence from both producers (today the halo reads idle for every tail frame the face reads speaking)",
+        "[6] halo.test guard: a typed turn with no generation ever played (run running -> idle) sends exactly the frames it sends today (the existing producer cases stay green unedited)",
+        "[7] face-signal.test guard: 'keeps speaking through the tail of a stopped line, then rests and forgets it' stays green unedited after face-signal adopts the shared reducer"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/src/stores/voice.ts:355 - on voice.stopped the store sets generation null, speakingText '' and phase speaking->idle (voice.ts:361-366), while the player may still be sounding the line",
+        "apps/desktop/src/lib/face-signal.ts:10 - 'synthesis runs ahead of playback, so voice.stopped can arrive while the end of her line is still sounding. The face keeps speaking until the player has played that line's last sample'",
+        "apps/desktop/src/lib/face-signal.ts:162 - the face's private phaseOf adds the tail rule on top of haloPhase",
+        "apps/desktop/src/lib/halo.ts:173 - the halo producer's phase is haloPhase(voice, run, cards) alone: no generation, no sounding",
+        "apps/desktop/src/lib/halo.ts:195 - leaving speaking stops the level loop, so the edges stop following her voice while it is still audible",
+        "apps/desktop/src/halo/model.ts:61 - the caption's linger starts when the phase leaves speaking, so it starts at voice.stopped, not when she falls silent",
+        "apps/desktop/src/lib/voice.ts:144 - playbackSounding(generation) already exists and is what the face reads"
+      ],
+      "rollback": "Three commits (shared reducer in halo-signal.ts with its tests; halo producer adopts it; face-signal swaps its private phaseOf). Reverting the last restores the face's private rule unchanged; reverting all three restores today's halo exactly. No wire, Rust or stored-data change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Rust stops enumerating halo phases (it parses them only to compute phase != idle): the producer declares visibility, so a phase is a TS-only change instead of a three-language hand-list pinned by regex tests.",
+      "body": "## Summary\nHer two mirrors disagree on when she is speaking. The face holds 'speaking' until the player has played the last sample of her line; the halo drops it the moment the store hears voice.stopped, which synthesis sends ahead of playback. So at the end of a spoken reply the screen edges go dark (or violet, or pink if a card landed) and the level stops following her voice while she is still audibly talking, and the caption's 4 s linger starts early. The fix is structural: the phase-with-tail rule moves out of face-signal's private phaseOf into one reducer beside haloPhase, and both producers read it.\n\n## Description\nhalo-signal.ts gains createPresence({ sounding }): a tiny stateful reducer that remembers the last generation it saw playing and returns haloPhase(voice, run, cards), except that a non-listening, non-speaking phase reads 'speaking' while that generation still sounds (the exact rule at face-signal.ts:162). The halo producer adds generation to HaloInputs and sounding to HaloDeps (liveHaloDeps wires playbackSounding, read-only), and computes phase through the reducer in both signalOf's caller and emit. Because the phase stays 'speaking' through the tail, the existing level loop keeps running, so each 34 ms tick re-evaluates the reducer and the loop stops itself the tick the tail ends: no new timer, rest still free. The caption needs nothing: a null caption erases nothing in the overlay, so her last line stays up through the tail and its linger starts when she really stops. face-signal.ts replaces its private spoken/phaseOf with the shared reducer, so the rule exists once (the face's own tail test is the guard). Technique: status-vocabulary/vocabulary-chain-integrity (one authority, derivations not forks); motion/continuity-across-change.\n\n## Flow\n- She answers aloud; the daemon's voice.stopped lands while the player still has the last sentence queued\n- Today: halo edges fade to idle, the level freezes, the face keeps talking - two renderings of her contradict each other\n- After: the halo stays on speaking, edges breathing with her real playback level, until the last sample; then idle (or gate if a card waits)\n- A press during the tail still wins (listening first)\n\n## Expected impact\nEvery spoken reply whose audio outlasts synthesis (any multi-sentence reply) ends with the halo in step with her voice instead of going dark mid-word, and the halo and her face can no longer disagree on her phase because they read one reducer. The parity case pins it so a future rule lands in both or neither.\n\n## Evaluation\nClaim: the halo and the face derive her phase from one reducer, and the halo follows audible playback\nBefore: 0 of 6 non-guard acceptance cases pass (the halo has no generation or sounding input; halo.ts:173)\nAfter: 6 of 6, guards [6] and [7] green before and after\nMethod: gate - the acceptance cases under vitest with fake deps and fake timers\nResult: better\nGate: none",
+      "evidence": "face-signal.ts:158-163: `const phaseOf = (inputs) => { if (inputs.generation !== null) spoken = inputs.generation; const phase = haloPhase(inputs.voice, inputs.run, inputs.cards); if (phase !== \"listening\" && phase !== \"speaking\" && spoken !== null && deps.sounding(spoken)) return \"speaking\"; return phase; }`. halo.ts:173: `const phase = override?.phase ?? haloPhase(inputs.voice, inputs.run, inputs.cards);` and HaloInputs (halo.ts:40-51) carries no generation. voice.ts:361-366 sets `generation: null, speakingText: \"\", phase: get().phase === \"speaking\" ? \"idle\" : get().phase` on voice.stopped. face-signal.test.ts:174 already pins the face's tail; no halo test mentions sounding (grep: 0 hits in lib/halo.test.ts)."
+    },
+    {
+      "context": "desktop-halo",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A turn that fails says so on the halo: a 'trouble' phase with the plain reason",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/lib/halo-signal.ts",
+        "apps/desktop/src/lib/halo-signal.test.ts",
+        "apps/desktop/src/lib/halo.ts",
+        "apps/desktop/src/lib/halo.test.ts",
+        "apps/desktop/src/halo/model.ts",
+        "apps/desktop/src/halo/model.test.ts",
+        "apps/desktop/src/halo/halo.css",
+        "apps/desktop/src/halo/halo.css.test.ts",
+        "apps/desktop/src/halo/main.ts",
+        "apps/desktop/src-tauri/src/halo.rs"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "apps/desktop/src-tauri/src/halo.rs (desktop-shell-rust: one Phase variant, one parse arm, one name in its phase test; required because halo-signal.test reads the Rust arms and the shell refuses an unknown phase)",
+        "docs/adr/0027-athena-is-ambient-a-halo-on-every-screen-and-the-summon-chord-held-is-push-to-talk.md (amendment: a sixth phase, its hue and its precedence)",
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "[0] halo.test producer: voice listening -> thinking -> the ended-utterance state (voice idle, reason 'hold the key while you speak') -> a frame {phase:'trouble', cards:0, caption:{who:'athena', text:'Hold the key while you speak.'}} is sent at once",
+        "[1] halo.test producer: TROUBLE_MS after that frame, with no other change, an 'idle' frame is sent and vi.getTimerCount() is 0",
+        "[2] halo.test producer guard: a reason set without an active turn before it (voice off -> off, reason 'the daemon is not running yet' at startup) sends no trouble frame - the halo never lights every monitor for a turn nobody started",
+        "[3] halo.test producer: a typed run running -> error {reason:'timeout'} sends 'trouble' with caption text plainFailure('timeout', engine) ('That took too long, so Athena stopped it.'); a voice turn.error ('timeout: detail') and a mid-turn socket close ('voice closed: ...') map to a plain sentence, never the raw 'reason: detail'",
+        "[4] halo.test producer: a press during trouble (voice listening) sends 'listening' at once and the pending trouble timer is cancelled - no idle frame lands later over the live turn",
+        "[5] halo.test producer: run running -> error with cards=1 sends 'trouble' with cards:1, then 'gate' (not 'idle') after TROUBLE_MS",
+        "[6] halo.test producer guard: the 'stop' outcome (reason '') and a turn that finishes cleanly send no trouble frame",
+        "[7] halo-signal.test + model.test + halo.css.test: HALO_PHASES ends with 'trouble' and equals the Rust parse arms; parseSignal accepts it; captionHideAt is null while the phase is trouble and the line lingers CAPTION_LINGER_MS after it; --halo-trouble equals the dark theme's --status-warning"
+      ],
+      "guard_cases": ["2", "6"],
+      "premise": [
+        "apps/desktop/src/stores/voice.ts:282 - an utterance that ends without a turn (too_short, silent, no_words) sets phase idle with a reason sentence (voice.ts:684-699)",
+        "apps/desktop/src/stores/voice.ts:324 - a turn.error sets phase error with the raw 'reason: detail'; voice.ts:482 a socket closing mid-turn sets 'voice closed: <reason>'",
+        "apps/desktop/src/lib/halo.ts:79 - captionOf reads partial, speakingText and heard only; nothing in the producer reads voice.reason or run.error",
+        "apps/desktop/src/lib/halo-signal.ts:53 - haloPhase maps voice 'error' and run 'error' to idle (or gate): a failed turn looks exactly like a finished one",
+        "docs/adr/0027-athena-is-ambient-a-halo-on-every-screen-and-the-summon-chord-held-is-push-to-talk.md:58 - a voice turn started with the held chord runs with her window hidden, and since the 2026-10-24 amendment her window rests put away: the halo is the only surface on screen",
+        "apps/desktop/src/companion/plain.ts:81 - plainFailure(reason, engine) already turns every run failure reason into a person's sentence (read-only import)",
+        "apps/desktop/src-tauri/src/halo.rs:56 - the shell parses exactly the five phases; halo-signal.test.ts reads those arms and requires equality",
+        ".claude/scan-sweep/runs/stabilize-2026-10-16/findings - adopts and extends the open M backlog item 'A spoken turn's failure and ADR 0110's ended-utterance sentences never reach her window' (desktop-voice-ui), its halo half"
+      ],
+      "rollback": "Two commits: the vocabulary (HALO_PHASES, Rust arm, model HOLDS, css hue, ADR amendment) and the producer's trouble edge. Reverting the producer commit leaves an unused phase that nothing emits; reverting both restores today's five-phase wire exactly. No stored data, no new command or capability.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets"
+      ],
+      "runner_up": "The gate edge says what is waiting: while a card waits, the halo caption names its ask and the count ('Waiting on you: send the Acme reminder - 1 of 2') with the tap-to-answer hint, instead of a blind pink breathe.",
+      "body": "## Summary\nHold the chord, speak, let go - and if the turn fails (released too fast, a silent microphone, no words, a daemon error, the voice socket dropping), the halo simply fades to idle, exactly as it does after a good answer. Her window is put away, so the person gets nothing: they cannot tell 'she is done' from 'she never heard me'. The voice and run stores already know why, in sentences (endedBecause, plainFailure). This card gives the halo a sixth phase, 'trouble': an amber edge for a moment with her plain reason as the caption, on every turn the person started that ended without an answer.\n\n## Description\nVocabulary (one change, every layer - status-vocabulary/vocabulary-evolution-checklist): HALO_PHASES gains 'trouble'; the Rust mirror gains the variant and arm (wants_visible needs nothing: non-idle shows); model.ts HOLDS gains it so the caption is held through it and lingers after; halo.css adds --halo-trouble pinned to --status-warning, a still edge (no travel, no breathe), so reduced motion keeps the hue and the caption (motion/content-bearing-degradation); haloPhase keeps returning the five store phases (typed Exclude) so FacePhase is untouched. Producer: HaloInputs adds voiceReason, runError and the engine name; emit keeps the previous inputs and raises trouble only on an edge - an active turn (voice listening/thinking/speaking or run running/acting) followed by a non-empty voice reason or run error. troubleLine(inputs) is pure: ended-utterance sentences capitalised as they are, run errors through plainFailure, a voice turn.error through plainFailure on its reason prefix, a socket close as one fixed sentence; never the raw detail. A TROUBLE_MS timer (about 2.5 s) returns to the store phase (idle or gate), cancelled by any newer active phase. Precedence: listening > speaking > thinking > trouble > gate > idle; cards ride every frame. The rehearsal and demo script gain one trouble step so the look can be tuned without a backend.\n\n## Flow\n- Person holds the chord with her window put away, says nothing useful, lets go\n- Today: pale cyan -> violet -> fade; nothing says why\n- After: pale cyan -> violet -> amber edge with 'Your microphone sounded silent (-62 dB), check the input in Voice settings' -> lingers -> fades\n- A typed run that times out while she is hidden shows 'That took too long, so Athena stopped it.' the same way\n- A press during the amber moment starts listening at once\n\n## Expected impact\nEvery failed voice or run turn while her window is away stops being silent: the person learns in the moment whether to speak again, check the microphone or open Setup, without summoning her window. The halo moves from reporting four happy states to reporting the one state the person must act on differently.\n\n## Evaluation\nClaim: a turn the person started that ends in failure shows a trouble phase with a plain reason; nothing else changes\nBefore: 0 of 6 non-guard acceptance cases pass (no producer path reads voice.reason or run.error; halo.ts:79)\nAfter: 6 of 6, guards [2] and [6] green before and after\nMethod: gate - the acceptance cases (vitest, fake deps and timers) plus the Rust phase test\nResult: better\nGate: none",
+      "evidence": "voice.ts:281-282: `const ended = endedBecause(event); if (ended !== null && get().phase === \"thinking\") set({ phase: \"idle\", reason: ended });` voice.ts:324: `fail(`${event.reason}: ${event.detail}`);` voice.ts:482: `reason: s.phase === \"listening\" || s.phase === \"thinking\" ? `voice closed: ${reason}` : s.reason`. halo.ts liveHaloDeps inputs (halo.ts:133-143) read voice.phase, run.phase, cards.length, partial, speakingText, heard - no reason, no error. halo-signal.ts:53-58 haloPhase: error maps to idle or gate. halo-signal.test.ts:37 reads `\"([a-z]+)\" => Phase::` arms from halo.rs and requires equality with HALO_PHASES. styles/app.css dark theme: `--status-warning: #fbbf24;`."
+    }
+  ],
+  "rehomed": [
+    "The halo obeys the Calm/Full choice via a motion field on the wire (open backlog M, scored effort 4 / impact 6 / risk 3, under the floors; also blocked live by the athena window reading settings only at start - stores/settings.ts:285, no cross-window sync).",
+    "Producer single-flight, latest-value sender with retry so frames cannot reorder through the async athena_halo and a refused idle frame heals without a later change (S; overlaps the open S backlog 'Async athena_halo can fan two halo frames out in the wrong order').",
+    "Caption-only failure notice without a new phase (the halo half of the voice-failure backlog at its own size, effort 4 / risk 3) - subsumed and extended by slot B."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["native-shell-integration", "motion", "status-vocabulary"],
+    "techniques": ["non-stealing-overlay", "content-bearing-degradation", "continuity-across-change", "vocabulary-evolution-checklist", "vocabulary-chain-integrity"]
+  },
+  "files_read": 31
+}

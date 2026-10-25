@@ -1,0 +1,135 @@
+{
+  "host": "desktop-e2e",
+  "cards": [
+    {
+      "context": "desktop-e2e",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "E2E suites run the shell's own trust snapshot, not hand-wired NOTHING_GATED deps",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/e2e/support/page.ts",
+        "apps/desktop/e2e/run.e2e.test.ts",
+        "apps/desktop/e2e/voice.e2e.test.ts",
+        "apps/desktop/e2e/shadowrunr/support/loop.ts"
+      ],
+      "new_files": [
+        "apps/desktop/e2e/support/shell.ts",
+        "apps/desktop/e2e/trust.e2e.test.ts",
+        "apps/desktop/e2e/transcripts/voice-first-sight.ndjson"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "first sight: a ledgerbox tab with NO origins row, wired through shell.ts (snapshot = snapshotOf over the seeded table/tabs/tools), auto-turn.ndjson, send('what is overdue?') -> the first /run body carries gated_origins == ['host:ledgerbox'], page.calls == [], exactly one card with action host.ledgerbox.list_overdue",
+        "registered and accepted: the same tab with an enabled origins row whose contracts are contractOf(each PAGE_TOOL), auto-turn.ndjson -> /run body gated_origins == [] and gated_tools == [], page.names() == ['list_overdue'], no card (the existing AUTO claim, now reached through the deciding input)",
+        "pinned: enabled row with overrides {list_overdue: 'GATED'}, auto-turn.ndjson -> /run body gated_tools == ['host.ledgerbox.list_overdue'], page untouched, one card for list_overdue",
+        "contract drift (ADR 0100): enabled row whose accepted contract for list_overdue says reversible:true/internal while the page now publishes reversible:false/external -> gated_tools contains host.ledgerbox.list_overdue, page untouched, one card",
+        "switched off: origins row enabled:false, auto-turn.ndjson -> /run body disabled_origins == ['host:ledgerbox'], the stream's tool.result for list_overdue is refused with foreign_origin, page.calls == []",
+        "spoken first sight: voice store wired through voiceShellDeps on a first-sight tab, new transcript voice-first-sight.ndjson (one round proposing host.ledgerbox.list_overdue), say(\"what is overdue?\") -> one card with surface \"voice\" for list_overdue and page.calls == []",
+        "guard: gated-approve.ndjson through shell.ts on a registered tab -> the POST /decisions/<id> body is exactly {choice:'approve', origin: PAGE_ORIGIN, disabled_origins: []} and page.names() == ['pay'] after approval (unchanged from today)",
+        "guard: shadowrunr wireLoop builds its deps from shell.ts and gatedFor(...registered=true) still yields gated_origins == [] for the console origin (shadowrunr.e2e.test.ts unchanged and green)"
+      ],
+      "guard_cases": [
+        "1",
+        "6",
+        "7"
+      ],
+      "premise": [
+        "apps/desktop/e2e/run.e2e.test.ts:62 - the run suite's RunDeps has api/focused/hostState/call/manifest and no snapshot, gated or disabledOrigins",
+        "apps/desktop/src/stores/run.ts:887 - snapshotFrom falls back to NOTHING_GATED when a surface wires no gated reader, so every ledgerbox e2e turn tells the daemon nothing is gated",
+        "apps/desktop/src/stores/run.ts:566 - the shipped LIVE deps decide through snapshot: snapshotOf(origins, tabs, byTab), a function no ledgerbox e2e case ever calls",
+        "apps/desktop/src/stores/voice.ts:215 - the voice store's shipped deps use the same snapshotOf; voice.e2e.test.ts:81 and :339 hand-wire VoiceDeps without it",
+        "src/athena/harness/hooks.py:457 - _tightened makes every host tool GATED when its origin is in ctx.gated_origins: a shipped shell with a first-sight ledgerbox tab would file a card for list_overdue, the exact call run.e2e asserts runs with no card",
+        "apps/desktop/e2e/shadowrunr/support/loop.ts:142 - only the shadowrunr suite builds gated lists the shipped way (gatedListsOf over a registered table), as a fourth hand-wiring beside run.e2e:62, run.e2e:274, voice.e2e:81 and voice.e2e:339",
+        "tests/daemon/test_gated_origins.py - the daemon side of ADR 0063 is unit-tested in Python; no suite drives shell -> wire -> real daemon for first sight, pins, drift or switched-off"
+      ],
+      "rollback": "Three commits (shell.ts helper + suites migrated with no new assertions; trust.e2e.test.ts cases; shadowrunr loop.ts onto the helper); each reverts alone because the suites keep their own claims and the helper only replaces wiring.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm test:e2e"
+      ],
+      "runner_up": "One process harness for every e2e spawn: killTree exists three times (support/daemon.ts:224, shadowrunr/support/shadowrunr.ts, drive/athena-drive.mjs:71), the ready-line reader twice (daemon.ts:163, shadowrunr/support/athena.ts:368), and stderr is unbounded in one copy and capped in the others.",
+      "body": "## Summary\nEvery ledgerbox end-to-end suite certifies a panel configuration the shipped shell can never be in: its deps are hand-wired with no trust table, so `snapshotFrom` sends `NOTHING_GATED` and the daemon is told no app is first-sight, pinned, drifted or switched off. Introduce one `e2e/support/shell.ts` that builds RunDeps/VoiceDeps from a seeded origins table, tab list and tool list through the shell's own `snapshotOf`, migrate the four hand-wirings onto it, and add the ADR 0063/0100 trust cases end to end.\n\n## Description\nThe AUTO-turn claim in run.e2e (`page.names() == ['list_overdue']`, no card) is true only because the deciding input is absent: with the shipped `LIVE.snapshot`, a ledgerbox tab nobody registered goes out as `gated_origins: ['host:ledgerbox']` and the harness's `_tightened` turns the AUTO call into a card. That is test-harness/unreached-decisions-pin-nothing: the suite asserts a value a default would produce too. The trust composition (gatedListsOf, contractDriftsOf, disabledOriginsOf, all folded into snapshotOf) is unit-tested in the store and the daemon's gate is unit-tested in Python, but the hop that joins them, the /run body the panel really sends and the card the real daemon really files from it, has no case. shell.ts takes `{ origins: rows, contracts, tabs, tools, call }` and returns deps whose `snapshot` is `snapshotOf(...)`, exactly the LIVE shape minus Tauri; shadowrunr's `registeredTable`/`gatedFor` become its first caller.\n\n## Flow\n- shell.ts: `shellDeps({ daemon, table, tab, tools, call, fetchImpl })` -> RunDeps with snapshot/gated/disabledOrigins/tab, and `voiceShellDeps(...)` the same for VoiceDeps; helpers `firstSight()`, `registered(tools, overrides?)`, `switchedOff()` build the TrustTable.\n- run.e2e and voice.e2e live() call it with `registered(PAGE_TOOLS)`, so every existing claim still holds and now holds for the reason the product gives.\n- trust.e2e.test.ts adds first sight, pin, drift and switched-off over auto-turn.ndjson, plus the spoken first-sight case.\n- loop.ts's registeredTable/gatedFor move into shell.ts; wireLoop calls it.\n\n## Expected impact\nA regression in any of the four trust rules on the shell side (a reader dropped from snapshotOf, a renamed body field, a slug/origin mix-up in catalogIdOf) turns an e2e case red instead of shipping a panel that tells the gate nothing. Four hand-wired deps become one, so the next RunDeps field a surface must wire is wired once.\n\n## Evaluation\nClaim: the e2e suites reach the trust decision the shipped shell makes and certify it over the real wire.\nBefore: 0 of 5 trust cases (1-5) exist; the AUTO claim passes through NOTHING_GATED\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "run.e2e.test.ts:62-68 `const deps: RunDeps = { api, focused, hostState, call: page.call, manifest: () => manifestBody() }` (no snapshot/gated/disabledOrigins). stores/run.ts:880-889 `snapshotFrom(source)`: `if (source.snapshot) return source.snapshot(); ... gated: source.gated?.() ?? NOTHING_GATED`. stores/run.ts:566 `snapshot: () => snapshotOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab, useTabs.getState().recent)`. hooks.py:456-462 `return (str(origin) in ctx.gated_origins or entry.name in ctx.gated_tools or _tainted(entry, ctx) or another_tab(entry, ctx))`. grep 'gated\\|snapshot' apps/desktop/e2e/*.ts -> only comments and transcript names; the only e2e caller of gatedListsOf is shadowrunr/support/loop.ts:146."
+    },
+    {
+      "context": "desktop-e2e",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Pilot report answers 'better or worse than last run': per-case deltas and a verdict",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/e2e/support/pilot.ts",
+        "apps/desktop/e2e/shadowrunr/shadowrunr.live.e2e.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/e2e/support/pilot.e2e.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "comparePilot(prev, curr) with the same case ids where curr's 'shape-malakor' has calls_before_content 4 -> 1 and ok stays true -> that case row is 'better' with delta -3 and the run verdict is 'better'",
+        "a case that was ok:true and is now ok:false -> row 'regressed' naming the new failure strings, and the run verdict is 'worse' whatever the other rows say",
+        "a case whose unknown_tools gains a name it did not have -> 'regressed' with the new name listed, even when its calls_before_content improved",
+        "outcome-conditioned cost (eval-harness/outcome-conditioned-cost): cost and turn deltas are computed only over cases ok in BOTH runs; a case that failed in either run is reported with its cost but excluded from the cost delta, and the summary states 'cost over N of M cases'",
+        "case sets differ: a case only in curr is 'new', only in prev is 'gone'; neither enters any delta and the verdict line names them",
+        "no previous run (prev = null) -> pilotMarkdown output is byte-identical to today's (no comparison section)",
+        "previousReport(outRoot, currentStamp) picks the newest out/<stamp>/report.json older than currentStamp and skips a stamp folder whose report.json is missing or unparseable, returning null when none qualifies",
+        "pilotMarkdown(title, reports, comparison) renders a 'Since <prev stamp>' table (case, verdict, before-content delta, turns delta, cards delta, cost delta) above today's summary table, and the first line under the title is the one-word verdict"
+      ],
+      "guard_cases": [
+        "5"
+      ],
+      "premise": [
+        "apps/desktop/e2e/shadowrunr/shadowrunr.live.e2e.test.ts:76 - every live run writes out/<stamp>/report.json and report.md into a fresh folder; nothing ever reads a previous one",
+        "apps/desktop/e2e/support/pilot.ts:85 - pilotMarkdown renders one run in isolation: per-case turns, calls, before-content, unknown tool, cards, cost, wall time, with no baseline column",
+        "apps/desktop/e2e/support/pilot.ts:2 - the pilot's stated question is 'does she orient smoothly and spend her turns on content', which is a comparative question (did this exposure change make orientation better) the report cannot answer",
+        "apps/desktop/e2e/support/pilot.ts:64 - orientationOf already computes the per-case measure a comparison needs (calls_before_content, unknown_tools)",
+        "apps/desktop/e2e/shadowrunr/.gitignore - out/ is local and accumulates one folder per run, so the baseline is already on disk"
+      ],
+      "rollback": "Two commits (pure comparePilot/previousReport + markdown section with their tests; the live test wiring the previous report in); reverting the second leaves an unused, tested function, reverting both restores today's report exactly (case 6 pins that).",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm test:e2e e2e/support/pilot.e2e.test.ts"
+      ],
+      "runner_up": "drive.mjs preflight: one command that names which of six states blocks a drive (no CDP, no chrome.html/athena.html, daemon not ready, not onboarded, origin not registered or disabled, contracts drifted needing retrust) with the next drive command, instead of a generic 'timed out waiting for ...'.",
+      "body": "## Summary\nThe live pilot (`/open verify` level 2) is how an operator learns whether a change to an app's exposure (its orient tools, its descriptions, its catalogue) made Athena orient faster and spend her turns on content. Each run writes a careful report, but only of itself; the operator has to open two markdown files and diff a table by eye to answer the one question the pilot exists for. Add a comparison mode: the live test loads the newest earlier report.json, `comparePilot` produces per-case verdicts and deltas, and the report opens with one word: better, worse or same.\n\n## Description\nThe data is already there: report.json carries every CaseReport, and out/ keeps every run. What is missing is the rule for comparing two runs honestly. The rule follows the registry's eval-harness techniques: a regression in ok or a newly named unknown tool outranks any efficiency gain (failure-signatures-beside-the-pass-rate); cost and turn deltas are taken only over cases that reached an answer in both runs (outcome-conditioned-cost); case sets that differ are named, never averaged over. The comparison is a pure function over two CaseReport arrays, so it is tested hermetically; the live test only finds the baseline and passes it in. With no baseline the report is exactly today's.\n\n## Flow\n- pilot.ts: `previousReport(outRoot, stamp)`, `comparePilot(prev, curr) -> { verdict, rows, costOver: {n, m}, added, gone }`, and `pilotMarkdown(title, reports, comparison?)`.\n- shadowrunr.live.e2e.test.ts: flush() computes the comparison once against the baseline found in beforeAll and writes it into report.md and report.json (`comparison` key).\n- pilot.e2e.test.ts: the eight cases over fixture CaseReports, no daemon, no browser.\n\n## Expected impact\nAn operator re-running the pilot after changing an app's orient tools reads one line to know whether it helped, sees which case regressed and why, and is not misled by a cheaper run that got cheaper by failing. Any later app's pilot inherits it, since pilot.ts is app-agnostic.\n\n## Evaluation\nClaim: a pilot run states its verdict against the previous run, by rules that cannot reward failing cheaply.\nBefore: 0 of 8 acceptance cases pass (no comparison exists)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "shadowrunr.live.e2e.test.ts:75-78 `const flush = () => { writeFileSync(join(outDir, 'report.json'), JSON.stringify({ stamp, cases: reports }, null, 2)); writeFileSync(join(outDir, 'report.md'), pilotMarkdown(...)) }` and :84 `outDir = join(HERE, 'out', stamp)`. grep -rn 'report.json' apps/desktop/e2e -> only the writer. pilot.ts:85-99 pilotMarkdown takes (title, reports) and renders a single-run table. shadowrunr/.gitignore: `out/`."
+    }
+  ],
+  "rehomed": [
+    "support/daemon.ts:126 stderr accumulates unbounded (`err += chunk`) while shadowrunr/athena.ts caps at 50k and shadowrunr.ts at 20k - S on its own; folded into the slot-A runner-up",
+    "support/setup.ts:390 replayable() tests `path.includes('/run')`, which also matches any route containing '/run' (e.g. '/runs'), and its retry rules diverge from pilot.ts:233 liveFetch (setup refuses /connectors/ GETs, liveFetch retries them) - S, a shared retry-policy table",
+    "drive/athena-drive.mjs:520 #decide presses the button in a loop for up to 60 s because a click can land before the machine counts a card - the cause is in companion/machine.ts (another context), not here"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": [
+      "test-harness",
+      "eval-harness",
+      "subprocess-lifecycle"
+    ],
+    "techniques": [
+      "unreached-decisions-pin-nothing",
+      "live-app-harness",
+      "recorded-interaction-fixtures",
+      "outcome-conditioned-cost",
+      "failure-signatures-beside-the-pass-rate",
+      "termination-and-reaping"
+    ]
+  },
+  "files_read": 30
+}

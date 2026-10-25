@@ -1,0 +1,140 @@
+{
+  "host": "demo-kit-tests",
+  "cards": [
+    {
+      "context": "demo-kit-tests",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Tests pin shipped rules, not test-side copies: escapeIntent, viewFor, reach guard",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/demo-kit/src/zoom/escape.ts",
+        "examples/demo-kit/src/zoom/nav.ts",
+        "examples/demo-kit/src/zoom/index.ts",
+        "examples/demo-kit/test/abort.test.ts",
+        "examples/demo-kit/test/escape.test.ts",
+        "examples/demo-kit/test/template-navigate.test.ts",
+        "examples/demo-kit/tsconfig.json",
+        "examples/demo-kit/README.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/test/oracle-reach.test.ts",
+        "examples/demo-kit/test/support/keys.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/demo-kit/src/zoom/escape.ts, nav.ts, index.ts are owned by demo-kit-zoom-engine (not scouted this run; no other card touches them)",
+        "examples/demo-kit/tsconfig.json now type-checks test/**: sequence AFTER the r1 demo-kit-ui-webmcp builder lands test/door-outcome.test.ts (today it carries 6 tsc errors: TS7006 x4, TS2339 x2 that `pnpm typecheck` cannot see)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "escape.test.ts: escapeIntent(keydown('Escape'), 1, true, 0) -> 'abort'; escapeIntent(keydown('Escape'), 1, false, 0) -> 'up' (fails before: escape.ts exports no escapeIntent)",
+        "abort.test.ts: ownership is asked first - escapeIntent with a modal target, with holds=1, at level 0, or with defaultPrevented -> null even when moving=true; the local escapeMeans helper is deleted and every case it carried runs through escapeIntent",
+        "oracle-reach.test.ts: the TypeScript AST of src/zoom/nav.ts - the window keydown handler inside useWorldNav calls escapeIntent exactly once and calls neither escapeLeavesLevel nor escapeAbortsFlight directly, and the action it dispatches is the value escapeIntent returned (call-level, per pin-the-call-not-the-name; fails before: nav.ts:107 and :112 call both predicates)",
+        "oracle-reach.test.ts: no file under test/ declares a top-level function or const whose name is exported by a module under src/ or template/lib/ (fails before, naming viewFor at test/template-navigate.test.ts:19)",
+        "oracle-reach.test.ts negative control: the scanner run over the in-memory source `function viewFor(p: string) { return p; }` reports ['viewFor']; over `import { viewFor } from '../template/lib/constants.ts'` it reports [] (fails before: no scanner)",
+        "template-navigate.test.ts reads back through the IMPORTED viewFor: viewFor('/activity-log') -> 'detail', and routeFor('detail', 'activity-log') -> ok, href '/activity-log', viewFor(href) === 'detail' (the deleted test-local copy answers 'activity' for that href, so this case is red against the copy and green only once the import replaces it)",
+        "oracle-reach.test.ts: ts.parseJsonConfigFileContent over examples/demo-kit/tsconfig.json yields fileNames that include every test/*.test.ts, so `pnpm --filter @athena/demo-kit typecheck` type-checks the tests themselves (fails before: tsconfig.json:18 includes src/** only)",
+        "guard: every pre-existing assertion in the 13 host test files stays green, and escapeLeavesLevel / escapeAbortsFlight / MODAL_SELECTOR keep their exported signatures (README.md:201 API unchanged; escapeIntent is additive)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "examples/demo-kit/test/abort.test.ts:23 - `/** What nav.ts's listener does, so the composition is pinned and not just described. */` above a test-local escapeMeans: the test pins a copy of the listener, so mutating nav.ts:112 (swap 'abort' and 'up') leaves the file green",
+        "examples/demo-kit/src/zoom/nav.ts:107 - `if (!escapeLeavesLevel(e, level.current, holds.current)) return;`",
+        "examples/demo-kit/src/zoom/nav.ts:112 - `dispatch({ type: escapeAbortsFlight(e, moving.current, level.current) ? \"abort\" : \"up\" });` - the composition lives only inside a React effect node --test cannot load",
+        "examples/demo-kit/README.md:201 - `escapeAbortsFlight(event, moving: boolean, level: number): boolean   // ask AFTER escapeLeavesLevel` - the order is a caller obligation every consumer re-implements",
+        "examples/demo-kit/test/template-navigate.test.ts:18 - `/** viewFor() in components/HostCapabilities.tsx, kept in step. */` followed at :20 by `if (pathname.startsWith(\"/activity\")) return \"activity\";`",
+        "examples/demo-kit/template/lib/constants.ts:25 - the shipped viewFor is exact-match (`pathname === \"/activity\" || pathname === \"/activity/\"`, :27) and its comment at :23 says `/activity-log` is a record page and `a prefix test would call it the log` - the test copy has already drifted to the rejected rule",
+        "examples/demo-kit/template/components/HostCapabilities.tsx:14 - imports viewFor from @/lib/constants, so the copy is not needed for reach",
+        "examples/demo-kit/tsconfig.json:18 - `\"include\": [\"src/**/*.ts\", \"src/**/*.tsx\"]`; examples/demo-kit/package.json:21 typecheck is `tsc --noEmit && node --test test/*.test.ts`, so test files are type-stripped and never type-checked",
+        "examples/demo-kit/test/escape.test.ts:3 - claims the file is `Run by pnpm --filter @athena/demo-kit typecheck`, which runs it but does not check it"
+      ],
+      "rollback": "Three commits (escapeIntent + nav.ts + tests; viewFor import + reach guard; tsconfig include). Each reverts alone: escapeIntent is additive, nav.ts goes back to the two-call listener, and dropping the tsconfig include returns typecheck to src-only.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter @athena/demo-kit typecheck",
+        "pnpm --filter @athena/demo-kit test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A seeded, model-based invariant suite over navReducer + flight + echo-rule + semantic (random action sequences; flight monotonic, stale settle dropped, echo iff a real move) - finds interaction defects no example test reaches.",
+      "body": "## Summary\nTwo of the kit's tests pin a hand-kept copy of the rule they claim to pin, and one of those copies has already drifted to the rule the shipped code rejects. Lift the one composition that only exists inside a React effect into a pure `escapeIntent`, make the tests import the shipped `viewFor`, and add a reach guard (AST, not text) so a test can never again shadow a shipped export. Type-check the test files while there.\n\n## Description\n`abort.test.ts` carries `escapeMeans`, introduced as 'what nav.ts's listener does, so the composition is pinned'. It pins the copy: the listener at `nav.ts:107-112` can swap abort and up and the file stays green (registry test-harness / unreached-decisions-pin-nothing: mutate the code the sentence names, not the code the test touches; a green run is the finding). The order (`ask AFTER escapeLeavesLevel`, README:201) is a caller obligation every consumer reproduces. `escapeIntent(event, level, moving, holds): 'abort' | 'up' | null` makes it one decision in `escape.ts`; nav.ts dispatches its answer.\n\n`template-navigate.test.ts` reads routes back through a local `viewFor` 'kept in step' with HostCapabilities, using `startsWith('/activity')`. The shipped `viewFor` (constants.ts:25) is exact-match precisely because a prefix test calls the record page `/activity-log` the log. The oracle is wrong; the test is green because no case asks. Import the shipped function, add the `/activity-log` case.\n\nThe class is closed by `oracle-reach.test.ts`: the TypeScript compiler API (already a devDependency) lists top-level declarations in test/ and exports in src/ and template/lib/, and fails on an intersection, with a negative control proving the scanner can go red. It also pins, at call level, that nav.ts's handler routes through escapeIntent (pin-the-call-not-the-name). Finally tsconfig includes test/**, with allowImportingTsExtensions, so the suite's own code is checked (gate-scope-is-not-report-scope: the typecheck's scope silently excluded the tests; measured today: the 13 committed test files are clean, the r1 builder's in-flight door-outcome.test.ts has 6 errors that `pnpm typecheck` passes).\n\n## Flow\n- escape.ts: add `escapeIntent`, documented as the composition; keep both predicates exported.\n- nav.ts: listener = `const intent = escapeIntent(...); if (!intent) return; e.preventDefault(); dispatch({ type: intent });`. index.ts exports it; README row 6 and the API line name it.\n- abort/escape tests: shared `keydown` moves to test/support/keys.ts (outside the `*.test.ts` glob); escapeMeans deleted.\n- template-navigate: import viewFor; add the /activity-log case.\n- oracle-reach.test.ts: export-shadow scanner + negative control + nav.ts call pin + tsconfig fileNames check.\n- tsconfig.json: include test/**/*.ts, allowImportingTsExtensions.\n\n## Expected impact\nA test in the kit can no longer certify a copy: the one drifted oracle is gone, the listener's decision becomes testable without a DOM, consumers get one call instead of an ordering rule, and test files are type-checked by the gate that already claims to run them.\n\n## Evaluation\nClaim: the kit's tests pin the shipped rules, and a test-side copy of a shipped export fails the suite.\nBefore: 0 of 7 non-guard acceptance cases pass (no escapeIntent, viewFor shadowed, tsconfig src-only); guard case green.\nAfter: 8 of 8\nMethod: gate - the acceptance cases, plus the reach probe (swap abort/up in escapeIntent: abort.test.ts goes red; before the change the same mutation in nav.ts leaves it green)\nResult: better\nGate: none",
+      "evidence": "abort.test.ts:23-32 escapeMeans re-implements nav.ts:107-112. template-navigate.test.ts:18-23 `function viewFor(pathname) { if (pathname.startsWith(\"/activity\")) return \"activity\"; if (pathname === \"/\") return \"list\"; return \"detail\"; }` vs constants.ts:25-29 `if (pathname === \"/\") return \"list\"; if (pathname === \"/activity\" || pathname === \"/activity/\") return \"activity\"; return \"detail\";`. tsconfig.json:18 include src only. Scratch tsc over test/*.ts + src with allowImportingTsExtensions: 0 errors in the 13 committed host tests, 6 in untracked test/door-outcome.test.ts (TS7006 x4, TS2339 x2). git grep: escapeAbortsFlight is called only at nav.ts:112 in code; README:201 states the order obligation."
+    },
+    {
+      "context": "demo-kit-tests",
+      "slot": "B-architecture (no UI surface)",
+      "lens": "architecture-challenger",
+      "title": "Kit coverage over the whole tree: unreached files at 0%, ratchet on pure modules",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/demo-kit/package.json",
+        "examples/demo-kit/README.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/scripts/coverage.ts",
+        "examples/demo-kit/scripts/coverage-floors.json",
+        "examples/demo-kit/test/coverage-scope.test.ts",
+        "docs/adr/NNNN-the-demo-kit-coverage-report-is-the-whole-tree-and-its-gate-is-the-pure-modules.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-demo-kit-coverage-report-is-the-whole-tree-and-its-gate-is-the-pure-modules.md (a new blocking ratchet is a decision a reader could question)"
+      ],
+      "generated": [
+        "examples/demo-kit/scripts/coverage-floors.json - written by `node scripts/coverage.ts --update` (only ever raises a floor); hand edits are refused by acceptance case 5"
+      ],
+      "acceptance": [
+        "parseLcov over a fixture with SF/LF/LH/BRF/BRH records -> per-file {linesFound, linesHit, branchesFound, branchesHit}, keyed by repo-relative POSIX path whether the SF line is a Windows path or a file:// URL",
+        "mergeScope(records, tree) where tree holds a file absent from the lcov -> that file is present with linesHit 0, linesFound = its executable line count, status 'unreached'; no tree file is ever omitted",
+        "headline(merged) over fixture {a.ts: 90/100 reached, b.ts: unreached 100 lines} -> whole-tree 45.0% labelled '2 of 2 files', and the reached-only figure 90.0% labelled '1 of 2 files' printed beside it - never the reached figure alone",
+        "gate(floors, merged): a floored file below its floor -> fail naming file, floor and actual; a floored file the run did not reach (renamed, or no longer imported) -> fail 'floored file not reached', never skipped",
+        "gate: a floor for a path no longer in the tree -> fail 'stale floor: <path>', so the gated population cannot shrink silently",
+        "ratchet(floors, merged): raises a floor to floor(actual) when actual is higher and never lowers one; a floors file whose value exceeds the measured actual on a clean run is reported, not rewritten downwards",
+        "listTree(root) derives src/**/*.ts(x) and template/lib/*.ts from the filesystem (excluding *.d.ts and test/), so a new file created in a temp tree appears in the report with no config edit",
+        "guard: the coverage run executes the same tests as the plain `node --test test/*.test.ts` run (same test count, same pass/fail set), and every existing test file passes unchanged"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "examples/demo-kit/package.json:22 - `\"test\": \"node --test test/*.test.ts\"` - no coverage lane exists for the kit, and none in the root package.json",
+        "examples/demo-kit/package.json:21 - typecheck re-runs the same tests, so the suite is executed twice per `pnpm typecheck && pnpm test` and measured zero times",
+        "examples/demo-kit/src/zoom/nav.ts:19 - `import { escapeAbortsFlight, escapeLeavesLevel } from \"./escape\";` - an extensionless VALUE import, which node --test's resolver refuses (echo-rule.ts:33 says so), so every hook is structurally unloadable by the suite and can only ever be absent from Node's report",
+        "examples/demo-kit/src/zoom/useCameraRig.ts:49 - the 658-line camera rig, one of 27 tree files the run never reaches",
+        "examples/demo-kit/test/camera.test.ts:5 - '`useCameraRig` is the thin part' - the claim a whole-tree report would test rather than assert"
+      ],
+      "rollback": "Two commits (scripts/coverage.ts + its test; package.json wiring + floors + ADR). Reverting the second restores `test` to the plain node --test line; the first is inert without it.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "pnpm --filter @athena/demo-kit typecheck",
+        "pnpm --filter @athena/demo-kit test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Lift the hooks' real decisions (useLevelFlight self-settle, useSemanticZoom arming, useOverlayEscape StrictMode guards) into pure modules - zoom-engine's turf and the report above is what would rank them.",
+      "body": "## Summary\nRun the kit's suite once with Node's built-in coverage, and publish two numbers that do not share a population: a report over the whole kit tree, derived from the filesystem, where a file no test reaches is listed at 0%, and a ratcheting gate over the pure modules the suite genuinely covers. Today the only available figure (Node's own report) says 93.44% lines over 20 files; the tree has 47.\n\n## Description\nThe kit's tests are deliberately aimed at the pure halves of each rule, and every pure module says so ('`useCameraRig` is the thin part'). That design is sound; what nothing measures is how much of the kit sits in the parts called thin. Measured on base d13abf7a with `node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='template/lib/**'`: the report lists 20 files (3,062 raw lines) at 93.44% lines, 87.25% branches. The 27 files it does not list hold 3,404 raw lines: useCameraRig.ts 658, useSemanticZoom.ts 225, useLevelFlight.ts 213, useEcho.ts 201, webmcp/zoomTools.ts 188, nav.ts 154, ActivityLog.tsx 140, useOverlayEscape.ts 131 and more. They are not at a low percentage; they are absent, because Node's report is defined over files the run imported, and the hooks cannot be imported by node --test at all (extensionless value imports). That is registry test-harness / gate-scope-is-not-report-scope exactly: the population was defined to exclude the risk, and the headline is true and useless. The technique's answer is two include sets: the report's derived from the tree (so it shows what nobody has thought about), the gate's hand-kept and ratcheted (deliberate work with a red-green signal), with every figure carrying its population (count-carries-predicate).\n\n## Flow\n- scripts/coverage.ts: pure parseLcov / listTree / mergeScope / headline / gate / ratchet, plus a small CLI (`node scripts/coverage.ts [--update]`) that reads the lcov file, prints the whole-tree table (unreached files at 0% with their line counts) and the reached-only figure beside it, then applies the floors.\n- package.json `test`: one node --test run with two reporters (spec to stdout, lcov to node_modules/.cache/demo-kit-coverage/lcov.info), then the CLI. `typecheck` drops its duplicate test run, so CI still runs the suite once per gate step... and now measures it.\n- coverage-floors.json: one floor per pure module (src/zoom/{camera,echo-rule,escape,flight,gesture,identity,overlay,presence,roving,semantic,state,tokens}.ts, src/webmcp/{bounded,door}.ts, template/lib/constants.ts), seeded at floor(measured).\n- README: a Coverage section naming both numbers and what each is defined over. ADR records the two-scope decision and that a floor only rises.\n\n## Expected impact\nAn operator reading the kit's coverage sees about 44% of raw lines reached (estimate: 93.44% x 3,062 / 6,466) with 27 named files never loaded, instead of 93%. A regression in a pure module's coverage turns the package test red, and a renamed or deleted gated file fails loud instead of leaving the gate quietly smaller.\n\n## Evaluation\nClaim: the kit's coverage figure is defined over the whole kit tree, and the pure-module floors are a gate that cannot shrink silently.\nBefore: 0 of 7 non-guard acceptance cases pass (no coverage machinery); measured report covers 20 of 47 files, headline 93.44% lines\nAfter: 8 of 8; report covers 47 of 47 files\nMethod: gate - the acceptance cases, plus one measured run of the CLI on the real tree\nResult: better\nGate: policy-tighten",
+      "evidence": "node v24.14.0, base d13abf7a: `node --test --experimental-test-coverage --test-coverage-include='src/**' --test-coverage-include='template/lib/**' test/*.test.ts` -> 193 tests (5 failing are the r1 builder's untracked red-first door-outcome.test.ts), coverage table lists 20 files, `all files | 93.44 | 87.25 | 85.62`. `git ls-files 'src/*.ts' 'src/*.tsx' 'template/lib/*.ts'` -> 47 files; listed 20 = 3,062 raw lines, unlisted 27 = 3,404 raw lines (top: useCameraRig.ts 658, useSemanticZoom.ts 225, useLevelFlight.ts 213, useEcho.ts 201, zoomTools.ts 188, nav.ts 154, ActivityLog.tsx 140, useOverlayEscape.ts 131, theme.tsx 124, companies.ts 117). No `coverage` script in examples/*/package.json or the root package.json."
+    }
+  ],
+  "rehomed": [
+    "Type-check the test files on their own (tsconfig include test/**) - S; folded into card A as acceptance case 6",
+    "Shared keydown / near test helpers (abort+escape keydown, camera+presence+tokens near) - S; folded into card A's test/support/keys.ts for keydown only",
+    "echo-rule.ts samePlace duplicates state.ts sameFocus - already rehomed by challenge-2026-10-15 as deliberate (node ESM value-import rule), XS; not re-proposed",
+    "roving.test.ts:72 and echo.test.ts:61 iterate hand-written member lists instead of the module's own key/focus sets (gate-scope-is-not-report-scope, the in-test case) - S",
+    "typecheck runs the whole node --test suite a second time (package.json:21) - S; folded into card B's package.json wiring"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["test-harness"],
+    "techniques": [
+      "unreached-decisions-pin-nothing",
+      "pin-the-call-not-the-name",
+      "negative-control-tests",
+      "gate-scope-is-not-report-scope"
+    ]
+  },
+  "files_read": 31
+}

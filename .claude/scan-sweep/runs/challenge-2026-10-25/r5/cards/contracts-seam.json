@@ -1,0 +1,137 @@
+{
+  "host": "contracts-seam",
+  "cards": [
+    {
+      "context": "contracts-seam",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A tool's failure carries a closed reason beside a bounded detail, not one string",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/contracts/channel.py",
+        "src/athena/contracts/registry.py",
+        "src/athena/contracts/harness.py",
+        "src/athena/contracts/__init__.py",
+        "src/athena/lane/turn_frame.py",
+        "src/athena/lane/browser_lane.py",
+        "apps/desktop/src/lib/events.ts",
+        "tests/contracts/test_channel.py",
+        "tests/contracts/test_registry.py",
+        "tests/contracts/test_harness.py",
+        "tests/lane/test_turn_frame.py",
+        "tests/lane/test_browser_lane.py"
+      ],
+      "new_files": [
+        "src/athena/contracts/reasons.py",
+        "docs/adr/0149-a-tool-failure-carries-a-closed-reason-beside-its-detail.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0149-a-tool-failure-carries-a-closed-reason-beside-its-detail.md (amends ADR 0101 decision 6: the episode reads the reason field, not a prefix of the error text)",
+        "apps/desktop/src/lib/events.ts (owned by the desktop lib context; events.test.ts holds every ToolResult field to channel.py, so the new optional `reason` must be declared there in the same commit)",
+        "src/athena/lane/turn_frame.py and src/athena/lane/browser_lane.py (owned by the lane context; two small call-site edits)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "ToolResult(ok=False, error='outcome_unknown: send did not answer within 30000 ms') -> .reason == 'outcome_unknown' and .error is unchanged (the reason is derived from a legacy prefixed error at construction)",
+        "ToolResult(ok=False, error='No tool named frob') -> .reason == 'unknown' (a page's free sentence never becomes a vocabulary member) and .error == 'No tool named frob'",
+        "ToolResult(ok=False, reason='  Timeout ', error='the page took 30 s') -> .reason == 'timeout' (normalized through normalize_reason) and the wire form carries both 'reason' and 'error'",
+        "ToolResult(ok=True, reason='timeout') -> .reason is None, and ExecResult(ok=True).reason is None; ExecResult.failure('validator_failed') -> .reason == 'validator_failed' and ExecResult.failure('amount over the cap') -> .reason == 'unknown'",
+        "tool_results_from([{'name':'host.a.b','ok':False,'reason':'timeout','error':'x'*10000}]) -> one ToolResult whose .reason == 'timeout' and whose .error is at most ERROR_DETAIL_CAP chars plus a '(showing 240 of 10000)' footer line",
+        "BrowserLane records 'may have completed' (and not 'failed') for ToolResult(ok=False, reason='outcome_unknown', error='the page did not answer before the deadline') - an error with no outcome_unknown prefix, which today is recorded as 'failed (the page did not answer...)'",
+        "GUARD: every event in tests/contracts/test_channel.py EVENTS still round-trips to_json -> event_from_json equal, and a ToolResult wire form from before this change (no 'reason' key) reads back with its reason derived from its error",
+        "GUARD: athena.contracts.harness.ERROR_REASONS and normalize_reason are the same objects as athena.contracts.reasons' and athena.contracts', the tuple is still the 18 members in today's order (test_refusal_parity.py stays green), and a legacy 'outcome_unknown: ...' error is still recorded as 'may have completed'"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/contracts/channel.py:89 - ToolResult has `ok` and a free `error: str | None` (line 99) and no reason field: the closed vocabulary stops at turn.error and never reaches a tool's own failure",
+        "src/athena/contracts/harness.py:114 - ERROR_REASONS is documented as the vocabulary of the ledger, turn.error and the bridge's refusals; a tool result is not among them",
+        "src/athena/lane/browser_lane.py:409 - the record decides 'may have completed' by `(result.error or \"\").startswith(\"outcome_unknown\")`: program logic branching on the prefix of a prose string",
+        "apps/desktop/src/lib/execute.ts:86 - the desktop folds the reason into the text, `error = `${timeout}: ${detail}``, because the contract has nowhere else to put it",
+        "packages/athena-bridge/inject.js:103 - the page reply already carries `reason` apart from `error` (ADR 0146 made a page-minted reason travel), and the contract is the hop that drops it",
+        "src/athena/lane/turn_frame.py:83 - the page's `output` is cut to RESULT_CAP, but line 92 passes `error=str(error)` whole: a page that throws a 1 MB message writes a 1 MB system episode (README section 2 invariant 4)",
+        "src/athena/contracts/registry.py:175 - ExecResult.failure writes its reason into `error`, so a core executor's reason and a page's sentence share one untyped field",
+        "src/athena/harness/rounds.py:336 - the once-per-name-and-reason refusal dedupe keys on `(result.name, result.error)`, i.e. on detail text, not on a reason",
+        "src/athena/contracts/channel.py imports nothing from harness.py while harness.py:15 imports channel - normalize_reason cannot be used in ToolResult without moving the vocabulary into its own module (reasons.py), which is the structural part of the move"
+      ],
+      "rollback": "The series is three commits (reasons.py extraction with re-exports; ToolResult/ExecResult reason + events.ts field + ADR; lane call sites + cap). Each reverts with git revert in reverse order; the wire change is additive (an older reader drops `reason` by the documented unknown-field rule, a newer reader derives it from a legacy error), so a revert strands no stored data.",
+      "gate": "contract",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "pnpm typecheck && pnpm lint && pnpm test (from the root; events.test.ts is the TypeScript verifier of the contract)"
+      ],
+      "runner_up": "Generate one wire snapshot from contracts (ids, reasons, event fields, side-effects, caps) and hold every TS/JS/Rust mirror to it instead of six regex readers of Python source.",
+      "body": "## Summary\nA tool's failure crosses the contract as one free string. Give ToolResult and ExecResult a `reason` from the closed ERROR_REASONS vocabulary beside a bounded `error` detail, so no consumer parses prose to learn what happened and no page can write an unbounded error into memory.\n\n## Description\nThe repository already holds the rule for turns: a failure has a reason from one closed set (invariant 6), and a reason invented at a call site collapses to `unknown`. The rule stops one level short. A tool's failure (ToolResult.error, ExecResult.error) is free text that is sometimes a reason (`unknown_ref`), sometimes a reason glued to a detail (`outcome_unknown: send did not answer`), and sometimes a page's own sentence (`No tool named frob`). The consequences: the lane decides 'may have completed' by string prefix (browser_lane.py:409); the desktop has to fold its reason into the text to get it across (execute.ts:86); ADR 0146 taught pages to send a separate closed-set `reason` and the contract drops it; the error is the only page-written field the frame does not cap (turn_frame.py:92); and the rounds dedupe keys on detail text. Structural move: (1) extract ERROR_REASONS and normalize_reason into `contracts/reasons.py` (harness.py re-exports, so every import keeps working) so channel.py can use them without a cycle; (2) ToolResult gains `reason: str | None = None`, normalized in `__post_init__`, derived from a legacy `<reason>:` prefix when absent, forced to None on success; (3) ExecResult gains the same derived `reason` property; (4) `ERROR_DETAIL_CAP = 240` lives in the contract and turn_frame cuts the error to it with the announced footer, and reads a surface's `reason` key; (5) browser_lane reads `result.reason`. Applies error-handling/structured-propagation (the category is a typed field decided at birth, never re-derived from surviving text) and ipc-contract/error-shape-mapping (code + message envelope; call sites must not substring-match prose).\n\n## Flow\n- reasons.py extracted, re-exported from harness and the package; refusal parity stays green\n- ToolResult/ExecResult carry a normalized reason; events.ts declares `reason?: string | null`\n- turn_frame caps the error detail and passes the surface's reason; browser_lane branches on the field\n- ADR 0149 records the amendment to ADR 0101 decision 6; CHANGELOG line\n\n## Expected impact\nThe closed vocabulary covers every failure that crosses the seam, not only the turn's. A page's error can no longer grow a system episode without bound. A later desktop change can send `reason` directly instead of a prefix, and the record, the dedupe and any retry decision read one field. Out of scope here: changing rounds.py's dedupe key and the desktop's sender; both become one-line follow-ups.\n\n## Evaluation\nClaim: every tool failure carries a closed reason and a bounded detail, with no consumer parsing prefixes.\nBefore: 0 of 6 behaviour cases pass (ToolResult/ExecResult have no reason; the error is uncapped; the lane needs the prefix); the 2 guards pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: contract",
+      "evidence": "channel.py:99 `error: str | None = None` (ToolResult has no reason). browser_lane.py:409 `if not result.ok and (result.error or \"\").startswith(\"outcome_unknown\"):`. execute.ts:86 `error = `${timeout}: ${detail}`;`. inject.js:103 `return { ok: false, reason: VALIDATOR_FAILED, error: ... }`. turn_frame.py:83 `output = cut_text(output, RESULT_CAP)` vs :92 `error=str(error) if error else None,`. registry.py:175 `return cls(ok=False, output=output, error=reason, ...)`. rounds.py:336 `told = (result.name, result.error or \"\")`. ERROR_REASONS has 18 members (harness.py:119-146). ADR 0146 decision 4: inject.js forwards a page's `reason` only when it is validator_failed, timeout or cancelled - already a vocabulary member - so nothing new enters the set."
+    },
+    {
+      "context": "contracts-seam",
+      "slot": "B-architecture (no UI surface)",
+      "lens": "architecture-challenger",
+      "title": "The manifest door parses flags by type: a corrupt flag is refused, never coerced",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/contracts/manifest.py",
+        "tests/contracts/test_manifest.py"
+      ],
+      "new_files": [
+        "docs/adr/0150-a-manifest-flag-is-read-by-its-type-and-an-omitted-side-effect-is-refused.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0150-a-manifest-flag-is-read-by-its-type-and-an-omitted-side-effect-is-refused.md (tightens ADR 0004's rule at the parser: an omitted side_effects is refused like an omitted reversible)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "HostManifest.from_dict({app_id:'inv', page_origin:'https://a.test', tools:[{name:'void', reversible:'false', side_effects:'none'}]}).validate() names 'void' and 'reversible must be true or false', and tools[0].default_class() is GATED - today validate() is [] and the class is AUTO",
+        "the same refusal for reversible = 1, 'yes', [] and {} (parametrized): only a JSON boolean is read as a declaration",
+        "a tool {name:'pay', reversible:true} with no side_effects -> validate() names 'pay' and 'must declare side_effects', and default_class() is GATED - today it reads as 'internal' and is AUTO",
+        "tools given as an object ({'a': 1}) or a tool entry that is a string -> validate() returns a named problem ('tools must be a list of objects' / 'tools[0] must be an object') and from_dict raises nothing - today AttributeError",
+        "a state readable with max_chars 'lots', 0, -5 or true -> 'readable 'rows': max_chars must be a positive integer'; a readable whose schema is [1] -> a named problem, no TypeError - today 'lots' counts as a bound and [1] raises",
+        "GUARD: the builtin connector specs (connectors.spec.load_builtin()) load unchanged, every manifest athena.proving.manifests builds validates [], and a well-formed page manifest keeps its classes (reversible true + side_effects none/internal -> AUTO, external -> GATED)",
+        "GUARD: a HostTool built in code (HostTool(name='t', reversible=True)) keeps its dataclass default and class; only the wire reader changes, and every existing tests/contracts/test_manifest.py and tests/daemon/test_manifest.py case stays green"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "src/athena/contracts/manifest.py:171 - `reversible=None if raw is None else bool(raw)`: a manifest that says \"false\" is read as True",
+        "src/athena/contracts/manifest.py:154 - default_class is AUTO when reversible is True and side_effects is not external, so the coerced \"false\" tool is AUTO and executes without a card",
+        "docs/adr/0004-the-gate-is-the-policy.md:37 - the decision is AUTO only when `reversible` is exactly `True`; the parser makes a string satisfy it",
+        "src/athena/contracts/manifest.py:172 - an omitted side_effects defaults to 'internal' (permissive) while the module refuses an omitted reversible for exactly this reason (module docstring: 'an omission read permissively is a tool that executes without a card')",
+        "packages/athena-bridge/gate.js:45 - the bridge reads flags only when `typeof declared.reversible === \"boolean\"` and otherwise falls to irreversible/external: the two halves of one rule disagree on corrupt and absent input",
+        "src/athena/contracts/manifest.py:207 - `[HostTool.from_dict(t) for t in d.get(\"tools\", [])]` raises AttributeError on a non-list; src/athena/daemon/routes.py:549 and src/athena/connectors/spec.py:223 each wrap the parse in their own except to turn the exception name into a refusal",
+        "src/athena/contracts/manifest.py:212 - max_chars is taken as given and :286 only checks it is not None, so 'lots' passes the 'bounded at the source' rule; packages/athena-bridge/gate.js:124 forwards a page's state_readables untouched"
+      ],
+      "rollback": "One commit (manifest.py, its tests, ADR, CHANGELOG line); git revert restores the coercing reader. No stored data depends on it: a manifest is re-sent on every exchange.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Manifest problems become coded {tool, field, code} so a refused app tells the person who can fix it instead of 'reload the app' (needs routes.py and plain.ts; cross-context).",
+      "body": "## Summary\nHostManifest.from_dict coerces what a manifest says into what the gate reads: `\"reversible\": \"false\"` becomes True and the tool is AUTO; an omitted side_effects becomes 'internal' and the tool is AUTO; a non-list `tools` raises. Make the parser the one validation door: it reads each gate-relevant field by its JSON type and records every mismatch as a named problem, which validate() returns with the rest, so the manifest is refused whole.\n\n## Description\nThe module's own doctrine is that an omission read permissively is a tool that executes without a card, and it refuses an omitted reversible for that reason. The parser breaks the doctrine twice: a corrupt reversible resolves MORE permissive than an absent one (absent -> GATED and refused; \"false\" -> True -> AUTO and accepted), and an absent side_effects resolves to 'internal'. The JavaScript half of the same rule (gate.js:45) already reads only booleans and treats anything else as irreversible/external, so the Python and JS halves disagree on exactly the inputs that matter. Today the shell's bridge always sends booleans, so no page exploits it; what reaches from_dict without the bridge (a POST from another surface, a connector spec, a future connector port) does not have that protection, and ADR 0004 says 'exactly True'. Move: from_dict keeps a private `_parse_problems` list (field(compare=False, repr=False)); `reversible` is kept only when it is a bool, else None plus a problem; an absent `side_effects` is a problem ('must declare side_effects'); `tools` and `state_readables` must be lists of objects; max_chars/max_items must be positive ints; a readable schema must be an object. validate() returns parse problems first. A HostTool built in code keeps its defaults: only the wire reader tightens. Applies authorization/failure-direction (corrupt input must never resolve more permissive than absent input) and invariant-placement/repairing-check-erases-its-evidence (the coercion repairs the value instead of refusing it, so validate() has nothing left to name). Registry: the companion-runtime pair is already recorded as a deviation for reversible internal mutations being AUTO (manifest.py); this card neither repeats nor widens that, it closes the coercion under it.\n\n## Flow\n- from_dict reads by type and records problems; validate() returns them first\n- an omitted side_effects is refused, as an omitted reversible is\n- the daemon's and spec loader's except clauses stay as a belt but no longer fire for these shapes\n- ADR 0150 + CHANGELOG line\n\n## Expected impact\nA whole class closes: no flag the gate reads can be argued into a looser class by its spelling or its absence, and the Python door agrees with the bridge's on corrupt input. Refusals name the tool and field instead of a Python exception name.\n\n## Evaluation\nClaim: a manifest whose gate flags are not their declared types, or that omits side_effects, is refused whole with a named problem and never classed AUTO.\nBefore: 0 of 5 behaviour cases pass (measured: from_dict with reversible 'false' + side_effects 'none' and a tool with no side_effects -> validate() == [] and both AUTO; tools {'a':1} -> AttributeError; schema [1] -> TypeError); the 2 guards pass\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: policy-tighten",
+      "evidence": "Run at base: `HostManifest.from_dict({'app_id':'inv','page_origin':'https://a.test','tools':[{'name':'void','reversible':'false','side_effects':'none'},{'name':'pay','reversible':True}],'state_readables':[{'name':'rows','max_chars':'lots'}]})` -> validate() == [] and classes [AUTO, AUTO]. `from_dict({'app_id':'inv','tools':{'a':1}})` -> AttributeError: 'str' object has no attribute 'get'. A readable with schema [1] -> TypeError: cannot convert dictionary update sequence element #0 to a sequence. Builtin specs gmail.json (3 tools) and notion.json (4 tools) declare side_effects on every tool; gate.js manifestOf always writes both flags."
+    }
+  ],
+  "rehomed": [
+    "channel.py:3 says 'Eleven events, one stream' while EVENT_KINDS holds 13 (events.ts already says thirteen) - S doc fix",
+    "README.md section 3.5 claims 'one ids.py, one ids.ts, a parity test' while ids.py's docstring says the desktop has no lib/ids.ts and run.ts:372 hand-writes /^proj_[0-9a-f]{12}$/ - S doc/parity fix",
+    "HostManifest.from_dict's bool(raw) coercion alone is an S fix; it is folded into the slot B card rather than filed by itself"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["error-handling", "ipc-contract", "authorization", "invariant-placement", "companion-runtime"],
+    "techniques": ["structured-propagation", "error-shape-mapping", "failure-direction", "repairing-check-erases-its-evidence"]
+  },
+  "files_read": 34
+}

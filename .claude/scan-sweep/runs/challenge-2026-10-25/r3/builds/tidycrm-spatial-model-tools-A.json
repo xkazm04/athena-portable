@@ -1,0 +1,24 @@
+{"card":"tidycrm-spatial-model-tools/A","status":"landed","shas":["d482ef10"],
+ "tests_added":[
+  "examples/tidycrm/test/remedies.test.ts::phone remedy: preview_normalize then normalize_fields on exactly the ids the phone button fires",
+  "examples/tidycrm/test/remedies.test.ts::stale and tidy remedies carry the same argument sets the dossier's flag and tidy buttons send",
+  "examples/tidycrm/test/remedies.test.ts::a duplicate is a person's remedy: pair ids and no act, and no remedy ever names merge or delete",
+  "examples/tidycrm/test/remedies.test.ts::1,201 stale ids batch at MAX_IDS: 500, 500, 201, in order",
+  "examples/tidycrm/test/remedies.test.ts::dossierRead's remedies are remediesOf, for every seed table, so the L2 read and plan_repairs cannot disagree",
+  "examples/tidycrm/test/remedies.test.ts::guard: tableRead keeps its keys, and awaiting_a_person stays a boolean apart from deviations",
+  "examples/tidycrm/test/spatial-model-tools.test.ts::plan_repairs pages every stale target on the sheet, each page one whole JSON answer under 12,000 chars",
+  "examples/tidycrm/test/spatial-model-tools.test.ts::the page registers the kit's four verbs and the Blocks' four, and the session calls each (plan_repairs added to SESSION and MAY_MOVE, so the read-class / no-write / no-move guards judge it)"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{
+  "pnpm --filter tidycrm typecheck (examples/tidycrm pnpm typecheck)":0,
+  "examples/tidycrm pnpm lint":0,
+  "examples/tidycrm pnpm test (162 pass)":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":9,"lines_changed":466,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Premise re-verified after 2a5569b: Gate.tsx already fires table.acts.{phone,tidy,flag}.ids from lib/acts.ts (the planner), so the 'one module the buttons read' half already existed. remedies.ts is therefore a projection of table.acts, not a fresh derivation from phoneIds/ids/staleIds, and Gate.tsx was left untouched (dropped from write set). Consequently acceptance cases use acts.phone.ids / acts.tidy.ids (planned targets) instead of table.phoneIds / table.ids; stale uses acts.flag.ids (asserted equal to staleIds as a set). Batches are separate remedy entries with batch/batches; stale has preview:null (no dry-run tool exists); duplicate also carries pairs_hidden. plan_repairs pages are packed by a 12,000-char budget with page/pages/next_page instead of a fixed count, so the walk ends on next_page null rather than a short page. README tool list updated as the one coupled doc. ADR is 0174 (0173 taken by atlas sibling).",
+ "notes":"No sibling reds seen. Guard case 6's registration-list assertion was red before only because plan_repairs was not registered; its no-write/no-move/read-class checks were green before. The SESSION loop now skips unregistered tools instead of crashing at top level, so guards run on a tree missing a tool. examples/journey/tests/journey.spec.ts:518 still sources normalise ids from search_records; it could switch to plan_repairs {kind:'phone'} (outside write set, not done). Slot B shares model.ts and BlocksTools.tsx; my edits there are additive (one export line, one tool block)."}

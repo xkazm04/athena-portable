@@ -1,0 +1,132 @@
+{
+  "host": "desktop-voice-ui",
+  "cards": [
+    {
+      "context": "desktop-voice-ui",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Her lines play on one timeline: no overlap, and barge-in silences the tail",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "apps/desktop/src/lib/voice.ts",
+        "apps/desktop/src/lib/voice.test.ts",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-her-lines-queue-on-one-playback-timeline-and-speaking-lasts-as-long-as-her-voice.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "Player, clocked fake context at 1000 Hz: play(1, 2000 samples) at t=0, then finished(1) (voice.stopped done), then at t=0.5 play(2, 100 samples) -> the gen-2 source starts at 2.0, not 0.5 (today it starts at max(currentTime, ends[2]) = 0.5, over line 1)",
+        "Player: play(1, 2000 samples), finished(1), play(2, 100 samples), then silence() -> every source of gen 1 and gen 2 has stop() called; playing(1) and playing(2) are false; level() is 0; a later play(2, ...) chunk is ignored",
+        "Store with the real Player over the clocked fake: voice.speaking(1), audio for 1, voice.stopped(1, done) while gen 1 still has a live source, then press() -> gen 1's live source has stop() called before the start frame is sent (today state.generation is null after voice.stopped, so nothing is dropped and she talks over the person)",
+        "Store: voice.speaking(1, text 'Opening it now.'), audio, voice.stopped(1, done) with gen 1 still sounding -> phase stays 'speaking' and speakingText stays 'Opening it now.'; when the last gen-1 source fires onended -> phase 'idle', generation null, speakingText ''",
+        "Store: say() while gen 1 is finished but still sounding -> gen 1's sources are stopped before the text frame is sent",
+        "Guard: voice.stopped(1, barge_in) -> the player drops gen 1 at once and phase leaves 'speaking' at once, as today",
+        "Guard: position(2) for a line queued behind line 1's tail is 0 until its first chunk's start time and then advances over its own samples (the face clock maps per line, unchanged for a single line: every existing 'the player's clock, for her face' case stays green)",
+        "Guard: a voice.speaking that lands while the key is down is still dropped and the key keeps listening (the existing 'a line the daemon began speaking as the key went down' case)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "apps/desktop/src/lib/voice.ts:441 - each chunk starts at Math.max(context.currentTime, this.ends.get(generation) ?? 0): the schedule is per generation, so nothing chains line 2 behind line 1",
+        "apps/desktop/src/lib/voice.ts:527 - finished() keeps a done line's sources sounding (synthesis runs ahead of playback), so a line routinely outlives its voice.stopped",
+        "src/athena/channels/voice/gateway.py:803 - the daemon sends each chunk the moment it is synthesized, with no pacing, so line 2's audio can arrive while line 1 is still audible",
+        "src/athena/channels/voice/gateway.py:1013 - one spoken line per turn.finished; a turn with host calls continues into a second turn and a second line, and gateway.py:1081 speaks 'Approved.' and then the approved call's continuation line",
+        "apps/desktop/src/stores/voice.ts:361 - voice.stopped sets generation null and phase idle at once, though the player is still sounding that line",
+        "apps/desktop/src/stores/voice.ts:520 - press() drops only state.generation, which is null during the tail, so barge-in during the tail stops nothing locally and the daemon has nothing left to cut",
+        "apps/desktop/src/companion/model.ts:678 - her companion reads speaking: voice.phase === 'speaking', so the early idle is what the companion shows",
+        "registry voice-io / tts-pipeline: at most one utterance audible per listening context; append is the queue policy for order-is-meaning narration; interruption cancels the whole utterance"
+      ],
+      "rollback": "Two commits (Player timeline + silence, then the store's tail-aware phase and press/say drop); git revert of both restores per-generation scheduling and the event-driven phase. No stored data, no wire change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck",
+        "cd apps/desktop && pnpm lint",
+        "cd apps/desktop && pnpm test"
+      ],
+      "runner_up": "Push-to-talk as an explicit capture machine: 'arming' until the microphone is live (words in the gap are not lost), every start paired with a stop even when the mic fails after start (stores/voice.ts:540), the failure on the pressed surface.",
+      "body": "## Summary\nHer voice is scheduled per line, not per channel. Two of her lines can sound at once, a press during the tail of a line does not stop it, and 'speaking' ends when synthesis ends rather than when her voice does. One playback timeline in the Player closes all three.\n\n## Description\n`Player.play` chains chunks only within one generation (lib/voice.ts:441). The daemon sends audio as fast as Kokoro synthesizes it (gateway.py:803) and speaks one line per finished turn (gateway.py:1013). A turn with a host call therefore speaks line 1 ('Opening it now'), runs the call, and speaks line 2 of the continuation, and line 2 is scheduled at currentTime, over the tail of line 1. A spoken approval does the same: 'Approved.' followed by the approved call's line (gateway.py:1081). Separately, voice.stopped(done) arrives when synthesis finishes, seconds before playback does. The store clears generation and goes idle (stores/voice.ts:361), so a press in that tail drops nothing (stores/voice.ts:520): the daemon already finished the line and the client no longer knows it is playing. 'She talked over me' is the exact failure the store's header says barge-in exists to prevent. The companion reads phase === 'speaking' (companion/model.ts:678), so it shows her quiet while she is audibly talking.\n\nThe move: the Player owns one tail across generations, using the append policy, which is what an order-is-meaning reply needs (tts-pipeline). It gains `silence()`, which stops every scheduled source of every line, and `onQuiet`, which fires when the last source of any line ends. The store keeps phase 'speaking' and the caption through the tail, goes idle on onQuiet, and press() and say() call silence() instead of dropping only state.generation. The face clock stays per line: position(g) already maps each line's own chunks, so a queued line reads 0 until its first chunk starts.\n\nKnown limit: the face timeline (lib/face-timeline.ts, desktop-avatar) holds one current line. When line 2's voice.speaking arrives during line 1's tail, it moves to line 2 exactly as it does today; this card neither fixes nor worsens that. The stores/voice.ts edit sits in onEvent's voice.* cases and press/say. The r3 desktop-companion-pane card edits decision.resolved in the same file, so sequence the two.\n\n## Flow\n- Player: `tail` = the latest end over all live generations; a new line's first chunk starts at max(currentTime, tail); per-line chunks and position() are unchanged.\n- Player: silence() stops and forgets every generation, marks them dropped, and fires onQuiet; onQuiet also fires when the last source ends naturally.\n- Store voice.stopped(done): finished(g) as today; when player.playing(g) is still true, keep phase, generation and speakingText.\n- Store onQuiet: if phase is 'speaking', go idle and clear generation and speakingText.\n- press()/say(): player.silence() and faceLine.clearLine() replace the single-generation drop.\n\n## Expected impact\nA multi-line reply, or an approval followed by its continuation, never plays two of her lines over each other. A press at any moment she is audible stops her locally at once. The companion and the halo caption say 'speaking' for exactly as long as she is heard. This closes the voice-io 'at most one audible' deviation for the live channel.\n\n## Evaluation\nClaim: one timeline removes overlapping lines, the unstoppable tail, and the early idle.\nBefore: 0 of 5 new acceptance cases pass (cases 1-5); guards 6-8 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases in lib/voice.test.ts and stores/voice.test.ts with the existing clocked fake context\nResult: better\nGate: none",
+      "evidence": "lib/voice.ts:441 `const at = Math.max(context.currentTime, this.ends.get(generation) ?? 0);` (per generation). lib/voice.ts:527-531 finished() deletes ends and keeps sources. stores/voice.ts:361-366 `if (get().generation === event.generation) set({ generation: null, speakingText: '', phase: ... 'idle' })`. stores/voice.ts:520-523 `if (state.generation !== null) { player?.drop(state.generation); ... }`. gateway.py:791-803 `for chunk in chunks: ... self._send_audio(generation, chunk)` with no sleep or pacing (grep 'pace|sleep' in gateway.py/tts.py/speech.py: 0 hits). gateway.py:1010-1013 `line = spoken_line(finished) ... self.say(line, ...)` then host calls are awaited and the loop continues into another turn. gateway.py:1081 `self.say(SpokenLine(answer))` and then the execute rows run. companion/model.ts:678 `speaking: i.voice.phase === 'speaking'`."
+    },
+    {
+      "context": "desktop-voice-ui",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Pick the microphone where she says it sounded silent, and check it before talking",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/lib/voice.ts",
+        "apps/desktop/src/lib/voice.test.ts",
+        "apps/desktop/src/modules/voice/audio.ts",
+        "apps/desktop/src/modules/voice/model.ts",
+        "apps/desktop/src/modules/voice/model.test.ts",
+        "apps/desktop/src/modules/voice/live.ts",
+        "apps/desktop/src/modules/voice/live.test.ts",
+        "apps/desktop/src/modules/voice/pieces.tsx",
+        "apps/desktop/src/modules/voice/pieces.test.tsx",
+        "apps/desktop/src/modules/voice/fixtures.ts",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "apps/desktop/src/lib/store.ts (one SETTING_KEYS row: voiceInput = 'voice_input')",
+        "apps/desktop/src/scenes/voice/settings.tsx (owned by desktop-scenes-voice-waking: one Row placing the module's MicPicker above 'Test take')",
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "listMicrophones(fake enumerateDevices -> [audioinput 'USB Headset' id a, videoinput cam, audioinput '' id c, audioinput 'Realtek Array' id b]) -> [{id:a,label:'USB Headset'},{id:c,label:'Microphone 2'},{id:b,label:'Realtek Array'}]: inputs only, a blank label named by position, never dropped",
+        "openMicrophone(apis, onChunk, 'b') -> getUserMedia called with audio {deviceId:{exact:'b'}, channelCount:1, echoCancellation:true, noiseSuppression:true}",
+        "openMicrophone(apis, onChunk, 'gone') where getUserMedia rejects with an OverconstrainedError for the exact id -> a second getUserMedia without deviceId; the session opens and reports fellBack:true (a stored device is a reference, not a promise)",
+        "micView(devices [a,b], chosen 'z') -> chosen null, label 'System default', note 'The microphone you chose is not connected; using the system default.'; micView(devices [a,b], chosen 'b') -> label 'Realtek Array', note null",
+        "useVoiceSetup actions.chooseMic('b') -> settingWrite('voice_input','b') once, and the next recordStart opens the recorder's microphone with deviceId 'b'",
+        "recordStop with a take whose peak is below LEVEL_FLOOR_DB (all-zero PCM, 1 s) -> no transcribe call is made, and hear.micError is 'This microphone sounded silent (no level). Pick another input above.', not '(heard nothing)' from an engine",
+        "stores/voice press() with deps.micDevice resolving 'b' -> deps.openMic called with deviceId 'b'; a final voice.transcript with outcome 'silent', peak_dbfs -72 -> reason 'your microphone (Realtek Array) sounded silent (-72 dB), choose another input in Voice settings'",
+        "Guard: with no voice_input row stored, press() opens the microphone with exactly today's constraints and sends the same start frame, and checkMicrophone is unchanged"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/stores/voice.ts:690 - a silent utterance tells the person 'your microphone sounded silent (N dB), check the input in Voice settings'",
+        "apps/desktop/src/lib/voice.ts:313 - openMicrophone always asks getUserMedia for the default input: {channelCount, echoCancellation, noiseSuppression}, no deviceId",
+        "apps/desktop/src/scenes/voice/settings.tsx:218 - the settings' only input row is 'Test take' (HoldToTalk + meter); there is no input to check or change",
+        "grep 'enumerateDevices|deviceId' over apps/desktop/src: 0 hits - no surface anywhere lets the person choose a microphone",
+        "apps/desktop/src/modules/voice/live.ts:302 - a take is refused only when it is empty (pcm.length === 0); a silent take is sent to every engine and comes back as '(heard nothing)' (model.ts:414), which blames the engine for the microphone",
+        "apps/desktop/src/modules/voice/audio.ts:150 - TakeRecorder opens the same openMicrophone, so one device argument reaches the studio, the settings take and push-to-talk",
+        "apps/desktop/src/lib/store.ts:38 - SETTING_KEYS is the named settings-row set both windows read (her window runs push-to-talk, Main runs the studio)",
+        "registry voice-io / stt-pipeline: a flat meter localizes the fault to the audio path (wrong input device); voice-ux-integration: a degraded affordance says which rung failed with the single next action"
+      ],
+      "rollback": "Three commits (lib: listMicrophones + deviceId + fallback; module: micView, chooseMic, silent-take check, MicPicker; store: device read at press + named silent reason). Reverting all three returns to the default input; a stored voice_input row is then ignored and harmless.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck",
+        "cd apps/desktop && pnpm lint",
+        "cd apps/desktop && pnpm test"
+      ],
+      "runner_up": "One speech arbiter with an absolute mute over the live Player and the studio's PreviewPlayer: a preview never plays over a live reply, and a refused AudioContext start shows as 'her voice is blocked' instead of a silent 'speaking' (the recorded voice-io deviation, lib/voice.ts:426).",
+      "body": "## Summary\nWhen her microphone hears nothing, she tells the person to check the input in Voice settings. Voice settings has no input to check: every capture opens the system default device and nothing in the app can pick another. The card makes the input a choice, shown with its live level, remembered, used by every capture, and named in the silent sentence.\n\n## Description\nA laptop with a headset, a docked monitor with a webcam mic, or a virtual audio device: in each case the OS default is often not the mic the person is speaking into. Today that person hears 'your microphone sounded silent (-72 dB), check the input in Voice settings' (stores/voice.ts:690). They open settings and find a Test take button whose meter stays flat (settings.tsx:218), with nothing to act on. Their only way out is the OS sound panel. The studio's take compounds it: a silent take goes to every engine and each column says '(heard nothing)' (live.ts:302, model.ts:414). That reads as the engines failing when the fault is the microphone (stt-pipeline: a flat meter localizes the fault to the audio path).\n\nThe move: lib/voice.ts gains listMicrophones() over enumerateDevices (inputs only, blank labels named by position) and an optional deviceId on openMicrophone. A device that is gone falls back to the default and says so (fellBack). A stored device is a reference, not a promise, as engine-abstraction holds for stored voices. The module adds micView (options, chosen label, the 'not connected' note), a chooseMic action that writes one settings row, and a MicPicker piece that renders the inputs beside the existing MicMeter, so the person sees which one moves. A take below the level floor is caught locally and names the microphone, not the engines. The push-to-talk store reads the row at press, alongside the capture it already takes, and the silent sentence names the device label. MicPicker lives in modules/voice/pieces.tsx (this context); placing it in settings.tsx is one Row in desktop-scenes-voice-waking's file, and the row key is one line in lib/store.ts. The coordinator sequences both.\n\nNo data leaves the device: labels and ids stay in the local settings row, and nothing about consent or the gate changes.\n\n## Flow\n- Settings > Input: inputs listed by name, each with the live meter while held; one tap chooses it, and the row is written.\n- Silent take or silent utterance: the sentence names the device and points at the picker; a silent take never reaches an engine.\n- Device unplugged: the next capture uses the default, and the picker says the chosen one is not connected.\n- No choice stored: identical to today.\n\n## Expected impact\nA person whose default input is the wrong one goes from 'voice does not work, no idea why' to fixing it in one tap where the app already pointed them. The studio's comparison stops blaming the engines for a silent microphone.\n\n## Evaluation\nClaim: the silent-mic sentence becomes actionable in place, and every capture honours the chosen device.\nBefore: 0 of 7 new acceptance cases pass (cases 1-7); guard 8 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases in lib/voice.test.ts, modules/voice/model.test.ts, live.test.ts, pieces.test.tsx, stores/voice.test.ts (fake enumerateDevices / getUserMedia, offline)\nResult: better\nGate: none",
+      "evidence": "stores/voice.ts:688-691 `case 'silent': ... return `your microphone sounded silent${level}, check the input in Voice settings`;`. lib/voice.ts:313-316 `apis.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }, video: false })`. `grep -rn 'enumerateDevices\\|deviceId' apps/desktop/src` -> no output. scenes/voice/settings.tsx:218-226 `<Row label=\"Test take\" ...><HoldToTalk ...>` is the only input row. live.ts:302-305 `if (pcm.length === 0) { ... 'The take was empty' }` with no level check before at.transcribe. model.ts:413-414 `take.state === 'done' ? take.text || '(heard nothing)'`."
+    }
+  ],
+  "rehomed": [
+    "A press whose microphone fails after 'start' was sent never sends 'stop' (stores/voice.ts:540-556; the gateway holds the utterance until the next start): S alone, folded into the slot-A runner-up (an explicit capture machine)",
+    "Refused AudioContext resume only console.warns while phase says 'speaking' (recorded voice-io deviation, lib/voice.ts:426): the designed 'blocked, tap to let her speak' affordance belongs on the halo/companion (other contexts); S in this context; folded into the slot-B runner-up",
+    "Studio take replay (hear what the microphone actually sent before picking a column): S, and the silent-take check in card B covers the diagnostic half",
+    "One host-call runner for both channels (stores/voice.ts:377 onPage restates stores/run.ts:1260-1330 routing): the right seam but its write set is stores/run.ts and lib/execute.ts, owned by other contexts; not taken"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["voice-io", "talking-avatar"],
+    "techniques": ["tts-pipeline", "voice-ux-integration", "stt-pipeline", "engine-abstraction"]
+  },
+  "files_read": 31
+}

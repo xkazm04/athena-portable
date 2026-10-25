@@ -1,0 +1,145 @@
+[
+  [
+    {
+      "key": "atlas-shell-and-styles/A",
+      "host": "atlas-shell-and-styles",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "proving-characters-gauntlet/A",
+      "host": "proving-characters-gauntlet",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "core-brain-memory/A",
+      "host": "core-brain-memory",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "tidycrm-spatial-model-tools/A",
+      "host": "tidycrm-spatial-model-tools",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "proving-characters-gauntlet/B",
+      "host": "proving-characters-gauntlet",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-chores-adopt-intake/A",
+      "host": "desktop-chores-adopt-intake",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "atlas-shell-and-styles/B",
+      "host": "atlas-shell-and-styles",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "daemon-e2e-tests/A",
+      "host": "daemon-e2e-tests",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "desktop-chores-adopt-intake/B",
+      "host": "desktop-chores-adopt-intake",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "core-brain-memory/B",
+      "host": "core-brain-memory",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "hirelane-style/B",
+      "host": "hirelane-style",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "journey-capture/A",
+      "host": "journey-capture",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "journey-capture/B",
+      "host": "journey-capture",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-companion-pane/B",
+      "host": "desktop-companion-pane",
+      "slot": "B",
+      "revise": "Cite docs/BACKLOG.md:43 (declined 'Voice-answered cards get a stamp') in premise and body, and record that its re-entry condition is met (the src/athena/channels/voice backend now exists and decision.resolved reaches stores/voice.ts), so the card adopts the item instead of silently re-proposing it.",
+      "py": false
+    },
+    {
+      "key": "demo-kit-tests/B",
+      "host": "demo-kit-tests",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "daemon-e2e-tests/B",
+      "host": "daemon-e2e-tests",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "demo-kit-tests/A",
+      "host": "demo-kit-tests",
+      "slot": "A",
+      "revise": "Add examples/demo-kit/test/door-outcome.test.ts to write_set and fix its 7 type errors. Case 7 brings test/*.ts into tsc, and that now-committed file would turn `pnpm typecheck` red.",
+      "py": false
+    },
+    {
+      "key": "desktop-companion-pane/A",
+      "host": "desktop-companion-pane",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "tidycrm-spatial-model-tools/B",
+      "host": "tidycrm-spatial-model-tools",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ]
+]

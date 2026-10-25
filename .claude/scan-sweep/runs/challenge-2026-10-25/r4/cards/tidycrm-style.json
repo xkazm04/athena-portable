@@ -1,0 +1,118 @@
+{
+  "host": "tidycrm-style",
+  "cards": [
+    {
+      "context": "tidycrm-style",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Colour roles over the ramp; the title block becomes a rebinding scope, not 8 overrides",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/components/blocks/style/base/tokens.css",
+        "examples/tidycrm/components/blocks/style/base/the-sheet.css",
+        "examples/tidycrm/components/blocks/style/level0/l0.css",
+        "examples/tidycrm/components/blocks/style/level1/l1-grid.css",
+        "examples/tidycrm/components/blocks/style/chrome/sheet-foot.css",
+        "examples/tidycrm/components/blocks/style/level2/body.css",
+        "examples/tidycrm/components/blocks/style/level2/foot.css",
+        "examples/tidycrm/components/blocks/style/level2/head.css",
+        "examples/tidycrm/components/blocks/style/level2/the-identity-pair-beside-the-rest.css",
+        "examples/tidycrm/test/tidycrm-style.test.ts",
+        "examples/tidycrm/DESIGN.md"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-blocks-sheet-reads-colour-roles-and-the-title-block-is-a-rebinding-scope.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "Role completeness: the set of colour roles declared on [data-variant=\"blocks\"] in base/tokens.css (--bk-ground, --bk-ground-raised, --bk-ink, --bk-ink-quiet, --bk-ink-mark, --bk-line, --bk-line-strong, --bk-focus, plus the existing --bk-label-ink and --bk-goldline-ink) equals the set re-declared on .bk-title-block -> before: no such roles and no scope rule, fails; after: equal sets (a role bound in only one scope is the theme-architecture 'binding defined in one state' defect, so --bk-label-ink, which is computed at the wrapper from graphite-2, must be re-declared, not inherited)",
+        "Pairs with obligations, per scope: for each scope (stock = --bk-ground, raised = --bk-ground-raised, inverted = the .bk-title-block bindings) every text role (--bk-ink, --bk-ink-quiet, --bk-label-ink) clears 4.5:1 on that scope's grounds, and --bk-focus and --bk-ink-mark clear 3:1 -> before: fails (no roles); after: passes, measured from the role table, not from a selector-prefix guess",
+        "No component forks on the inverted ground: no rule whose selector starts '.bk-title-block ' declares color, background, background-color, border-color, outline-color or scrollbar-color -> before: 8 rules (foot.css:90, :100, :104, :109, :114, :120, :126, :132 and the-sheet.css:97) fail it; after: 0, the only title-block colour rule is the scope's role rebinding at foot.css:60",
+        "Ratchet (token-enforcement): the eight migrated component sheets read zero ramp steps (var(--bk-graphite), -2, -3, -4, --bk-sheet, --bk-vellum, --bk-rule-ink); every other part's count is <= its baseline {rail-and-bar 3, the-sheet-head 4, l1-cells 3, l1-dress 2, body-2 1, l2-dossier 3}; chrome/toast.css is exempt by name because the stack mounts outside the wrapper the roles are declared on -> before: 104 ramp reads in the migrated eight, fails; after: passes, and a new ramp read anywhere fails",
+        "Guard - the inverted paints do not move: resolving under the title-block scope, .bk-title-block .bk-btn paints color #f4f1e9 / border #7e7a72 / background none; on hover background #f4f1e9 color #1d1c1a; [data-fire=true] background #f4f1e9 and on hover #b3261e; the focus ring #f4f1e9; the band note #a8a49a; lettering #f4f1e9 -> green before (read off the override rules) and after (read off the roles)",
+        "Guard - the stock paints do not move: the base focus ring resolves to #b3261e on stock and vellum, .bk-seg-option[aria-pressed=true] to background #1d1c1a / color #f4f1e9, .bk-db-key[data-fill=fault] stripe to #b3261e, .bk-btn:hover to background #1d1c1a -> green before and after",
+        "Guard - the nine existing tidycrm-style.test.ts cases stay green, with the 'every word and figure' and focus-ring cases taking their ground from the scope a rule sits in (role resolution) instead of rule.selector.startsWith('.bk-title-block') -> green before and after"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        ".ai/registry-map.json -> tidycrm-style / design-tokens is a recorded deviation: 'examples/tidycrm/components/blocks/style/level2/foot.css:111 Component sheets use steps of the graphite ramp directly ... instead of a role. The step's meaning changes with the ground it sits on'",
+        "examples/tidycrm/components/blocks/style/level2/foot.css:100 the title block redraws the focus ring as an override rule, 'Same weight as the base ring ... and later in the cascade, so it wins' - cascade order carrying a colour decision",
+        "examples/tidycrm/components/blocks/style/level2/foot.css:114 .bk-title-block .bk-btn, :120 hover, :126 data-fire, :132 fire hover - four forks of .bk-btn (foot.css:20, :35) whose only difference is which ink is ground and which is figure",
+        "examples/tidycrm/components/blocks/style/base/the-sheet.css:97 the scrollbar is re-inked for the title block by a fifth override",
+        "examples/tidycrm/test/tidycrm-style.test.ts:300 the contrast gate decides a rule's ground by rule.selector.startsWith('.bk-title-block'), so any inverted control styled under another selector is measured on the wrong ground",
+        "examples/tidycrm/components/blocks/style/base/tokens.css:136 --bk-label-ink and :145 --bk-goldline-ink already exist as roles: the layer is half-begun and nothing consumes it consistently (46 raw var(--bk-graphite), 21 var(--bk-sheet), 21 var(--bk-graphite-2) reads across component sheets)"
+      ],
+      "rollback": "Pure CSS + one test file + one doc paragraph in one feature commit (ADR alongside); git revert of that commit restores the override rules and the selector-prefix ground guess with no data or runtime state involved.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; tidycrm's node --test suite parses the sheet)"
+      ],
+      "runner_up": "Put the 19 parts in named @layer slots so index.css order stops being load-bearing and reduced-motion.css drops its !important (needs Tailwind v4 layer interplay in app/globals.css).",
+      "body": "## Summary\nGive the Blocks sheet the semantic colour layer the design-tokens standard requires, and turn the inverted title block - the gate, the only place irreversible acts live - into a scope that rebinds those roles instead of a stack of eight override rules that win by cascade position.\n\n## Description\nThe sheet's colour lock is careful about values and careless about meaning: component sheets read raw ramp steps (124 reads of graphite/sheet/vellum/rule-ink outside tokens.css), so a step means different things on different grounds. The registry has this recorded as a deviation at foot.css:111 (graphite-4 used as text on the inverted block). The consequence is structural: every time the ground inverts, the sheet forks a component - .bk-btn four times, the focus ring, lettering, band note, the scrollbar - and each fork wins only because it is later in the cascade (foot.css:100 says so). The contrast gate then has to guess the ground from a selector prefix (test:300).\n\nThe move (theme-architecture: rebinding at a scope boundary; token-taxonomy: roles by recurring intent; token-enforcement: a ratchet): declare ~8 colour roles on the wrapper, re-declare the full set on .bk-title-block, have .bk-btn, the focus ring, lettering, notes and scrollbars read roles, and delete the overrides. Hover and fire become the same 'swap ink and ground' expression on both grounds. The gate measures role pairs per scope; a ratchet stops new ramp reads and pins the six small parts at their current counts. Values do not change - the guard cases pin every paint on both grounds.\n\n## Flow\n- tokens.css: role block on the wrapper (+ ~25 lines), and the completeness comment\n- foot.css: .bk-title-block becomes the rebinding scope; 8 override rules deleted\n- the-sheet.css, l0.css, l1-grid.css, sheet-foot.css, body.css, head.css, identity-pair: ramp reads -> role reads (one token per line)\n- tidycrm-style.test.ts: scope-aware resolve(), role-completeness, per-scope pairs, no-fork, ratchet; ground guess removed\n- DESIGN.md colour section: one paragraph naming the role layer; ADR records the scope decision\n\n## Expected impact\nA palette or inversion change becomes one edit in tokens.css; a new control in the gate is correct by construction instead of needing a ninth override; the registry deviation closes; the contrast gate stops measuring by selector spelling.\n\n## Evaluation\nClaim: the sheet reads roles, the title block is a rebinding scope, and no paint moves\nBefore: 3 of 7 acceptance cases pass (the 3 guards)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in examples/tidycrm/test/tidycrm-style.test.ts\nResult: better\nGate: none",
+      "evidence": "grep -c ramp reads per part: the-sheet 11, l0 26, foot 24, body 11, identity-pair 9, sheet-foot 8, head 8, l1-grid 7 (=104), rail-and-bar 3, the-sheet-head 4, toast 4, l1-cells 3, l1-dress 2, body-2 1, l2-dossier 3 (=124 total). Override rules: foot.css:90 border-block-end-color, :100 outline-color: var(--bk-sheet), :104-105 lettering color sheet, :109-111 band-note color graphite-4, :114 btn none/graphite-3/sheet, :120 hover sheet/graphite, :126 fire sheet/graphite, :132 fire hover redline; the-sheet.css:97-98 scrollbar-color graphite-3. Test ground guess: tidycrm-style.test.ts:298-302."
+    },
+    {
+      "context": "tidycrm-style",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A forced-colors mode: fault vs quiet, the differing field and the gate survive the repaint",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/tidycrm/components/blocks/style/index.css",
+        "examples/tidycrm/test/tidycrm-style.test.ts",
+        "examples/tidycrm/DESIGN.md"
+      ],
+      "new_files": [
+        "examples/tidycrm/components/blocks/style/base/forced-colors.css"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "index.css imports ./base/forced-colors.css LAST (after chrome/toast.css), and that part is a single @media (forced-colors: active) block -> before: no such import, fails",
+        "Derived gate (preference-respect: meaning survives the repaint): every rule in the sheet whose selector carries a state attribute ([aria-pressed=\"true\"], [data-fill=...], [data-differs=\"true\"], [data-fire=\"true\"], [data-on=\"true\"]) and declares only colour properties (color, background*, border*-color, fill) has a forced-colors counterpart for that selector setting a non-colour carrier (border-*-width/style, outline-style/width, text-decoration-line, font-weight) or forced-color-adjust: none -> before: fails listing l0.css:180 seg pressed, l0.css:214/218 key stripes, l0.css:313/317 key measures, l1-grid.css:58 chip pressed, body.css:129 spelling differs, the-identity-pair-beside-the-rest.css:77 field differs, foot.css:126 fire, the-sheet-head.css:87 presence dot; after: empty list",
+        "Fault and quiet are told apart without colour: under forced colors .bk-db-key[data-fill=\"fault\"] and [data-fill=\"quiet\"] differ in border-inline-start-style or -width (e.g. double 6px vs solid 3px) -> before: both resolve to the same 3px solid edge, fails",
+        "The differing field is marked without colour: under forced colors .bk-field[data-differs=\"true\"] and .bk-spelling[data-differs=\"true\"] set text-decoration-line: underline with style wavy, the carrier .bk-table td[data-bad] already uses at body.css:183 -> before: colour only, fails",
+        "The gate stays a separate place: under forced colors .bk-title-block sets forced-color-adjust: none, background CanvasText, color Canvas, and its .bk-btn / [data-fire] / focus ring use only system colours (ButtonText, Canvas, CanvasText, Highlight) -> before: no rule, so the platform repaints the block to Canvas and the irreversible acts sit on the same ground as everything else; fails",
+        "System colours only: every colour value inside the forced-colors block is a CSS system colour keyword (Canvas, CanvasText, LinkText, ButtonFace, ButtonText, ButtonBorder, Highlight, HighlightText, SelectedItem, SelectedItemText, Mark, MarkText, GrayText) and never a var(--bk-*) -> before: vacuous-fail (no block); after: passes",
+        "Guard - the stock sheet does not change: the existing nine tidycrm-style.test.ts cases stay green, with rulesOf() skipping the forced-colors @media block (system keywords are unresolvable to sRGB by design, so the contrast walk measures only the painted palette) and the forced block declaring no :hover selectors (so 'every hover state eases' is untouched) -> green before and after"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        ".claude/scan-sweep/runs/stabilize-2026-10-16/findings/tidycrm-style.jsonl: open lane-B backlog item 'No forced-colors path: the pressed camera pose and other states carried by colour alone vanish' (adopted here, with its Playwright instrument replaced by a derived static gate that runs offline)",
+        "examples/tidycrm/components/blocks/style/level0/l0.css:180 .bk-seg-option[aria-pressed=\"true\"] is a background + color change only",
+        "examples/tidycrm/components/blocks/style/level0/l0.css:214 and :218 fault/quiet differ only in border-inline-start-color on an edge every key draws at 3px (l0.css:208)",
+        "examples/tidycrm/components/blocks/style/level2/the-identity-pair-beside-the-rest.css:77 .bk-field[data-differs=\"true\"] is color only - the field that tells two duplicate records apart",
+        "examples/tidycrm/components/blocks/style/level2/foot.css:60 the title block is a place only by background: var(--bk-graphite); forced colors discards backgrounds",
+        "examples/tidycrm/components/blocks/style/level1/l1-grid.css:45 .bk-db-jump[aria-pressed] already does it right (3px inline-start border), and body.css:183 td[data-bad] already carries a wavy underline - the carriers exist, they are just not applied where colour is alone",
+        "grep forced-colors over examples/tidycrm/app and components/blocks/style: 0 hits"
+      ],
+      "rollback": "One new CSS part, one import line, test additions and a DESIGN.md paragraph in one commit; reverting it removes the media block, which only applies under forced-colors, so the default paint is untouched either way.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root)"
+      ],
+      "runner_up": "A print mode for the dossier as the check print it is drawn as: @media print lays the card flat (no fixed layer or scrim, table-wrap uncapped so every example row prints, the title block as a signature box).",
+      "body": "## Summary\nThe Blocks sheet's whole job is telling a reader which databases are in fault, which field differs between two records, and where the irreversible acts are - and every one of those is carried by colour alone. Under Windows contrast themes (forced-colors) the platform repaints the palette and all three vanish. Add the missing mode and a gate that derives, from the sheet itself, every state that needs a non-colour carrier.\n\n## Description\nThe direction's colour lock (redline deviation, greenline passed, gold unadjudicated) is a strong visual grammar with no structural backup. Forced colors repaints color/background/border-color to system colours, so: the pressed camera pose looks like the other four (l0.css:180); fault and quiet legend keys draw the same 3px edge (l0.css:214/218); the differing field in the identity pair reads like the rest (identity-pair:77); the spelling chip that differs looks like the others (body.css:129); the title block loses its inversion, so Merge and its armed confirm sit on the same ground as the reversible actions (foot.css:60, :126); the agent-presence dot fills nothing (the-sheet-head.css:87). The sheet already owns the right carriers - the database jump's 3px pressed edge and the bad cell's wavy underline - they are just not used where colour is alone.\n\nThe registry's preference-respect technique is explicit: meaning survives the repaint only through structure. This card adds base/forced-colors.css (system colours only, forced-color-adjust: none where an inversion IS the meaning) and a derived gate: any stateful rule that changes only colour must have a forced-colors counterpart with a structural carrier, so the next state added to the sheet is caught, not remembered.\n\n## Flow\n- New part base/forced-colors.css, imported last in index.css\n- Carriers: border style/width for fault vs quiet and pressed states; wavy underline for differs; forced-color-adjust: none + CanvasText ground for the title block and the presence dot\n- tidycrm-style.test.ts: derived stateful-colour gate, system-keyword-only gate, rulesOf() skips the forced block for the contrast walk\n- DESIGN.md: one paragraph under the colour lock naming the forced-colors carriers\n\n## Expected impact\nA reader on a Windows contrast theme can tell fault from quiet, see which field differs between duplicates, and see the gate as a separate place - the three decisions the surface exists for. The derived gate closes the class for future states.\n\n## Evaluation\nClaim: every stateful colour-only rule has a structural forced-colors carrier, in system colours only, with the default paint unchanged\nBefore: 1 of 7 acceptance cases pass (the guard)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in examples/tidycrm/test/tidycrm-style.test.ts\nResult: better\nGate: none",
+      "evidence": "grep -rn forced-colors examples/tidycrm/app examples/tidycrm/components -> 0. Stateful colour-only rules: l0.css:180 (background/color), l0.css:214,218 (border-inline-start-color), l0.css:313,317 (background), l1-grid.css:58 (border-color/color), body.css:129 (border-color/color), identity-pair:77 (color), foot.css:126 (background/color/border-color), the-sheet-head.css:87 (background). Structural precedents: l1-grid.css:45 border-inline-start 3px, body.css:183 text-decoration wavy."
+    }
+  ],
+  "rehomed": [
+    "Fold the cut artifacts body-2.css (one 5-line rule) and foot-2.css back into their owners and rename the parts by concern: S, effort 2",
+    "chrome/toast.css:11-28 writes 1px / 3px / 0 literals because the rule and radius tokens are scoped to the wrapper the toast stack sits outside: S, lift three tokens to the :root block",
+    "The focus ring drawn in redline against the colour lock is already an open stabilize backlog item (design call, S) - not re-proposed; card A makes it a single --bk-focus role whichever way it is decided"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["design-tokens", "accessibility", "motion"],
+    "techniques": ["theme-architecture", "token-taxonomy", "token-enforcement", "preference-respect"]
+  },
+  "files_read": 27
+}

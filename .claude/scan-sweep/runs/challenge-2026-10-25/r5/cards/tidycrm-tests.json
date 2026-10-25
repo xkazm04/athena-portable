@@ -1,0 +1,124 @@
+{
+  "host": "tidycrm-tests",
+  "cards": [
+    {
+      "context": "tidycrm-tests",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A stateful write-path harness: random op walks checked against recomputed flags",
+      "size": "M",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/test/pairs.test.ts",
+        "examples/tidycrm/test/conflict-flag.test.ts"
+      ],
+      "new_files": [
+        "examples/tidycrm/test/model/oracle.ts",
+        "examples/tidycrm/test/model/ops.ts",
+        "examples/tidycrm/test/model/snapshot.ts",
+        "examples/tidycrm/test/write-paths.model.test.ts",
+        "examples/tidycrm/test/model/traces/.gitkeep"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "oracle negative control: on a fresh seed, plant `UPDATE contacts SET conflict = 0 WHERE domain = 'verdant-supply.example'` -> checkInvariants() returns a violation naming `conflict` and that domain (it does not throw, and it is not empty)",
+        "oracle negative control: flip in_open_pair to 0 on one member of an open pair, and separately insert an open merge_pairs row whose drop_id is a deleted contact -> two violations, `in_open_pair` and `open pair with a non-working member`",
+        "oracle on the untouched seed -> zero violations across all eight invariants (stored phone_ok/is_stale/conflict/in_open_pair equal their recomputation from raw columns; every open pair has two working members; countSegment(s) equals the recomputed predicate for all seven segments; buildSheet's table ids equal segmentRows('all') ids; countOpenPairs equals the duplicates attached to blocks while under the cap)",
+        "random walk: for seeds 1..8, 40 ops each drawn from {normalizeFields, flagStale, resolveCompany, mergeContacts, deleteContacts, resolvePair, undoWrite, insertExtraPair} with a per-seed swarm subset -> checkInvariants() is empty after every op; a violation fails with the op trace (JSON list of {op,args}) written to test/model/traces/, not the seed",
+        "undo round trip: every reversible op the walk performs, when immediately followed by undoWrite(its activity id) returning ok, restores the contacts and merge_pairs digest to the pre-op digest",
+        "generator reach: across the 8 walks the coverage tally records at least one each of: a contact in two open pairs, a domain emptied of working contacts, a refused undo, a merge that adopts the drop's phone, a refused merge -> otherwise the test fails naming the unreached state (the generator, not the code, is what was untested)",
+        "replay: every committed trace under test/model/traces/ replays deterministically through replay(trace) and checkInvariants() is empty after each step (with zero traces the loop asserts it ran over the directory, not that it passed vacuously)",
+        "isolation: after the walk suite the snapshot restore returns contacts, merge_pairs, revisions and activity row counts and digests to the seeded values, and pairs.test.ts / conflict-flag.test.ts still pass unchanged in their own processes"
+      ],
+      "guard_cases": ["2", "7"],
+      "premise": [
+        "examples/tidycrm/test/liveness.test.ts:4 - `flagStale` and `deleteContacts` filtered for liveness and `planNormalize` and `mergeContacts` did not: a cross-write rule found by hand, one write at a time",
+        "examples/tidycrm/test/conflict-flag.test.ts:2 - `conflict` is a stored flag, so the writes that change a domain's spelling set owe it a refresh: the same drift class, again found per write",
+        "examples/tidycrm/test/pairs.test.ts:29 - the seed gives each contact exactly one pair, so the case has to be built: the seed cannot reach the states the write paths must survive",
+        "examples/tidycrm/test/l0-fill.test.ts:8 - all 46 tables carry a deviation in the seed, so the quiet state is unreachable without generated writes",
+        "examples/tidycrm/lib/db.ts:121 - phone_ok, is_stale, conflict and in_open_pair are denormalised at seed time (lines 121-124), and every write in lib/mutations.ts owes each a restamp",
+        "examples/tidycrm/lib/mutations.ts:76 - refreshPairFlag and refreshConflict (line 92) are the restamps; each write calls a different subset, which is exactly what a per-write test cannot see",
+        "examples/demo-kit/src/db/index.ts:34 - withTx is re-entrant with no partial inner rollback, so wrapping a walk in an outer transaction would keep a refused undo's partial writes; isolation must be a row snapshot restore"
+      ],
+      "rollback": "Test-only series: new files under examples/tidycrm/test/model/ plus one new test file and two small edits that move the hand-built extra-pair helper into ops.ts; `git revert` of the commits restores the suite with no source change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd examples/tidycrm && pnpm test",
+        "cd examples/tidycrm && pnpm typecheck && pnpm lint",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Lift the byte-identical tmp-home.ts (tidycrm/hirelane/ledgerbox) and the four forked register.mjs loaders into one demo-kit test-support export - cross-context, would be sequenced late.",
+      "body": "## Summary\nReplace one-write-at-a-time hand tests of the write paths with a seeded stateful harness: a generator walks random sequences of every mutation in lib/mutations.ts, and after each step an oracle recomputes every stored flag and segment from raw columns and compares.\n\n## Description\nFour of this suite's files exist because a cross-write rule drifted and was caught by hand: liveness (two of four writes filtered dead rows), conflict-flag (a stored flag nobody restamped), pairs (merge closed only its own pair), mutations (merge back the other way). Each is the same class - a denormalised column or a segment predicate that one write path forgets - and each test pins one write against one seeded state. The seed cannot even reach the interesting states (pairs.test.ts builds a second pair by hand; l0-fill.test.ts documents that the quiet state is unreachable). This card adds the instrument that closes the class: test/model/oracle.ts (checkInvariants(): phone_ok, is_stale, conflict, in_open_pair recomputed from raw columns; open pairs have two working members; seven segment counts recomputed; sheet partition and pair attachment agree), test/model/ops.ts (mulberry32-seeded generator over every write plus undo and an extra-pair insert, swarm-sampled per seed, biased toward ids that are dead, merged or already settled), test/model/snapshot.ts (row snapshot and restore between walks - NOT an outer withTx, because withTx is re-entrant without partial rollback and a refused undo would leave its partial writes in the walk). A failing walk persists its op trace, not its seed (seed-is-not-a-reproduction), and committed traces replay as regressions. If a walk finds a live defect in lib/mutations.ts, the fix belongs to the domain-lib context: the trace is committed with `{ todo }` and filed, so this card's write set stays in test/.\n\n## Flow\n- oracle.ts with negative controls first (cases 1-3)\n- ops.ts + snapshot.ts, then the walk (case 4) and the undo round trip (case 5)\n- generator reach tally (case 6) so a green walk proves it visited what the seed cannot produce\n- trace persistence and replay (case 7); move pairs.test.ts' hand-built extra pair onto ops.insertExtraPair\n\n## Expected impact\nThe next write added to lib/mutations.ts (or the next restamp dropped) fails a generated walk with a replayable trace instead of waiting for someone to hand-build the state. Registry: test-input-generation / model-based-oracle (rung 2 invariants plus a recompute-from-raw reference), inside-out-invariants, generator-bounds-the-space, swarm-feature-sampling, seed-is-not-a-reproduction; test-harness / negative-control-tests.\n\n## Evaluation\nClaim: every write path keeps every stored flag and segment equal to its recomputation, under sequences the seed cannot produce\nBefore: 0 of 8 acceptance cases pass (no oracle, no generator exists)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "grep -n refreshPairFlag/refreshConflict lib/mutations.ts -> called from normalizeFields (conflict only), mergeContacts (both), deleteContacts (conflict + closeDependentPairs), resolvePair (pair only), applyUndo (subset per kind), resolveCompany (conflict only); lib/db.ts:121-124 stamps four flags at seed; no file under examples/tidycrm/test generates a write sequence (grep -rn 'random|seed(' test/ -> only seed-data.ts' own rng); pairs.test.ts:31 INSERT INTO merge_pairs by hand; demo-kit db/index.ts:34-36 'A throw at any depth rolls the whole thing back - there is no partial inner rollback' (and an inner throw caught inside the outer tx is not rolled back at all)."
+    },
+    {
+      "context": "tidycrm-tests",
+      "slot": "B-architecture (no UI surface)",
+      "lens": "architecture-challenger",
+      "title": "Run every registered tool's real handler and check its declared class against the ledger",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/test/tools.test.ts"
+      ],
+      "new_files": [
+        "examples/tidycrm/test/support/capture-tools.ts",
+        "examples/tidycrm/test/tool-ledger.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "capture: rendering HostCapabilities (transpiled .tsx, useWebMCPTool/useToast/useRouter/useSearchParams stubbed to record) yields 15 registration objects whose names equal the list tools.test.ts pins, in order",
+        "classOf in tools.test.ts reads the captured objects instead of regex-splitting the source, and the GATED set stays [merge_contacts, delete_contacts, undo]",
+        "coverage: every captured tool has a fixture (args + precondition) in tool-ledger.test.ts; a planted extra registration with no fixture fails naming it",
+        "none means none: each `sideEffects: \"none\"` handler (navigate, read_state, preview_normalize, read_pairs, preview_merge, read_conflicts, preview_company) run on the scratch seed leaves the contacts, merge_pairs, revisions and activity digests unchanged",
+        "declared reversible is real: each `reversible: true, sideEffects: \"data\"` write (normalize_fields, flag_stale, resolve_pair, resolve_company) writes exactly one activity row with reversible = true, and calling the captured `undo` handler with that id returns `Undid #id.` and restores the contacts and merge_pairs digests",
+        "declared irreversible is real: merge_contacts, delete_contacts and undo each write an activity row with reversible = false",
+        "export: the stubbed anchor click routes to app/api/export GET, which writes one non-reversible `export` row; the handler returns `file` and the summary; export sits in a declared EXCEPTIONS map with its reason, and an EXCEPTIONS entry whose tool now matches its declaration fails as stale",
+        "negative control: checkDeclaration() on a planted spec that declares `sideEffects: \"none\"` around normalizeAction returns a violation (the checker can go red)"
+      ],
+      "guard_cases": ["1"],
+      "premise": [
+        "examples/tidycrm/test/tools.test.ts:58 - specs() reads the catalogue by splitting the source on `useWebMCPTool({` and taking the FIRST regex match of each field in the chunk: a parameter or prose that precedes the tool's own field is read as the tool's",
+        "examples/tidycrm/test/tools.test.ts:137 - the AUTO/GATED verdict is checked only against the declarations, never against what the handler writes; the gate's safety rests on `reversible` being true",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx:116 - export declares reversible + data while its download writes a non-reversible provenance row (app/api/export/route.ts:19): a declaration-behaviour gap that today lives only in a comment",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx:390 - undo's GATED class follows from undoActivity writing reversible:false, a runtime fact the current test asserts on the lib, not on the tool",
+        "examples/demo-kit/test/ui-webmcp.test.ts:11 - precedent in-repo: a node --test file transpiles .tsx with the TypeScript dependency in a load hook and renders with react-dom/server",
+        "examples/hirelane/test/register.mjs:18 - precedent: siblings stub next/cache's revalidatePath so app/actions.ts can run under node --test; tidycrm's register.mjs has no such stub, so no tidycrm test has ever executed a tool handler"
+      ],
+      "rollback": "Test-only: revert the commits; tools.test.ts returns to its regex reader, the two new files go. No app source is touched (the stubs live in test/support/capture-tools.ts via registerHooks, so test/register.mjs and every other test file are unchanged).",
+      "gate": "none",
+      "gates_to_run": [
+        "cd examples/tidycrm && pnpm test",
+        "cd examples/tidycrm && pnpm typecheck && pnpm lint",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "An AST source-pin reader (typescript createSourceFile) replacing the regex text pins in beats/campaign/space/tools, so a comment can neither satisfy nor break a structural pin (pin-the-call-not-the-name).",
+      "body": "## Summary\nStop reading the tool catalogue as text and stop trusting its declarations: capture the real registration objects by rendering HostCapabilities with a recording useWebMCPTool, invoke every handler against the scratch database, and hold `reversible` / `sideEffects` to the activity rows and table digests the call actually produced.\n\n## Description\nThe AUTO/GATED split is the safety line of this app's agent surface, and it is computed from two hand-typed fields. tools.test.ts checks those fields against the design 5.1 rule but reads them with a split-and-first-regex parser and never runs a handler, so a tool that declared `reversible: true` while its action logged an irreversible row - or `sideEffects: \"none\"` while it wrote - would be classed AUTO and pass. One such gap already exists and is managed only by a comment (export). This card adds test/support/capture-tools.ts: a registerHooks loader (the demo-kit ui-webmcp precedent) that transpiles .tsx, stubs `@athena/demo-kit/webmcp`'s useWebMCPTool to record specs (annotationsFor passed through), stubs useToast, next/navigation and next/cache, and gives the export handler a minimal `document` whose anchor click calls the real route GET. tool-ledger.test.ts then runs each captured handler with a fixture and checks the observed ledger against the declaration, with a reasoned EXCEPTIONS map that fails when an exception goes stale. tools.test.ts' classOf moves onto the captured objects.\n\n## Flow\n- capture-tools.ts and case 0 (the 15 names) first\n- negative control (case 7), then none/reversible/irreversible parity (cases 3-5)\n- export exception and stale-exception check (case 6), fixture coverage (case 2)\n- move tools.test.ts specs() onto the capture (case 1)\n\n## Expected impact\nA mis-declared tool - the one defect that lets an agent run an irreversible write without approval - fails the suite by behaviour, not by reading. Registry: test-harness / pin-the-call-not-the-name, negative-control-tests; test-input-generation / model-based-oracle (declaration vs observed ledger).\n\n## Evaluation\nClaim: every tool's declared class matches what its handler writes\nBefore: 0 of 8 acceptance cases pass (no handler is executed by any tidycrm test)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "tools.test.ts:59 `read(file).split(\"useWebMCPTool({\").slice(1)`, :61-63 first-match regex per field; grep -c useWebMCPTool HostCapabilities.tsx -> 16 (15 registrations + import); HostCapabilities.tsx:115-122 export `reversible: true` + comment on the non-reversible route row; route.ts:19-25 logActivity reversible:false; tidycrm/test/register.mjs has no next/cache stub while hirelane/ledgerbox/atlas register.mjs all do; demo-kit/test/ui-webmcp.test.ts:21-40 tsx transpile load hook."
+    }
+  ],
+  "rehomed": [
+    "A seed-facts module for the figures repeated across files (800 / 60 / 43 / 17 / 10 conflicted / 46 tables in campaign, databases, memory, l0-fill) - S, under the size floor.",
+    "Harden tools.test.ts' first-match regex reader alone (field order, comments) - S, and subsumed by slot B."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["test-input-generation", "test-harness"],
+    "techniques": [
+      "model-based-oracle",
+      "inside-out-invariants",
+      "generator-bounds-the-space",
+      "swarm-feature-sampling",
+      "seed-is-not-a-reproduction",
+      "negative-control-tests",
+      "pin-the-call-not-the-name"
+    ]
+  },
+  "files_read": 32
+}

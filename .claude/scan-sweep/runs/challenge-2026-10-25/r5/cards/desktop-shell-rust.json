@@ -1,0 +1,138 @@
+{
+  "host": "desktop-shell-rust",
+  "cards": [
+    {
+      "context": "desktop-shell-rust",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The sidecar heals itself: a crashed daemon respawns on a bounded ladder",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src-tauri/src/daemon.rs",
+        "apps/desktop/src-tauri/src/lib.rs"
+      ],
+      "new_files": [
+        "apps/desktop/src-tauri/src/ladder.rs"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-daemon-that-dies-after-ready-is-respawned-on-a-bounded-ladder.md (amends ADR 0015: who restarts, how often, and what is never retried)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "ladder: a daemon that reached Ready and whose stdout then closed with no refusal -> Plan::Respawn { attempt: 1, after: 1s }, and the status edit is health=starting, url=null, error='the daemon exited; starting it again in 1s (attempt 1 of 5)', attempt=1 (a new additive field; health stays one of the four existing values)",
+        "ladder: five consecutive deaths, none of which stayed Ready for the reset window -> delays 1s, 2s, 4s, 8s, 16s (doubling, capped at 30s); the sixth death -> Plan::GiveUp and health=failed with error naming the count ('the daemon exited 5 times in a row; restart it from Settings'), and no further spawn is scheduled",
+        "ladder: a run that stayed Ready for at least the reset window (60s, a productive round) and then died -> the ladder resets: Plan::Respawn { attempt: 1, after: 1s }, not the next rung",
+        "ladder: an exit that follows a declared refusal (SidecarError::Refused, e.g. engine_unavailable) or a 401 from /health -> Plan::GiveUp with the refusal's own sentence kept (exit_error unchanged); a declared verdict is never retried",
+        "start is serialised: two start() calls racing on a fake Spawner whose spawn sleeps 50 ms between shutdown and storing the child -> after both return, spawned=2, killed=1, live children=1 (today the first child is overwritten unkilled, daemon.rs:772/862)",
+        "a person's daemon_restart while a backoff respawn is pending -> the pending respawn is cancelled by the generation bump, the ladder resets to attempt 0, and exactly one child is spawned",
+        "a shutdown on app exit while a backoff respawn is pending -> no spawn happens after Daemon::shutdown returns (the respawn timer checks the generation)",
+        "the existing a_refusal_survives_the_exit_that_follows_it and a_failed_start_says_failed_on_the_attempted_engine_with_no_url tests stay green unchanged"
+      ],
+      "guard_cases": [
+        "7"
+      ],
+      "premise": [
+        "apps/desktop/src-tauri/src/daemon.rs:913 - after Ready, the supervisor waits for stdout to close and then writes health=failed, error='the daemon exited' (daemon.rs:921-925); nothing ever spawns again on its own",
+        "apps/desktop/src-tauri/capabilities/athena.json:26 - her window is granted daemon_status but not daemon_restart (ui.json:25 has it), so the ambient window the person actually lives in has no way to recover a dead daemon; healing in the shell reaches her without widening her capability",
+        "apps/desktop/src-tauri/src/daemon.rs:770-777 and :862 - start() runs shutdown, bumps the generation, spawns and only then stores the child, unserialised; stabilize-2026-10-16 recorded 'Overlapping daemon starts can leave the first child running beside the second' as an open S backlog item, adopted and closed here as one rung of the supervisor",
+        "apps/desktop/src-tauri/src/daemon.rs:937-948 - the ready wait already distinguishes a slow start (keep waiting), a declared refusal and an exit; the ladder reuses that typed ending instead of re-inferring it",
+        "ADR 0085 decides that an engine change restarts only on the person's say-so because a restart cuts a running turn; a process that has already exited has no running turn, so respawning it does not cross that decision"
+      ],
+      "rollback": "Two commits: (1) ladder.rs plus the Spawner seam and the start mutex in daemon.rs, (2) supervise() consulting the ladder on exit and the additive attempt field. Reverting (2) restores today's exit-to-failed; reverting (1) removes the module. No store, contract or TS change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets",
+        "cd apps/desktop/src-tauri && cargo test daemon ladder"
+      ],
+      "runner_up": "The shell owns the document binding: hands_call/bridge_call carry the card's tab_nav and the shell refuses unknown_ref atomically with dispatch, instead of the presentation layer comparing a mirrored tab list (run.ts:681) - native-side-owns-the-target-set; needs an ipc.ts change in desktop-client-lib.",
+      "body": "## Summary\nA daemon that dies after it was ready leaves Athena dead until somebody finds Settings and presses Restart - and her own window cannot press it. The shell already owns the sidecar's whole life (ADR 0015); this makes it own recovery too: a pure ladder decides respawn, back off or give up, starts are serialised, and every rung is said on daemon:status.\n\n## Description\nA new pure module `ladder.rs` holds the policy as a state machine with no process in it: inputs are how the last run ended (exited after Ready for N seconds, exited before Ready, declared refusal, 401) and the attempt count; outputs are `Respawn { attempt, after }` or `GiveUp { why }`. Delays double from 1 s to a 30 s ceiling; five consecutive unproductive deaths exhaust it; a run that stayed Ready for the 60 s reset window resets it (the productive-round rule: reset on a round that produced, never on one that merely connected). A declared refusal and a 401 are verdicts and are never retried (declared-verdict-over-inferred-wreckage). `supervise()` consults it where it now writes 'the daemon exited'; the respawn sleeps on a thread that re-checks the generation, so a person's restart or an app exit cancels it. `start()` takes a start mutex across shutdown -> spawn -> store, behind a small `Spawner` seam so the race is a unit test, closing the overlapping-starts backlog item. The status gains an additive `attempt` field; `health` keeps its four values, so the TS store (stores/daemon.ts, which keeps `error` as lastError while not ready) renders the respawn sentence with no change.\n\n## Flow\n- daemon exits after Ready -> ladder -> status starting + 'starting it again in 1s (attempt 1 of 5)' -> respawn with a fresh token (as daemon_restart does) -> Ready clears the error\n- five unproductive deaths -> failed, 'exited 5 times in a row; restart it from Settings'\n- refusal / 401 -> failed with the daemon's own reason, no retry\n- person presses Restart or quits -> generation bump cancels any pending respawn\n\n## Expected impact\nA crash in a long evening (an engine CLI that segfaults, an OOM) costs a second of 'starting' instead of a dead assistant; the ambient window recovers without a capability it was deliberately not given; the double-daemon race closes. Registry: subprocess-lifecycle/termination-and-reaping and liveness-and-heartbeats (typed endings), self-healing/healer-death-as-promotion (an exhausted ladder writes its verdict before it stops), native-shell-integration/native-owned-stream (productive-round backoff).\n\n## Evaluation\nClaim: the shell respawns a daemon that died after Ready on a bounded, resettable ladder, never retries a declared refusal, and never runs two daemons.\nBefore: 0 of 7 new acceptance cases pass (no ladder, no spawner seam, no start lock); case 8 is a guard on the existing refusal tests\nAfter: 8 of 8\nMethod: gate - the acceptance cases as cargo unit tests on ladder.rs and a fake Spawner\nResult: better\nGate: none",
+      "evidence": "daemon.rs:909-925: `while lines.recv().is_ok() {} ... state.edit(&app, |s| { s.url = None; s.health = Health::Failed; s.error = exit_error(ended.as_ref()); });` - the only exit path; grep -n 'respawn\\|spawn' daemon.rs shows spawn only in start(), called from start_at_launch (daemon.rs:1027) and daemon_restart (daemon.rs:1078). athena.json permissions list allow-daemon-status (line 26) and no allow-daemon-restart; ui.json:25 allow-daemon-restart. daemon.rs:771-777 `state.shutdown(); let generation = { ... *g += 1 ... }` then `*state.locked_child() = Some(child);` at :862 with no lock held across them. stabilize-2026-10-16 findings/desktop-shell-rust.jsonl: 'Overlapping daemon starts can leave the first child running beside the second' disposition backlog, size S."
+    },
+    {
+      "context": "desktop-shell-rust",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A restart lands where you left: tabs, the focused page and her dock return",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src-tauri/src/tabs.rs",
+        "apps/desktop/src-tauri/src/lib.rs",
+        "apps/desktop/src-tauri/src/companion.rs",
+        "apps/desktop/src-tauri/src/bridge.rs",
+        "apps/desktop/src-tauri/src/hands.rs"
+      ],
+      "new_files": [
+        "apps/desktop/src-tauri/src/session.rs"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-restart-reopens-the-last-sessions-tabs-and-a-tab-id-is-never-reissued.md (what is restored without asking, what is refused, and why tab ids now survive launches)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "session::snapshot of [https://ledger.test/inv/42 (focused), http://127.0.0.1:8731/, file:///C:/x.html, data:text/html,hi] -> two entries, the https one marked focused; file: and data: are not written (only http and https are restorable)",
+        "session::snapshot of 20 tabs -> 12 entries (SESSION_MAX), the focused tab always among them, and a url over 2048 characters dropped",
+        "session::plan(saved = [a, b(focused)], start_url = None) -> open [a, b], focus b; plan(saved, Some(c)) -> open [a, b, c], focus c (a launch argument wins focus and is not duplicated when it equals a saved url); plan of a missing, null or malformed settings row -> empty plan (the shell opens as today)",
+        "tab ids never repeat across launches: Tabs seeded from a stored high-water mark of 41 -> the next add() returns 42; a restored tab gets a fresh id, so a card bound to last launch's tab 3 (run.ts:681 compares tab_id and nav only) finds no tab 3 rather than a different page that happens to be tab 3",
+        "persisting is change-driven: a title-only change -> no session write; a navigation, a create, a close or a focus change -> exactly one settings write of 'shell.session'",
+        "companion::restore_seal(saved seal (1700, 900), snap 'main.right', work areas [1920x1040 at 0,0]) -> Some(seal) with that snap; a saved seal on a monitor that is no longer connected -> None, and she comes up at today's bottom-right default",
+        "the smokes ask the tab the start url actually opened: bridge::smoke_if_asked and hands::smoke_if_asked take the id tabs::create returned, so ATHENA_SMOKE still prints ok=true when restored tabs or a carried-over id sequence mean the start tab is not tab 1",
+        "ATHENA_SMOKE or ATHENA_SMOKE_HANDS set -> nothing is restored and no session row is written (a smoke run never reopens a person's tabs)"
+      ],
+      "guard_cases": [
+        "6"
+      ],
+      "premise": [
+        "apps/desktop/src-tauri/src/tabs.rs:50-55 and :112 - tab state is an in-memory Vec with next_id starting at 0 on every launch; nothing writes it anywhere, so a restart (or the update that restarts the app) loses every open page and its deep url",
+        "apps/desktop/src-tauri/src/lib.rs:261-266 - the only tab a launch opens is the dev start url; the Apps ledger (ADR 0024) reopens an app at its origin, one press per app, never at the page the person was on",
+        "apps/desktop/src/stores/run.ts:681-693 - a card's binding to its document is tab_id plus nav; approvals live in the brain index across restarts (ADR 0005), and tab ids restart at 1 each launch (tabs.rs:112-113), so today a new launch can mint the same tab id a pending card names - persisting a high-water mark closes that aliasing (identity-survives-reuse) as a by-product of restore",
+        "apps/desktop/src-tauri/src/companion.rs:434-438 - her seal is placed at a fixed bottom-right point on every launch; the dock the person dragged her to (settle_drop, companion.rs:532-558) is forgotten",
+        "apps/desktop/src-tauri/src/bridge.rs:565-575 and hands.rs:792-801 - both smokes hard-code tab 1, which restore or a carried-over id sequence would break",
+        "apps/desktop/src/stores/tabs.ts:59 - the chrome reads tabs_list at start, so tabs restored in setup before the chrome loads appear with no TypeScript change; the settings table holds any JSON (store.rs:117-124), so no schema or store change"
+      ],
+      "rollback": "Three commits: (1) session.rs plus the persisted id high-water mark in tabs.rs, (2) restore in lib.rs setup with the smokes taking the opened id, (3) her dock in companion.rs. Each reverts alone; the settings rows they leave behind are ignored by a shell that no longer reads them.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets",
+        "cd apps/desktop/src-tauri && cargo test session tabs companion"
+      ],
+      "runner_up": "The tray becomes a control surface: the daemon's health line with Restart when it failed, and 'N waiting' opening her at the sheet, instead of a dot that only reports.",
+      "body": "## Summary\nEvery restart of the shell - a crash, an update, a reboot - throws away every open app and the page the person was on, and puts her back in the corner she was dragged out of. The shell already owns tabs and her rectangle; it should own their return. One launch, zero presses, back where you were.\n\n## Description\nA pure `session.rs` turns the tab list into a bounded, restorable snapshot (http and https only, at most 12, the focused one kept, long urls dropped) and turns a saved snapshot plus an optional launch url into a restore plan. `tabs.rs` writes the snapshot to the `settings` row `shell.session` only when it changes (not on a title change) and keeps a high-water mark `shell.tab_seq`, so a tab id is never reissued across launches - which also stops a pending card that names last launch's tab 3 from resolving onto an unrelated page that is this launch's tab 3. `lib.rs` restores in setup after the store opens: background tabs first, the focused one last, the launch argument winning focus. Smoke runs restore nothing, and both smokes ask the tab `tabs::create` returned instead of tab 1. `companion.rs` saves her seal and snap on a drop or a requested snap and restores them only when the point still lies in a connected work area (layered-place-restoration: restore what is still valid, fall back silently to the default). Trust is untouched: a restored tab is a page like any other, its origin's row decides what Athena may do there, and nothing is sent anywhere - the urls stay in the local store beside the browsing profile that already holds the logins.\n\n## Flow\n- person works in three apps, quits\n- next launch: the three tabs reopen at their pages, the one in front is in front, her seal is where it was\n- a launch with a url argument opens it too and puts it in front\n- a stale card bound to an old tab id finds the tab closed and says so, instead of acting on a stranger\n\n## Expected impact\nA restart costs nothing to the person's place; N presses of the Apps ledger plus re-navigation become zero. Registry: session-resume/layered-place-restoration and resume-affordances (what may restore without asking: one's own tabs, yes; a saved card, no), native-shell-integration (the native side owns the target set: the restore list is re-derived and filtered natively, not handed back by the view).\n\n## Evaluation\nClaim: the shell restores the last session's restorable tabs, focus and her dock on launch, never reissues a tab id, and leaves smokes and untrusted schemes out.\nBefore: 0 of 7 new cases pass (no session module, ids restart at 1, seal fixed); case 7 is a guard on the smokes\nAfter: 8 of 8\nMethod: gate - the acceptance cases as cargo unit tests on session.rs, Tabs and companion's pure placement\nResult: better\nGate: none",
+      "evidence": "tabs.rs:50-55 `struct TabsState { next_id: u32, focused: Option<u32>, list: Vec<TabRecord> }` under `#[derive(Default)]`; tabs.rs:112 `state.next_id += 1;`. grep -n 'store::' tabs.rs -> no hits (tabs never touch the store). lib.rs:261 `if let Some(url) = start_url()` is the only launch-time tabs::create. companion.rs:434-438 seal = bottom-right of the work area unless first launch. bridge.rs:574 `smoke(app, 1)`, hands.rs:801 `smoke(app, 1)`. run.ts:681-693 bindingRefusal compares `tab.tabId !== bound.tab_id` and `tab.nav !== bound.tab_nav` only. grep -il 'restore' docs/adr/*.md -> no ADR on session restore."
+    }
+  ],
+  "rehomed": [
+    "Move the daemon's event stream into Rust (native-owned-stream, the recorded half-open deviation at companion.rs:652): the technique itself requires the hidden-view throttling to be demonstrated first, which needs the real window; until then the view is the cheaper owner (unmeasurable offline).",
+    "Halo monitor hot-plug: halos are built once at launch (halo.rs:139) and a missing index falls back to the primary, so an unplugged monitor stacks two halos there and a new one gets none; reconcile on a display change. S/M, impact 6.",
+    "Her dock remembered on its own (companion.rs:434): S, folded into card B.",
+    "Persist a tab id high-water mark alone to close cross-launch card aliasing: S, folded into card B as its identity rule."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": [
+      "native-shell-integration",
+      "subprocess-lifecycle",
+      "self-healing",
+      "session-resume",
+      "agent-browser-control"
+    ],
+    "techniques": [
+      "native-owned-stream",
+      "native-side-owns-the-target-set",
+      "liveness-and-heartbeats",
+      "termination-and-reaping",
+      "healer-death-as-promotion",
+      "declared-verdict-over-inferred-wreckage",
+      "layered-place-restoration",
+      "resume-affordances"
+    ]
+  },
+  "files_read": 41
+}

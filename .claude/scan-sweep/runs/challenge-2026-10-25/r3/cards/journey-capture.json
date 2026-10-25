@@ -1,0 +1,130 @@
+{
+  "host": "journey-capture",
+  "cards": [
+    {
+      "context": "journey-capture",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Derive every cut from one pure timeline plan shared by compose and recorders",
+      "size": "L",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/journey/scripts/compose.mjs",
+        "examples/journey/scripts/record-desktop.mjs",
+        "examples/journey/scripts/placeholders.mjs",
+        "examples/journey/package.json",
+        "examples/journey/README.md"
+      ],
+      "new_files": [
+        "examples/journey/scripts/lib/timeline.mjs",
+        "examples/journey/scripts/test/timeline.test.mjs"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "planFilm(script with two acts, takes, {xfade: 300}) where act 1's last beat has a clip that fills its beat -> that clip's start+keep <= act 2's first placed beat start (today compose.mjs:468 trims only to the beat's own end, so the clip runs 300 ms under act 2's first clip)",
+        "planFilm(one act whose take logs a wait {start_ms:10000,end_ms:18000,factor:4}) -> a beat marked at 20000 ms is placed at 14000 ms and one 'sped up 4x' block spans 2000 ms (same figures today's --dry timeline prints)",
+        "planTake(beats A[0..5000], B[4000..9000], clips 5000 ms each) -> A is kept to 4000 ms with a fade (trimmed: true); today compose.mjs:196-201 warns 'it will be trimmed' about B and keeps both whole, so they overlap 1000 ms",
+        "layClips(placedBeats, durations) is the one function both modes call: for a single-piece film with no speedups and the same beats, planTake(...).clips deep-equals planFilm(...).clips",
+        "holdOf(beat, script, durations, manifest) where the manifest's chars for the beat differ from the line's length -> the words/chars-per-second estimate, not the stale clip (parity with src/script.ts loadDurations/isStale; record-desktop.mjs:248 reads durations.json raw today)",
+        "for every beat of script/proving.en.json and script/journey.en.json, timeline.holdOf and timeline.captionOf equal holdMsOf and captionOf imported from src/script.ts (node --test, Node 24 strips types) -> equal",
+        "planFilm with a total over script.max_ms and allowLong false -> returns {refused: 'the cut runs m:ss, over the 2:59 limit'} and no ffmpeg argv is built",
+        "ffmpegArgs(planFilm(placeholder fixture: script/proving.en.json, beat 2.5 s, wait 8 s)) -> equals the argv captured from today's `compose --film --takes take/placeholder --dry` before the refactor (snapshot committed as the first commit)"
+      ],
+      "guard_cases": ["1", "5", "6", "7"],
+      "premise": [
+        "examples/journey/scripts/compose.mjs:178 - take mode lays clips inline: place at beat start, trim to beat end with a fade",
+        "examples/journey/scripts/compose.mjs:459 - film mode re-implements the same clip laying a second time, mixed into the IO path",
+        "examples/journey/scripts/compose.mjs:468 - film clip room is min(beat.end, totalMs) - beat.start; with xfade the next piece starts at p.at + p.ms - fade (compose.mjs:417), so seam clips overlap by up to `fade`",
+        "examples/journey/scripts/compose.mjs:196 - 'starts before the previous beat ends; it will be trimmed' - nothing trims either clip",
+        "examples/journey/scripts/record-desktop.mjs:82 - '`src/script.ts`'s hold rule, restated for a plain .mjs' (copy 2); captionOf copy at :93; placeholders.mjs:82 captionOf copy 3",
+        "examples/journey/scripts/record-desktop.mjs:248 - durations.json read raw; src/script.ts:146 drops a clip whose manifest chars no longer match the line, so the desktop segment paces to a clip the web segment refuses",
+        "examples/journey/package.json:7 - `test` is `playwright test` (boots three Next servers); none of the 3,120 lines under scripts/ has a test"
+      ],
+      "rollback": "Commit 1 adds the argv snapshot + tests; commit 2 adds lib/timeline.mjs; commits 3-4 switch compose.mjs then record-desktop/placeholders to it. Each reverts independently with git revert; reverting 3-4 restores the inline copies, the lib and its tests are inert on their own.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter @athena/journey typecheck",
+        "pnpm --filter @athena/journey lint",
+        "pnpm --filter @athena/journey run test:unit  (new: node --test scripts/test/)",
+        "node examples/journey/scripts/compose.mjs --film --takes take/placeholder --dry  (argv unchanged vs snapshot)"
+      ],
+      "runner_up": "Collapse the five shoot-*.mjs cameras into one declarative shot list per app run by one runner (ports from src/apps.ts honouring JOURNEY_PORT_OFFSET, settle on a page-ready signal instead of fixed 900 ms waits).",
+      "body": "## Summary\nThe film pipeline's schedule (where each beat, clip, speed-up label and caption lands) is derived three times: inline in compose.mjs take mode, again inline in film mode, and a third time as restated hold/caption rules in record-desktop.mjs and placeholders.mjs. Extract it as one pure, tested derivation, `scripts/lib/timeline.mjs`, and make every script a thin IO shell over it.\n\n## Description\nmedia-playback/timeline-scheduling: 'the schedule is a derivation of the timeline model, recomputed by a named function ... never hand-patched in place', and seams must not gap or overlap. Today compose.mjs (610 lines) interleaves ffprobe, filtergraph strings and the placement maths, so neither mode can be tested without ffmpeg and real takes, and the two copies have already diverged: film mode lets a clip run `xfade` ms under the next act's first clip (compose.mjs:468 vs :417), take mode warns of a trim it never does (:196). record-desktop.mjs restates src/script.ts's hold rule but not its stale-clip filter, so the desktop segment paces to a clip length the web recorder refuses. The plan module exposes planTake, planFilm, layClips (one clip-laying rule that trims a clip at the next clip's start, not just its own beat's end), holdOf/captionOf, and ffmpegArgs(plan). compose.mjs keeps its flags and output; --dry prints the plan. A parity test imports src/script.ts read-only so the .mjs and .ts hold rules cannot drift again (test-harness/pin-the-call-not-the-name: pin behaviour, not text).\n\n## Flow\n- snapshot today's `--dry` argv for the placeholder fixture (guard)\n- write timeline.test.mjs cases 0-7; watch 0, 2, 3, 4 fail\n- extract lib/timeline.mjs from compose.mjs; fix the seam and the take-mode overlap inside layClips\n- compose.mjs: parse args -> probe durations -> plan -> ffmpegArgs -> spawn\n- record-desktop.mjs and placeholders.mjs import holdOf/captionOf (record-desktop also reads the narration manifest for staleness)\n- add `test:unit` to package.json; README 'Recording a take' names it\n\n## Expected impact\nA crossfaded or overlapping-beat cut can no longer lay two voices on top of each other; the desktop segment paces the same as the web segment after a script edit; the film pipeline gains its first offline tests, so the next change to compose is a reviewed diff of a plan rather than a re-render and a listen.\n\n## Evaluation\nClaim: one derivation closes the seam-overlap and hold-drift class across take, film and desktop recorder\nBefore: 0 of 8 acceptance cases pass (no module; cases 0, 2, 4 are live defects)\nAfter: 8 of 8\nMethod: gate - the acceptance cases under node --test, plus the argv snapshot\nResult: better\nGate: none",
+      "evidence": "compose.mjs:468 `const room = Math.max(0, Math.min(beat.end, totalMs) - beat.start);` with compose.mjs:413-418 `p.at = at; at += p.ms - fade;` -> last beat of piece i ends at p_i.at+p_i.ms, first beat of piece i+1 starts at p_i.at+p_i.ms-fade. compose.mjs:196-198 warns and pushes the clip unchanged. record-desktop.mjs:82 comment 'src/script.ts's hold rule, restated for a plain .mjs'; :248 `JSON.parse(readFileSync(durationsPath))` with no manifest check, vs src/script.ts:146 `if (script !== undefined && isStale(id, script, narrated)) continue;`. captionOf at src/script.ts:204, record-desktop.mjs:93, placeholders.mjs:82. grep for tests of scripts/*.mjs: none; package.json test = playwright test."
+    },
+    {
+      "context": "journey-capture",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "narrate re-voices exactly the beats a script edit changed, shown before it spends",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/journey/scripts/narrate.mjs",
+        "examples/journey/package.json",
+        "examples/journey/README.md"
+      ],
+      "new_files": [
+        "examples/journey/scripts/lib/narration-plan.mjs",
+        "examples/journey/scripts/test/narration-plan.test.mjs"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "beat 1.3's line edited to a different line of the SAME length, take/audio/1.3.mp3 on disk, manifest sha from the old line -> planNarration(...).synthesize == ['1.3'] (today narrate.mjs:440 skips it because the mp3 exists, and src/script.ts isStale compares length only, so the old clip is kept silently)",
+        "beat 1.3's line edited, plain run (no --force, no --only), 1.3 not re-synthesised (e.g. its synthesis failed) -> the manifest entry for 1.3 keeps the old sha and old chars (today narrate.mjs:489 writes the NEW line's length against the OLD mp3, which hides the stale clip from src/script.ts isStale)",
+        "every beat unchanged: sha matches and mp3 on disk -> plan.reuse holds all ids and plan.spend == 0 chars",
+        "--dry with 1.3.mp3 on disk and its sha matching -> durations.json keeps the ffprobe-measured ms for 1.3; only beats with no current clip get estimates (adopts stabilize-2026-10-16 'narrate --dry overwrites the measured lengths of clips already on disk')",
+        "ELEVENLABS_VOICE_MIRA now names a different voice than the manifest records for mira -> every mira beat is in plan.synthesize with reason 'voice', narrator and athena beats are reused",
+        "legacy manifest entry with no sha whose chars equal the current line's length -> reused and marked 'legacy' in the plan, not re-spent (no surprise bill on upgrade)",
+        "--only 1.3 with 1.3 and 2.1 both changed -> plan.synthesize == ['1.3'] and plan.staleOutOfScope == ['2.1'], printed in the summary",
+        "a plan whose spend exceeds 20,000 chars without --yes -> exit 4 before any fetch call (fetch stub never invoked)"
+      ],
+      "guard_cases": ["2", "5", "6", "7"],
+      "premise": [
+        "examples/journey/scripts/narrate.mjs:440 - todo = beats with no mp3 on disk unless --force: an edited line with an existing clip is never re-voiced",
+        "examples/journey/scripts/narrate.mjs:489 - after measuring the OLD mp3 the manifest records `chars: beat.line.length` of the NEW line",
+        "examples/journey/src/script.ts:176 - isStale compares manifest chars to line length only; the laundered entry from :489 makes it report fresh",
+        "examples/journey/scripts/narrate.mjs:376 - --dry writes an estimate for every beat in scope over measured lengths (stabilize-2026-10-16 finding, open)",
+        "examples/journey/README.md 'Re-takes' - 'A script edit is `pnpm narrate -- --only <ids> --force`': the operator must know which ids changed",
+        "examples/journey/scripts/narrate.mjs:251 - each synthesis is paid ElevenLabs characters; CHAR_BUDGET 20,000 at :42"
+      ],
+      "rollback": "Commit 1 adds narration-plan.mjs and its tests (inert); commit 2 routes narrate.mjs through it and writes `sha` per manifest beat. Reverting commit 2 restores the mp3-exists rule; a manifest carrying `sha` stays readable by the old code and by src/script.ts, which ignore unknown fields.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter @athena/journey typecheck",
+        "pnpm --filter @athena/journey lint",
+        "pnpm --filter @athena/journey run test:unit  (new: node --test scripts/test/)",
+        "node examples/journey/scripts/narrate.mjs --dry  (no network)"
+      ],
+      "runner_up": "Port capture-playbook's film walk off the retired Playbooks layer (`.pb-abstract`, capture-playbook.mjs:49/:382) onto the Chores-depth addresses the stills already use, so `evidence` can film a playbook again instead of failing at the first locator.",
+      "body": "## Summary\nRe-taking narration after a script edit today means knowing which beat ids changed and forcing them; a plain `pnpm narrate` keeps the old clips AND rewrites the manifest so the recorder can no longer tell they are stale. Make narration content-addressed: each manifest beat carries a sha of (line, role, voice id, settings, model), and a plain run plans the diff, prints it, and voices exactly what changed.\n\n## Description\nThe operator surface is the narrate CLI and the take it feeds. The decision 'which beats need new audio' is made blind although the script and the manifest hold everything needed to answer it. Worse, the default path launders: narrate.mjs:440 skips an edited beat because its mp3 exists, then :489 records the new line's length against the old clip, so src/script.ts:176 isStale (a length check) reports fresh and the take holds the picture for the old clip's length under the new line. deterministic-prefix-caching/hash-inputs-and-pipeline: 'the name must change when the entry's content would' - key the clip on everything that decides its audio, and give the operator one command. The plan module (pure, injected fs/cast) returns {synthesize[{id, reason: line|voice|settings|model|new|missing}], reuse, legacy, staleOutOfScope, spend}; narrate prints it as a table before any spend, `--plan` stops there, `--dry` estimates only beats with no current clip, and the manifest keeps writing `chars` of the line the clip was actually made from, so src/script.ts stays correct with no edit.\n\n## Flow\n- pnpm narrate after editing two lines and recasting mira\n- plan: changed 1.3 (line), 2.4 (line); voice: 0.2, 3.1 (mira); reused 22; spend 611 chars\n- synthesise those four, measure, write durations + manifest (sha, true chars)\n- the recorder's isStale and the plan agree; no --only/--force needed\n\n## Expected impact\nA re-take is one command instead of an id hunt plus --force; a same-length edit or a recast is never silently kept; a dry rehearsal no longer corrupts measured lengths; paid characters are spent only on lines that changed, and the operator sees the bill before it is spent.\n\n## Evaluation\nClaim: content-addressed planning re-voices exactly the changed beats and never launders a stale clip\nBefore: 0 of 8 acceptance cases pass (no plan module; cases 0, 1, 3 are live defects)\nAfter: 8 of 8\nMethod: gate - the acceptance cases under node --test with an fs/fetch stub\nResult: better\nGate: none",
+      "evidence": "narrate.mjs:440-442 `const todo = beats.filter((b) => args.force || !existsSync(path.join(AUDIO_DIR, `${b.id}.mp3`)));` narrate.mjs:476-492 loops ALL beats in scope, `measureMs(file)` of whatever mp3 is on disk, then `chars: beat.line.length` (current line). src/script.ts:176-181 `const chars = narrated[id]; ... return beat !== undefined && beat.line.length !== chars;`. narrate.mjs:371-386 --dry sets durations[beat.id] = estimate for every beat and writes the file. stabilize-2026-10-16 journey-capture finding 'narrate --dry overwrites the measured lengths of clips already on disk' still open (narrate.mjs:376 unchanged at base d13abf7a)."
+    }
+  ],
+  "rehomed": [
+    "Shoot scripts hardcode localhost:3001/3002/3004 and ignore JOURNEY_PORT_OFFSET (shoot.mjs:25, shoot-ledgerbox.mjs:276, shoot-tidycrm.mjs:343) - S, effort 2",
+    "compose take mode's 'it will be trimmed' warning trims nothing (compose.mjs:196) - S on its own; absorbed into slot A case 2",
+    "capture-playbook stopVite on the film path skips stopAndCheck, so an outlived Vite goes unreported there (capture-playbook.mjs:444 vs :355) - S, effort 1"
+  ],
+  "riders": [
+    {
+      "name": "workspace-build-config",
+      "checked": "read scripts/build-sidecar.py and scripts/sidecar_entry.py in full; traced data_files/HIDDEN_IMPORTS vs lazy imports - the extras/keyring split is already the open stabilize finding 'Frozen daemon is built without keyring', and the remaining ideas (a frozen-import smoke) are S or need the PyInstaller toolchain offline tests cannot run"
+    },
+    {
+      "name": "uat-characters-journeys",
+      "checked": "read uat/driver/drive-script.mjs in full; zero-expect pass and swallowed waitUntil error are the open stabilize finding, CDP-attaches-to-real-profile is the recorded test-harness deviation; a pure-verdict extraction is S-M under the effort floor and would restate that backlog"
+    }
+  ],
+  "registry": {
+    "subjects": ["test-harness", "media-playback", "deterministic-prefix-caching"],
+    "techniques": ["timeline-scheduling", "hash-inputs-and-pipeline", "pin-the-call-not-the-name"]
+  },
+  "files_read": 27
+}

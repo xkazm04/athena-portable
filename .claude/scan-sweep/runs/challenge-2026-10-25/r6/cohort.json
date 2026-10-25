@@ -1,0 +1,60 @@
+{
+  "cohort": [
+    {
+      "name": "desktop-perf-gate",
+      "group": "Desktop Companion",
+      "files": 14,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-tasks-and-due",
+      "group": "Desktop Companion",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-playbooks-panel",
+      "group": "Desktop Companion",
+      "files": 12,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-halo",
+      "group": "Desktop Companion",
+      "files": 11,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-mind-devices-sleep",
+      "group": "Desktop Companion",
+      "files": 11,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-console",
+      "group": "Desktop Companion",
+      "files": 10,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-setup-module",
+      "group": "Desktop Companion",
+      "files": 10,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-e2e",
+      "group": "Desktop Companion",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    }
+  ]
+}

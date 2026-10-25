@@ -1,0 +1,127 @@
+{
+  "host": "hirelane-app-and-tests",
+  "cards": [
+    {
+      "context": "hirelane-app-and-tests",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One act chokepoint: who acted, and the act's class, written once per log row",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/components/HostCapabilities.tsx",
+        "examples/hirelane/lib/queries.ts",
+        "examples/hirelane/components/board/model.ts",
+        "examples/hirelane/components/board/history.ts",
+        "examples/hirelane/components/board/dossier/History.tsx",
+        "examples/hirelane/test/actions.test.ts",
+        "examples/hirelane/test/history.test.ts"
+      ],
+      "new_files": [
+        "examples/hirelane/app/commit.ts",
+        "examples/hirelane/test/commit.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0111-every-reversible-act-on-the-board-offers-its-undo.md (its 'actor says user' consequence is closed; amend or a new ADR NNNN-an-act-is-logged-by-who-ran-it)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "moveStage(applied.id, 'screening', 'athena') -> ok; the newest activity row has actor 'athena' AND the stage_events row it wrote has actor 'athena' (today both are the literal 'user', actions.ts:178/200)",
+        "moveStage(applied.id, 'screening') with no actor -> activity.actor and stage_events.actor are 'user' (the person's own path is unchanged)",
+        "addNote(live.id, 'x', 'root' as Actor) -> ok:false, message names user and athena; no note row and no activity row is written",
+        "commitAct(tx, {capability:'move_stage', ...no undo}) throws 'move_stage is AUTO and must log its undo' and the enclosing withTx leaves no activity row; commitAct(tx, {capability:'decide_stage', undo:{...}}) throws 'decide_stage is GATED and logs no undo' (reversible is derived from lib/manifest.ts isAuto, never typed at the call site)",
+        "for every capability in SHIPPED_CAPABILITIES whose sideEffects is not 'none', running its action successfully on a fresh fit applicant gives activity.reversible === Number(isAuto(capability)) and ('undoId' in result) === isAuto(capability) - read from the manifest, not from a hand-typed list of three names",
+        "applicantHistory(8) rows carry actor; historyRow({...entry, actor:'athena'}) -> by 'Athena', actor 'user' -> by 'You', and an undo row keeps its existing 'the undo of an earlier act' reason",
+        "the existing test/actions.test.ts undo cases (partial slot release, later move outranks, decision outranks) pass unchanged"
+      ],
+      "guard_cases": ["1", "6"],
+      "premise": [
+        "examples/hirelane/app/actions.ts:137 - every logActivity in the file hard-codes actor 'user' (:137, :161, :200, :224, :264, :313, :355) and writeStage writes stage_events.actor as the SQL literal 'user' (:178)",
+        "examples/hirelane/components/HostCapabilities.tsx:76 - the agent's tool handlers call the very same server actions (scoreAgainstRubric, addNote, moveStage, decideStage, proposeSlots, the two sends) with no way to say the agent ran them",
+        "examples/hirelane/lib/db.ts:64 - the activity table already admits actor IN ('user','athena','system'), and examples/demo-kit/src/activity/index.ts:5 calls Athena 'already a first-class actor'",
+        "examples/hirelane/components/board/dossier/History.tsx:8 - the band claims the acts the agent ran 'are the ones the reader most needs to find', yet no row can be told from the person's",
+        "docs/adr/0111-every-reversible-act-on-the-board-offers-its-undo.md:43 - records the gap: the actor column says user for agent acts, 'so the band does not print an actor rather than print a wrong one'",
+        "examples/hirelane/app/actions.ts:141 - each act types reversible:true/false by hand beside lib/manifest.ts:48 isAuto, which already derives the same class from the manifest; the only cross-check is test/tools.test.ts and test/actions.test.ts each pinning a literal three-name GATED list",
+        "examples/ledgerbox/app/actions.ts:157 - the sibling app already threads a validated actor argument (belay 7151f918, dd8a6380); hirelane is the parity gap"
+      ],
+      "rollback": "Revert the commit series. The actor argument is optional and trailing, so reverting HostCapabilities.tsx alone restores 'user' rows; no schema change (the CHECK already admits 'athena'), and existing rows are untouched.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root, covers examples/hirelane)"
+      ],
+      "runner_up": "Hermetic per-case seed for test/actions.test.ts: each case in a rolled-back SAVEPOINT (withTx is re-entrant) so the five 'hand the slots back for the cases after this one' compensations and the order-sensitive pick(stage) disappear (test-harness isolation-lanes).",
+      "body": "## Summary\nEvery act an agent runs on Hirelane is logged as the person's own. Route all seven acts through one commit chokepoint that records who acted (validated against the closed actor set) and derives the row's reversibility from the manifest's class, then let the History band say 'Athena' or 'You'.\n\n## Description\n`app/actions.ts` writes its activity rows through seven hand-written `logActivity` calls, each with `actor: \"user\"` and a hand-typed `reversible`. The agent's handlers in `HostCapabilities.tsx` call the same actions, so an unattended AUTO move by Athena and a click by the person produce byte-identical rows, and `stage_events` says 'user' for both. ADR 0111 shipped the History band knowing this and chose to print no actor rather than a wrong one. Separately, whether a row is reversible and whether an action hands back an undo are typed per call site next to `lib/manifest.ts`'s `isAuto`, which already decides the same class; drift between them (an AUTO act that forgets its undo, a GATED send that logs one and so draws an Undo on something that reached a person) is caught only by two tests that each hand-list three names.\n\nThe move (audit-logging: write-chokepoint): a server-only `app/commit.ts` with `commitAct(tx, {capability, actor, target, summary, undo?})`. It looks up the capability in the manifest, sets `reversible = isAuto(capability)`, throws inside the transaction when an AUTO act has no undo or a GATED act has one, and writes the actor. The undo payload becomes an exported discriminated union (`note | stage | slots`) that `applyUndo` switches over exhaustively instead of casting at actions.ts:381. Every action takes an optional trailing `actor: Actor = \"user\"`, refused unless it is in the closed set, and `writeStage` writes it to `stage_events`. `HostCapabilities.tsx` passes `\"athena\"`. `applicantHistory` selects the actor, `BdHistoryRow` carries it, `historyRow` names it ('Athena' / 'You'), and the History band prints it before the summary.\n\nThis stays inside Hirelane: no kit change, no schema change. The page could claim to be athena, which is acceptable for a scratch example host per ADR 0018 (as ledgerbox's belay recorded). Coordination: r1's demo-kit-ui-webmcp card B also edits `app/actions.ts` (`applyUndo`/`undoAction`) and `history.ts`. This card leaves the undo outcomes alone and only retypes the payload, so the two sequence cleanly in either order.\n\n## Flow\n- An agent calls move_stage; the handler calls moveStage(id, stage, 'athena').\n- moveStage guards as today, then commitAct writes stage_events and activity with actor 'athena' and reversible derived from the manifest (true).\n- The board revalidates; the dossier's History band row reads 'Athena - Ada Lin: Applied to Screening.' with its Undo.\n- A malformed actor is refused before any write.\n\n## Expected impact\nThe person can find what the agent did on their own, which is the stated purpose of the band. A whole class closes: no act's logged class can drift from the manifest's, because the call site no longer states it. A later 'what did Athena do while I was away' surface becomes a query instead of a schema change.\n\n## Evaluation\nClaim: agent-run acts are attributed end to end, and reversibility is derived from the manifest at one chokepoint.\nBefore: 0 of 7 acceptance cases' new behaviour exists (cases 1, 3, 4, 5's derivation, 6's actor field fail; 2 and 7 are guards that pass by design)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in node --test\nResult: better\nGate: none",
+      "evidence": "grep -n 'actor: \"user\"' examples/hirelane/app/actions.ts -> 137,161,200,224,264,313,355 (plus 397,416,439 in applyUndo's own rows); actions.ts:178 `VALUES (?, ?, ?, ?, 'user', ?)` for stage_events. A fresh seed has activity actor counts [{system:1}], so the first agent act becomes the first ambiguous row. ADR 0111:43: 'The actor column says user for acts the agent ran through the same actions, so the band does not print an actor rather than print a wrong one.' History.tsx:8: 'The acts the agent ran are here too - they are the ones the reader most needs to find'. ledgerbox 7151f918 made this exact change for that app (3 files, +119/-25); hirelane's version is larger because it also carries stage_events, the History band, and the manifest-derived class."
+    },
+    {
+      "context": "hirelane-app-and-tests",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Score the pile in one act: a batch scorecard with one undo, offered on the group",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/lib/acts.ts",
+        "examples/hirelane/lib/manifest.ts",
+        "examples/hirelane/components/HostCapabilities.tsx",
+        "examples/hirelane/components/board/Carousel.tsx",
+        "examples/hirelane/test/actions.test.ts",
+        "examples/hirelane/test/acts.test.ts",
+        "examples/hirelane/test/tools.test.ts",
+        "examples/hirelane/README.md"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-scoring-is-the-one-act-that-runs-over-a-group (one batch = one activity row = one undo; moves and decisions stay per person)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "on a fresh seed, scoreBatch('role_backend') -> ok, message 'Scored 12 Backend Engineer applicants.', each of the 12 unscored undecided backend applicants (11 applied + 1 screening) now has exactly one rubric note, result.undoId is a number, and exactly ONE new activity row (action 'score_batch', reversible 1) was written",
+        "scoreBatch('role_backend', 'screening') scores only the one unscored backend screening applicant; the 11 at applied stay unscored",
+        "the six already-scored borderline applicants, every interview/offer/rejected applicant and every designer applicant keep their rubric-note count unchanged",
+        "each note scoreBatch writes has the same scores_json scoreAgainstRubric writes for that applicant (one scorer, lib/scoring.ts)",
+        "undoAction(result.undoId) -> ok; every note the batch wrote is deleted and the 12 read as unscored again on buildBoard()",
+        "a second scoreBatch('role_backend') -> ok:false 'Nothing left to score for Backend Engineer.' with no activity row; scoreBatch('role_sales') -> ok:false naming role_backend and role_designer",
+        "scoreBatchFor(people) in lib/acts.ts returns the same ids the action scores (the group's control and the action cannot disagree, ADR 0107)",
+        "tools.test: score_batch is registered AUTO with parameters ['role_id','stage'] and required ['role_id']; exactly three capabilities stay GATED, and scoreAgainstRubric still writes one note and its own undo per call"
+      ],
+      "guard_cases": ["2", "3"],
+      "premise": [
+        "examples/hirelane/README.md:46 - the journey's first step is 'Score the pile', and score_against_rubric 'runs per applicant'; on a fresh seed the pile is 12 unscored backend and 13 unscored designer applicants (measured: applied 11+9, screening 1+4 unscored)",
+        "examples/hirelane/README.md:139 - claims 'Bulk actions cover scoring and moves', while HostCapabilities.tsx:87 says 'there is no bulk move in this app' and no batch act exists: the README states a capability the app does not have",
+        "examples/hirelane/components/board/dossier/Acts.tsx:97 - the only Score control is per person in the dossier (L2), so scoring a group of 11 takes open group, open item, Score, back, eleven times, with eleven toasts and eleven History rows",
+        "examples/hirelane/components/HostCapabilities.tsx:70 - the agent's score_against_rubric is one applicant per call, so the journey's step 1 is N tool calls and N activity rows, each needing its own undo to reverse a wrong run",
+        "examples/hirelane/app/actions.ts:126 - scoreAgainstRubric already computes scores from listCriteria and writes one note with an undo of kind 'note'; a batch is the same write N times inside one withTx, with one undo listing the note ids",
+        "examples/hirelane/lib/acts.ts:1 - ADR 0107's rule that an act is offered exactly when its action would accept it, so the batch's 'who' belongs in this module beside actsFor"
+      ],
+      "rollback": "Revert the commit series. The new capability, action and control are additive; scoreAgainstRubric and every existing tool are untouched. Undo rows of kind 'notes' written before the revert would fail applyUndo's dispatch, so the revert also keeps the 'notes' case or accepts that pre-revert batch rows are not undoable.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root, covers examples/hirelane, including design/check-law.mjs and check-contrast.mjs through the app's lint)"
+      ],
+      "runner_up": "'Since you looked' strip: Athena's unattended acts on the board (needs card A's actor) grouped as one run with 'Undo her reversible acts', newest first, stopping and saying so at the first partial undo.",
+      "body": "## Summary\nScoring is the journey's first step, and today it is one person per act, both for the person and for the agent. Add `score_batch(role_id, stage?)`, an AUTO act that scores every unscored, undecided applicant of a role in one transaction and logs one activity row with one undo, and offer it on the L1 group as 'Score N unscored'.\n\n## Description\nA fresh seed has 12 unscored backend applicants. To score them from the board, a person opens the group, opens a candidate, presses Score, backs out, and repeats eleven more times, and gets twelve toasts and twelve History rows. An agent makes twelve tool calls, and a wrong run takes twelve undos. The README already says bulk actions cover scoring (README:139), but none exists.\n\nThe batch is the same write as `scoreAgainstRubric`: the same `listCriteria` and `scoreAgainst`, one rubric note per person, all inside one `withTx`. It logs a single row whose undo is `{kind: 'notes', noteIds}`, so one press reverses the whole batch (undo-history: gesture-coalescing, one intent is one undo step; execution-emitted-inverse, the undo lists exactly the ids the write produced). Who is in the batch is `scoreBatchFor(people)` in `lib/acts.ts`: not decided, no rubric note yet, of this role, and at this stage if one is given. The L1 group control counts and labels from that function, and the action guards with it (ADR 0107). The batch is bounded by the role's applicant count and its message gives the count. It never touches a stage: a score is not a decision. Moves and decisions stay one person at a time, and README:139 is corrected to say exactly that.\n\nThe tool is AUTO by the manifest's own rule (`reversible: true`, `sideEffects: 'data'`), so the GATED set stays exactly three. Coordination: r2's hirelane-model-and-lib card B also edits `lib/manifest.ts` and `test/tools.test.ts`, and both cards add entries, so they merge additively in either order. Card A (this host) also edits `app/actions.ts`; if both land, the batch commits through card A's `commitAct`.\n\n## Flow\n- The person opens Backend Engineer at Applied (L1). The group head reads 'Score 11 unscored'.\n- One press -> useRun -> scoreBatch('role_backend','applied') -> one transaction, 11 notes, one activity row.\n- The toast reads 'Scored 11 Backend Engineer applicants.' with Undo; the slides show their scorecards.\n- An agent asked to 'score the pile' calls score_batch once and reads the count back.\n- Undo on the toast or the row removes all 11 notes in one step.\n\n## Expected impact\nThe journey's first step goes from about 12 x 4 interactions (or 12 tool calls) to 1, and a wrong batch is one undo instead of twelve. The README stops claiming a capability that does not exist.\n\n## Evaluation\nClaim: a role's unscored pile is scored, and reversed, as one act, with the control and the action agreeing on who is in it.\nBefore: 0 of 8 acceptance cases pass (scoreBatch, scoreBatchFor and score_batch do not exist; guard parts of 3 and 8 pass by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in node --test\nResult: better\nGate: none",
+      "evidence": "Seed count (node --test with test/register.mjs over a temp home): role_backend applied 11 (0 scored), screening 7 (6 scored), interview 3, offer 1, rejected 2; role_designer applied 9 (0), screening 4 (0), interview 2, rejected 1. README.md:139 '**No bulk decisions.** Bulk actions cover scoring and moves.' HostCapabilities.tsx:87 '... One applicant per call: there is no bulk move in this app.' grep -rn scoreAgainstRubric components/ -> only dossier/Acts.tsx:97 (per person). test/seed.test.ts:113 'act 2 still has a batch to score'."
+    }
+  ],
+  "rehomed": [
+    "Server actions parse their arguments against lib/manifest.ts's parameter schema (moveStage(id,'foo') says 'undefined is a decision', addNote(id,42) throws into NO_ANSWER): impact 6, because the agent path is already validated at the kit door and only a raw POST reaches it",
+    "README.md:139 'Bulk actions cover scoring and moves' is a stale claim: S on its own, folded into card B",
+    "The one route has no error state / six unused runtime deps / the foot disclosure's focus ring: open stabilize-2026-10-16 findings for this context, not re-proposed",
+    "Agent tool results for the AUTO acts drop undoId (HostCapabilities.tsx:76 returns .message only), so an agent cannot name the undo for its own act: S, and it needs an undo tool, which is a register decision"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["test-harness", "app-shell", "audit-logging", "undo-history"],
+    "techniques": ["write-chokepoint", "gesture-coalescing", "execution-emitted-inverse", "isolation-lanes"]
+  },
+  "files_read": 31
+}

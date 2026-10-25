@@ -1,0 +1,135 @@
+{
+  "host": "hirelane-style",
+  "cards": [
+    {
+      "context": "hirelane-style",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Translucent planes become tokens; the contrast check scores nested stacks",
+      "size": "M",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/components/board/style/base/tokens.css",
+        "examples/hirelane/components/board/style/base/the-room.css",
+        "examples/hirelane/components/board/style/level1/l1-carousel.css",
+        "examples/hirelane/components/board/style/level1/l1-carousel-2.css",
+        "examples/hirelane/components/board/style/level1/l1-ledger.css",
+        "examples/hirelane/components/board/style/level2/l2-dossier.css",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css",
+        "examples/hirelane/design/check-law.mjs",
+        "examples/hirelane/design/check-contrast.mjs",
+        "examples/hirelane/test/law.test.ts",
+        "examples/hirelane/test/contrast-gate.test.ts",
+        "examples/hirelane/test/contrast.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/hirelane/design/check-law.mjs and check-contrast.mjs are owned by hirelane-design-law (not scouted in this run); the test/*.test.ts files sit with hirelane-app-and-tests (r5) - sequence after any r5 build touching them",
+        "docs/adr/NNNN-contrast-is-scored-against-the-stacks-text-sits-on.md (extends ADR 0023: the composited-surface rule, now for nested planes and with the plane literals made tokens)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "check-law on a fixture tree whose component sheet declares `.bd-x { background: rgb(255 255 255 / 7%) }` -> exit 1 with a §4.2 plane-outside-the-token-block line (today the ALPHA_PLANE exemption passes it, exit 0)",
+        "check-law on a fixture whose component sheet has `mask-image: linear-gradient(90deg, transparent, #000 8%)` and `box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%)` -> exit 0 (mask stops and shadow rings stay exempt)",
+        "the real sheets: a grep test finds 0 `rgb(255 255 255 / n%)` planes in a background/background-color/gradient declaration outside base/tokens.css (today 8: the-room.css:46-48, :129, l1-carousel.css:204, l1-carousel-2.css:104, l1-ledger.css:78, l2-dossier.css:29, l2-dossier-2.css:271), and each new plane token's value equals the literal it replaced, so no pixel moves",
+        "check-contrast on a fixture copy of the real tree with a STACKS entry naming a selector absent from the sheets -> exit 1 with a GONE line (a stack about a rule nobody paints is a check that passes by not looking)",
+        "check-contrast on a fixture copy of the base-sha sheets with the new tokens and stacks -> `.bd-bench-score` (--bd-ink-3) is UNDER at 6.25:1 on 'bench row: glass on bench glass on dossier top', exit 1 - the instrument goes red on today's bench",
+        "check-contrast on the real tree after the fix -> exit 0, and `.bd-bench-score` scores >= 7.0:1 on its stack (the self/hover row stops adding a third plane, or the score takes --bd-ink-2)",
+        "check-contrast on a fixture with `--bd-dossier-top: rgb(255 255 255 / 14%)` -> exit 1: a retune of the dossier pane moves the score, because the pane is painted and scored from one token",
+        "the existing contrast-gate and contrast test cases pass unchanged, FLOORS keep their values, and the real tree's existing room surfaces report the same ratios as before"
+      ],
+      "guard_cases": ["1", "7"],
+      "premise": [
+        "examples/hirelane/design/check-law.mjs:73",
+        "examples/hirelane/design/check-law.mjs:84",
+        "examples/hirelane/design/check-contrast.mjs:30",
+        "examples/hirelane/design/check-contrast.mjs:106",
+        "examples/hirelane/components/board/style/level2/l2-dossier.css:29",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css:143",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css:175",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css:180",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css:211",
+        "examples/hirelane/components/board/style/base/tokens.css:62"
+      ],
+      "rollback": "Three commits (plane tokens + sheets repaint with identical values; checker stacks + law tightening with their fixture tests; the bench row fix). Revert in reverse order; the first commit alone is pixel-identical, so the series can stop at any point.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (root workspace; hirelane's lint chains design/check-law.mjs and design/check-contrast.mjs)"
+      ],
+      "runner_up": "Re-cut the line-count splits (l1-carousel-2/-3, l2-dossier-2/-3) by concern under explicit @layer order so no override depends on import position - over the ~800 changed-line floor as a move.",
+      "body": "## Summary\nThe board's depth grammar is translucent planes, and the contrast checker only knows the planes that happen to be tokens, one at a time. Eight planes are typed as literals in component sheets (check-law waves them through as 'light, not palette'), and no nested stack is scored. The result is a live AAA miss nobody's instrument can see: the bench's score figure at 6.25:1 against a 7.0 floor. Make every plane a token, make check-contrast score named stacks against the selectors that sit on them, and fix the bench.\n\n## Description\ncheck-law.mjs:73 exempts any white/black alpha plane anywhere, so `l2-dossier.css:29` paints the dossier pane as `linear-gradient(rgb(255 255 255 / 7%), rgb(255 255 255 / 3%))` and the checker's 'glass-2 on ground' only coincides with its top stop by value. check-contrast.mjs:106 SURFACES is a hand-list of single planes; its header (line 30) says which token is used where is deliberately not checked, which is right for the floors but leaves nested planes unmodelled. The bench lays --bd-glass (l2-dossier-2.css:143) under rows that add another --bd-glass on hover and self (:175, :180), over the pane's 7% stop; `.bd-bench-score` (:211) is ink-3 there. Move: (1) the eight literals become named plane tokens in base/tokens.css with identical values (the carousel's --bd-slide-top/--bd-slide-foot at tokens.css:62 are the precedent, ADR 0023); (2) check-law stops exempting alpha planes in background declarations of component sheets, keeping mask stops and shadow rings exempt; (3) check-contrast gains STACKS: each a chain of plane tokens on a ground plus the selectors whose text sits on it; the colour each selector sets is read from the sheets and scored against the stack; a stack naming a missing selector fails like FLOORS' GONE; (4) the bench row stops being a three-plane stack (or its score takes ink-2). This adopts and widens the open stabilize-2026-10-16 finding 'Bench rows stack three glass planes; ink-3 there is 6.25:1, unmodelled' (M, impact 5 alone): the widening is what closes the class.\n\n## Flow\n- tokens: --bd-dossier-top/--bd-dossier-foot, --bd-zone-auto, --bd-slide-far-top/-foot, --bd-axis-track, --bd-dot-rest, --bd-thumb-hover, --bd-bloom-1..3; sheets repaint from them (pixel-identical)\n- check-law: a plane in background/gradient outside tokens.css is a §4.2 finding\n- check-contrast: STACKS = [{ name, planes:[...tokens], on: ground, selectors:[...] }], composited with the existing composite(); per selector, its declared color token scored against the stack\n- watch `.bd-bench-score` go UNDER at 6.25 on the base tree, then fix the bench row\n\n## Expected impact\nA reader comparing the bench reads the self row's score at AAA like the rest of the room; a retune of any plane moves the score that guards it; the next nested panel added to the dossier is a red run rather than a fourth review. Registry: design-tokens/token-enforcement (contrast enforced where colours are defined) and accessibility/preference-respect ('states count: hover, selected').\n\n## Evaluation\nClaim: quality + user - no text-carrying selector sits on an unscored translucent stack; the bench score meets its 7.0 floor\nBefore: 0 of 8 acceptance cases pass; bench score 6.25:1 computed with the checker's own formula while the checker reports 7.81:1\nAfter: 8 of 8\nMethod: gate - the acceptance cases (fixture trees run through both checkers, as test/law.test.ts and test/contrast-gate.test.ts already do)\nResult: better\nGate: policy-tighten",
+      "evidence": "check-law.mjs:72-73 `/** A white or black plane at an alpha: glass, a wash, a scrim. Light and shade, not palette. */ const ALPHA_PLANE = ...`; :84-88 offLock() strips ALPHA_PLANE before testing COLOUR. check-contrast.mjs:106-123 SURFACES: void, ground, sheet, glass on ground, glass-2 on ground, card top on void, gated sheet, fire, fire hovered - no nested entry. grep rgb( outside tokens.css: the-room.css:46,47,48,129; l0-board-2.css:24 (box-shadow ring, stays exempt); l1-carousel-2.css:104; l1-carousel.css:204; l1-ledger.css:78; l2-dossier-2.css:271; l2-dossier.css:29. Computed (WCAG formula, #0a0a0c ground): ink-3 #aeaeb9 on 7% = 7.81, on 4%-on-7% = 7.03, on 4%-on-4%-on-7% = 6.25; ink-4 #9494a0 on the same = 5.73 / 5.15 / 4.58. stabilize-2026-10-16/findings/hirelane-style.jsonl row 1 records the same 6.25 as backlog, effort 4 impact 5."
+    },
+    {
+      "context": "hirelane-style",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The board survives Windows High Contrast and honours prefers-contrast: more",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "examples/hirelane/components/board/style/index.css"
+      ],
+      "new_files": [
+        "examples/hirelane/components/board/style/base/contrast-modes.css",
+        "examples/hirelane/test/modes.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-board-honours-forced-colors-and-increased-contrast.md (what each mark becomes under forced colours, and why the more-contrast tier re-points the ladder one rung up instead of adding values)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "modes.test.ts parses the sheets (same flattening as sheets.test.ts): each of `.bd-led-fill`, `.bd-led-weight i`, `.bd-pips i[data-on=\"true\"]`, `.bd-dot[aria-current=\"true\"]`, `.bd-class::before`, `.bd-presence[data-on=\"true\"]::before` has a rule inside `@media (forced-colors: active)` giving it a non-background carrier (forced-color-adjust: none with a system-colour fill, or a system-colour border/outline) -> 6 of 6 (today 0)",
+        "under `@media (forced-colors: active)` the armed fire button `.bd-zone[data-class=\"GATED\"] .bd-btn[data-fire=\"true\"]` is told apart from its Cancel neighbour by a structural carrier (Highlight/HighlightText with forced-color-adjust: none, or a rule-w3 border) and the GATED zone keeps its rule-w3 edge in a system colour -> present (today both are background-only and repaint to ButtonFace)",
+        "every colour value set inside a forced-colors block is a CSS system colour keyword (Canvas, CanvasText, Highlight, HighlightText, ButtonFace, ButtonText, GrayText, Mark, LinkText) - no var(--bd-*) hue and no literal",
+        "a `@media (prefers-contrast: more)` block on both token scopes (`[data-variant=\"board\"]` and `:root:has([data-variant=\"board\"])`) re-points --bd-ink-3 -> var(--bd-ink-2), --bd-ink-4 -> var(--bd-ink-3) and --bd-rule -> var(--bd-rule-2), and the test, compositing with check-contrast's formula, finds every ink rung >= 7.0:1 on the worst room surface under it (today ink-4 is 5.73)",
+        "index.css imports base/contrast-modes.css last, after base/reduced-motion.css and chrome/toast.css, so its rules win by order -> the import is the final line",
+        "guard: node design/check-law.mjs exits 0 on the real tree (contrast-modes.css types no px and no colour literal)",
+        "guard: node design/check-contrast.mjs exits 0 and reports the same ratios - the default tier's first declaration of every token is unchanged",
+        "guard: the room's `.bd-root :where(...):focus-visible` outline rule and the gated zone's ink focus ring are untouched (outlines already survive forced colours)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "examples/hirelane/components/board/style/level1/l1-ledger.css:62",
+        "examples/hirelane/components/board/style/level1/l1-ledger.css:83",
+        "examples/hirelane/components/board/style/level1/l1-carousel-3.css:50",
+        "examples/hirelane/components/board/style/level1/l1-carousel-2.css:55",
+        "examples/hirelane/components/board/style/level1/l1-carousel-3.css:1",
+        "examples/hirelane/components/board/style/level2/l2-dossier-3.css:56",
+        "examples/hirelane/components/board/style/level2/l2-dossier-3.css:172",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css:274",
+        "examples/hirelane/components/board/style/chrome/the-foot.css:203",
+        "examples/hirelane/components/board/carousel/Slide.tsx:191",
+        "examples/hirelane/components/board/carousel/StageMeta.tsx:26",
+        "examples/hirelane/components/board/style/index.css:31"
+      ],
+      "rollback": "One commit: delete base/contrast-modes.css, its import line and test/modes.test.ts. Nothing in the default tier changes, so the revert is inert for every other reader.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (root workspace; hirelane's lint runs check-law and check-contrast)"
+      ],
+      "runner_up": "Make the phone foot honest: the register summary wraps under ~30rem and the carousel dots get a 24px hit area at a 24px pitch - both open S backlog items, combined still under the effort floor.",
+      "body": "## Summary\nThis direction draws its quantities with background paint: a criterion's weight is one to three filled rules, its score a filled bar, screening evidence filled pips, the current candidate a filled dot, the act class a filled swatch, Athena's presence a filled dot, and the armed irreversible button a filled coral pill. Under Windows High Contrast (forced-colors) the platform repaints every background, and all of it disappears. In the compact L1 card at 1024x768 the absolute score is also hidden, so the scored bar is the only place the score is drawn, and in forced colours it shows nothing. Add the missing mode: one contrast-modes sheet that gives every background-borne datum a structural carrier in forced colours, and a prefers-contrast: more tier that moves the ink ladder up one rung.\n\n## Description\nThe weight rules (l1-ledger.css:62) and the score bar (:83) are aria-hidden in Slide.tsx:191/198, so the paint is their only carrier. l1-carousel-3.css:50 hides `.bd-led-abs` in the compact card. The pips (l1-carousel-2.css:55, aria-hidden at StageMeta.tsx:26), the current dot (l1-carousel-3.css:1), the class swatch (l2-dossier-3.css:56-78) and the presence dot (the-foot.css:203) are filled backgrounds. The fire button (l2-dossier-3.css:172) differs from its Cancel neighbour only by fill and same-colour border, and the GATED zone's inversion (l2-dossier-2.css:274) is a background gradient: the one region DESIGN-LAW §7.1 says must survive greyscale keeps only its 3px edge. Nothing in the tree mentions forced-colors or prefers-contrast. The new sheet, imported last, is literal-free: forced colours use system colour keywords; the more-contrast tier re-points existing tokens (ink-3 -> ink-2 at 10.43, ink-4 -> ink-3 at 7.81, rule -> rule-2), so check-law and check-contrast stay green and the default tier is untouched.\n\n## Flow\n- Windows High Contrast on, open a role: the L1 card shows weight rules, score bars and pips in CanvasText, and the current dot in Highlight\n- open a dossier, arm a rejection: the fire button is Highlight on HighlightText, Cancel stays ButtonFace, and the zone keeps its heavy edge\n- macOS/Windows 'increase contrast': the quiet rungs step up one, so every label reads at AAA\n\n## Expected impact\nA low-vision reader on Windows High Contrast gets back the L1 card's argument (weight, score, evidence) and can tell the irreversible button from the way out. Registry: accessibility/preference-respect (forced colours: 'meaning survives the repaint'; increased contrast: 'select the stronger variant, one signal, derived').\n\n## Evaluation\nClaim: user - every background-borne datum has a carrier under forced colours, and every ink rung clears 7:1 under prefers-contrast: more\nBefore: 0 of 5 non-guard acceptance cases pass (0 of 6 marks carried; 0 forced-colors or prefers-contrast rules in the tree)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (offline sheet parsing plus the checkers)\nResult: better\nGate: none",
+      "evidence": "grep -rn 'forced-colors|prefers-contrast|forced-color-adjust' examples/hirelane packages -> no hits. l1-ledger.css:62-66 `.bd-led-weight i { display:block; block-size: var(--bd-rule-1); background: var(--bd-ink-4) }`; :83-90 `.bd-led-fill { ... background: var(--bd-ink-3) }`; l1-carousel-3.css:50-52 `.bd-led-abs { display: none }` inside @container bd-rail (max-height: 26rem); l1-carousel-2.css:55-58 pips on = background+border same token; l1-carousel-3.css:1-4 dot current = background + scale; l2-dossier-3.css:172-176 fire = background + border-color both --bd-gate-fire; l2-dossier-2.css:274-278 GATED zone background: var(--bd-gate-sheet) gradient; Slide.tsx:191 weight aria-hidden, :198-200 axis aria-hidden; StageMeta.tsx:26 pips aria-hidden. Computed: --bd-ink-4 5.73:1 and --bd-ink-3 7.81:1 on the worst room surface (7% white over #0a0a0c)."
+    }
+  ],
+  "rehomed": [
+    "The register summary is nowrap and wider than a phone's foot - S, already an open stabilize finding.",
+    "The carousel dots are 7px targets at a 15px pitch - S, open stabilize finding, a direction call.",
+    "Twin pills dim to 0.38 and 0.3 when disabled; mono tracking at 0.02em/0.04em off the scale - XS each, open stabilize findings.",
+    "`.bd-slide-inner { grid-template-rows }` is declared twice (l1-carousel.css:146 and l1-ledger.css:13), an artifact of the line-count split - XS.",
+    "A typed tracking/opacity check in check-law (em and unitless opacity are unread) - S, impact under 7."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["design-tokens", "accessibility", "quality-gates"],
+    "techniques": ["token-enforcement", "preference-respect", "gate-liveness"]
+  },
+  "files_read": 38
+}

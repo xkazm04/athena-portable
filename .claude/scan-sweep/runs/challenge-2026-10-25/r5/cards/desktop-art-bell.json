@@ -1,0 +1,136 @@
+{
+  "host": "desktop-art-bell",
+  "cards": [
+    {
+      "context": "desktop-art-bell",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The Bell mirrors her face signal, so the default halo shows her speaking",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/bell/pose.ts",
+        "apps/desktop/src/bell/pose.test.ts",
+        "apps/desktop/src/bell/bell.css",
+        "apps/desktop/src/bell/Bell.test.tsx",
+        "apps/desktop/src/stage/loop-current.ts",
+        "apps/desktop/src/console/Console.tsx",
+        "apps/desktop/src/scenes/surface/model.ts",
+        "apps/desktop/src/scenes/surface/model.test.ts",
+        "apps/desktop/src/scenes/surface/live.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/bell/voice-phase.ts",
+        "apps/desktop/src/bell/voice-phase.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-bell-mirrors-her-face-phase.md (reverses the premise pose.ts states: that Main cannot know her voice is playing)",
+        "apps/desktop/src/stage/loop-current.ts (desktop-stage-depth: one POSE_SPEED row, forced by Record<Pose>)",
+        "apps/desktop/src/console/Console.tsx (desktop-console)",
+        "apps/desktop/src/scenes/surface/model.ts, live.tsx (desktop-scenes-mind-surface; r1 card B also edits them)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "poseOf({state:'seal', cards:0, line:'', voice:'speaking'}) -> 'speaking', and POSE_WORDS.speaking === 'speaking'; POSES has 5 members",
+        "poseOf({state:'tape', cards:0, line:'Filing', voice:'speaking'}) -> 'speaking' (her voice outranks work in flight, as haloPhase orders it)",
+        "poseOf({state:'seal', cards:0, line:'', voice:'listening'}) -> 'hearing' (the mirrored phase hears as the held key does)",
+        "poseOf({state:'seal', cards:1, line:'', voice:'speaking'}) -> 'asking' (a waiting card still wins on the Bell; the open bell-vs-halo precedence finding is not decided here)",
+        "poseOf with voice omitted or null returns exactly what it returns today for every case in pose.test.ts (seal/tab/welcome/ledger/rest rest, tape works, hear hears, cards ask)",
+        "createVoicePhase(source) fed idle, then 30 speaking FaceSignals, then idle notifies its listener 3 times (idle, speaking, idle), not 32: the 30 Hz mirror never re-renders Console or the surface per frame",
+        "createVoicePhase under fake timers: after a 'speaking' signal and no further signal for STALE_MS (1500 ms), the phase falls back to null, so a reloaded or closed athena window cannot leave the Bell speaking forever",
+        "renderToStaticMarkup(<Bell pose='speaking' reach={[]} />) contains data-pose=\"speaking\"; bell.css has a .bell[data-pose=\"speaking\"] rule setting --pulse and --ripple-on; the ADR 0089 rule (keyframes only transform/opacity, no filter, Calm turns all animation off) still passes; POSE_SPEED.speaking is defined and selectSurface({athena:{state:'seal',cards:0,line:'',voice:'speaking'}}) yields pose 'speaking' and poseWord 'speaking'"
+      ],
+      "guard_cases": ["3", "4"],
+      "premise": [
+        "apps/desktop/src/bell/pose.ts:6 - 'Speaking is not one of them yet: the mirror does not say her voice is playing, and a pose the data cannot back would be a decoration pretending to be a status.'",
+        "apps/desktop/src/lib/face.ts:5 - her window calls athena_face 'at most 30 times a second while she listens or speaks, once on every phase change otherwise'; Rust re-emits it to Main as athena:face; Main reads it through mainFaceSource() (face.ts:172)",
+        "apps/desktop/src/athena.tsx:64 - startFace() runs unconditionally in her window, whatever avatar is chosen",
+        "apps/desktop/src/lib/face-signal.ts:161 - the mirrored phase is haloPhase (listening, speaking, thinking, gate), kept 'speaking' until the last sample has played",
+        "docs/adr/0120-athena-has-a-face.md:46 - avatar 'halo' (no face) is 'today's look and the default'",
+        "apps/desktop/src/scenes/voice/face.tsx:33 - Her(): the halo draws the Bell from a Pose, a face draws <Avatar source={mainFaceSource}> in the same slot: with a face chosen she visibly speaks, with the default she shows resting or working",
+        "apps/desktop/src/console/Console.tsx:63 and apps/desktop/src/scenes/surface/model.ts:167 - both Bells (the dock at 34 px, the surface at 420 px) derive pose from athena:status alone",
+        "apps/desktop/src/stage/loop-current.ts:34 - POSE_SPEED: Readonly<Record<Pose, number>>, so a new pose must get a row there"
+      ],
+      "rollback": "Revert the series: the voice-phase module and its test are new files; pose.ts, bell.css and the three callers return to the four-pose form; the POSE_SPEED row goes with them. No stored data or contract changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (Console now imports lib/face on the first paint; perf:bell drives the new pose)"
+      ],
+      "runner_up": "One pose table (POSE_TRAITS: word, pulse, sway, core role, ripples) that bell.css tempo, loop-current's hand-copied POSE_SPEED and the voice scenes' two forked poseOf (view.tsx:115, studio.tsx:47) all derive from.",
+      "body": "## Summary\nHer window already mirrors her voice phase to Main 30 times a second (athena:face), and every face avatar speaks from it. The Bell, which is the default look, ignores it: pose.ts still says Main cannot know her voice is playing, so while she talks the dock and surface Bells show resting or working. Make the Bell a mirror of the same signal (talking-avatar face-signal-across-surfaces: one producer, every surface a mirror), add a speaking pose, and keep one presence derivation for both Bells.\n\n## Description\n- bell/voice-phase.ts: createVoicePhase(source: FaceSource, clock) reduces the mirrored FaceSignal stream to its phase only, notifies on change only (never per frame), and drops back to null after STALE_MS without a signal while listening or speaking, because the producer sends no rest frame when her window dies. useVoicePhase() wraps it over mainFaceSource(); outside the shell it stays null and nothing changes.\n- bell/pose.ts: POSES gains 'speaking'; PoseInput gains optional voice: FacePhase | null. Order: a waiting card (asking), then hearing (held key or mirrored listening), then speaking, then work, then rest. Card-first stays as it is: the bell-vs-halo precedence is an open direction finding and this card does not decide it. The file's header premise is rewritten to cite the mirror.\n- bell.css: a speaking pose on the existing variables (the house glow --accent, a quicker --pulse, ripples on), no new colour, no new keyframes, compositor only, off under Calm.\n- Callers: Console.tsx and surface live.tsx pass the phase into poseOf; loop-current gets its POSE_SPEED row.\n\n## Flow\n- write cases 1-8 against pose.ts, voice-phase.ts, Bell and selectSurface; watch them fail\n- voice-phase module and hook; pose member and order; bell.css rule\n- wire Console and surface live; POSE_SPEED row\n- ADR (the Bell mirrors her face phase) and a CHANGELOG line; perf:all\n\n## Expected impact\nWith the default halo, a person who hears her talking sees the Bell speaking on the dock and on the surface, the same moment a face avatar would open its mouth. The halo, the face and the Bell stop telling three different stories about one voice, and a screen reader hears 'Athena, speaking'.\n\n## Evaluation\nClaim: user - the default Bell shows her speaking while her voice plays, from the one mirrored signal\nBefore: 0 of 8 acceptance cases pass (2 guards green by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "apps/desktop/src/bell/pose.ts:6-8 ' * not one of them yet: the mirror does not say her voice is playing, and a pose the data cannot back would be a decoration pretending to be a status.'\napps/desktop/src/bell/pose.ts:15 export const POSES = [\"resting\", \"working\", \"hearing\", \"asking\"] as const;\napps/desktop/src/lib/face.ts:6 ' * or speaks, once on every phase change otherwise); Rust re-emits it to Main as the `athena:face`'\napps/desktop/src/lib/face.ts:172 export function mainFaceSource(): FaceSource {\napps/desktop/src/athena.tsx:64     const stopFace = startFace();\napps/desktop/src/lib/face-signal.ts:161     const phase = haloPhase(inputs.voice, inputs.run, inputs.cards);\ndocs/adr/0120-athena-has-a-face.md:46 1. **Three forms, one setting.** `avatar` is `halo` (no face; today's look and the default),\napps/desktop/src/scenes/voice/face.tsx:34   if (avatar === \"halo\") return <Bell pose={pose} reach={reach} lean={lean} size={size} label=\"Athena\" />;\napps/desktop/src/console/Console.tsx:63   const pose = poseOf(athena);\napps/desktop/src/scenes/surface/model.ts:167   const pose = poseOf(s.athena);\napps/desktop/src/stage/loop-current.ts:34 export const POSE_SPEED: Readonly<Record<Pose, number>> = { resting: 1, working: 2.2, hearing: 1.6, asking: 1.3 };\ngrep 'poseOf\\|mainFaceSource' apps/desktop/src: Bell callers (Console, surface model) never read mainFaceSource; only surface/face.tsx and voice/face.tsx (the face avatars) do."
+    },
+    {
+      "context": "desktop-art-bell",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The five depth glyphs draw their light's live facts, not a fixed warning",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/art/glyphs.tsx",
+        "apps/desktop/src/art/glyphs.css",
+        "apps/desktop/src/art/glyphs.test.tsx",
+        "apps/desktop/src/art/mind.tsx",
+        "apps/desktop/src/scenes/surface/model.ts",
+        "apps/desktop/src/scenes/surface/model.test.ts",
+        "apps/desktop/src/scenes/surface/view.tsx",
+        "apps/desktop/src/scenes/surface/view.test.tsx"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/scenes/surface/model.ts, view.tsx (desktop-scenes-mind-surface; r1 card B also edits them: Light gains `art` here, `to` there, compatible fields)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "renderToStaticMarkup(<Glyph root='accounts' facts={{attention:false, filled:2, of:3}} />) contains no var(--status-warning) (today the accounts drawing always carries a warning dot)",
+        "<Glyph root='accounts' facts={{attention:true, filled:1, of:3}} /> carries the warning mark, drawn as a shape (dot plus ring) and not by hue alone",
+        "<Glyph root='chores' facts={{attention:false, filled:0, of:12}} /> has no var(--status-success) mark; with filled:3 it has one (today the success dot is always drawn)",
+        "<Glyph root='apps' facts={{attention:false, filled:2, of:5}} /> inks exactly 2 window frames with var(--accent); with filled:0, of:0 none is inked and every frame is the muted outline",
+        "for every root, facts with of:null (still counting, or could not be counted) render no var(--status-*) at all: unknown is not drawn as a value",
+        "<Glyph root='voice' facts={{filled:0, of:1, attention:false}} /> draws its sound waves dashed and muted; with filled:1 they are solid accent; <Glyph root='mind' facts={{attention:true, filled:0, of:1}} /> rings its core in the warning shape instead of the foreground dot",
+        "selectSurface(fixture with Gmail needing reauth, 2 of 5 apps on, chores not loaded) gives lights[accounts].art = {attention:true, filled:connected, of:accounts}, lights[apps].art = {attention:false, filled:2, of:5}, lights[chores].art.of === null; the surface view passes each light's art to its Glyph",
+        "guard: every root x {unknown, empty, partial, full, attention} renders aria-hidden=\"true\", focusable=\"false\", the glyph__float class and no literal colour (#hex, rgb(, hsl(); Glyph 'mind' and InstrumentArt 'engine' render the same facet from one definition"
+      ],
+      "guard_cases": ["1", "7"],
+      "premise": [
+        "apps/desktop/src/art/glyphs.tsx:46 - the accounts drawing always draws <circle ... fill=\"var(--status-warning)\" />, whatever the accounts' standing",
+        "apps/desktop/src/art/glyphs.tsx:38 - the chores drawing always draws a var(--status-success) dot, even when nothing is tested",
+        "apps/desktop/src/art/glyphs.tsx:67 - Glyph({root, size}) takes no facts: each depth's picture is fixed",
+        "apps/desktop/src/scenes/surface/view.tsx:153 - <Glyph root={l.root} size={108} /> beside a stat and an attention flag the model already computed",
+        "apps/desktop/src/scenes/surface/model.ts:120 - the model holds the numbers (onApps, connected, accounts.attention, chores benched/total/loaded, voiceAvailable, engine standing) and flattens them to a stat string",
+        "apps/desktop/src/scenes/surface/surface.css:191 - the only real attention cue is a ' •' appended to the light's name",
+        "apps/desktop/src/bell/pose.ts:7 - the house rule this context already states: a mark the data cannot back is 'a decoration pretending to be a status'",
+        "apps/desktop/src/art/mind.tsx:15 - the engine facet is a verbatim copy of glyphs.tsx:57 (backlog-2026-10-13: 'churn unless the art is touched')"
+      ],
+      "rollback": "Revert the series: Glyph's facts prop is optional during the series and the drawings fall back to today's markup when it is absent, so reverting the surface wiring alone also restores today's look.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:surface (the surface's first paint draws the glyphs)"
+      ],
+      "runner_up": "The Bell's tendrils become a legend: focusing the Apps or Accounts light brightens that group's tendrils and dims the rest, and the Bell's name says how many of what she reaches are on.",
+      "body": "## Summary\nThe surface is the home screen, and its five pictures are fixed: the Accounts glyph always wears a warning dot and the Chores glyph always wears a success dot, while the real 'needs you' is a small bullet after the name. The model already holds every number behind the lights. Let each glyph draw its own light's facts, so the person reads which depth wants them before reading a word.\n\n## Description\nGlyph gains facts: {attention, filled, of | null}. Per root: Apps inks one window per app switched on (up to 3) and leaves the rest as muted outlines; Accounts inks a ring per connected account and draws the warning dot only under attention; Chores draws the success mark only when something is tested; Voice draws its waves solid when her voice is ready, dashed and muted when not; Mind rings its core in the warning shape when the engine is not ready. of:null (counting, could not count) draws the plain drawing with no status mark at all. Status is carried by shape as well as hue. Light gains art: GlyphFacts, built in selectSurface from the numbers it already flattens into stat. The engine facet becomes one exported definition shared by glyphs.tsx and mind.tsx.\n\n## Flow\n- before: Accounts glyph shows a warning dot with every account healthy; Chores shows a green dot with nothing tested; a real attention is a ' •' after the name\n- after: each picture shows its depth's state (2 of 5 apps inked, a warning only on the depth that needs you, dashed waves while voice is not set up); one glance picks the depth to dive into\n- write cases 1-8, watch them fail; facts-aware drawings; Light.art in selectSurface; view passes it; CHANGELOG line; perf:surface\n\n## Expected impact\nThe home screen stops showing a permanent false warning and a permanent false success, and the five pictures become a status board you can read at a glance. A whole class closes: no glyph can show a status its data does not back, pinned for every root and state.\n\n## Evaluation\nClaim: user - each depth glyph shows only the state its light's data backs\nBefore: 0 of 8 acceptance cases pass (cases 2 and 8 green by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "apps/desktop/src/art/glyphs.tsx:46       <circle cx=\"38\" cy=\"26\" r=\"4.5\" fill=\"var(--status-warning)\" />\napps/desktop/src/art/glyphs.tsx:38       <circle cx=\"102\" cy=\"60\" r=\"4\" fill=\"color-mix(in srgb, var(--status-success) 30%, transparent)\" stroke=\"var(--status-success)\" />\napps/desktop/src/art/glyphs.tsx:67 export default function Glyph({ root, size = 120 }: { root: Root; size?: number }) {\napps/desktop/src/scenes/surface/view.tsx:153               <Glyph root={l.root} size={108} />\napps/desktop/src/scenes/surface/model.ts:151       attention: s.accounts.some((a) => a.attention),\napps/desktop/src/scenes/surface/surface.css:191 .surface__light[data-attention=\"true\"] .surface__light-name::after { content: \" •\"; color: var(--status-warning); }\napps/desktop/src/art/mind.tsx:15-21 engine facet == apps/desktop/src/art/glyphs.tsx:57-63 mind facet (identical paths)\ngrep 'Glyph' apps/desktop/src: one consumer, scenes/surface/view.tsx"
+    }
+  ],
+  "rehomed": [
+    "Art catalogue + one ArtFrame and a cross-set invariant suite (every var(--x) resolves in app.css, no literal colour, aria-hidden, aspect from viewBox) - every check is green today, impact under 7",
+    "Bell tempo by updatePlaybackRate on pose change so tendrils and body keep their phase (adopts stabilize 'A bell pose change snaps') - effort 4 / impact 5 alone",
+    "Dock Bell in the asking pose summons her window to the card in one press instead of surfacing first (stage/Stage.tsx:223) - S, and the file is desktop-stage-depth's",
+    "Account drawings keyed by connector kind instead of id - only gmail and notion are builtin (src/athena/connectors/builtin), impact under floor"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["talking-avatar", "motion", "voice-io", "status-vocabulary"],
+    "techniques": ["face-signal-across-surfaces", "performance-discipline", "continuity-across-change", "status-color-mapping"]
+  },
+  "files_read": 31
+}

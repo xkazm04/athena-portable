@@ -1,0 +1,132 @@
+{
+  "host": "ledgerbox-domain-lib",
+  "cards": [
+    {
+      "context": "ledgerbox-domain-lib",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One reconciliation table: a credit is offered only where it could be for",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/lib/db.ts",
+        "examples/ledgerbox/lib/match.ts",
+        "examples/ledgerbox/lib/types.ts",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx",
+        "examples/ledgerbox/test/ledgerbox-domain-lib.test.ts"
+      ],
+      "new_files": [
+        "examples/ledgerbox/lib/reconcile.ts",
+        "examples/ledgerbox/test/ledgerbox-reconcile.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx (owned by ledgerbox-model-tools; a 2-3 line filter in read_invoice's offers, lines 316-320 - sequence after that context's builder)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "reconcile() on a synthetic book: credit L (exact amount, client name, posted on the due date) scores 99 against invoice A and 54 against invoice B -> L's offers are [A standing 'best', B standing 'claimed_elsewhere' with claimed_by A]; A's offered credits = [L]; B's offered credits = []",
+        "reconcile() synthetic: L scores 99 against A and 93 against B (gap under AMBIGUOUS_GAP=12) -> both standings 'contested', both A and B count L, and L is ambiguous",
+        "Seeded books: LB-2026-0057 -> candidate_count 0 (was 1), getInvoiceDetail candidates exclude bl_00072 (TRANSFER FROM IRONWOOD STUDIO, 99 for LB-2026-0115), matchesFilterClient(row, 'unmatched') false, statusOf(row) has no 'could belong here'",
+        "Seeded books: LB-2026-0047 -> candidate_count 0 (was 1) and the card offers no bl_00010 (TRANSFER FROM COPPERLINE INDUSTRIES, 99 for LB-2026-0015 against 71 here)",
+        "Guard - seeded Kestrel retainers: inv_0900 and inv_0901 each still carry bl_00118 as a candidate, and unappliedCredits() flags that credit ambiguous with both ids (journey.test.ts stays green)",
+        "Parity property over every seeded invoice: candidate_count === the number of credits whose suggestions name it with a standing other than 'claimed_elsewhere' === getInvoiceDetail(id).candidates.length (capped at DETAIL_CANDIDATES)",
+        "Guard - bl_00010's suggestions still list LB-2026-0015 then LB-2026-0047 (length 2, not ambiguous), the second now carrying standing 'claimed_elsewhere' naming LB-2026-0015 (journey.test.ts:74-75 unchanged and green)",
+        "read_invoice handler (tool-handlers stand-ins) for LB-2026-0057 -> candidate_lines is empty, agreeing with its row's candidates: 0; and lib/db.ts no longer calls candidatesFor or scoreCandidate directly - both directions read reconcile()"
+      ],
+      "guard_cases": ["4", "6"],
+      "premise": [
+        "examples/ledgerbox/lib/db.ts:91 - candidate_count is the invoice-side pass: candidatesFor() over every unapplied line, with no look at what the credit fits better",
+        "examples/ledgerbox/lib/db.ts:182 - the card's candidates are a second invoice-side call to candidatesFor(), sliced to 5",
+        "examples/ledgerbox/lib/db.ts:301 - lineSuggestions() is a third, credit-side pass scoring every (invoice, line) pair again, sliced to 3",
+        "examples/ledgerbox/lib/db.ts:351 - ambiguity (isAmbiguous) is judged on the credit side only; the invoice side has no notion that its credit is clearly someone else's",
+        "examples/ledgerbox/lib/match.ts:148 - isAmbiguous/AMBIGUOUS_GAP (match.ts:17) is the one threshold that already says when a runner-up is a real contender",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:316 - read_invoice inverts the credit-side table, so the agent's read and the row's count come from different passes",
+        "examples/ledgerbox/lib/filter.ts:10 - the 'unmatched' filter, the swarm's '+' glyph and statusOf's credit clause (lib/lanes/read.ts:40) all key off candidate_count",
+        "examples/ledgerbox/test/journey.test.ts:74 - the credit-side runner-up for bl_00010 is pinned as visible, so the fix must annotate, not delete"
+      ],
+      "rollback": "Two commits (reconcile.ts + its tests; then db.ts/match.ts/types.ts/BooksTools rewired onto it). git revert of the second restores the three independent passes; the first is inert alone.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS, from the root)",
+        "cd examples/ledgerbox && node --import ./test/register.mjs --test \"test/**/*.test.ts\""
+      ],
+      "runner_up": "Money rules as one refusal module (takesCredit, notADebt, whyNotChase, the over-balance line) read by both the offer side in lib/ and the act side in app/actions.ts.",
+      "body": "## Summary\nScore every (open invoice, incoming credit) pair once in a new pure `lib/reconcile.ts`, give each pair a standing (best / contested / claimed_elsewhere) from the threshold `isAmbiguous` already owns, and derive the row's `candidate_count`, the card's candidates, `lineSuggestions` and `read_invoice` from that one table.\n\n## Description\nOne relation, credit-could-settle-invoice, is computed three times today: the row's `candidate_count` and the card's candidates by two invoice-side `candidatesFor` passes (db.ts:91, :182), and the credits strip and `read_credits` by a third, credit-side `lineSuggestions` pass (db.ts:301). Only the credit side knows about ambiguity. So the two halves of the app disagree about the same credit. bl_00072 (TRANSFER FROM IRONWOOD STUDIO, $43,650) scores 99 for LB-2026-0115 and 54 for LB-2026-0057. The credit side calls it unambiguous for 0115. The invoice side still counts it for 0057, which lights 0057 in the 'unmatched' filter, gives it the swarm's '+' glyph, prints '1 unapplied credit could belong here' and puts the credit on 0057's card, where `matchAction` would accept it. That would apply 0115's money to 0057 and leave 0115 overdue and chaseable. bl_00010 does the same to LB-2026-0047 (71 against LB-2026-0015's 99). The new rule offers a credit to an invoice only when that invoice is its best fit or a real contender (within AMBIGUOUS_GAP of the best). The runner-up stays visible on the credit side but is marked claimed_elsewhere, which is what the journey test pins. Every reader reads the one table, so the count, the card and both tools cannot drift. A latent drift goes too: the 5-versus-3 slicing means a credit with four contenders gets a different count from the row than from `read_invoice`. Technique: measurement-honesty / co-published-numbers-must-reconcile (a total and its parts on one screen come from one computation).\n\n## Flow\n- `reconcile(open: ScoreInput & {id}[], lines)` -> { byCredit(lineId): ranked offers with standing, ambiguous; byInvoice(id): offered credits (standing != claimed_elsewhere) }. Pure, no server import.\n- db.ts: one request-cached `reconciliation()` over `listInvoices` rows plus `unappliedLines()`. `toRow` computes candidate_count from it in a post-pass, which breaks today's listInvoices -> lineSuggestions cycle. `getInvoiceDetail.candidates`, `lineSuggestions` and `unappliedCredits` read it too.\n- match.ts exports the contender rule beside isAmbiguous (one threshold, two uses).\n- types.ts: `standing` and an optional `claimed_by {invoice_id, number, score}` on LineSuggestion and MatchCandidate.\n- BooksTools read_invoice drops offers whose standing is claimed_elsewhere.\n\n## Expected impact\nTwo seeded invoices stop advertising a credit that belongs to another invoice, and that credit is no longer offered where it would misapply $43,650 or $3,375. The 'unmatched' filter, the glyph, the status sentence, the card and read_invoice all agree by construction. The class closes: the two halves can no longer judge the same credit differently.\n\n## Evaluation\nClaim: a credit is offered to an invoice only when it could be for that invoice, and every reader agrees on which invoices those are.\nBefore: 0 of 8 acceptance cases pass (cases 5 and 7 are guards that are green before and must stay green; on the seed today LB-2026-0057 and LB-2026-0047 each report candidate_count 1 from a credit that scores 28-45 points higher elsewhere, measured by a scratch probe on scratch books)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "Scratch probe on seeded scratch books (node --test, tempHome): invoices 125, incoming unapplied credits 19; credits offered to more than one invoice: 3 - bl_00118 LB-2026-0901:99 LB-2026-0900:93 (ambiguous, correct); bl_00010 LB-2026-0015:99 LB-2026-0047:71; bl_00072 LB-2026-0115:99 LB-2026-0057:54. 'LB-2026-0057 offered TRANSFER FROM IRONWOOD STUDIO 54 but best is LB-2026-0115 99'; 'LB-2026-0047 offered TRANSFER FROM COPPERLINE INDUSTRIES 71 but best is LB-2026-0015 99'. db.ts:91 `const candidates = takesCredit(...) ? candidatesFor(...)`; db.ts:301 `export const lineSuggestions = cache(...)` re-scores with scoreCandidate; BooksTools.tsx:316 `Object.entries(suggestions).flatMap(...)` for read_invoice."
+    },
+    {
+      "context": "ledgerbox-domain-lib",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Never chase money already on the statement: the chase names the credit to apply",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/lib/db.ts",
+        "examples/ledgerbox/lib/types.ts",
+        "examples/ledgerbox/lib/lanes/read.ts",
+        "examples/ledgerbox/lib/lanes/index.ts",
+        "examples/ledgerbox/app/actions.ts",
+        "examples/ledgerbox/test/ledgerbox-domain-lib.test.ts"
+      ],
+      "new_files": [
+        "examples/ledgerbox/lib/chase.ts",
+        "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts",
+        "docs/adr/0149-a-chase-waits-while-the-statement-holds-the-money.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0149-a-chase-waits-while-the-statement-holds-the-money.md (the draft and the send now refuse a case they used to allow)",
+        "examples/ledgerbox/app/actions.ts (owned by ledgerbox-app-shell: whyNotChase at :411 calls the lib verdict, and DraftResult/SendResult gain settling_credit - about 25 lines)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "draftReminderAction('LB-2026-0104', 'firm') on seeded books -> ok:false; the message names 'SEPA CR IRONWOOD STUDIO INV LB-2026-0104', $17,775.00, 28 Jun and the bank line id; result.settling_credit.line_id is that line; no reminders row is written for inv_0104",
+        "The README beat ('every invoice over 30 days, draft a chase for each'): of the 35 seeded invoices more than 30 days past due with a balance and no dispute, exactly LB-2026-0104, 0100, 0085, 0112, 0115 and 0042 are refused with their credit named, and the other 29 draft ok",
+        "Quarry House LB-2026-0910: the draft is refused naming the $3,090.00 credit and 'short by $35.00'; after matchAction('inv_0910', that line) a draft for the $35.00 remainder succeeds (the block lifts once the credit is applied)",
+        "Staleness at the send: a draft row for inv_0104 inserted directly (a letter written before the statement import) -> sendReminderAction('inv_0104') returns ok:false naming the credit, and the row's sent_at stays NULL",
+        "Kestrel inv_0900 (credit bl_00118 ambiguous between LB-2026-0900 and LB-2026-0901) -> the draft succeeds, and its message names the $4,800.00 credit and both invoice numbers with 'check before sending'",
+        "Guard - chaseVerdict(row, credit) in lib/chase.ts: a credit whose best fit is this invoice but whose confidence is 'likely' or 'weak', or a credit whose best fit is another invoice, does not block -> null",
+        "statusOf(row for LB-2026-0104) -> still starts '67 days past due' (the standing glyph's fact first) and ends 'Looks paid: $17,775.00 arrived 28 Jun as \"SEPA CR IRONWOOD STUDIO INV LB-2026-0104\" - apply it before chasing.' instead of '1 unapplied credit could belong here.'"
+      ],
+      "guard_cases": ["5"],
+      "premise": [
+        "examples/ledgerbox/app/actions.ts:411 - whyNotChase refuses a draft, a void, a settled balance and a dispute; nothing asks whether the statement already holds the money",
+        "examples/ledgerbox/app/actions.ts:443 and :502 - the draft and the GATED send both trust whyNotChase alone",
+        "examples/ledgerbox/lib/seed.ts:230 - the 'awaiting' fate (14 invoices, seed.ts:69): 'the money is on the statement, the books have not been told'",
+        "examples/ledgerbox/lib/reminder.ts:57 - the firm letter says 'or we will pause scheduled work until it clears'",
+        "README.md:112 - the act-2 beat: 'Find every invoice over 30 days and draft a chase for each'",
+        "examples/ledgerbox/lib/db.ts:341 - unappliedCredits() already holds, per credit, its best-fit invoice, strength and ambiguity: everything the verdict needs",
+        "examples/ledgerbox/lib/lanes/read.ts:45 - statusOf tells a paid-but-unreconciled invoice that it is '67 days past due, never chased' and that a credit only 'could belong here'",
+        "docs/adr/0147-the-tick-is-a-working-set-and-only-auto-acts-run-over-it.md - the tray now drafts reminders in bulk over a tick, so one press can draft all six"
+      ],
+      "rollback": "Two commits (lib/chase.ts + db.ts settlingCredits + statusOf + tests; then the actions.ts wiring + ADR). Reverting the second restores today's chase behaviour, and the first only changes a status sentence.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS, from the root)",
+        "cd examples/ledgerbox && node --import ./test/register.mjs --test \"test/**/*.test.ts\""
+      ],
+      "runner_up": "The close previews itself: export_summary states how much of Outstanding ($306,715 of $1,726,028 on the quarter) already sits on the statement in the 14 credits the app could apply without asking, and lists them.",
+      "body": "## Summary\nAn invoice whose payment is already on the bank statement can't be chased until that credit is applied (or applied elsewhere). The refusal names the credit (memo, amount, date, line id) so the next act is match_bank_line, not a dunning letter. The invoice's status sentence says 'Looks paid' instead of 'never chased'.\n\n## Description\n13 of the 52 overdue invoices on the seeded books (25%) have a strong, unambiguous credit on the statement whose best fit is that invoice. Several of those memos quote the invoice number: 'SEPA CR IRONWOOD STUDIO INV LB-2026-0104', $17,775, posted 28 Jun. Today `draft_reminder('LB-2026-0104', 'firm')` drafts 'LB-2026-0104 is now 67 days past due ... or we will pause scheduled work until it clears' to a client who paid 67 days ago, and `send_reminder` sends it. The data that settles the question is already computed for the credits strip (`unappliedCredits`) but never reaches the chase. The README's own act-2 command, 'every invoice over 30 days, draft a chase for each', drafts six such letters (0104, 0100, 0085, 0112, 0115, 0042), and ADR 0147's tray can now do it in one press. The decision is made blind even though the app holds the answer. The rule has no dead end. The block lifts the moment the credit is applied, here or to the invoice it really belongs to, so a person who knows the credit is someone else's matches it there and the chase reopens. An ambiguous credit (the Kestrel retainers) does not block. It turns the draft's answer into a 'check before sending' that names both invoices, the way `isMostlyPaid` already warns. The send re-checks at the last moment, per concurrency-guards / preparation-is-the-staleness-window: a letter drafted before the statement was imported is not sent after it.\n\n## Flow\n- lib/db.ts: request-cached `settlingCredits()` -> Map<invoiceId, SettlingCredit> from `unappliedCredits()`: not ambiguous, best fit = the invoice, confidence strong.\n- lib/chase.ts (pure): `chaseVerdict(row, settling, contested)` -> null | { block: true, message, settling_credit } | { block: false, warning }.\n- app/actions.ts: whyNotChase defers to chaseVerdict on draft and on send. DraftResult and SendResult carry settling_credit.\n- lib/lanes/read.ts statusOf takes the settling credit: lateness first (agreeing with the glyph), then 'Looks paid: ... - apply it before chasing.' lib/lanes/index.ts passes it.\n- ADR 0149 records the tightened rule.\n\n## Expected impact\nNo seeded client who has paid can be sent a dunning letter: 6 refused on the README beat, 13 across all overdue invoices. The agent is given the one act that actually closes the item. The card's sentence stops calling a paid invoice 'never chased'.\n\n## Evaluation\nClaim: a chase is refused while the statement holds a strong, unambiguous credit for that invoice, the refusal hands over the credit to apply, and an ambiguous or weak credit only warns.\nBefore: 0 of 7 acceptance cases pass (case 6 is a guard on the new pure function; measured today: 13 of 52 overdue invoices covered by such a credit, 6 of 35 over 30 days, and every one of them drafts and sends)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: policy-tighten",
+      "evidence": "Scratch probe on seeded scratch books: 'chaseable 71 overdue 52 overdue with a strong unambiguous credit on the statement 13'; e.g. 'LB-2026-0104 Ironwood Studio 67d 1777500 credit {memo: SEPA CR IRONWOOD STUDIO INV LB-2026-0104, amt 1777500, posted 2026-06-28}', 'LB-2026-0910 Quarry House 19d ... amt 309000 short 3500'. Over 30 days: 35, covered: LB-2026-0104,0100,0085,0112,0115,0042. Oldest over 30 (journey test's pick) is LB-2026-0029, uncovered, so the existing tests keep their invoices. actions.ts:411-419 whyNotChase body: notADebt, balance<=0, disputed - nothing else."
+    }
+  ],
+  "rehomed": [
+    "table deviation already recorded: listInvoices orders by due_at with no unique tiebreaker (examples/ledgerbox/lib/db.ts:121) - S.",
+    "heatOf (lib/lanes/heat.ts:27) paints a paid-but-unreconciled invoice 'long overdue'; a 'settling' heat touches the legend in components (other context) - S, follow-up to card B.",
+    "components/lanes/card/read.ts actRefusal should predict card B's new refusal so the tray holds those invoices back before the press - S, ledgerbox-lanes-ui.",
+    "seed.ts:402 still floors the seeded letters' daysOverdue at 1 and computes its own day arithmetic beside db.ts daysPast - S.",
+    "match.ts:106 falls back to amount_cents when the balance is <= 0, which is dead behind takesCredit - XS."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["mcp-tools", "test-harness", "table", "concurrency-guards", "measurement-honesty"],
+    "techniques": ["preparation-is-the-staleness-window", "co-published-numbers-must-reconcile"]
+  },
+  "files_read": 31
+}

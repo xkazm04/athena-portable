@@ -1,0 +1,142 @@
+{
+  "host": "desktop-avatar",
+  "cards": [
+    {
+      "context": "desktop-avatar",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One mouth authority: the producer shapes it and closures shut on every surface",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/avatar/visemes.ts",
+        "apps/desktop/src/avatar/driver.ts",
+        "apps/desktop/src/avatar/driver.test.ts",
+        "apps/desktop/src/avatar/fixtures.ts",
+        "apps/desktop/src/lib/face-preview.ts",
+        "apps/desktop/src/lib/face-signal.ts",
+        "apps/desktop/src/lib/face-signal.test.ts",
+        "apps/desktop/src/lib/face-timeline.ts",
+        "apps/desktop/src/lib/face-timeline.test.ts",
+        "apps/desktop/src/lib/face.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/avatar/mouth.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0120-athena-has-a-face.md (an appended 'Measured' section: the producer owns the mouth, closures carry a visibility floor; decision 3's 'speech opens the mouth' moves from the driver to the producer)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "face-timeline addVisemes, sample_rate 24000, segments [aa 0-2400][PP 2400-3360 (40 ms)][oh 3360-6000] -> the PP segment spans >= 60 ms (1440 samples), the time is borrowed from its neighbours, the sentence's start and end are unchanged and the segments still tile with no gap or overlap",
+        "addVisemes where the neighbours cannot spare the time ([kk 16 ms][PP 30 ms][DD 16 ms]) -> PP grows only as far as the neighbours keep >= one 60 Hz frame (16.7 ms) each, is never merged away, and the order of sounds is unchanged",
+        "one table: for every viseme v and levels 0.2, 0.5, 0.9, the producer's mouthTarget(v, level) equals the driver's speech target for a signal {viseme: v, level} (today the producer normalises by SPEECH_LEVEL 0.7 and the driver uses the raw level, so 'aa' at 0.5 is 0.99 vs 0.875) - and SHAPE_OPEN no longer exists beside VISEME_SHAPES",
+        "producer against fakes at 60 fps on the calm fixture timeline: the frame where a PP or FF segment begins is mirrored at once even inside the 30 Hz cap (a closure onset is news like a phase change), and never twice the same signal",
+        "driver fed the mirrored 30 Hz stream of the calm line and stepped at 60 fps (Main's view) -> inside each of the 3 PP segments pose.open <= 0.05 for >= 2 consecutive frames (before: minima 0.08 / 0.10 / 0.31)",
+        "driver fed the producer's full 60 fps stream (her own window) and the 30 Hz mirror of the same line -> at every segment midpoint the two pose.open values differ by <= 0.05 (two surfaces, one mouth)",
+        "level-only line (no timeline), breath level 0.15 held 300 ms while speaking -> pose.open stays <= 0.02, the producer's floor honoured (before: the driver's max(levelOpen, open) opens it to ~0.15)",
+        "existing driver tests for seeded procedural motion, the neural crossfade, null-blink tracks and settling at rest stay green unchanged"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/lib/face-preview.ts:16 - SHAPE_OPEN, a second copy of the 15-viseme opening table",
+        "apps/desktop/src/avatar/visemes.ts:12 - VISEME_SHAPES, the same 15 numbers, the driver's copy",
+        "apps/desktop/src/lib/face-preview.ts:48 - the producer's mouthTarget normalises loudness by SPEECH_LEVEL (0.7) and floors level-only speech at 0.2",
+        "apps/desktop/src/avatar/visemes.ts:38 - the driver's visemeOpen scales by the raw level; visemes.ts:48 levelOpen knees at 0.04",
+        "apps/desktop/src/lib/face-signal.ts:185 - the producer computes `open` and mirrors it",
+        "apps/desktop/src/avatar/driver.ts:325 - with a viseme set the driver ignores signal.open and re-derives the mouth with a 35 ms time constant; driver.ts:328 takes max(levelOpen(level), open) without one, overriding the producer's floor",
+        "apps/desktop/src/lib/face-signal.ts:208 - only a phase change bypasses the 30 Hz mirror cap",
+        "apps/desktop/src/lib/face-timeline.ts:94 - addVisemes stores segments as received: no closure floor",
+        "apps/desktop/src/avatar/fixtures.ts:20 - the calm line's closures last 40-50 ms (PP 2.78-2.82, PP 3.953-3.993)",
+        "apps/desktop/src/avatar/driver.test.ts:77 - the closure test holds PP for 5 frames (83 ms), twice what the timeline gives"
+      ],
+      "rollback": "Three commits (timeline closure floor; one mouth table and producer authority; driver follows signal.open + mirror closure onset). Each reverts alone with git revert; the FaceSignal shape and the athena_face wire are unchanged, so no Rust or contract revert is involved.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all"
+      ],
+      "runner_up": "The face timeline holds one line: when a queued line's voice.speaking/visemes arrive during the playing line's tail, timelineFor replaces it (face-timeline.ts:79) and the tail loses its mouth; hold timelines by generation and let the producer read the one actually sounding.",
+      "body": "## Summary\nHer mouth is computed twice by two rules: the producer in the athena window shapes `open` from one table with loudness normalised to 0.7, then every face's driver throws that away and re-derives the mouth from a copy of the table with the raw level and a 35 ms lag. The closures that make speech read as speech (the 40-50 ms PP and FF segments) never shut, worst on Main.\n\n## Description\nMake the producer the one mouth authority (talking-avatar `face-signal-across-surfaces`: one producer, every surface a mirror; `viseme-drive`: closures are never merged away and grow to a visibility floor by borrowing from neighbours). One viseme table (VISEME_SHAPES) serves both mouthTarget and the fixtures; SHAPE_OPEN goes. face-timeline grows each closure to >= 60 ms at addVisemes time, borrowing from neighbours so the sentence still tiles. The mirror sends a closure onset at once, like a phase change. The driver's speech layer follows `signal.open` with a short closing constant instead of re-deriving it, so her window and Main draw the same mouth.\n\n## Flow\n- daemon voice.visemes -> face-timeline (closure floor applied once)\n- producer frame -> visemeAt -> mouthTarget (one table) -> smoothOpen -> signal.open\n- mirror: phase change or closure onset at once, else <= 30 Hz\n- driver: pose.open follows signal.open; procedural, neural and settle layers unchanged\n\n## Expected impact\nEvery spoken line on every surface: bilabials visibly close, the breath between words no longer opens the mouth, and the companion window and Main stop showing two different mouths. A whole class (two authorities for one vocabulary drifting) closes.\n\n## Evaluation\nClaim: a PP closure reaches shut (<= 0.05) for >= 2 frames on Main and on her window.\nBefore: PP minimum opening over the calm fixture (n=3 PP, scratch replica of driver.ts formulas, 60 fps): her window 0.05 / 0.10 / 0.19, Main's 30 Hz mirror 0.08 / 0.10 / 0.31; 0 of 8 acceptance cases' new behaviour passes (case 8 green by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "face-preview.ts:16-32 SHAPE_OPEN {sil:0,PP:0,FF:0.12,...,aa:0.9,...} == visemes.ts:12-28 VISEME_SHAPES open values. face-preview.ts:49 `const loud = Math.min(1.2, clamp01(level) / SPEECH_LEVEL)` vs visemes.ts:40 `const lv = Math.min(1.2, Math.max(0, level))`. driver.ts:325-330: `if (signal.viseme !== null) pose.open = approach(pose.open, visemeOpen(signal.viseme, level), dt, 0.035); else { const target = Math.max(levelOpen(level), clamp(signal.open, 0, 1)); ...}`. face-signal.ts:208 `const changed = signal.phase !== lastPhase;` is the only cap bypass. Scratch simulation (node, driver formulas copied verbatim, calmLevel from fixtures.ts): local PP@0.275:0.05 FF@1.907:0.10 PP@2.78:0.10 FF@3.032:0.16 FF@3.828:0.14 PP@3.953:0.19 FF@4.329:0.11; main-30Hz PP@0.275:0.08 FF@1.907:0.11 PP@2.78:0.10 FF@3.032:0.19 FF@3.828:0.17 PP@3.953:0.31 FF@4.329:0.13."
+    },
+    {
+      "context": "desktop-avatar",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Choose her face by watching it speak, and never get a blank where she stood",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/avatar/Avatar.tsx",
+        "apps/desktop/src/avatar/Avatar.test.tsx",
+        "apps/desktop/src/avatar/runtime.ts",
+        "apps/desktop/src/scenes/waking/face-step.tsx",
+        "apps/desktop/src/scenes/waking/faces.ts",
+        "apps/desktop/src/scenes/voice/face.tsx",
+        "apps/desktop/src/scenes/voice/face.test.tsx",
+        "apps/desktop/src/scenes/surface/face.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/avatar/audition.ts",
+        "apps/desktop/src/avatar/audition.test.ts",
+        "apps/desktop/src/avatar/support.ts",
+        "apps/desktop/src/avatar/support.test.ts",
+        "apps/desktop/src/scenes/waking/face-step.test.tsx"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/scenes/surface/view.tsx:78 (one prop, `fallback={bell}` on SurfaceFace; owned by desktop-scenes-mind-surface, whose r1 card edits view.tsx - sequence after it)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "audition on a fake clock: play('b04-owl') -> its source emits phase speaking with the calm fixture's visemes at the matching instants (PP at t=0.30 s, aa at t=0.95 s); after CALM_DURATION it emits one idle signal and holds no clock subscription",
+        "one audition at a time: play('d08-origami') while the owl plays -> the owl's source emits idle at once and only the origami's source is driven",
+        "stop() mid-line (card blurred, step left, unmount) -> one idle signal, zero clock subscriptions, a later play() starts from t=0",
+        "under Calm (data-motion=calm) play() subscribes to no clock and emits nothing beyond the rest signal",
+        "canDrawFace(): no WebGL2RenderingContext (jsdom) -> false; a stubbed getContext('webgl2') returning a context -> true, probed once per window and the probe context released via WEBGL_lose_context",
+        "FaceStep where canDrawFace() is false -> both face cards are aria-disabled, the arrow keys skip them, the halo stays chosen and the step says this computer cannot draw her face; clicking a face card does not call onAvatar",
+        "FaceStep, focus or pointer-enter on the origami card -> that card's Avatar is handed the audition source and audition.play('d08-origami') is called; blur stops it",
+        "<Avatar fallback={<Bell/>}> where WebGL2 is not there -> the fallback is rendered in the box instead of an empty canvas, and the console warns exactly once for any number of faces",
+        "Voice Her() with avatar b04-owl and the face unavailable -> renders the Bell (class=\"bell\"); with avatar halo -> markup identical to today"
+      ],
+      "guard_cases": ["8"],
+      "premise": [
+        "apps/desktop/src/scenes/waking/face-step.tsx:17 - RESTING_SOURCE: the choice cards only ever idle; the person picks a speaking face without seeing it speak",
+        "apps/desktop/src/scenes/voice/face.tsx:57 - FacePicker in Voice settings is three text pills; voice/face.test.tsx asserts settings draw no figure at all",
+        "apps/desktop/src/avatar/fixtures.ts:14 - the app already ships a scripted speaking line with exact visemes (CALM_VISEMES), used only by the preview harness",
+        "apps/desktop/src/avatar/Avatar.tsx:8 - the doc promises 'the surface keeps whatever it shows instead (the Bell, the seal)'",
+        "apps/desktop/src/avatar/runtime.ts:161 - fail() only sets data-face=unavailable and hides the canvas; React is never told",
+        "apps/desktop/src/scenes/surface/view.tsx:77 - the Bell is only the Suspense fallback while the chunk loads; once loaded, an unavailable face leaves an empty 420 px box",
+        "apps/desktop/src/scenes/voice/face.tsx:33 - Her() renders the Avatar instead of the Bell with no fallback",
+        "docs/adr/0120-athena-has-a-face.md:88 - decision 6: no WebGL2 or a failed form -> 'the surface shows what it shows today'"
+      ],
+      "rollback": "Two commits (Avatar fallback + support probe; audition in the Face step and the Voice picker). git revert of the second leaves the fallback fix standing; the `avatar` setting and its values are untouched.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all"
+      ],
+      "runner_up": "In Voice settings the picker's figure follows the voice preview while it plays (previewFaceSource already exists), so a voice and a form are judged together; needs a model prop through settings.tsx, owned by desktop-scenes-voice-waking.",
+      "body": "## Summary\nThe person chooses her face blind: the first act's Face step shows each form idling and Voice settings offers three words. The app already has a scripted speaking line with exact visemes. And when a face cannot draw, the slot where she stood goes empty instead of falling back to the Bell as ADR 0120 promises.\n\n## Description\nA small audition module plays the calm fixture through a FaceSource on the window's one clock, one form at a time, silent, still under Calm (motion `reduced-motion-mechanics`, `unprompted-motion-lifecycle`: it plays on focus/hover, never on its own). The Face step auditions the focused card; Voice settings gains one figure of the chosen form with a 'see her speak' press (still at most one face in Main, as settings draw no field figure). A cached canDrawFace() probe (adaptive-fidelity-tiers `measured-not-declared-capability`) lets both pickers grey out forms this computer cannot draw. <Avatar> takes a `fallback` and shows it when the runtime reports unavailable (one state change, never per frame), so Her() and the surface show the Bell (talking-avatar `face-signal-across-surfaces`: 'no face where it cannot draw').\n\n## Flow\n- focus a face card -> audition.play(form) -> card's Avatar speaks the sample line -> blur stops it\n- no WebGL2 -> face cards disabled, halo kept, one plain line why\n- runtime fail -> onUnavailable -> Avatar renders fallback (the Bell)\n\n## Expected impact\nThe one appearance decision in the product is made seeing what it decides; nobody can pick a face that will render as an empty box, and a lost or unsupported face hands its slot back to the Bell everywhere.\n\n## Evaluation\nClaim: the pickers show each form speaking, refuse forms that cannot draw, and an unavailable face falls back.\nBefore: 0 of 9 acceptance cases pass for the new behaviour (case 8's warn-once half and case 9's halo half are green by design)\nAfter: 9 of 9\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "face-step.tsx:17-22 `const RESTING_SOURCE: FaceSource = { subscribe: (listener) => { listener(RESTING); return () => {}; } };` and :62 `<Avatar avatar={c.id} size={CARD_FACE} source={RESTING_SOURCE} />`. voice/face.tsx:57-65 FacePicker = PillGroup of FACE_CHOICES labels; settings.tsx:169-170 `<Row label=\"Her face\" ...><FacePicker .../>`. runtime.ts:161-165 `const fail = (why) => { root.setAttribute('data-face','unavailable'); canvas.style.visibility='hidden'; warnOnce(why); }`. surface/view.tsx:74-79 `model.avatar === 'halo' ? bell : <Suspense fallback={bell}><SurfaceFace .../></Suspense>`. voice/face.tsx:32-33 `if (avatar === 'halo') return <Bell .../>; return <Avatar .../>;`. Avatar.test.tsx:47-70 asserts the unavailable box is empty with a hidden canvas."
+    }
+  ],
+  "rehomed": [
+    "Main's face freezes 'speaking' if the athena window reloads or dies mid-line: the producer's stop (face-signal.ts:249) sends no rest signal, Main's hub replays the last one and the driver never settles (a frame loop forever) - a staleness watchdog in createMainFaceSource is S",
+    "Loudness normalised to a high percentile of the line (viseme-drive) instead of the fixed SPEECH_LEVEL 0.7 - S once card A has made the producer the only mouth authority",
+    "Unknown visemes read as 'sil' silently (face-timeline.ts:99); viseme-drive says a neutral mid vowel, counted - S",
+    "isFaceSignal checks finiteness but does not clamp level/open into range at the boundary (face.ts:34; face-signal-across-surfaces) - S"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["talking-avatar", "voice-io", "motion", "adaptive-fidelity-tiers"],
+    "techniques": ["face-signal-across-surfaces", "viseme-drive", "speech-timing-timeline", "reduced-motion-mechanics", "unprompted-motion-lifecycle", "measured-not-declared-capability", "content-bearing-degradation"]
+  },
+  "files_read": 38
+}

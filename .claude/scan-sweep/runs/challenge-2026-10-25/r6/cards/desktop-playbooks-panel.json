@@ -1,0 +1,135 @@
+{
+  "host": "desktop-playbooks-panel",
+  "cards": [
+    {
+      "context": "desktop-playbooks-panel",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Read the bench's ranking.json: one year, one run pool, one standing",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/lib/playbooks.ts",
+        "apps/desktop/src/lib/playbooks.shipped.ts",
+        "apps/desktop/src/lib/playbooks.test.ts",
+        "apps/desktop/src/modules/playbooks/model.ts",
+        "apps/desktop/src/modules/playbooks/model.test.ts",
+        "apps/desktop/src/stores/playbooks.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-desktop-reads-the-committed-ranking-and-an-unranked-chore-does-not-beat-its-bar.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "parseRanking({schema:1, ranked:[{rank:1, playbook:'a', score:10.45, money:{annual_usd:10000}, minutes:{times_per_year:12, saved_per_year:2806.3}, bench:{run_at:'T1', runs:{n:3, exceeds:3}}}], unranked:[{playbook:'b', why:'short in 2 of 4 comparable runs'}]}) -> a map: 'a' -> {position:1, score:10.45, annualUsd:10000, savedMinutesYear:2806.3, runAt:'T1', runs:{n:3,exceeds:3}, unranked:null}; 'b' -> {position:null, unranked:'short in 2 of 4 comparable runs'}; parseRanking(null), parseRanking('x') and rows without a 'playbook' string -> an empty map, never a throw",
+        "loadPlaybooks(showcases, benches, {}, false, {}, ranking) attaches p.rank by id; a playbook the ranking does not name -> rank null; a ranked row whose bench.run_at differs from the playbook's bench.runAt -> rank null (a ranking of an older run is never borrowed)",
+        "verdictOf(bench with latest word 'exceeds' and runs {n:4, exceeds:2}, tally, rank {unranked:'short in 2 of 4 comparable runs'}) -> label 'Not ranked' (not 'Beats its bar'), tone 'warning', sentence contains 'short in 2 of 4 comparable runs'; the same bench with rank null -> exactly today's verdict ('Beats its bar', 'Beat its bar in 2 of 4 test runs: ...')",
+        "selectPlaybooks([unranked-but-latest-exceeds, ranked exceeds, unbenched]) -> totals.exceeds === 1 and a new totals.ranked === 1; with every rank null -> totals.exceeds counts latest-exceeds as today",
+        "annualValue({per:'quarter', value_usd:2500}, rank null) -> 10000 (ADR 0056's period table: year 1, quarter 4, month 12, week 52, estate and episode 1); with a rank -> rank.annualUsd",
+        "shipped parity: for every shipped playbook with a non-null rank, annualValue(p) === p.rank.annualUsd (fails today on grant-drawdown-reporting: 2500 vs 10000)",
+        "shipped parity guard: for every shipped playbook with a non-null rank, p.bench.runs deep-equals p.rank.runs (the desktop's own pooling already agrees on all 91)",
+        "shipped: cpg-deductions and clinic-denials read 'Not ranked' with the ranking's why; change-order-notices still reads 'Beats its bar'",
+        "guard: fixtures.typical.totals stays {count:3, benched:2, exceeds:1, foundUsd:551.4} (invented fixtures carry no rank), and the lazy store's items carry the same rank positions as the eager PLAYBOOKS copy"
+      ],
+      "guard_cases": ["6", "8"],
+      "premise": [
+        "playbooks/ranking.json:1 - the bench commits a deterministic ranking (schema 1, method ADR 0056): 91 ranked rows each with category, job, money.annual_usd, minutes.saved_per_year, bench.run_at and bench.runs, and 4 unranked rows with a why",
+        "tests/proving/test_playbooks_rank.py:277 - `rank --check` runs in the non-provider pytest suite, so the committed file is held to the committed bench.json files",
+        "apps/desktop/src/lib/playbooks.ts:164 - the desktop's own pool says 'The ranking also checks the key against today's files; the desktop cannot, so this is what the file says'",
+        "apps/desktop/src/lib/playbooks.ts:207 - comparableRuns re-implements ADR 0128's pooling in TypeScript beside src/athena/proving/playbooks/bench.py's comparable_runs",
+        "apps/desktop/src/modules/playbooks/model.ts:280 - annualValue hand-rolls month x12 and week x52 and reads quarter as one, against src/athena/proving/playbooks/rank.py:38 PERIODS (quarter 4)",
+        "apps/desktop/src/modules/playbooks/model.ts:213 - verdictOf words the badge from the latest run's word alone; a chore the method excludes still gets 'Beats its bar' (success tone)",
+        "src/athena/proving/playbooks/rank.py:109 - exclusion: short in half or more of the comparable runs, or one false claim or trap in any of them, excludes a playbook",
+        "apps/desktop/src/modules/playbooks/model.ts:318 - totals.exceeds counts every latest-exceeds, which feeds the surface's chores line and the catalogue totals",
+        "apps/desktop/src/scenes/chores/worth.ts:46 - the catalogue's value cell reads annualValue, so fixing it at the source fixes the cell with no edit to the scene"
+      ],
+      "rollback": "Two commits (reader + store/shipped wiring, then model standing + totals); git revert of both restores today's derivation exactly, since every new path falls back to today's behaviour when rank is null.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "uv run pytest -m \"not provider and not eval\" tests/proving/test_playbooks_rank.py"
+      ],
+      "runner_up": "Split the 2.86 MB shipped set into a ledger summary and per-playbook detail, so the home surface's four totals and the catalogue stop fetching every trace (602 KB of traces alone) to count rows (public-claim-provenance: build-time-derivation-off-the-client-bundle).",
+      "body": "## Summary\nThe bench already ranks the library by ADR 0056 and ADR 0128 into a committed, deterministic `playbooks/ranking.json` that pytest holds to the bench files. The desktop never reads it. It works out the year, the run pool and the standing a second time in TypeScript, and the two already disagree. Make the ranking the desktop's source for those three facts, with today's derivation kept only as the fallback when a row is missing or stale.\n\n## Description\nThree rules are written twice. (1) The year: `annualValue` multiplies by 12 or 52 and treats a quarter as one, so grant-drawdown-reporting is worth $2,500 a year on the ledger and $10,000 in the ranking. (2) The pool: `comparableRuns` copies ADR 0128 and says in its own docstring that it cannot check the key against today's files. (3) The standing: `verdictOf` reads the latest run's word, so cpg-deductions shows 'Beats its bar' (2 of 3, 'no false claims') although one counted run filed a false claim and a trap. clinic-denials shows 'Beat its bar in 2 of 4' while the ranking excludes it as 'short in 2 of 4 comparable runs'. Two numbers on the person's screen are contradicted by the measure that ranks the chores (measurement-honesty: co-published-numbers-must-reconcile; public-verdict-badge: verdict-honesty-qualifiers, where the qualifier lives in the value, not a footnote).\n\nThe move: `parseRanking` sits beside `parseBench`, read just as leniently. `loadShipped` and the eager copy glob `playbooks/ranking.json` into the same lazy chunk (about 127 KB raw, so the first paint is untouched; console/graph.test.ts still guards that). Each `Playbook` gets `rank: Rank | null`, null when the row's `bench.run_at` is not the playbook's own run. `annualValue` reads `rank.annualUsd`, falling back to ADR 0056's period table. `verdictOf` takes the rank: an unranked chore reads 'Not ranked' plus the ranking's why. `totals` counts `exceeds` only among chores that are not unranked, and adds `ranked`.\n\n## Flow\n- bench writes bench.json, `rank` writes ranking.json, `rank --check` holds them together (unchanged)\n- loadShipped resolves showcases, benches, evidences, stories and ranking, then loadPlaybooks attaches rank by id, run-matched\n- selectPlaybooks -> verdictOf(bench, tally, rank) and totals; annualValue(p) -> worth.ts value cell and 'Most value' sort, unchanged call sites\n\n## Expected impact\nThe ledger's year, the verdict badge and the home line's 'beat the bar' count agree with the ranking the bench publishes. One class of drift closes: any later change to the period table, the pool or the exclusion rule reaches the desktop through the file, and a parity test fails if the two disagree. The S stabilize finding 'annualValue ignores quarter' (stabilize-2026-10-16, desktop-console.jsonl) closes as a case of this.\n\n## Evaluation\nClaim: the desktop's year and standing equal the committed ranking's for every ranked shipped playbook, and a chore the ranking excludes no longer reads 'Beats its bar'.\nBefore: 0 of 7 non-guard acceptance cases pass (parity fails on 1 of 91 annual values; 2 shipped chores read 'Beats its bar' while unranked)\nAfter: 9 of 9\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "node over playbooks/: annual diffs 1 (grant-drawdown-reporting quarter 2500 vs ranking 10000); runs diffs 0 of 91. ranking.json unranked: clinic-denials 'short in 2 of 4 comparable runs', cpg-deductions 'false claims 1, traps filed 1 (the worst of 3 comparable runs)', ltc-claims, medical-bills. cpg-deductions bench.json: verdict exceeds, comparable sha256:8df559e0049439f1, keyed history exceeds:0fc, short:1fc:1trap -> desktop verdictOf 'Beat its bar in 2 of 3 test runs: ... no false claims.' clinic-denials: latest exceeds plus keyed short, exceeds, short -> 'Beat its bar in 2 of 4'. grep 'ranking' apps/desktop/src -> only the docstring at lib/playbooks.ts:165."
+    },
+    {
+      "context": "desktop-playbooks-panel",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Open the verdict: the runs it stands on, and the runs left out with why",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/lib/playbooks.ts",
+        "apps/desktop/src/lib/playbooks.test.ts",
+        "apps/desktop/src/modules/playbooks/fixtures.ts",
+        "apps/desktop/src/scenes/chores/topic.tsx",
+        "apps/desktop/src/scenes/chores/topic.test.tsx",
+        "apps/desktop/src/scenes/chores/chores.css"
+      ],
+      "new_files": [
+        "apps/desktop/src/modules/playbooks/runs.ts",
+        "apps/desktop/src/modules/playbooks/runs.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/scenes/chores/topic.tsx, chores.css and topic.test.tsx belong to desktop-scenes-chores: one <details> under the existing verdict line"
+      ],
+      "generated": [],
+      "acceptance": [
+        "runsBehind(cpg-shaped bench: latest exceeds keyed K; history = two unkeyed lines (short 1 false claim, exceeds) and two keyed K lines (exceeds 0/0, short 1 false claim 1 trap)) -> 5 rows newest first; 3 counted (the latest, marked latest; 09:07 short; 09:03 exceeds), 2 not counted with why 'an earlier world, command or scorer: not comparable'; the counted count equals bench.runs.n (3) and the counted exceeds equals bench.runs.exceeds (2)",
+        "a history line with superseded_by.rescored_at '2026-10-21...' -> not counted, why 'replaced by the rescore of 2026-10-21'; a history line whose run_at equals a rescored latest's run_at -> no row of its own (it is the latest), matching comparableRuns",
+        "an unkeyed latest (comparable '') -> only the latest counted, every history line not counted with why 'benched before runs were keyed'",
+        "worstOf(counted rows) for the cpg shape -> {shortIn:1, of:3, falseClaims:1, trapsFiled:1} and words '1 of 3 counted runs fell short; the worst filed 1 false claim and 1 trap'; all-clean counted rows -> ''",
+        "parseBench reads history traps_filed and wall_s: a line without traps_filed -> trapsFiled null (unmeasured), and the row renders it as '–', never 0",
+        "shipped reconcile: for every shipped benched playbook, counted rows === bench.runs.n and counted exceeds === bench.runs.exceeds",
+        "guard: verdictOf's label and sentence for every shipped playbook and every fixture are unchanged (the fixture's added history lines are unkeyed, so bench.runs stays n=1)",
+        "topic.test: the open-short fixture's topic page renders a 'The runs behind it' disclosure under the verdict, listing 1 counted run and the fixture's not-comparable lines with their why"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        "apps/desktop/src/lib/playbooks.ts:161 - Bench.history (RunLine[]) is parsed for every playbook; grep of scenes/ and companion/ finds no reader of .history, .runs, verdict.runs or verdict.sample",
+        "apps/desktop/src/scenes/chores/topic.tsx:235 - the topic page shows only the verdict's label and one sentence",
+        "apps/desktop/src/modules/playbooks/model.ts:205 - the sentence states the latest run's false claims ('no false claims') beside 'beat its bar in 2 of 3', which pools runs whose false claims it never says",
+        "apps/desktop/src/lib/playbooks.ts:331 - the history parser drops traps_filed and wall_s although 168 of 207 shipped history lines carry them",
+        "apps/desktop/src/lib/playbooks.ts:207 - comparableRuns already decides counted versus not; the row list is the same rule made visible, so the two cannot disagree",
+        "playbooks/cpg-deductions/bench.json - the 09:07 keyed run is short with 1 false claim and 1 trap, inside the '2 of 3' the badge shows"
+      ],
+      "rollback": "Two commits (reader fields + runs.ts with tests, then the topic disclosure + fixture lines); reverting the second removes the surface, reverting both restores today's bytes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A 'Proven first' ledger order: ADR 0056's score (money proven x median recall, hours saved a year, edge) with the unranked after it, each carrying its why. It builds on slot A's reader.",
+      "body": "## Summary\nThe verdict says 'Beat its bar in 2 of 3 test runs' and the person cannot see which three, which one fell short, or what that one got wrong. The app holds all of it: 207 history lines are parsed and none is shown, and 159 of them are left out of the pool for a reason nobody reads. Make the verdict a record the person can open before handing a chore over.\n\n## Description\nA pure `runsBehind(bench)` in a new lazy `modules/playbooks/runs.ts` (the topic page is already a lazy chunk, so model.ts and the first frame stay as they are). It lists every run newest first: date, model, verdict, found of eligible, false claims, traps filed (null when unmeasured, measurement-honesty: unmeasurable-vs-zero), and the run's own note on what changed. Each row is counted or not by exactly the rule `comparableRuns` applies, and an uncounted row says why: an earlier world, command or scorer; replaced by a rescore; or benched before runs were keyed. `worstOf` gives the line the badge leaves out ('1 of 3 counted runs fell short; the worst filed 1 false claim and 1 trap'), which puts the qualifier beside the claim (public-verdict-badge: verdict-honesty-qualifiers; measurement-honesty: minimum-sample-floors for the n). The topic page gains one `<details>` under the existing verdict line, 'The runs behind it', in the same pattern as the estimate disclosure beside it. The reader gains `trapsFiled` and `wallS` on RunLine.\n\n## Flow\n- topic page -> verdict line -> 'The runs behind it' (closed by default)\n- open -> worstOf line, then the counted rows, then the not-counted rows each with its why\n- the counted rows always number bench.runs.n, the n the badge already states\n\n## Expected impact\nA person deciding whether to trust a chore with real money sees what the badge stands on, in one press, from data already loaded. The '2 of 3' and the 'no false claims' in one sentence stop reading as one clean record when a counted run was not clean.\n\n## Evaluation\nClaim: every verdict's run count is backed by an inspectable list that reconciles with it, and the worst counted run is said.\nBefore: 0 of 7 non-guard acceptance cases pass (runsBehind and worstOf do not exist; traps_filed is dropped; no disclosure)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "node over playbooks/*/bench.json: history lines 207, under another key than the latest 159, superseded 0, max per playbook 11; keys: traps_filed 168, wall_s 168, note 119, comparable 78. grep '\\.history|RunLine|\\.runs\\b|verdict\\.runs|verdict\\.sample' scenes companion (non-test) -> no hits. topic.tsx:235-239 renders StatusDot + verdict.label + verdict.sentence only."
+    }
+  ],
+  "rehomed": [
+    "annualValue ignores 'quarter' (S; open stabilize-2026-10-16 finding) - subsumed by card A's parity case",
+    "A bench with no wall time reads as '1 s' with Athena (XS; open stabilize finding) - under every floor",
+    "The portal 'open' action has no caller (S; open stabilize finding); an 'open her portals then hand' one-press start was considered and dropped: only 8 of 95 playbooks have any app with a url (29 of 402 apps)",
+    "Audience (home/work) filter on the ledger - void: ADR 0096 line 164 removed it in favour of the areas",
+    "Region-fit filter from fit.where - low impact: 79 of 95 say 'US', 13 name states, 2 'EU'",
+    "parsePlaybook's docstring promises it 'says what it dropped' (lib/playbooks.ts:16) but returns no gaps - a reader-diagnostics card is S-M with impact under 7 now that the bench loader refuses bad files"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["measurement-honesty", "public-verdict-badge", "public-claim-provenance"],
+    "techniques": [
+      "co-published-numbers-must-reconcile",
+      "verdict-honesty-qualifiers",
+      "minimum-sample-floors",
+      "unmeasurable-vs-zero",
+      "build-time-derivation-off-the-client-bundle"
+    ]
+  },
+  "files_read": 33
+}

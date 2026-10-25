@@ -1,0 +1,116 @@
+{
+  "host": "desktop-mind-devices-sleep",
+  "cards": [
+    {
+      "context": "desktop-mind-devices-sleep",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One mirror reader for devices and sleep: single-flight, generation-checked",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/stores/devices.ts",
+        "apps/desktop/src/stores/devices.test.ts",
+        "apps/desktop/src/stores/sleep.ts",
+        "apps/desktop/src/stores/sleep.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/lib/mirror.ts",
+        "apps/desktop/src/lib/mirror.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "mirror: read A is issued, a nudge issues read B, B resolves before A -> the applied state is B's answer and A's late answer is discarded (generation token minted at issue decides authority, not arrival order)",
+        "devices: a /devices read listing pending row P is out; the person answers P and the act's read (no P) resolves first; the first read resolves last -> view.pending has no P, seenAt has no P, and wizardStep(kind, branch, state, answered) stays 'done' (today P reappears with a fresh seenAt and Approve disarms)",
+        "devices: three bus frames (pair.requested, peer.changed, vitals.changed) land while one /devices read is out -> exactly 2 GET /devices in total (the one out, one after), never 4",
+        "devices: a bus reconnect within REREAD_MIN_MS of the last read -> no GET /devices; a reconnect at or after it -> exactly one (today every 15 s quiet-stream reconnect re-reads unconditionally)",
+        "devices: startDevices() twice, the first stop called -> still following (follows 1, stops 0); the second stop -> stops 1 (today the first stop ends the follow for both holders)",
+        "mirror: a read that rejects leaves no joinable flight -> the next load() issues a fresh GET and the store's problem sentence clears on its success",
+        "sleep (guard): the existing 'reads again on each sleep.changed, once more for one that lands mid-read, and on a reconnect at most every 5 s' passes unchanged on the shared reader",
+        "sleep (guard): the existing 'follows the bus once for any number of holders, and stops with the last' passes unchanged"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/src/stores/devices.ts:248 - load() has no in-flight guard and no generation: every caller issues its own GET /devices and the last to resolve wins",
+        "apps/desktop/src/stores/devices.ts:75 - pair.requested, peer.changed, pair.opened and vitals.changed each call load() directly",
+        "apps/desktop/src/stores/devices.ts:62 - the reconnect callback is the same onChange, so each followBus pass (lib/fleet.ts:238, every quiet-stream end) re-reads with no throttle",
+        "apps/desktop/src/stores/devices.ts:235 - every act awaits get().load() after its request, racing the bus nudge the daemon publishes for the same change",
+        "apps/desktop/src/scenes/mind/constellation.tsx:446 - an open computer's drawer adds a third load() source every VITALS_REREAD_MS",
+        "apps/desktop/src/stores/devices.ts:168 - stampSeen restamps a pending row that comes back, so a stale read re-disarms Approve",
+        "apps/desktop/src/scenes/mind/wizard.tsx:107 - an answered request whose row is listed again flips the wizard from Done back to Approve",
+        "apps/desktop/src/stores/devices.ts:385 - startDevices is idempotent, not counted: the stop it hands back ends the follow for every holder",
+        "apps/desktop/src/stores/sleep.ts:275 - the sleep store already hand-rolls the right discipline (single flight, nudge-after-read capped at 3, reconnect throttle, holder count, lines 275-357) in module globals that no other mirror can reuse"
+      ],
+      "rollback": "Three commits (mirror.ts + its tests; devices.ts onto it; sleep.ts onto it), each green alone; revert in reverse order. No contract, no daemon or wire change.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from apps/desktop)"
+      ],
+      "runner_up": "Lift the pairing session (answered, spent, branch) out of devices.tsx/wizard.tsx component state into the store, so a level remount cannot show a spent window again and the wizard step is one reducer.",
+      "body": "## Summary\nThe two mirrors on the Mind depth read the daemon two different ways. Sleep has one read at a time, re-reads after a nudge that lands mid-read, throttles reconnects and counts its holders. Devices has none of that: four bus kinds, every reconnect, every act and a 30 s drawer timer each fire their own GET /devices, and whichever answer lands last wins. Lift the sleep discipline into one small reader (`lib/mirror.ts`) with a generation token, and put both stores on it.\n\n## Description\n`createMirror({ read, apply, onFail, now, rereadMinMs, maxRepeats })` returns `load()`, `nudge()`, `reconnected()` and `hold()`. `load()` joins the flight that is out. A nudge during a flight marks it dirty, and the reader re-issues once the flight settles. Each flight mints a generation at issue and `apply` runs only while that generation is current, so a slow answer issued before a change can never overwrite a newer one (realtime-events/push-vs-refetch-reconciliation: generation tokens; client-fetch-cache/in-flight-dedup: register before suspend, remove on both settle paths). `reconnected()` throttles to `rereadMinMs`. `hold()` counts holders and starts and stops the bus follow. Devices: `DevicesDeps.follow` gains the `onConnected` argument sleep already has, `load`/`act` go through the reader, and `startDevices` becomes counted. Sleep: its module globals (`reading`, `nudgesSinceRead`, `lastRead`, `holders`, `unfollow`) are replaced by one reader with its behaviour unchanged, pinned by its two existing tests.\n\n## Flow\n- bus frame / act settle / drawer tick -> mirror.nudge() or load() -> at most one GET out, plus one dirty re-read after it\n- reconnect -> mirror.reconnected() -> a read only if rereadMinMs has passed\n- an answer whose generation is stale -> dropped; the state never steps back\n\n## Expected impact\nA whole class of defects closes: a revoked peer, an answered request or an old room word can no longer come back from a read that was already stale when it was issued. Wizard flicker from Done back to Approve, and Approve re-disarming, both go. GET /devices traffic while the level is open falls from one read per frame plus one per 15 s reconnect to at most two per burst. The next mirror (tasks, connectors) gets the reader for free.\n\n## Evaluation\nClaim: the devices mirror can no longer apply an answer older than one it already applied, and both mirrors share one read discipline.\nBefore: 0 of 6 non-guard acceptance cases pass (cases 1-6); the 2 guards pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, a fake fetch whose responses resolve out of order)\nResult: better\nGate: none",
+      "evidence": "stores/devices.ts:248-265 `async load() { const client = api(); ... const view = await client.devices(); set((s) => ({ view, loaded: true, ...seenAt: stampSeen(...) })) }` with no flight or generation; :61-62 `follow: (onChange) => followBus(() => LIVE.api(), devicesHandler(onChange), onChange)` (reconnect = onChange); :75 four kinds -> onChange(); :235 `await get().load();` in act; :385-395 `if (stopDevices) return stopDevices;`. constellation.tsx:448 `setInterval(() => void load(), VITALS_REREAD_MS)`. sleep.ts:275-333 `let reading: Promise<void> | null`, `nudgesSinceRead`, `lastRead`, `REREAD_MIN_MS = 5000`, and :337-357 `holders`. devices.test.ts has no concurrency or out-of-order test (23 its, none on overlapping reads); sleep.test.ts:160 and :185 pin the sleep behaviour."
+    },
+    {
+      "context": "desktop-mind-devices-sleep",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Answer her proposals in one pass: staged forgets, Keep all, and a 6 s Undo",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/stores/sleep.ts",
+        "apps/desktop/src/stores/sleep.test.ts",
+        "apps/desktop/src/scenes/mind/sleep.tsx",
+        "apps/desktop/src/scenes/mind/sleep.test.tsx"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md", "r4 core-sleep-and-vitals card B also edits scenes/mind/sleep.tsx and sleep.test.tsx (the coordinator sequences)"],
+      "generated": [],
+      "acceptance": [
+        "store: stage(proposalId, 'forget') -> no POST /sleep/proposals/<id> before COMMIT_MS; the proposal is listed in staged and left out of the open list the section draws; after COMMIT_MS exactly one POST with {action:'forget', node_id:null}",
+        "store: stage then undo() inside the window -> no POST is ever sent, and the proposal is drawn open again with no error",
+        "store: stageAll('keep') over 3 open forget proposals and 1 contradiction -> the 3 forgets are staged as one batch with one Undo; the contradiction is not staged (it needs a choice); after COMMIT_MS, 3 POSTs with at most 2 in flight at once",
+        "store: a sleep.changed re-read lands mid-window and still lists the staged ids as open -> they stay out of the drawn open list until the batch commits or is undone (freeze-refresh-during-window)",
+        "store: the last holder stops (the section unmounts) while a batch is staged -> the batch commits at once, not dropped (flush-on-teardown)",
+        "store: a second stage while a batch is pending -> the pending batch commits first, then the new one opens its own window (single-pending-batch-invariant), so one Undo never covers two decisions",
+        "store: 1 of 3 committed POSTs is refused (409) -> that proposal comes back open with its refusal under it; the other 2 are gone after the read that follows",
+        "section: with a batch staged, the 'Waiting for you' block shows 'Forgetting 3 · Undo' with the seconds left, and pressing Undo calls actions.undo()"
+      ],
+      "guard_cases": [],
+      "premise": [
+        "apps/desktop/src/stores/sleep.ts:425 - decide() posts at once; nothing can take a press back",
+        "src/athena/core/sleep/proposals.py:65 - a forget retires the memory and closes the proposal in the same call; there is no un-forget route",
+        "apps/desktop/src/scenes/mind/sleep.tsx:356 - a forget proposal's Forget is one press straight to the POST, beside Keep in the same row",
+        "apps/desktop/src/scenes/mind/sleep.tsx:291 - proposals are answered one row at a time; there is no bulk mode",
+        "src/athena/core/sleep/__init__.py:125 - OPEN_PROPOSALS_CAP = 20 and book.py:311 refuses a new proposal once 20 are open, so an unanswered queue stops her offering new forgets (stats proposals_dropped)",
+        "src/athena/core/sleep/__init__.py:126 - PROPOSAL_EXPIRE_D = 14: what goes unanswered lapses quietly"
+      ],
+      "rollback": "Two commits (store staging with its tests; section controls with its tests). Revert both and decide() is the immediate POST again. No contract, no daemon change.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from apps/desktop)"
+      ],
+      "runner_up": "The message box on a peer says before Send that the computer is asleep or its room is full (its presence and held line are already in the mirror), instead of failing with window_closed afterwards.",
+      "body": "## Summary\nA sleep can leave up to 20 open proposals, and each one is answered by its own press. A Forget is final the moment it is pressed: the memory is retired and the proposal closed in one call, with no route back. Make the block a queue a person can clear in one pass. Keep all, or Forget, stages the decision for a short window with one Undo that says what it will do and how long is left, then commits as a bounded batch.\n\n## Description\nThe store gains `staged: { ids, action, nodeIds, until } | null`, `stage(id, action, nodeId?)`, `stageAll('keep' | 'forget')` (forget proposals only: a contradiction always asks which memory goes, and is never bulk-forgotten), `undo()` and `commitNow()`. One timer is armed per batch (`COMMIT_MS` = 6000). The section draws the open list minus the staged ids, so a re-read cannot repaint them back mid-window. Commit fans out with at most 2 in flight and runs one read after it. A refused row comes back open with its sentence under it. Stopping the last holder flushes a staged batch rather than dropping it: the person decided, and leaving the section is not a cancel. These are the batch-undo-commit-window techniques deferred-write-window, single-pending-batch-invariant, freeze-refresh-during-window, flush-on-teardown, bounded-fanout-commit and partial-failure-reselect. The decision stays the person's alone: nothing is sent that was not pressed, and the window only adds a way back.\n\n## Flow\n- Forget on a row, or Keep all -> rows leave the list, the bar reads 'Forgetting 1 · Undo (6 s)'\n- Undo -> rows return, nothing was sent\n- the window ends, or the section closes -> POSTs (2 at a time) -> one re-read -> refused rows come back with their reason\n\n## Expected impact\nA mis-pressed Forget, today a retired memory, can be taken back for 6 seconds. Clearing a full queue of 20 takes 2 presses instead of 20, so her proposal cap stops silently dropping new offers. The person sees the outcome before it is final rather than after.\n\n## Evaluation\nClaim: forget and keep decisions are deferred behind one Undo, can be applied to the queue at once, and are never lost or resurrected by a refresh.\nBefore: 0 of 8 acceptance cases pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest fake timers plus the store's fake fetch; the section rendered on a fixture model)\nResult: better\nGate: none",
+      "evidence": "stores/sleep.ts:425-444 `export async function decide(...) { ... await client.sleepDecide(proposalId, action, nodeId); ... }` (immediate). scenes/mind/sleep.tsx:319-322 `const answer = (...) => { onChoose(false); void model.actions.decide(proposal.id, action, nodeId); };` and :352-359 Forget -> answer('forget'). proposals.py:62-67 `else: target = _target(proposal, node_id); retire(brain, book, target, when=now); book.decide(proposal_id, 'forgotten', now=now)`. core/sleep/__init__.py:125-126 `OPEN_PROPOSALS_CAP = 20`, `PROPOSAL_EXPIRE_D = 14`; book.py:311 `if int(open_now) >= OPEN_PROPOSALS_CAP:` returns None. grep 'undo|stage|bulk' in stores/sleep.ts and scenes/mind/sleep.tsx: 0 hits."
+    }
+  ],
+  "rehomed": [
+    "A proposal shows both memories' words, not two raw node ids - void here: it is r4 core-sleep-and-vitals card B.",
+    "The message box warns before sending to an asleep or full computer (presence and held are already in the mirror) - S; it is slot B's runner-up.",
+    "Each proposal says when it lapses (created_at + 14 d) and that lapsing forgets nothing - S, and the client would have to mirror PROPOSAL_EXPIRE_D.",
+    "The pending card could name the requester's private-network address against the overlay list - needs a daemon PendingView field (peer-devices context), not this one.",
+    "Auto-renewing an expired pairing window while the wizard is open - it mints more credentials than a person asked for; a policy call, not a card."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["realtime-events", "client-fetch-cache", "batch-undo-commit-window", "device-pairing"],
+    "techniques": ["push-vs-refetch-reconciliation", "in-flight-dedup", "coalescing-and-batching", "subscription-lifecycle", "deferred-write-window", "single-pending-batch-invariant", "freeze-refresh-during-window", "flush-on-teardown", "bounded-fanout-commit", "partial-failure-reselect"]
+  },
+  "files_read": 22
+}

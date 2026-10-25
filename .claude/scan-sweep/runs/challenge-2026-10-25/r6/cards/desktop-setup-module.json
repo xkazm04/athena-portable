@@ -1,0 +1,125 @@
+{
+  "host": "desktop-setup-module",
+  "cards": [
+    {
+      "context": "desktop-setup-module",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One engine state union: every non-ready engine state carries its move",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/modules/setup/readiness.ts",
+        "apps/desktop/src/modules/setup/readiness.test.ts",
+        "apps/desktop/src/modules/setup/model.ts",
+        "apps/desktop/src/modules/setup/model.test.ts",
+        "apps/desktop/src/modules/setup/fixtures.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/modules/setup/engine-state.ts",
+        "apps/desktop/src/modules/setup/engine-state.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "engineStateOf(probes both found, stored 'codex', daemonEngine 'claude_code', health 'failed', loaded) -> kind 'down-on-other' with move 'restart'; selectSetup(...).startFailure is {engine:'claude_code', title:'Athena stopped on Claude Code.', reason:<daemonError or 'No reason was given.'>, actionLabel:'Start on Codex'} (today: startFailure null, pendingEngine null, engineFact 'Codex is chosen, but Athena is still running on Claude Code' - a failed daemon reads as running and no surface offers an action)",
+        "same with health 'stopped' -> kind 'down-on-other', startFailure.title 'Athena is not running.' and actionLabel 'Start on Codex'; engineFact summary never contains 'still running' when health is not 'ready'",
+        "engineStateOf(probes found, stored 'claude_code', daemonEngine '', health 'failed', loaded) -> kind 'failed' with move 'restart' and engineFact summary 'Claude Code is chosen, but Athena could not start' (today: 'still starting up on it', standing todo, a failure reading as a wait)",
+        "exhaustive table: for every combination of probes {null, [], chosen found, chosen not_logged_in, chosen not_found + other found} x checking {t,f} x problem {null,'boom'} x loaded {t,f} x daemonEngine {stored, other, ''} x health {ready, starting, failed, stopped} (960 rows): a state whose standing is not 'done' has a move in {check, restart, choose, sign-in, install} unless its move is 'wait' AND (checking or health 'starting' or not loaded); no row's summary says 'running' or 'starting' while health is 'failed' or 'stopped'",
+        "parity over the same table: isReady(model) === (state.kind === 'running'); notReadyBecause(model) is '' exactly when isReady; restartNotice(model) is non-null exactly when state.kind === 'pending-switch'; startFailure is non-null exactly when state.move === 'restart' and kind is 'failed' | 'stopped' | 'down-on-other'",
+        "guard: every existing readiness.test.ts and model.test.ts sentence for the states already covered stays byte-identical ('Codex is chosen. Athena is still running on Claude Code.', 'Athena could not start on Claude Code.', 'Try again on Claude Code', 'Athena could not check the engine. Check again under Mind.', 'Athena is still checking the engine.', the not-loaded sentence)",
+        "guard: before the first daemon reading (loaded false) startFailure stays null and the engine fact stays 'unknown' for every health",
+        "guard: every fixture in fixtures.ts produces the same engineFact standing and summary as before the change (snapshot of fixture -> {standing, summary, startFailure?.title, restartNotice?.title})"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "apps/desktop/src/modules/setup/model.ts:182 - startFailure exists only when daemonEngine === source.engine, so a daemon that fails on the engine it is still running on, after the person chose another, gets no start failure",
+        "apps/desktop/src/modules/setup/model.ts:240 - pendingEngineOf returns null unless health is 'ready', so the same daemon also has no restart notice",
+        "apps/desktop/src/modules/setup/readiness.ts:66 - engineFact's mismatch branch runs before any health check and says 'still running on <daemonEngine>' whatever the health",
+        "apps/desktop/src/modules/setup/readiness.ts:73 - an empty daemonEngine reads 'still starting up on it' even when health is failed or stopped",
+        "apps/desktop/src/stores/settings.ts:209 - after the letter, chooseSetupEngine only writes the row (setEngine), so pressing the chosen engine again does not restart: the person has no route out",
+        "apps/desktop/src/stores/engines.ts:54 - probes persist after a check, so 'both found' stays true while the daemon later fails",
+        "apps/desktop/src/scenes/shared/EngineSection.tsx:75 - consumers already draw startFailure as a ProblemNote whose retry is actions.restart (index.ts:87, restarts on the STORED engine), so widening startFailure reaches the first act and the Mind depth with no scene edit",
+        "apps/desktop/src/modules/setup/model.test.ts:134 - the case 'a failure on another engine is not a startFailure' is pinned today; this card rewrites it to the down-on-other start failure (named so the reviewer sees the deliberate flip)"
+      ],
+      "rollback": "Three commits (engine-state.ts + its table test; readiness/model as projections of it; the pinned model.test.ts flip + fixture snapshot). git revert of the series restores the parallel chains; no store, contract or persisted data changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Move the scenes' own engine chains (mind/shared.tsx engineSentence, EngineSection unprobed) onto the same union - sequenced after r1's desktop-scenes-mind-surface display-authority card, which owns those files.",
+      "body": "## Summary\nThe engine's standing is a product of eight inputs (probes, checking, problem, loaded, stored engine, daemon engine, health, error) decided by four parallel if-chains - selectSetup's startFailure, pendingEngineOf, engineFact and notReadyBecause - each checking a different subset in a different order. Two of the combinations they miss are dead ends a person reaches in ordinary use. Fold the chains into one discriminated union, engineStateOf(model), whose every state names its move, and make the four exports projections of it.\n\n## Description\nThe dead end: after the letter, a person chooses Codex in Mind (row written, restart notice shown) and does not restart; the Claude Code daemon then fails or stops. startFailure requires the daemon to be on the stored engine (model.ts:182), the restart notice requires health 'ready' (model.ts:240), and engineFact's mismatch branch runs before any health check (readiness.ts:66), so the screen says 'Codex is chosen, but Athena is still running on Claude Code' over a dead daemon, and offers no button: pressing Codex again only rewrites the row (settings.ts:209). A second gap: an empty daemonEngine with a failed health reads 'still starting up on it' (readiness.ts:73) - a failure dressed as a wait, which the failure-states technique names as the class to close.\n\nengine-state.ts exports `type EngineState = {kind:'unchecked'|'checking'|'check-failed'|'not-installed'|'signed-out'|'other-chosen'|'awaiting-daemon'|'starting'|'pending-switch'|'down-on-other'|'failed'|'stopped'|'running', engine, running, move:'check'|'restart'|'choose'|'sign-in'|'install'|'wait'|null}` and the pure `engineStateOf(source)`. selectSetup computes it once; startFailure, pendingEngine, engineFact, notReadyBecause and restartNotice read it. The words stay in readiness.ts. The exhaustive 960-row table test pins the invariant that makes this a class fix rather than two patches: no non-ready state without a move, no 'running' or 'starting' sentence over a failed or stopped daemon.\n\nThis is the async-ui-states failure-states rule (a failure is distinct from a wait, and carries the action that fixes it) and its state-model rule (derive UI states from the machinery once). It does not touch r1's display-authority card (Standing -> word/tone in scenes); it is the layer under it.\n\n## Flow\n- before: Codex chosen, Claude Code daemon fails -> Mind engine: 'still running on Claude Code', no ProblemNote, no restart notice -> the person must quit the app (the launch reads the store, ADR 0085) to recover\n- after: the same -> 'Athena stopped on Claude Code.' with the daemon's reason and 'Start on Codex' -> one press, actions.restart on the stored engine\n\n## Expected impact\nA whole class (non-ready engine states with no action, failures phrased as waits) closes and is pinned by a table, and the next engine-state bug is a missing row in one union rather than a fifth chain. The fix reaches both surfaces (first act, Mind) with no scene edit, because they already draw startFailure.\n\n## Evaluation\nClaim: every non-ready engine state carries a move, and no failed daemon reads as running or starting\nBefore: 0 of 4 behaviour cases pass (cases 0-3); the 960-row table finds the down-on-other and empty-engine-failed rows moveless\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, offline)\nResult: better\nGate: none",
+      "evidence": "model.ts:180-183: `(source.daemonLoaded ?? true) && daemonEngine === source.engine && (health === \"failed\" || health === \"stopped\")`. model.ts:240: `if (health !== \"ready\" || !running) return null;`. readiness.ts:66-75: `if (model.daemonEngine !== model.engine) { ... summary: model.daemonEngine ? `${label} is chosen, but Athena is still running on ${engineLabel(model.daemonEngine)}` : `${label} is chosen, and Athena is still starting up on it` }` - no health read before it. settings.ts:209: `return settings.onboarded ? settings.setEngine(engine) : chooseFirstRunEngine(engine);`. model.test.ts:134 pins `selectSetup(sources({ daemonHealth: \"failed\", daemonEngine: \"codex\" })).startFailure).toBeNull()`. Consumers of startFailure: EngineSection.tsx:75 (ProblemNote, onRetry=actions.restart), mind/view.tsx:156, mind/shared.tsx:66."
+    },
+    {
+      "context": "desktop-setup-module",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The microphone's answer is known on arrival, follows the OS switch, says how to undo",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/modules/setup/index.ts",
+        "apps/desktop/src/modules/setup/model.ts",
+        "apps/desktop/src/modules/setup/readiness.ts",
+        "apps/desktop/src/modules/setup/readiness.test.ts",
+        "apps/desktop/src/modules/setup/model.test.ts",
+        "apps/desktop/src/modules/setup/fixtures.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/modules/setup/mic.ts",
+        "apps/desktop/src/modules/setup/mic.test.ts",
+        "apps/desktop/src/modules/setup/mic-hook.test.tsx"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        ".ai/registry-map.json (the voice-io deviation on setup/index.ts is re-judged by /conform after landing; not hand-edited)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "mic.ts readMicPermission(fake permissions whose query({name:'microphone'}) resolves {state:'denied'}) -> {standing:'denied', recalled:true}; 'granted' -> {standing:'granted', recalled:true}; 'prompt' -> {standing:'unknown', recalled:false}; a query that throws or permissions undefined -> {standing:'unknown', recalled:false} (no prompt is ever raised by reading)",
+        "mic.ts watchMicPermission(fake status) -> calls onChange with the new standing when the status fires 'change' (denied -> granted), and the returned function removes the listener (a second change after unsubscribe calls nothing)",
+        "micRemedy('denied', 'windows') -> a plain sentence naming Settings > Privacy & security > Microphone and letting desktop apps use it; 'macos' -> System Settings > Privacy & Security > Microphone; other -> the system's privacy settings; no sentence contains 'NotAllowedError', 'webview' or 'getUserMedia'",
+        "useSetupModel (jsdom, fake navigator.permissions 'denied'): on mount, before any press, model.mic is 'denied' and micFact(model).summary is the remedy sentence (today: 'unknown' / 'not asked yet', the refusal forgotten each visit)",
+        "useSetupModel: the fake status flips to 'granted' -> model.mic becomes 'granted' with no press (the person re-allowed it in the OS while the Mind depth was open)",
+        "useSetupModel: checkMic() whose getUserMedia rejects NotAllowedError -> micFact summary is the remedy sentence, and model.micDetail keeps the browser's own words after it for the person who wants them (Mind's Mic level draws micDetail verbatim)",
+        "guard: with navigator.permissions absent, mount leaves mic 'unknown' and checkMic behaves exactly as today (checkMicrophone unchanged; granted carries the track label)",
+        "guard: isReady is unchanged by any mic standing (the microphone is never required)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/src/modules/setup/index.ts:55 - the mic answer is hook-local state seeded 'unknown' on every mount, so a refusal is forgotten on the next visit",
+        "apps/desktop/src/modules/setup/readiness.ts:154 - the denied fact is the raw webview message or 'refused by the webview': no re-grant path",
+        "apps/desktop/src/modules/setup/readiness.ts:157 - default arm says 'not asked yet' - false for a person who refused last visit",
+        "apps/desktop/src/lib/voice.ts:366 - checkMicrophone only learns the standing by calling getUserMedia, and a remembered denial rejects at once, so 'Check again' re-reports the same raw error",
+        "apps/desktop/src/scenes/mind/view.tsx:399 and apps/desktop/src/scenes/waking/view.tsx:216 - both surfaces already draw micDetail / micFact's summary, so the change reaches them without a scene edit",
+        ".ai/registry-map.json desktop-setup-module voice-io: recorded deviation at setup/index.ts:53 (denial forgotten; no re-grant instruction) - this card closes it; the stt-pipeline technique: 'denied - a designed state with recovery instructions specific to the platform's re-grant path. Denial is remembered'"
+      ],
+      "rollback": "Two commits (mic.ts + its tests; the hook wiring + readiness remedy). Reverting both restores visit-local mic state; nothing is stored, the Permissions API is only read.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "The first act's disabled Wake her carries its move in place (Check again / Start on Codex / Open a page) instead of a sentence that sends the person back a step - needs scenes/waking/view.tsx (r2 desktop-scenes-voice-waking).",
+      "body": "## Summary\nA person who refused the microphone once is told 'not asked yet' on every later visit, and pressing Check again re-fails instantly with 'NotAllowedError: Permission denied...'. The platform already remembers the answer; read it on arrival (no prompt), follow it live, and say in plain words how to give it back.\n\n## Description\nmic.ts adds readMicPermission(permissions) over navigator.permissions.query({name:'microphone'}) - a read that never prompts - and watchMicPermission(status, onChange) over the status's change event. useSetupModel seeds the mic standing from it on mount and subscribes for the hook's life, so turning the OS switch on while the Mind depth is open flips the row to granted without a press. micRemedy(standing, platform) turns a denial into the platform's re-grant path (Windows: Settings > Privacy & security > Microphone, desktop apps allowed); micFact's denied summary becomes that sentence and micDetail keeps the browser's own words after it. Where the Permissions API is missing or throws, nothing changes: the standing stays unknown and Check the microphone works as today.\n\nThis is the voice-io stt-pipeline rule (denial is a designed state, remembered, with platform-specific recovery) and closes the deviation already recorded against setup/index.ts. Nothing is stored and no data leaves the device.\n\n## Flow\n- before: refuse once -> next visit Mind Microphone reads 'not asked yet' -> press Check -> raw NotAllowedError -> the person searches for why push-to-talk is off\n- after: next visit reads 'refused' with 'Turn it on in Settings > Privacy & security > Microphone' -> the person flips it -> the row turns granted on its own\n\n## Expected impact\nThe one optional capability in setup stops lying about its own history and stops being a loop with no exit. Both the first act's Voice step and the Mind Microphone level read it with no scene change.\n\n## Evaluation\nClaim: a remembered denial is shown on arrival with its remedy, and a re-grant is seen without a press\nBefore: 0 of 6 behaviour cases pass (cases 0-5)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest + jsdom, fake Permissions API, offline)\nResult: better\nGate: none",
+      "evidence": "index.ts:55-58: `const [mic, setMic] = useState<{ standing: MicStanding; detail: string }>({ standing: \"unknown\", detail: \"\" });` - no read on mount. readiness.ts:152-158: `case \"denied\": return { ...base, standing: \"missing\", summary: model.micDetail || \"refused by the webview\" }; ... default: return { ...base, standing: \"unknown\", summary: \"not asked yet\" };`. lib/voice.ts:366-383: the standing comes only from a getUserMedia call. grep -rn permissions over apps/desktop/src/lib, stores, modules/voice: no navigator.permissions read anywhere. registry-map voice-io state 'deviation', evidence 'apps/desktop/src/modules/setup/index.ts:53 The microphone answer is hook-local state seeded unknown, so a denial is forgotten on the next visit...'."
+    }
+  ],
+  "rehomed": [
+    "lib/setup.ts returns SetupSession.phase and nothing reads it (S; belongs with desktop-mind-devices-sleep's setup-conversation surface)",
+    "settings-mode engine choice could move the daemon as the first run does, dropping the restart-notice two-step - ADR 0085 chose the notice; a direction call, not a card",
+    "useSetupModel's 25-entry hand-kept useMemo dependency list (S, lint-guarded already by exhaustive-deps)"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["async-ui-states", "voice-io"],
+    "techniques": ["failure-states", "state-model", "stt-pipeline"]
+  },
+  "files_read": 26
+}

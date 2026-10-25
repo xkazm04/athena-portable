@@ -1,0 +1,83 @@
+{
+  "cohort": [
+    {
+      "name": "core-brain-memory",
+      "group": "Agent Core",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "daemon-e2e-tests",
+      "group": "Daemon and Channels",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "demo-kit-tests",
+      "group": "Page Bridge and Demo Kit",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "proving-characters-gauntlet",
+      "group": "Proving Ground",
+      "files": 13,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-companion-pane",
+      "group": "Desktop Companion",
+      "files": 19,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-chores-adopt-intake",
+      "group": "Desktop Companion",
+      "files": 19,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "tidycrm-spatial-model-tools",
+      "group": "Example Apps",
+      "files": 20,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "atlas-shell-and-styles",
+      "group": "Example Apps",
+      "files": 19,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "hirelane-style",
+      "group": "Example Apps",
+      "files": 18,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "journey-capture",
+      "group": "Example Apps",
+      "files": 14,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "workspace-build-config",
+          "files": 2
+        },
+        {
+          "name": "uat-characters-journeys",
+          "files": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "cohort": [
+    {
+      "name": "contracts-seam",
+      "group": "Agent Core",
+      "files": 11,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "proving-forge",
+      "group": "Proving Ground",
+      "files": 12,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-avatar",
+      "group": "Desktop Companion",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-shell-rust",
+      "group": "Desktop Companion",
+      "files": 16,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-art-bell",
+      "group": "Desktop Companion",
+      "files": 15,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-stores",
+      "group": "Desktop Companion",
+      "files": 15,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "hirelane-app-and-tests",
+      "group": "Example Apps",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "tidycrm-tests",
+      "group": "Example Apps",
+      "files": 17,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "ledgerbox-app-shell",
+      "group": "Example Apps",
+      "files": 10,
+      "reason": "never challenged",
+      "riders": []
+    }
+  ]
+}

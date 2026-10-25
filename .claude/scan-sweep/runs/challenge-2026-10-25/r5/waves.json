@@ -1,0 +1,140 @@
+[
+  [
+    {
+      "key": "contracts-seam/A",
+      "host": "contracts-seam",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "contracts-seam/B",
+      "host": "contracts-seam",
+      "slot": "B",
+      "revise": "Add tests/daemon/test_manifest.py to the write set and give the fixture at line 321 an explicit \"side_effects\": \"internal\" so the rollback test still reaches its monkeypatched failure.",
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "desktop-shell-rust/A",
+      "host": "desktop-shell-rust",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "proving-forge/A",
+      "host": "proving-forge",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-stores/A",
+      "host": "desktop-stores",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-app-shell/A",
+      "host": "ledgerbox-app-shell",
+      "slot": "A",
+      "revise": "Cite stabilize-2026-10-16 findings/ledgerbox-domain-lib.jsonl:1 as the open backlog item adopted by acceptance case 4.",
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "ledgerbox-app-shell/B",
+      "host": "ledgerbox-app-shell",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-art-bell/A",
+      "host": "desktop-art-bell",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-avatar/A",
+      "host": "desktop-avatar",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-avatar/B",
+      "host": "desktop-avatar",
+      "slot": "B",
+      "revise": "Drop the Voice-settings figure and 'see her speak' press from the scope (settings keep the pills, with undrawable forms disabled), so the card does not break voice/face.test.tsx:72 and the one-face-in-Main rule.",
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-shell-rust/B",
+      "host": "desktop-shell-rust",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-stores/B",
+      "host": "desktop-stores",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "hirelane-app-and-tests/A",
+      "host": "hirelane-app-and-tests",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "tidycrm-tests/A",
+      "host": "tidycrm-tests",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "tidycrm-tests/B",
+      "host": "tidycrm-tests",
+      "slot": "B",
+      "revise": "Cite stabilize-2026-10-16 findings/tidycrm-spatial-model-tools.jsonl:2 as the open backlog item this card adopts.",
+      "py": false
+    },
+    {
+      "key": "desktop-art-bell/B",
+      "host": "desktop-art-bell",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "hirelane-app-and-tests/B",
+      "host": "hirelane-app-and-tests",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "proving-forge/B",
+      "host": "proving-forge",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    }
+  ]
+]

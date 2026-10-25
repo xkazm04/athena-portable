@@ -1,0 +1,127 @@
+{
+  "host": "desktop-chores-adopt-intake",
+  "cards": [
+    {
+      "context": "desktop-chores-adopt-intake",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Key the studio's brief lifecycle by rev: one phase machine, not five flags",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/scenes/chores/adopt/state.ts",
+        "apps/desktop/src/scenes/chores/adopt/state.test.ts",
+        "apps/desktop/src/scenes/chores/adopt/session.ts",
+        "apps/desktop/src/scenes/chores/adopt/studio.tsx",
+        "apps/desktop/src/scenes/chores/adopt/studio.test.tsx",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx",
+        "apps/desktop/src/scenes/chores/adopt/showcase.test.tsx"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "reduce: brief rev 2 + adopt.clear rev 2, then {t:'answered'} on a card -> phase(s).kind === 'stale' and approval(s) = {can:false, why names that she is redrafting after the answer} (today can:true; the daemon refuses with stale_rev 'answered past', loop.py:160)",
+        "reduce: brief rev 2 cleared, then {t:'said'} composer words -> approval(s).can === false (same stale rule as a card answer)",
+        "reduce: stale after rev 2, then adopt.brief rev 3 -> phase 'drafted' rev 3, stale cleared; adopt.clear rev 3 -> approval(s).can === true",
+        "reduce: approve rev 2, adopt.showcase done, answer, brief rev 3 cleared, approve rev 3 -> rehearsal(s) = {rev:2, event:done}; shownRun given approved rev 3 and rehearsal rev 2 plays the recorded run with a line saying the practice run was rehearsed on draft 2 (one rehearsal per conversation), never labelled 'Your practice run' for draft 3",
+        "reduce: {t:'handed', rev:2} then answer -> brief rev 3 -> approve rev 3 -> handedRev(s) !== 3; studio render shows 'Hands the brief's command to Athena', not 'Handed to her with your case' (today the studio-local boolean stays true)",
+        "studio render: approve rev 2 then a refused approve (stale_rev) -> no Showcase stage was ever drawn for a rev that is stale at press time (Approve is disabled while stale, so the optimistic stage flash cannot happen)",
+        "guard: brief rev 4 + adopt.clear rev 4 with no answer after it -> approval(s).can === true (existing cleared-rev rule)",
+        "guard: Good enough (enough) with no answer after the latest brief -> approval(s).can === true for any rev (existing rule)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/src/scenes/chores/adopt/state.ts:293 - approval() opens on clearRev===rev or enough; nothing records that an answer after the brief made it stale",
+        "src/athena/adopt/loop.py:145 - the daemon sets brief_stale on any answer after a brief, and approve() refuses 'stale_rev: brief N was answered past' (loop.py:160)",
+        "apps/desktop/src/scenes/chores/adopt/state.ts:150 - 'answered' and 'said' (:166) touch only the feed",
+        "src/athena/adopt/showcase.py:646 - one rehearsal per session: a second approval emits only a Progress line, no adopt.showcase",
+        "apps/desktop/src/scenes/chores/adopt/state.ts:256 - adopt.showcase is stored with no rev; a new brief or a new approval never clears it",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx:76 - shownRun plays any done showcase as the tailored 'Your practice run'",
+        "apps/desktop/src/scenes/chores/adopt/studio.tsx:56 - handed is a studio-local boolean set at :258 and never keyed to the rev it handed",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx:247 - 'Handed to her with your case' is drawn from that boolean"
+      ],
+      "rollback": "Each commit is desktop-only and self-contained (reducer + derivations, then the studio/showcase reading them); git revert of the series restores the flag fields and the local handed state with no data or wire change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck",
+        "cd apps/desktop && pnpm lint",
+        "cd apps/desktop && pnpm test"
+      ],
+      "runner_up": "One headless conversation-session controller (start/follow/reconnect/close-on-verdict/retry-with-need) under both hooks, absorbing the backlogged duplicate reconnect loop and unifying AdoptApi/IntakeApi transport.",
+      "body": "## Summary\nThe studio's brief lifecycle (drafted, cleared, stale, approved, rehearsing, rehearsed, handed) is smeared across clearRev, enough, approvedRev, showcase and a studio-local handed boolean, and none of them knows which brief revision it belongs to. Make it one rev-keyed phase derived in state.ts, so every claim the studio draws is about the draft on show.\n\n## Description\nRegistry client-state / status-fsms: flags combine into states nobody enumerated. Three reachable wrong states today: (1) after the person answers past a cleared brief, Approve stays enabled although the daemon will refuse it (`brief_stale`, loop.py:145/160); pressing it flashes the showcase stage then rolls back with an error. (2) The daemon rehearses once per session (showcase.py:646); after an answer and a second approval the studio replays draft N's rehearsal labelled 'Your practice run' under draft N+1. (3) 'Handed to her with your case' stays on after a redraft and a new approval that nothing was handed for. The move: the reducer tracks `briefStale` (set by answered/said while a brief is up, cleared by adopt.brief), stamps the showcase with the approved rev it followed (`rehearsal: {rev, event}`), and owns `handedRev` via a new `handed` action the hook exposes; `phase(s)` returns one discriminated value and approval(), the Showcase label and the hand-off line all read it.\n\n## Flow\n- brief 2 cleared -> person answers -> phase stale -> Approve disabled with why -> brief 3 arrives -> reviewable\n- approve 2 -> rehearsal {rev 2} -> answer -> brief 3 -> approve 3 -> recorded run shown with 'rehearsed on draft 2'\n- Start for real on 2 -> handedRev 2 -> approve 3 -> hand-off line resets\n\n## Expected impact\nThe person never presses an Approve the daemon will refuse, and never reads a rehearsal or a hand-off claim that belongs to another draft. A whole class (rev-less lifecycle state) closes in one module.\n\n## Evaluation\nClaim: every studio claim is keyed to the draft on show\nBefore: 0 of 6 non-guard acceptance cases pass (guards 7 and 8 green)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in state.test.ts, showcase.test.tsx, studio.test.tsx\nResult: better\nGate: none",
+      "evidence": "state.ts:293 `if (s.clearRev === b.rev || s.enough) return { can: true, why: \"\" };`\nloop.py:145-146 `if session.brief is not None: session.brief_stale = True`\nloop.py:160-161 `if session.brief_stale: return f\"stale_rev: brief {current} was answered past; a new one is being written\"`\nshowcase.py:648-653 `if session.id in self._started: ... Progress(text=\"One rehearsal per session: the one already started stays.\") return False`\nstate.ts:256-257 `case \"adopt.showcase\": return { ...s, showcase: e };` (no rev; never reset)\nstudio.tsx:56 `const [handed, setHanded] = useState(false);` studio.tsx:258 `setHanded(true);`\nshowcase.tsx:76 `if (showcase?.status === \"done\")` -> tailored label"
+    },
+    {
+      "context": "desktop-chores-adopt-intake",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Leaving the studio parks the interview; coming back offers Continue",
+      "size": "M",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "apps/desktop/src/scenes/chores/adopt/session.ts",
+        "apps/desktop/src/scenes/chores/adopt/state.ts",
+        "apps/desktop/src/scenes/chores/adopt/studio.tsx",
+        "apps/desktop/src/scenes/chores/adopt/studio.test.tsx",
+        "apps/desktop/src/scenes/chores/adopt/deps.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/chores/adopt/park.ts",
+        "apps/desktop/src/scenes/chores/adopt/park.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-studio-left-mid-interview-is-parked-not-closed.md (changes the 'leaving closes the session' behaviour in studio.tsx's header; ADR 0097's three-place cap and two-hour TTL stand)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "studio render: events to seq 7 with an answered card and a composer line, then unmount -> client.close NOT called; parked('pb/') = {sid, lastSeq:7, feed with the receipt and the line} (today close is called and everything is gone)",
+        "remount the same playbook -> client.start NOT called; a resume offer says how far it got (answers given, draft rev if any) with Continue and Start over; Continue -> client.events(sid, 7, ...) and the earlier receipt and line are drawn without a replay from 0",
+        "remount, Start over -> client.close(parked sid) then client.start(playbook) once; feed empty",
+        "parked studio for chore A, mount the studio for chore B -> client.close(A's sid) is called before client.start(B) (the desktop holds at most one parked studio, so the daemon's three places are not eaten)",
+        "Continue on a session the daemon reaped or lost in a restart (events rejects ApiError 404 unknown_ref) -> no five-try backoff and no Retry loop; the studio starts a fresh session with the parked intro and says the earlier conversation had ended",
+        "parked longer than the local limit (injected now(), limit under the daemon's two-hour TTL) -> on mount the parked session is closed and a fresh one starts with no offer",
+        "guard: Close or unmount with nothing said (no answered card, no composer line, no document) -> client.close called on unmount as today",
+        "guard: a session whose start was still in flight when the studio went is still closed the moment its id arrives (existing test)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/src/scenes/chores/adopt/session.ts:155 - unmount always DELETEs the session: the interview, the research lanes and any rehearsal are thrown away",
+        "apps/desktop/src/scenes/chores/view.tsx:44 - the stage mounts a fresh view at every move, so any navigation unmounts the studio",
+        "apps/desktop/src/scenes/chores/adopt/live-deps.ts:54 - the studio's own mic tells the person to go to Mind -> Voice (and :82 for her voice), a move that unmounts it and loses the conversation",
+        "src/athena/adopt/session.py:13 - the daemon keeps a session up to two hours idle and resends everything after a seq (ADR 0097:30-32), so the session outlives the view if the view lets it",
+        "src/athena/adopt/session.py:251 - the event log carries her side only; the person's answers and lines are local reducer acts, so a resume must keep the client's state, not replay from 0",
+        "apps/desktop/src/scenes/chores/adopt/session.ts:108 - any events() failure, a 404 unknown_ref for a reaped sid included, is retried five times then 'lost', and Retry follows the same dead sid again",
+        "src/athena/adopt/routes.py:292 - an unknown sid is 404 unknown_ref",
+        "apps/desktop/src/scenes/chores/memory.ts:1 - precedent: what must outlive a move lives in a module store read with useSyncExternalStore"
+      ],
+      "rollback": "park.ts is new and the hook reads it behind one branch; reverting the series restores close-on-unmount. A parked session left on the daemon by a reverted build expires on its two-hour TTL; no user data is deleted or sent anywhere new.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck",
+        "cd apps/desktop && pnpm lint",
+        "cd apps/desktop && pnpm test"
+      ],
+      "runner_up": "The intake verdict card offers a compare of the fitting chore and its alternates side by side (gates, apps, what differs) before 'Make it yours', using the playbook model already in hand.",
+      "body": "## Summary\nToday every move away from the Adopt studio DELETEs its session: a five-round interview, the research lanes and a paid rehearsal are gone the moment the person follows the studio's own advice to set up voice in Mind, glances at the chore page, or presses Escape. Park the session instead, and offer Continue on return.\n\n## Description\nRegistry session-resume (layered-place-restoration: in-progress work is the deepest, most valuable layer; resume-affordances: deep restoration is an offer, not a teleport). A module store `park.ts` (the `memory.ts` pattern) holds at most one parked studio: key `playbookId/caseId`, sid, the reducer snapshot, lastSeq, parkedAt. The hook parks on unmount when the person has said anything, closes otherwise (and after a hand-off). On mount with a parked entry for the same key the studio offers Continue (reducer seeded from the snapshot, follow from lastSeq) or Start over (close, start). Mounting a studio for another chore closes the parked one first, so the desktop never holds more daemon places than today. A resume whose sid the daemon no longer knows (404 unknown_ref, reaped or restarted) starts fresh with the intro instead of entering the five-try loop that today ends in a Retry that can never succeed. A local limit under the daemon's TTL avoids offering a session that expired.\n\n## Flow\n- answer three cards -> 'Set up a listener in Mind -> Voice first' -> set it up -> back to Make it yours -> 'You were part-way through (3 answers). Continue / Start over' -> Continue -> same conversation, same seq\n- open chore B's studio while A is parked -> A closed first -> B starts\n- daemon restarted while parked -> Continue -> 404 -> fresh session with the intro, said in a line\n\n## Expected impact\nThe person stops paying the interview (and its model calls) twice for an ordinary detour. Closes the reaped-sid retry dead end as a side effect.\n\n## Evaluation\nClaim: a detour no longer costs the conversation\nBefore: 0 of 6 non-guard acceptance cases pass (guards 7 and 8 green)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in park.test.ts and studio.test.tsx with the scripted client and an injected clock\nResult: better\nGate: none",
+      "evidence": "session.ts:153-156 `return () => { ctl.abort(); if (started) void deps.client.close(started).catch(() => {}); };`\nview.tsx:44 `// The stage mounts a fresh view at every move, so what must outlive one lives in memory.ts.`\nlive-deps.ts:54 `: \"Set up a listener in Mind → Voice first\";`\nsession.py:13 `At most MAX_LIVE live sessions (a fourth is refused busy), each expiring after TTL_S idle`; ADR 0097:31 'expires after two hours idle'\nsession.ts:104-118 every events() failure -> tries += 1 -> 'lost' after MAX_TRIES; retry() at :172 follows sid.current again\nroutes.py:292 `return error(404, \"unknown_ref\", f\"no adopt session {sid!r}\")`\nstudio.test.tsx:735 'goes back on Close, and deletes the session when the studio goes' (this card narrows it to the nothing-said case)"
+    }
+  ],
+  "rehomed": [
+    "One followSession loop under both hooks (adopt/session.ts:82, intake/session.ts:52): already backlogged by stabilize-2026-10-16 (desktop-perf-gate, 'The studio and the front door each keep their own copy of the reconnect loop'), effort 4 - under the floor, not re-proposed.",
+    "AdoptApi/IntakeApi duplicate send/json/refusal verbatim (adopt-client.ts:148-188, intake-client.ts:97-152): S, impact under 7.",
+    "adopt.ts:2 names a nonexistent contract path and types lane non-null: already backlogged (contracts-seam), S.",
+    "Start for real / Copy claim success unconditionally: already backlogged (desktop-perf-gate), and its fix starts in modules/playbooks outside this context."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["client-state", "session-resume", "realtime-events"],
+    "techniques": ["status-fsms", "layered-place-restoration", "resume-affordances", "optimistic-write-path"]
+  },
+  "files_read": 34
+}

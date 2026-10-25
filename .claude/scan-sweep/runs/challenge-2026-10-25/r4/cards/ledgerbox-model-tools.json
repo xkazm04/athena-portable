@@ -1,0 +1,127 @@
+{
+  "host": "ledgerbox-model-tools",
+  "cards": [
+    {
+      "context": "ledgerbox-model-tools",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One invoice, one reading: every books tool projects through one derived core",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/components/lanes/tools/read.ts",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx",
+        "examples/ledgerbox/components/lanes/tools/search.ts",
+        "examples/ledgerbox/test/tools.test.ts",
+        "examples/ledgerbox/test/tool-handlers.test.ts"
+      ],
+      "new_files": [
+        "examples/ledgerbox/test/ledgerbox-invoice-read.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-one-invoice-one-reading-across-the-books-tools.md (agent-facing field names change: due->due_at, unapplied_credits->candidates, contact/email->contact_name/contact_email on the Lanes reads)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "search_invoices({state:'overdue'}) driven through its own handler (tool-handlers harness) -> the LB-2026-0920 result carries mostly_paid: true and paid_ratio: 0.8 (today: neither key, so the demo's one mostly-paid late invoice reads as a plain 50+ day chase)",
+        "for LB-2026-0920 the core keys {id, number, client, client_domain, category, state, due_at, days_overdue, amount, paid, balance, paid_ratio, mostly_paid, candidates, reminders_sent, has_draft_reminder, contact_name, contact_email} are present with identical values in read_inbox's row, read_invoice.invoice, search_invoices' result, open_item's L1 invoice list (read_view detail at level 1) and its L2 detail (today: 20, 16 and 27 keys in three dialects)",
+        "for all 125 seeded invoices, invoiceCore(factsOfRow(row)) deep-equals invoiceCore(factsOfMark(mark, sheet.details[id])) -> the ledger pipeline (buildBooks) and the picture pipeline (buildSheet) say the same thing about every invoice (today: no single projection exists to compare)",
+        "read_inbox({filter:'overdue'}) -> every row carries client_domain equal to companyDomain(client), the cross-app key read.ts promises 'at every level' (today: absent from read_inbox and read_invoice)",
+        "guard: markRead/detailRead still carry no layout fact (no x, weight or row key) and money stays in units, not cents",
+        "guard: read_inbox keeps its envelope (showing, of, page, filter) and worst-first order; search_invoices keeps area and area_label on every result and its refusal shapes for an unknown state or area",
+        "guard: mostly_paid is decided only by isMostlyPaid in every projection - a fixture mark 0.69 paid reads false, 0.70 reads true, in read_inbox, search_invoices and the L2 detail alike"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:109 - row() projects an InvoiceRow in one dialect (contact_name, contact_email, due_at, candidates, paid, paid_ratio, conditional mostly_paid at :137) with no client_domain",
+        "examples/ledgerbox/components/lanes/tools/read.ts:17 - markRead projects an LnMark in a second dialect (due, unapplied_credits, area, heat, waiting_on) with no paid, paid_ratio or mostly_paid",
+        "examples/ledgerbox/components/lanes/tools/read.ts:22 - 'Present at every level, so a fact filed elsewhere can find this page' - client_domain, which read_inbox/read_invoice (row()) never carry",
+        "examples/ledgerbox/components/lanes/tools/read.ts:84 - detailRead names the billing contact contact/email where row() says contact_name/contact_email (BooksTools.tsx:117)",
+        "examples/ledgerbox/components/lanes/tools/search.ts:106 - search_invoices, the worst-first chase finder, answers with markRead, so it cannot show mostly_paid",
+        "examples/ledgerbox/components/lanes/tools/LanesTools.tsx:73 - the L1 read_view lists invoices through markRead too",
+        "examples/ledgerbox/lib/filter.ts:19 - mostly paid is 'the judgement the demo exists to make ... read by both designs and both tool layers' - yet the Lanes layer does not read it",
+        "examples/journey/src/contracts.ts:136 - the runner's paidRatio needs paid_ratio or paid+amount; on a markRead row it throws, safe() turns it into 0 and mostlyPaid (:142) says false; contracts.ts:145 already tolerates contact_email ?? email - consumers hand-carry the dialect split"
+      ],
+      "rollback": "Two commits (core + projections, then tests/ADR); git revert of both restores the three dialects. No data, schema or manifest change, so nothing outlives the revert.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; covers examples/ledgerbox node --test suite)"
+      ],
+      "runner_up": "Read-after-write freshness: a books clock that holds a read until the render the last write triggered lands (adopts the stabilize risk-assessor Lane C item) - impact doubtful because a model turn normally outlasts the re-render.",
+      "body": "## Summary\nThe page answers questions about one invoice in three dialects built from two pipelines: `row()` in BooksTools (from `InvoiceRow`), `markRead`/`detailRead` in read.ts (from `LnMark`/`LnDetail`). The split is not cosmetic: the chase finder (`search_invoices`) and the L1 view cannot say an invoice is mostly paid, and the ledger reads drop the cross-app key `client_domain` that read.ts promises at every level. Derive one invoice core and make every tool project through it.\n\n## Description\nAdd `invoiceCore(facts)` to `tools/read.ts` over a small `InvoiceFacts` input, with two adapters: `factsOfRow(row)` (ledger) and `factsOfMark(mark, detail)` (picture; paid/paid_ratio from paidCents/amountCents, contact from `sheet.details`, `isMostlyPaid` for the judgement). `row()` moves out of BooksTools into read.ts as `core + ledger extras` (last_payment_at, dispute); `markRead` becomes `core + picture extras` (area, heat, issued, waiting_on); `detailRead` extends markRead. Canonical names are the `read_inbox` dialect, the one examples/journey declares as the contract's Row (due_at, candidates, contact_name, contact_email, category), so the Lanes reads rename four keys and gain five; no in-repo consumer reads the old Lanes names (grep of apps/, examples/journey, src/). `mostly_paid` becomes an always-present boolean so absence never means 'unknown'. Technique: mcp-tools/tool-schema-design (one vocabulary across a catalogue; failed reads must not look like answers); the parity test is the registry's 'publish them honestly is a test'. Write set stays inside the host plus its tests; BooksTools.tsx is also in slot B's write set, so the two land sequentially.\n\n## Flow\n- agent: search_invoices({state:'overdue'}) -> 54 results, LB-2026-0920 among them -> today: no paid, no paid_ratio, no mostly_paid -> drafts a chase the README says is the wrong move\n- after: the same row carries mostly_paid: true, paid_ratio: 0.8, contact_email -> the agent skips the chase without a second read\n- agent: read_inbox -> rows now carry client_domain, the key TidyCRM and Hirelane file the client under\n- the parity test walks all 125 invoices through both pipelines and fails the day buildBooks and buildSheet disagree\n\n## Expected impact\nOne invoice shape across read_inbox, read_invoice, search_invoices, read_view L1 and L2: an agent comparing two tools' answers compares like with like, the demo's central judgement is visible from every place an invoice is listed, and a class of drift (a field added to one projection and not the others, or the two server pipelines disagreeing) is closed by a test instead of by review.\n\n## Evaluation\nClaim: every invoice-returning tool carries the same core, with mostly_paid and client_domain, and both pipelines agree on all 125 invoices.\nBefore: 0 of 4 new acceptance cases pass (probe: markRead 16 keys, row() 20, detailRead 27; LB-2026-0920 via search_invoices has no paid/mostly_paid)\nAfter: 7 of 7 (4 new + 3 guards)\nMethod: gate - the acceptance cases in node --test via test/register.mjs\nResult: better\nGate: none",
+      "evidence": "Probe (node --import ./test/register.mjs, scratch db): rows 125, overdue 54, overdue & isMostlyPaid 1 (LB-2026-0920, paid_ratio 0.8). markRead keys: id,number,client,client_domain,area,state,heat,issued,due,days_overdue,amount,balance,unapplied_credits,reminders_sent,has_draft_reminder,waiting_on. detailRead adds contact,email,terms_days,note,dispute,lines,lines_hidden,credits_that_might_fit,payments_applied,draft_reminder,mostly_paid. row() (BooksTools.tsx:109-138): id,number,client,contact_name,contact_email,state,category,due_at,days_overdue,amount,paid,balance,paid_ratio,last_payment_at,candidates,has_draft_reminder,reminders_sent,[dispute],[mostly_paid]. Same fact, two names: due/due_at, unapplied_credits/candidates, contact/contact_name, email/contact_email, area/category. test/tools.test.ts:177 asserts read.due (will move to due_at)."
+    },
+    {
+      "context": "ledgerbox-model-tools",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Each reversible act an agent runs on the books toasts its own Undo",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx",
+        "examples/ledgerbox/app/actions.ts",
+        "examples/ledgerbox/lib/types.ts",
+        "examples/ledgerbox/test/tool-handlers.test.ts",
+        "examples/ledgerbox/test/ledgerbox-domain-lib.test.ts"
+      ],
+      "new_files": [
+        "examples/ledgerbox/components/lanes/tools/undo.ts",
+        "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts"
+      ],
+      "shared_surfaces": [
+        "examples/ledgerbox/app/actions.ts (owned by ledgerbox-app-shell / ledgerbox-domain-lib: each reversible action returns undoId; the reminder undo refuses a sent letter)",
+        "examples/ledgerbox/lib/types.ts (ledgerbox-domain-lib: ActionResult gains optional undoId)",
+        "CHANGELOG.md",
+        "docs/adr/NNNN-ledgerbox-offers-the-undo-its-auto-acts-are-classed-on.md (extends ADR 0111 to ledgerbox, which 0111 left untouched)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "categorize(['inv_a','inv_b'], 'retainer') through its handler -> the recorded toast carries an action labelled Undo; pressing it calls undoAction(<the categorize activity row id>) and both invoices are back in their prior categories in the scratch db, with a router.refresh recorded (today: the toast has no action and undoAction has no caller)",
+        "match_bank_line(inv, line) -> toast with Undo; pressing it -> the match and its payment row are gone and read_credits (after re-mount on rebuilt books) lists the line again",
+        "every AUTO write's ok result from app/actions.ts (categorize, match, unmatch, draft_reminder, export_summary) carries undoId equal to the activity row it logged; mark_paid, send_reminder and void_invoice carry none",
+        "draft_reminder then send_reminder on the same invoice, then undoAction(draft row id) -> { ok: false, reason naming 'already sent' }, the reminders row stays sent, no 'Undid #N' activity row is written and the press toasts the reason as an error (today: ok: true and a false 'Undid' row - stabilize finding)",
+        "toastFor(tool, result) is decided by TOOL_CLASSES, not by the presence of an id: a result carrying undoId under mark_paid, void_invoice or send_reminder gets no action",
+        "guard: a refused write (match_bank_line on an unknown line, ok:false) toasts an error with no action, exactly as today",
+        "guard: the agent's answer for every tool is unchanged (the undo id is not added to what the model reads; the model gains no undo verb), so the manifest, the class table and tools.test counts stay green untouched",
+        "guard: undoAction on a row already undone -> ok:false 'already undone' (the toast's dismiss-on-press means one press, but a second path must still refuse)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:230 - settle() toasts result.message with no third argument, for every write",
+        "examples/demo-kit/src/ui/Toast.tsx:7 - the kit toast already carries one optional action ('an Undo for the act it reports, typically'), added by ADR 0111 for hirelane",
+        "docs/adr/0111-every-reversible-act-on-the-board-offers-its-undo.md - 'Callers that pass two arguments are unchanged, so ledgerbox and tidycrm are untouched': ledgerbox was deferred, not decided against",
+        "examples/ledgerbox/app/actions.ts:677 - undoAction exists and reverses categorize, match, unmatch, reminder and export (applyUndo), but no component or tool calls it",
+        "examples/ledgerbox/lib/tool-classes.ts - categorize, match_bank_line, unmatch, draft_reminder, export_summary are WRITE (reversible: true) and so run unasked; the class rule is that they can be taken back",
+        "examples/ledgerbox/components/lanes/card/Decide.tsx:242 - the card tells the person 'Reversible: it writes an undo row' - a promise no surface keeps",
+        "examples/ledgerbox/app/actions.ts:667 - the reminder undo runs DELETE ... AND sent_at IS NULL and never checks what it changed; undoActivity (examples/demo-kit/src/activity/index.ts:124) then marks the row undone and logs 'Undid #N'",
+        "examples/ledgerbox/lib/types.ts:153 - ActionResult is { ok, message }: the activity id logActivity returns never reaches the client"
+      ],
+      "rollback": "Three commits (actions return undoId + sent-reminder refusal; undo.ts + BooksTools toast; ADR/CHANGELOG). Reverting the BooksTools commit alone leaves an unused optional field; reverting all restores today. No schema change: the activity table and undo payloads already exist.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; covers examples/ledgerbox node --test suite)"
+      ],
+      "runner_up": "Legend chips counted, not declared: each filter chip shows the heat mix of the marks it would light (adopts the stabilize visual-craft item on 27 of 67 misstated swatches) - the rendering lives in lanes-ui, so it cannot land inside this host.",
+      "body": "## Summary\nFive of the agent's acts on the books run without asking anyone because they are reversible, and the app can reverse every one of them - but nothing offers the reversal. Give each AUTO act's toast the Undo the kit already supports, wired to the undo row the act already wrote, and make the one undo that can lie (a draft that has since been sent) refuse instead.\n\n## Description\nAdopts two open backlog items: ledgerbox-app-shell 'Acts are AUTO because they are reversible, and ledgerbox offers no way to reverse them' (stabilize-2026-10-16, Lane C) and ledgerbox-domain-lib 'Undo of a sent reminder's draft says it undid it; the letter stays sent' (Lane B). Server side: each reversible action in app/actions.ts returns `undoId` (the id `logActivity` already returns), and the `reminder` case of `applyUndo` throws `UndoRefused('already sent ...')` when the draft is sent, so the transaction rolls back. Client side: a pure `tools/undo.ts` holds `toastFor(tool, result)` - the class table, not the payload, decides whether a toast earns Undo - and `undoPress(id)` (call undoAction, toast its reason on refusal, refresh the tree). `settle` in BooksTools passes the action as the toast's third argument. The model's answers do not change and it gains no undo verb: this is the person's way back from what the agent did, which is what makes AUTO honest. Techniques: undo-history/execution-emitted-inverse (the inverse is written by the act at execution, already true here), toasts-notifications/actionable-toasts (one action, the act's own undo). The person's own card clicks (card/Decide.tsx, lanes-ui) can adopt `undoId` in a follow-up; the toast's 4 s window is the same trade ADR 0111 made, with a durable History band out of this host's reach.\n\n## Flow\n- agent: categorize(12 invoices, 'retainer') -> runs unasked (AUTO) -> toast 'Filed 12 invoices under retainer.' [Undo] [dismiss]\n- person presses Undo -> undoAction(#n) -> the 12 return to their prior areas -> refresh -> the lanes redraw\n- agent: draft_reminder -> send_reminder (gated, approved) -> the draft's Undo, if pressed late via any path -> refused 'already sent - a sent reminder cannot be taken back', no false 'Undid' row\n- agent: void_invoice / mark_paid / send_reminder -> toast with no Undo, as the class table says\n\n## Expected impact\nThe person watching an agent work the books can take back a wrong filing, a wrong match, an unwanted draft or export in one press, which is the premise the AUTO class rests on; the activity record stops claiming a sent letter was undone.\n\n## Evaluation\nClaim: every AUTO write's toast offers its own undo, no gated act's does, and the sent-reminder undo refuses.\nBefore: 0 of 5 new acceptance cases pass (undoAction has no caller; ActionResult has no id; the sent-draft undo answers ok)\nAfter: 8 of 8 (5 new + 3 guards)\nMethod: gate - the acceptance cases in node --test via test/register.mjs and the scratch db\nResult: better\nGate: none",
+      "evidence": "git grep undoAction -> examples/ledgerbox/app/actions.ts:677 (definition) and test/ledgerbox-domain-lib.test.ts:230, test/ledgerbox-app-shell.test.ts:360/379 only; no component, no tool. app/actions.ts logs reversible:true with an undo payload at :185 categorize, :278 match, :333 unmatch, :459 reminder, :593 export; reversible:false at :398 mark_paid, :523 send, :553 void. BooksTools.tsx:230 `toast(result.message, result.ok ? \"success\" : \"error\");` - two arguments. Toast.tsx:37 `toast: (text, tone?, action?: ToastAction) => void`. ADR 0111 Decision 2: 'Callers that pass two arguments are unchanged, so ledgerbox and tidycrm are untouched.'"
+    }
+  ],
+  "rehomed": [
+    "Read-after-write freshness clock for BooksTools reads (stabilize risk-assessor Lane C): impact under 7 - a model turn between a write's answer and the next read almost always outlasts the re-render; only same-turn parallel calls hit the window, and measuring it needs a browser.",
+    "litBy (BooksTools.tsx:242) restates filterState (search.ts:119) field for field: S, dedupe in a stabilize pass.",
+    "read_inbox filters through lib/filter.ts matchesFilterClient while navigate/set_filter light through model/filters.ts matches - two predicates for 'overdue'/'unmatched' that agree on the seed only because days_overdue and candidates are zeroed upstream when nothing is owed: S parity test.",
+    "read_clients' per-client aggregation (BooksTools.tsx:356) is computed inline in a React component: S extraction to a pure function."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["mcp-tools", "undo-history", "toasts-notifications"],
+    "techniques": ["tool-schema-design", "write-freshness-gate", "execution-emitted-inverse", "actionable-toasts"]
+  },
+  "files_read": 31
+}

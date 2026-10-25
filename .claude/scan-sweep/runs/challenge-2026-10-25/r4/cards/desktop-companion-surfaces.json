@@ -1,0 +1,131 @@
+{
+  "host": "desktop-companion-surfaces",
+  "cards": [
+    {
+      "context": "desktop-companion-surfaces",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A card's undo promise comes from the tool's declared flags, not its verb",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/companion/translate/decision.ts",
+        "apps/desktop/src/companion/translate/words.ts",
+        "apps/desktop/src/companion/translate/translate.test.ts",
+        "apps/desktop/src/companion/slip.tsx",
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/model.test.ts",
+        "apps/desktop/src/companion/tools.ts",
+        "apps/desktop/src/companion/tools.test.ts",
+        "apps/desktop/src/lib/api.ts"
+      ],
+      "new_files": [
+        "docs/adr/0149-a-cards-undo-promise-is-the-tools-declared-flags.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0149-a-cards-undo-promise-is-the-tools-declared-flags.md",
+        "apps/desktop/src/companion/model.ts (desktop-companion-pane: cardView threads the flags, ~15 lines; r3 pane cards also edit model.ts - sequence after them)",
+        "apps/desktop/src/companion/tools.ts (desktop-companion-pane: toolRows keeps flagsOf's answer on the row)",
+        "apps/desktop/src/lib/api.ts (desktop-client-lib: two optional fields on ToolRow)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "describeDecision({action:'host.ledgerbox.mark_paid', params:{id:'inv_118'}}, ctx, '', {reversible:false, side_effects:'internal'}) -> risk 'destructive', declared true, effect ends 'It cannot be undone.' (today: risk 'change', effect 'Paid INV-118 is changed in Ledgerbox.')",
+        "describeDecision({action:'connector.notion.create_page', params:{}}, EMPTY_CONTEXT, 'mira@example.com', {reversible:false, side_effects:'external'}) -> risk 'outbound', effect contains 'cannot be taken back' (today: 'change', no warning)",
+        "describeDecision({action:'host.crm.archive_board', params:{id:'brd_4'}}, EMPTY_CONTEXT, '', {reversible:true, side_effects:'internal'}) -> risk 'change', effect does NOT contain 'cannot be undone' (today the verb 'archive' claims it is changed for good)",
+        "describeDecision({action:'host.tidycrm.merge_contacts', params:{}}, EMPTY_CONTEXT) with no flags -> declared false, risk 'destructive', effect contains 'did not declare whether this can be undone' (fail-loud: undeclared reads as the severe bucket, marked as defaulted)",
+        "guard: chase-overdue cards[0] (send_reminder) with flags {reversible:false, side_effects:'external'} -> effect is exactly 'Northwind Traders will receive “INV-118 is 41 days past due”. Once it is sent it cannot be taken back.'",
+        "guard: void_invoice {id:'inv_109'} with flags {reversible:false, side_effects:'internal'} -> effect exactly 'INV-109 is changed for good in Ledgerbox. It cannot be undone.'",
+        "cardView(card mark_paid, null, {tools:[{name:'host.ledgerbox.mark_paid', class:'GATED', reversible:false, side_effects:'internal', ...}]}).words.risk === 'destructive'; a connector card resolves its flags from the mirror's tool (send_mail reversible:false external) -> 'outbound'",
+        "toolRows: a page tool flagged {reversible:true, side_effects:'internal'} on a first-sight origin -> row.class 'GATED' (tightening unchanged) and row.reversible === true, row.side_effects === 'internal' (the words read the declaration, the class stays the gate's)"
+      ],
+      "guard_cases": ["4", "5"],
+      "premise": [
+        "apps/desktop/src/companion/translate/decision.ts:39 - risk is chosen from the verb alone: OUTBOUND.has(verb) / DESTRUCTIVE.has(verb) / READ_VERBS, else 'change'",
+        "apps/desktop/src/companion/translate/decision.ts:52 - 'cannot be taken back' / 'cannot be undone' are emitted only for those verb buckets; every other verb gets 'is changed in <app>.' with no warning",
+        "apps/desktop/src/companion/translate/words.ts:292 - OUTBOUND and DESTRUCTIVE are hand-lists of English verbs",
+        "src/athena/contracts/manifest.py:145 - every host tool declares reversible and side_effects; the gate's class is derived from them (manifest.py:153)",
+        "apps/desktop/src/companion/tools.ts:33 - toolRows computes classify(flagsOf(tool)) and then drops the flags; apps/desktop/src/lib/api.ts:69 ToolRow has no reversible/side_effects",
+        "apps/desktop/src/lib/api.ts:164 - connector tools already carry reversible and side_effects to the desktop (ConnectorToolView)",
+        "examples/ledgerbox/lib/tool-classes.ts:49 - mark_paid is PERMANENT (reversible:false), but the verb 'mark' reads as a mere change",
+        "examples/hirelane/lib/manifest.ts:107 - decide_stage reversible:false; examples/tidycrm/components/shell/HostCapabilities.tsx:218 merge_contacts reversible:false; apps/desktop/src/modules/connectors/fixtures.ts:79 append_to_page / create_page external - all read as 'is changed in <app>.'",
+        "apps/desktop/src/companion/slip.tsx:547 - the effect sentence is the first line of the slip's front, the line the person signs against"
+      ],
+      "rollback": "Three commits (flags carried on ToolRow and cardView; describeDecision reads them; ADR + CHANGELOG). git revert of the series restores the verb-only wording; no stored data or protocol changes, ToolRow's new fields are optional.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "TurnContext.byId is one global map keyed by bare id, so inv_118 read in two apps (or a tab read) collides and a card names the wrong client; key it by origin.",
+      "body": "## Summary\nThe slip's first sentence - what will happen and whether it can be taken back - is guessed from the English verb in the tool's name, while the gate classifies the same tool from the flags the app declared. Six gated tools in the shipped apps and connectors (mark_paid, decide_stage, merge_contacts, tidycrm undo, Notion append_to_page and create_page) are irreversible or leave the boundary, yet their card says only 'X is changed in <app>.' Conversely any reversible tool whose verb is archive/close/cancel is told it 'cannot be undone'. Make the declaration the authority and the verb only the wording.\n\n## Description\n`describeDecision` takes an optional `flags: {reversible: boolean|null, side_effects: string}`. Risk is derived: external -> outbound, reversible false -> destructive, reversible true -> change, none -> read. When flags are missing or reversible is null the card takes the severe bucket and says so ('The app did not declare whether this can be undone.'), per hitl-approval/fail-loud-classification-default: an unreadable classification must not share a spelling with a mild one. `DecisionWords` gains `declared: boolean`. The OUTBOUND/DESTRUCTIVE verb sets survive only to choose sentence shape ('will receive' versus 'reaches outside'), never the promise. `toolRows` keeps `flagsOf`'s answer on the row (two optional fields on ToolRow); `cardView` looks the card's flags up in `tools` (page tools) or the connectors mirror (connector tools) and passes them through. The class shown and sent to the gate is untouched: tightening (first sight, pinned, drifted contract) still makes a row GATED, and the words still read what the app declared.\n\n## Flow\n- Page registers tools -> toolRows rows carry class + reversible + side_effects\n- Card arrives -> cardView finds the tool's flags (page row or connector mirror)\n- describeDecision derives risk and the take-back sentence from the flags; undeclared -> severe + marked\n- Slip front shows that sentence; nothing about the gate changes\n\n## Expected impact\nThe one sentence a person signs against stops contradicting the contract the gate enforces. Six real tools today understate their consequence; after, a card can only overstate when the app declined to declare, and then it says that is why. Closes the whole class 'card promise drifts from manifest' rather than patching verb lists.\n\n## Evaluation\nClaim: the card's take-back promise equals the tool's declared flags for every declared tool, and undeclared reads severe and marked.\nBefore: 0 of 6 non-guard acceptance cases pass (cases 0-3, 6, 7); guards 4-5 pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases in translate.test.ts, model.test.ts, tools.test.ts\nResult: better\nGate: none",
+      "evidence": "decision.ts:39 `const risk = OUTBOUND.has(t.verb) ? \"outbound\" : DESTRUCTIVE.has(t.verb) ? \"destructive\" : READ_VERBS.has(t.verb) ? \"read\" : \"change\";` ; decision.ts:57 `effect = `${cap(obj || \"it\")}${target ? \" \" + target : \"\"} is changed in ${app}.`` ; tools.ts:33 `const fromFlags = classify(flagsOf(tool));` then the returned row has only name/origin/class/tier/description. Declared-irreversible or external tools whose verb is not in OUTBOUND/DESTRUCTIVE: ledgerbox mark_paid (PERMANENT, tool-classes.ts:49), hirelane decide_stage (manifest.ts:107-109 reversible:false), tidycrm merge_contacts (HostCapabilities.tsx:218/225 reversible:false), tidycrm undo (HostCapabilities.tsx:381/387 reversible:false), notion append_to_page / create_page (connectors/fixtures.ts:79-80 reversible:false external) = 6. parseTool('host.ledgerbox.mark_paid') -> verb 'mark', object 'paid'; 'mark' is in DIRECT only, so effect = 'Paid INV-118 is changed in Ledgerbox.'"
+    },
+    {
+      "context": "desktop-companion-surfaces",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A card shows what she already read about its target: the note, the age, when",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/companion/translate/payload.ts",
+        "apps/desktop/src/companion/translate/index.ts",
+        "apps/desktop/src/companion/translate/decision.ts",
+        "apps/desktop/src/companion/translate/translate.test.ts",
+        "apps/desktop/src/companion/slip.tsx",
+        "apps/desktop/src/companion/ledger.tsx",
+        "apps/desktop/src/companion/ledger.test.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/companion/slip.test.tsx"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "chase-overdue context, card {action:'host.ledgerbox.send_reminder', params:{id:'inv_137'}} -> describeDecision(...).standing.notes equals [{k:'dispute', v:'Client says the second revision was out of scope.'}] (today: no standing field; the dispute is only one level down in a step's table)",
+        "same card -> standing.facts contains {k:'days overdue', v:'12 days'} (AGE_KEY values, formatted as the table formats them)",
+        "same card -> standing.readAt === '09:41' and standing.readBy === 'Read the inbox in Ledgerbox' (the step and clock the record came from)",
+        "a card whose id the turn never read ({action:'host.ledgerbox.void_invoice', params:{id:'inv_999'}}) -> standing === null",
+        "two reads of the same id at 09:41 and 09:50 -> standing.readAt === '09:50' (the latest read wins; buildContext keeps provenance per id)",
+        "Slip front rendered for the inv_137 card -> `.sl-front [data-standing-note]` with role='note' contains 'Client says the second revision was out of scope.' and a line 'As she read it at 09:41: Read the inbox in Ledgerbox'",
+        "Gate on the ledger rail and a sheet row for the same card each render the [data-standing-note] notice; a card with standing null renders none",
+        "guard: translateAll over all six fixture sessions -> the same 31 messages with byte-identical title, sub and detail (the provenance is context only, never message text)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/companion/translate/payload.ts:80 - TurnContext.byId keeps the raw record but not which step read it or when",
+        "apps/desktop/src/companion/translate/index.ts:161 - buildContext writes ctx.byId[v.id] = v with no entry time or tool, so provenance is lost",
+        "apps/desktop/src/companion/translate/decision.ts:60 - the card's facts are To/Address/Sent from/Subject/What/Amount/Still owed; a NOTE_KEY field on the target (dispute, warning, note) never reaches the card",
+        "apps/desktop/src/companion/slip.tsx:543 - the front shows at most three facts and no note; ledger.tsx:171 the rail's Gate shows only the effect",
+        "apps/desktop/src/companion/translate/sessions.fixture.json:28 - the turn's read_inbox row carries inv_137 with \"dispute\":\"Client says the second revision was out of scope.\"; the translator already flags it as '1 with a note' on the step (translate.test.ts:419)",
+        "apps/desktop/src/companion/translate/words.ts:302 - NOTE_KEY and AGE_KEY are already the vocabulary for what matters on a record; nothing per tool needs writing"
+      ],
+      "rollback": "Two commits (context provenance + standing in the translator; the notice on slip, gate and sheet rows). Reverting them removes an optional field and its rendering; no store, protocol or gate change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Decline with a reason: a Decline press offers 'and tell her why', and the reason goes back as the person's next line so she does not re-propose the same act (needs a pane model action).",
+      "body": "## Summary\nWhen a decision rises, the person signs against one sentence and three facts. Whatever the turn already read about the card's target - a dispute note on the invoice, how many days overdue it is, when she read it - stays one level down in a step's table that the slip never shows. A person can approve a chase of a disputed invoice without the window ever putting the dispute in front of them, though the window holds it.\n\n## Description\n`buildContext` records, per id, the clock and tool of the step that last read it (`TurnContext.seen`). `describeDecision` adds `standing: {notes, facts, readAt, readBy} | null` for the card's target: notes are the record's NOTE_KEY fields, facts its AGE_KEY fields formatted as the table formats them, readAt/readBy the provenance in plain words. It is generic over the existing vocabulary, so no tool gets per-tool copy. The slip's front, the rail's Gate and each sheet row show the notes as a `role=note` notice above the sign row, and one quiet line 'As she read it at 09:41: Read the inbox in Ledgerbox' so the person knows how old the knowledge is (hitl-approval/decision-records: what the decider saw is part of the decision; oracle-before-gate: give the reviewer the thing to check against). No message on the rail changes.\n\n## Flow\n- Turn reads records -> buildContext keeps each id's record plus when and by which step\n- A card arrives about one of those ids -> describeDecision attaches its standing\n- Slip / Gate / sheet row render the note notice and the as-of line; absent target -> nothing extra\n\n## Expected impact\nThe person stops signing blind to facts the window already has: a dispute, a warning, an age, and how stale that reading is - on the surface where they press A, not two clicks away.\n\n## Evaluation\nClaim: a card about a record the turn read surfaces that record's notes, age and provenance on every form of the card.\nBefore: 0 of 7 non-guard acceptance cases pass; guard 7 passes\nAfter: 8 of 8\nMethod: gate - acceptance cases in translate.test.ts, slip.test.tsx, ledger.test.tsx\nResult: better\nGate: none",
+      "evidence": "decision.ts:60-69 builds facts only from whom/email/from/subject/target/amount/balance; index.ts:161 `if (typeof v.id === \"string\") ctx.byId[v.id] = v;` (no at, no tool); slip.tsx:543 `const facts = card.words.facts.filter((f) => f.k !== \"To\" && f.k !== \"Subject\").slice(0, 3);`; fixture read_inbox inv_137 has days_overdue 12 and dispute 'Client says the second revision was out of scope.'; translate.test.ts:419 the step's sub already says '1 with a note', proving the translator sees it."
+    }
+  ],
+  "rehomed": [
+    "Ask about this row: a table row one level down drafts 'About INV-118 (Northwind Traders): ' into the composer - S, and the draft action lives in the pane's model",
+    "Record rows open their plain-words detail - needs the pane model to map RecordRow to a message; impact ~5",
+    "Decision 'change' sentence grammar ('Paid INV-118 is changed in Ledgerbox') - S on its own; folded into slot A",
+    "translateAll re-runs over the whole transcript per render - already the r3 desktop-companion-pane slot A card"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["hitl-approval", "chat-transcript"],
+    "techniques": ["fail-loud-classification-default", "oracle-before-gate", "decision-records", "inline-structured-rows"]
+  },
+  "files_read": 30
+}

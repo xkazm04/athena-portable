@@ -1,0 +1,131 @@
+{
+  "host": "desktop-companion-pane",
+  "cards": [
+    {
+      "context": "desktop-companion-pane",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Her model stops re-reading the whole session per delta: incremental, sliced selector",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/model.test.ts",
+        "apps/desktop/src/companion/live.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/companion/memo.ts",
+        "apps/desktop/src/companion/memo.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "transcript cache: update(T) then update([...T, assistantDelta]) folds exactly 1 new entry into the turn context (visited counter +1), and its context deep-equals buildContext([...T, assistantDelta])",
+        "transcript cache: messages after the delta deep-equal plainMessages([...T, assistantDelta]); only the last merged message object is new, every earlier message is === the previous one",
+        "transcript cache: a delta that adds a tool entry whose output names a new contact re-translates (context changed) and still deep-equals plainMessages/translateAll on the full list",
+        "transcript cache: a transcript that is not an extension of the cached one (Clear, shorter array, or entry[k] !== cached[k]) falls back to a full rebuild and deep-equals the plain functions",
+        "memoized selector: two calls whose inputs differ only by one appended assistant delta with no proposal ops return record, origins, welcome and cards that are === the previous call's (no recomputation of recordView's sort or cardsOf)",
+        "run slice picker used by Live: a run-store write that changes only a field the model never reads (e.g. continuations) yields a shallow-equal pick, so Live does not re-render",
+        "guard: for every fixture in fixtures.ts and a 60-step scripted session (deltas, tool rows, cards, a Clear), the memoized selector's output deep-equals selectCompanion(inputs) at every step",
+        "guard: every existing model.test.ts, views.test.tsx and runtime.test.ts case stays green"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/companion/live.tsx:305",
+        "apps/desktop/src/stores/run.ts:1388",
+        "apps/desktop/src/stores/run.ts:1227",
+        "apps/desktop/src/companion/model.ts:661",
+        "apps/desktop/src/companion/model.ts:721",
+        "apps/desktop/src/companion/model.ts:1015",
+        "apps/desktop/src/companion/translate/index.ts:151",
+        "apps/desktop/src/companion/model.ts:1129",
+        "apps/desktop/src/companion/live.tsx:337",
+        "apps/desktop/src/companion/live.tsx:339"
+      ],
+      "rollback": "Three commits (memo.ts + tests; selectCompanion delegates to the memo; Live narrows its subscription and memoizes toolRows/drifts). Reverting the last two restores the plain selector unchanged; memo.ts is additive and can stay or go.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "One facts bridge: move live.tsx's untested hand-diffed working/listening/talking/ambient edges into a pure factsOf+eventsBetween in runtime.ts, and give `working` the timeout exit the registry deviation names (machine.ts:287).",
+      "body": "## Summary\nEvery streamed delta re-derives her whole model from the whole session: Live subscribes to the entire run store, each delta is a new transcript entry, and the selector then walks the full transcript three times (two buildContext calls plus translateAll's own), re-translates every message, and re-sorts the Record. Cost per delta grows with session length, so a session costs O(n^2). Adopts the open stabilize finding \"Her window re-derives the whole model on every streamed delta\" (stabilize-2026-10-16, desktop-companion-pane, M, unmeasured), here as a structural move with offline acceptance cases.\n\n## Description\n`selectCompanion` is one function over about 30 inputs that is pure but caches nothing. Because the run store only appends to the transcript (`push` at stores/run.ts:1227 spreads a new array and leaves earlier entries untouched), the derivations can be incremental with no change to any store. Add `memo.ts` with: (1) a transcript cache that folds the turn context entry by entry (buildContext's later-wins assignment merges cleanly), notices whether a new entry changed the context, and re-translates only the merged tail message unless it did; (2) `createCompanionSelector()`, which memoizes each slice (cards, sheet, record, origins, welcome, tape) on the input references it reads. Live then picks the run fields the model reads with shallow equality, reads store methods through getState in its actions, and memoizes toolRows/gatedListsOf/contractDriftsOf on (trust, tabs, byTab). Techniques: chat-transcript/immutable-model-cached-layout (cost follows what changed, not the history), client-state/store-slicing and observed-read-subscription. The view and the model's shape do not change.\n\n## Flow\n- write memo.test.ts cases 1-4 and 7 against the plain functions as the oracle; watch them fail (no memo.ts)\n- build the transcript cache; then the slice-memoized selector (case 5)\n- selectCompanion stays as the plain oracle; Live uses createCompanionSelector()\n- narrow Live's useRun subscription (case 6) and memoize the tool rows and drifts\n\n## Expected impact\nIn a long session her window does work in proportion to what changed: one context fold and one message translation per delta instead of three full transcript parses, a full re-translate and a Record sort. The defect class \"her window gets slower the longer you talk\" closes. The risk is a stale field if a slice misses an input; case 7's step-by-step deep-equal against the plain selector is the net for that.\n\n## Evaluation\nClaim: performance - one streamed delta costs work proportional to the delta, not the session\nBefore: 0 of 6 non-guard acceptance cases pass (no cache exists); 3 full-transcript walks + full re-translate + Record sort per delta (read)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (visited counters, reference equality, deep-equal against the plain selector)\nResult: better\nGate: none",
+      "evidence": "live.tsx:305 `const run = useRun();` (no selector). stores/run.ts:1388-1389 `case \"text.delta\": push({ id: ..., kind: \"assistant\", text: event.text });` -> run.ts:1227-1232 `transcript: [...s.transcript, stamped]` (append-only, one entry per delta). model.ts:661 `buildContext(i.run.transcript)` (cardsOf); model.ts:1015 `const turn = buildContext(run.transcript);` (tapeOf); model.ts:721 `plainMessages(i.run.transcript)` -> translate/index.ts:151 `const ctx = buildContext(entries);` then translates every entry. buildContext JSON-parses every tool output and runs extractOps over every assistant entry (translate/index.ts:92-100). model.ts:1129 recordView sorts every decision and call on each call. live.tsx:337/339 toolRows(gatedListsOf(...)) and contractDriftsOf(...) per render."
+    },
+    {
+      "context": "desktop-companion-pane",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "An answer by voice or phone gets the stamp a click gets, and lands on the Record",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/companion/machine.ts",
+        "apps/desktop/src/companion/machine.test.ts",
+        "apps/desktop/src/companion/runtime.ts",
+        "apps/desktop/src/companion/runtime.test.ts",
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/model.test.ts",
+        "apps/desktop/src/companion/live.tsx",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts",
+        "apps/desktop/src/stores/run.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/stores/voice.ts (desktop-voice-ui: one hunk, the spoken decision.resolved also writes an `answered` row with via: \"voice\")",
+        "apps/desktop/src/stores/run.ts (desktop-stores: AnsweredDecision gains optional `via`; remoteDecided sets via: peer_name)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "machine: slip open on one card; {t:\"resolved\",kind:\"approve\",by:\"voice\"} then {t:\"cards\",n:0} -> form stays \"slip\", decided {kind approve, by voice, sending false}; after TEAR_MS tearing; after SETTLE_MS form is home; say = \"Approved by voice. Stamped and sent to the record.\"",
+        "machine: the slip was put away (Esc, snoozed) or she is hidden; a resolved-by-peer event -> no slip opens, decided stays null, form unchanged, say = \"A decision was approved on <device>.\"",
+        "machine guard: an own click answer in flight (decided.sending) and then a resolved event for the same card -> ignored: one stamp, the click's `by`, no second say",
+        "runtime: store [X, Y]; X leaves and deps.departed(X) = {kind: approve, by: peer, where: \"Pixel 8\"} -> snapshot.held is X and machine.decided.by is \"peer\" until settle, then held is null and Y heads the stack",
+        "runtime: X leaves with deps.departed(X) = null (expired or reconciled away) -> no stamp; say = \"That decision is no longer waiting.\"; Y's slip opens as today",
+        "voice store: a decision.resolved by user, choice approve, for card X -> in the same write that drops X, useRun.answered[0] = {id X, result \"approved\", via \"voice\"}",
+        "model: recordView with a SessionDecision via \"voice\" -> its row reads result \"approved by voice\"; via \"Pixel 8\" -> \"approved on Pixel 8\"; a decision with no via reads as today",
+        "guard: every existing click, key and chord path in machine.test.ts and runtime.test.ts is unchanged (same events, same effects, same say text)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/stores/voice.ts:310",
+        "apps/desktop/src/stores/voice.ts:315",
+        "apps/desktop/src/companion/machine.ts:256",
+        "apps/desktop/src/companion/machine.ts:260",
+        "apps/desktop/src/companion/machine.ts:31",
+        "apps/desktop/src/companion/machine.test.ts:215",
+        "apps/desktop/src/companion/runtime.ts:173",
+        "apps/desktop/src/stores/run.ts:2010",
+        "apps/desktop/src/lib/events.ts:107",
+        "apps/desktop/src/companion/model.ts:1083",
+        "apps/desktop/src/companion/model.ts:1139"
+      ],
+      "rollback": "Three commits: (1) stores record the via on an answer made elsewhere; (2) machine `resolved` event and runtime departure diff; (3) the Record row wording. Each reverts alone. With (2) reverted a departure falls back to today's silent count change.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Ask before you sign: the reserved explain-and-recommend door on the slip (two-surface-doctrine deviation at views/slip). It keeps the card waiting and descends the ledger to decision:<id> with a drafted question. It needs a slip.tsx button, which desktop-companion-surfaces owns.",
+      "body": "## Summary\nA card answered anywhere but her buttons vanishes from her window with no stamp and no sentence. A spoken \"approve\" (ADR 0027) or an answer on a paired phone (ADR 0140) drops the card from the store. The machine sees only a lower count, the slip unmounts mid-read, and a screen reader hears nothing. The spoken answer is also never written to `answered`, so her Record tab's \"This window\" list leaves it out. Adopts the open stabilize finding \"A spoken approve drops the slip with no stamp and no announcement; the voice stamp is unreachable\" (stabilize-2026-10-16, M), widened to every answer made elsewhere.\n\n## Description\nThe machine has a stamp path (decide -> sent -> tear -> settle) and a `By` that already names voice (machine.ts:31), but nothing outside a test ever reaches it with by: voice (machine.test.ts:215 is the only dispatch). The runtime passes the machine a count (runtime.ts:173-183), not which card left or why. The fix keeps one stamp path. The runtime keeps the ids it last saw. When the head card leaves without her own `decided`, it asks a new dep `departed(id)`, which live.tsx answers from `useRun.answered` (peer answers are already written there at run.ts:2010-2023, and spoken ones will be). With an answer it holds the card and dispatches a new machine event `resolved {kind, by, where}`, which plays the stamp with no send, only while the slip is the drawn form. Otherwise it only says the sentence, so an answer on the phone never pops a slip over the person's work. With no answer the card was expired or reconciled away, and she says so in one sentence. `voice.ts` writes the spoken answer to `answered` with via: \"voice\" in the same write that drops the card. The Record row names how each answer was made.\n\n## Flow\n- a card waits on the slip; the person says \"approve\" (or taps it on the phone)\n- voice.ts: decision.resolved -> drop the card and write answered{via: voice} in one write\n- runtime.cardsChanged: X left without `decided` -> departed(X) -> held = X -> dispatch resolved{approve, voice} -> cards n-1\n- machine: decided{by voice, sending false} -> tear at 900ms -> settle at 1500ms; say \"Approved by voice. Stamped and sent to the record.\"\n- Record tab: \"approved by voice\" in This window\n\n## Expected impact\nEvery way of answering ends in the same visible and spoken confirmation: 5 of 5 paths (click, key, chord, voice, phone) instead of 3 of 5. Spoken answers stop being missing from the Record. A card that left on its own says so instead of disappearing. The risk is a double stamp when a click and a spoken answer race; the machine's `decided` guard (case 3) covers it.\n\n## Evaluation\nClaim: user - an answer made by voice or on another device is confirmed where the person is looking and is kept on the Record\nBefore: 0 of 6 non-guard acceptance cases pass; 3 of 5 answer paths stamp and announce; 0 production dispatches with by: voice\nAfter: 8 of 8\nMethod: gate - the acceptance cases (virtual clock in machine/runtime tests, store-level test for voice.ts)\nResult: better\nGate: none",
+      "evidence": "stores/voice.ts:310-316 `case \"decision.resolved\": { ... if (card && event.by === \"user\") forgetUnsure(card.action); useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) })); }`, which writes no `answered` row. machine.ts:256-260 `const left = event.n < prev.cards; ... if (left && s.decided) s.decided = {...}`, so with no decided a departure only lowers the count. machine.ts:31 `export type By = \"click\" | \"key\" | \"voice\" | \"chord\";`; `grep 'by: \"voice\"'` matches only machine.test.ts:215. runtime.ts:173-183 cardsChanged dispatches {t:\"cards\", n} (a count only). run.ts:2010-2023 remoteDecided filters the card and prepends an answered row (no device named). lib/events.ts:107-113 DecisionResolved carries id, choice, by. model.ts:1083-1094 decisionRow has no way to say how. model.ts:1139-1146 the header's completeness claim never sees spoken answers."
+    }
+  ],
+  "rehomed": [
+    "`working` has no timeout back to rest (registry deviation, machine.ts:287): a stale-turn watchdog alone is S; it is folded into the slot-A runner-up",
+    "refusalSentence always ends 'Focus the app this decision is about', even when focusing cannot help (plain.ts:47): S, and already an open stabilize finding in another context",
+    "Tape's Stop shows only for a typed turn (talk.working is the run phase; a spoken turn's tape has no Stop, views.tsx:135): S, and needs a voice-side stop",
+    "Ledger cost 'no cost' flattens unknown cost (model.ts:1263, registry deviation companion-runtime): S, one-line wording plus a test",
+    "4-second undo window before an approve leaves: conflicts with the slip's 'It runs now, and only this once' and the countersign doctrine; a direction, not a card"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["conversation-orchestration", "companion-runtime", "client-state", "chat-transcript"],
+    "techniques": ["layered-avatar-state-machine", "two-surface-doctrine", "store-slicing", "observed-read-subscription", "immutable-model-cached-layout"]
+  },
+  "files_read": 24
+}

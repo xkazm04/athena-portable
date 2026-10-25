@@ -1,0 +1,138 @@
+[
+  [
+    {
+      "key": "desktop-companion-surfaces/A",
+      "host": "desktop-companion-surfaces",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-voice-ui/A",
+      "host": "desktop-voice-ui",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "core-sleep-and-vitals/A",
+      "host": "core-sleep-and-vitals",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "ledgerbox-model-tools/B",
+      "host": "ledgerbox-model-tools",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-voice-ui/B",
+      "host": "desktop-voice-ui",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "proving-playbooks-bench/B",
+      "host": "proving-playbooks-bench",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-stage-depth/A",
+      "host": "desktop-stage-depth",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-domain-lib/A",
+      "host": "ledgerbox-domain-lib",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "core-sleep-and-vitals/B",
+      "host": "core-sleep-and-vitals",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "ledgerbox-domain-lib/B",
+      "host": "ledgerbox-domain-lib",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "tidycrm-style/A",
+      "host": "tidycrm-style",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "atlas-data-and-app/B",
+      "host": "atlas-data-and-app",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-companion-surfaces/B",
+      "host": "desktop-companion-surfaces",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "desktop-stage-depth/B",
+      "host": "desktop-stage-depth",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-model-tools/A",
+      "host": "ledgerbox-model-tools",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "tidycrm-style/B",
+      "host": "tidycrm-style",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "atlas-data-and-app/A",
+      "host": "atlas-data-and-app",
+      "slot": "A",
+      "revise": "Drop acceptance case 3 (the 'drawn backwards' rule) and annotate cmp-prompt->cmp-catalog as via:'port' through src/athena/core/prompt.py instead of reversing it.",
+      "py": false
+    },
+    {
+      "key": "proving-playbooks-bench/A",
+      "host": "proving-playbooks-bench",
+      "slot": "A",
+      "revise": "Drop acceptance case 7 and the hash chain, so ledger.append writes follow-through's existing format unchanged (case 5) with no per-line digest.",
+      "py": true
+    }
+  ]
+]

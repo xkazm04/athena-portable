@@ -1,0 +1,135 @@
+{
+  "host": "desktop-perf-gate",
+  "cards": [
+    {
+      "context": "desktop-perf-gate",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The gate records each drive's actions: a red names its step, every drive is held",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/scripts/perf-gate.mjs",
+        "apps/desktop/scripts/perf-budgets.mjs",
+        "apps/desktop/scripts/perf-budgets.test.ts",
+        "apps/desktop/scripts/perf-gate.test.ts",
+        "apps/desktop/scripts/perf-drives.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/scripts/perf-trace.mjs",
+        "apps/desktop/scripts/perf-trace.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "attributeTasks([{start: 1250, duration: 54}], [{t: 1000, what: 'click [data-go=\"notion\"]'}, {t: 1400, what: 'press Escape'}]) -> the task carries step 'click [data-go=\"notion\"]' and offset 250 ms",
+        "a long task that starts before the drive's first recorded action -> step 'before the first step (page load)'; one recorded in the idle second -> step 'the idle second'",
+        "judge({...smooth, longTasks: [{duration: 54, step: 'click [data-go=\"notion\"]', offset: 250}]}) -> ok false and the failure reads /a 54 ms task at click \\[data-go=\"notion\"\\] \\+250 ms is over the 50 ms budget/",
+        "recordingPage(standIn) driven by perf-stage.drive.mjs -> an ordered action list whose selectors include '[data-go=\"apps\"]', '[data-go=\"host-1\"]' and '[data-go=\"mind\"]' and whose keys include Escape, with a monotonic timestamp each",
+        "for EVERY scene drivesIn(scripts) returns (10 of 10, not the hand-picked 3): run the drive on a clean stand-in, take each selector it touched, rerun with that one selector missing -> the drive rejects (any error, never a silent finish)",
+        "the stand-in's fill and getByRole honour a missing selector: accounts with 'input.input' missing -> rejects (today the stand-in's fill always resolves)",
+        "guard: judge on plain-number longTasks/idleLongTasks and the existing smooth/slow/loops/idle fixtures -> the same ok/failures as today, and BUDGETS deep-equals {frameP95Ms: 20, droppedShare: 0.05, longTaskMs: 50, loopsPerFrame: 1, idleFrameRequests: 2}",
+        "guard: runScenes judges every scene when one fails and one throws, and returns failed true (perf-gate.test.ts cases unchanged)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/scripts/perf-gate.mjs:55 - the long-task observer keeps only e.duration (lines 57-58): startTime is dropped, so no red can be tied to the moment it happened",
+        "apps/desktop/scripts/perf-budgets.mjs:48 - judge reduces every task to Math.max(...): the failure text at :65 names a number, never a step",
+        "apps/desktop/scripts/perf-gate.mjs:74 - measure() calls drive(page) on the raw Playwright page: the gate sees nothing of what the drive did",
+        "apps/desktop/scripts/perf-drives.test.ts:50 - the missing-control rule is held for apps, mind and chores only (3 cases), while drivesIn finds 10 drives",
+        "apps/desktop/scripts/perf-drives.test.ts:41 - the stand-in's fill always resolves, so a drive that fills a gone input passes the rule",
+        "apps/desktop/scripts/perf-gate.mjs:161 - drivesIn already derives the scene list from disk; the contract test does not use it",
+        ".claude/scan-sweep/runs/stabilize-2026-10-16/findings/desktop-perf-gate.jsonl - open backlog (risk-assessor, M, Lane B): 'perf:chores fails its 50 ms long-task budget on one run in two under load' names step attribution as the first missing piece",
+        "docs/adr/0089-motion-is-transform-and-opacity-and-speed-is-a-gate-not-a-hope.md - a budget changes only by a later ADR: this card changes no budget, only what a verdict can say"
+      ],
+      "rollback": "Two commits (the trace module with attribution in judge; the derived drive-contract test). Reverting either restores the duration-only observer and the three hand-picked cases; no drive file, budget or script entry changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "apps/desktop: pnpm typecheck",
+        "apps/desktop: pnpm lint",
+        "apps/desktop: pnpm test",
+        "apps/desktop: pnpm perf:all"
+      ],
+      "runner_up": "Allow perf-<scene>-<variant>.drive.mjs (drivesIn regex, parity test, derived perf:* scripts) so one scene can carry several fixtures, e.g. the Adopt studio's scripted session.",
+      "body": "## Summary\nThe perf gate hands the raw Playwright page to each drive and keeps only the length of each long task, so a red says 'a 54 ms task' and nothing about where; and the rule that a drive must fail rather than skip a missing control is held by hand for 3 of the 10 drives. Wrap the page the gate passes to a drive in a recording proxy: every action (click, press, hover, fill, getByRole, waitForSelector) is logged with its selector and a timestamp on the same clock the page's long-task startTime uses. Attribution becomes a pure function of the drive's own actions, and the same recorder drives a derived contract test over every drive on disk.\n\n## Description\n`perf-trace.mjs` exports `recordingPage(page)` (a Proxy that logs `{t, what}` before forwarding each call, including on locators and keyboard/mouse) and `attributeTasks(tasks, actions, timeOrigin)` (pure: each task gets the last action at or before its start, with the offset; before the first action is page load; after the drive is the idle second). `perf-gate.mjs` keeps `{start, duration}` per long task, reads `performance.timeOrigin` once, and passes attributed tasks to `judge`, which names the step in the failure. No drive is edited: the steps are the actions the drives already take. `perf-drives.test.ts` stops listing three drives: it imports every drive `drivesIn` finds, runs each once on the stand-in through `recordingPage` to collect the selectors it touched, then reruns once per selector with that selector gone and expects a rejection. The stand-in's `fill` learns to honour a missing selector. Technique: quality-gates/vacuous-by-evaluation (a drive that measures a shorter path is green and measures less), metric-gates/deterministic-proxy-gate (the timing verdict needs its context to be acted on).\n\n## Flow\n- pnpm perf:chores -> a 54 ms long task -> today: 'a 54 ms task is over the 50 ms budget' -> after: 'a 54 ms task at click text=Talk it through with her +180 ms is over the 50 ms budget'\n- a scene renames a control used by surface, bell, voice, stage, skin, accounts or avatar -> today nothing in pnpm test notices -> after: perf-drives.test.ts fails naming the drive and the selector\n\n## Expected impact\nWhoever runs perf:all (the director, a Lane B worker, the cutover hand pass) gets a red they can act on in one read instead of a bisect over a two-minute scenario, and the backlog's flaky-chores investigation gets its first missing instrument. A class of defect closes: a drive that silently walks a shorter path, for 7 more drives than are held today.\n\n## Evaluation\nClaim: every long-task failure names the drive action it happened under, and the missing-control rule holds for every drive on disk\nBefore: 0 of 6 non-guard acceptance cases pass; 3 of 10 drives held\nAfter: 8 of 8; 10 of 10 drives held\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "perf-gate.mjs:55-60 `new PerformanceObserver((list) => { for (const e of list.getEntries()) { if (probe.idle) probe.idleLongTasks.push(e.duration); else if (probe.recording) probe.longTasks.push(e.duration); } })`; perf-budgets.mjs:48 `const longest = Math.max(0, ...samples.longTasks, ...samples.idleLongTasks);` and :65 `a ${round(longest)} ms task is over the ${budgets.longTaskMs} ms budget`; perf-drives.test.ts:50-54 cases = apps, mind, chores only; perf-drives.test.ts:41 `fill: async () => {}`; ls scripts/perf-*.drive.mjs = 10 (accounts apps avatar bell chores mind skin stage surface voice); stabilize finding: 'perf:chores with its own vite build first failed at 54, 63, 52 and 55 ms ... the fix, in order: record each long task's startTime against the drive's step marks'"
+    },
+    {
+      "context": "desktop-perf-gate",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Each scene is judged beside a still control: a machine red reads inconclusive",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/scripts/perf-budgets.mjs",
+        "apps/desktop/scripts/perf-budgets.test.ts",
+        "apps/desktop/scripts/perf-gate.mjs",
+        "apps/desktop/scripts/perf-gate.test.ts",
+        "docs/redesign/fathom.md"
+      ],
+      "new_files": [
+        "docs/adr/NNNN-a-perf-verdict-is-read-beside-a-still-control-and-a-noisy-machine-is-inconclusive-not-green.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-perf-verdict-is-read-beside-a-still-control-and-a-noisy-machine-is-inconclusive-not-green.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "verdict(scene = judge({...smooth, longTasks: [54]}), control = judge({...smooth, longTasks: [61]})) -> state 'inconclusive', reason names the control's 61 ms task and says the machine, and the scene's own failure text is kept",
+        "verdict(scene = judge({...smooth, idleFrameRequests: 60}), control noisy as above) -> state 'fail': loops-per-frame and idle frame requests are counts of work, never excused by the machine",
+        "verdict(scene = judge({...smooth, longTasks: [54]}), control = judge(smooth)) -> state 'fail'",
+        "verdict(judge({...smooth, frames: 60 x 14}), control clean) -> state 'pass' with headroom {frameP95Ms: 6, longTaskMs: 50, loopsPerFrame: 0, idleFrameRequests: 2, droppedShare: 0.05}, and the shown line contains 'headroom'",
+        "runScenes over [pass, inconclusive, pass] -> returns failed true (an inconclusive scene never exits green) and the summary line reads '2 passed, 0 failed, 1 inconclusive (the machine: re-run)'",
+        "report(results) -> a JSON object with budgets and, per scene, name, state, metrics, headroom and the control's metrics; perf-gate writes it to dist-perf/perf-report.json (already gitignored)",
+        "guard: BUDGETS deep-equals {frameP95Ms: 20, droppedShare: 0.05, longTaskMs: 50, loopsPerFrame: 1, idleFrameRequests: 2}",
+        "guard: the self-test janky page judged against a clean still control -> state 'fail' (the gate can still fail)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "apps/desktop/scripts/perf-gate.mjs:226 - the still page is measured once, before any scene, and never again: a scene ten minutes later is judged with no reading of the machine at that moment",
+        "apps/desktop/scripts/perf-gate.mjs:105 - show() prints pass or FAIL and the raw metrics: no headroom against each budget, no record kept",
+        "apps/desktop/scripts/perf-budgets.mjs:59 - the five budgets are judged alike, though frameP95/dropped/longTask are wall-clock (noisy apparatus) and loopsPerFrame/idleFrameRequests are counts of work (deterministic)",
+        "apps/desktop/scripts/perf-gate.mjs:184 - runScenes reduces every verdict to one boolean",
+        ".claude/scan-sweep/runs/stabilize-2026-10-16/findings/desktop-perf-gate.jsonl - open backlog (risk-assessor, M, Lane B): perf:chores failed the 50 ms long-task budget 4 of 8 runs under load while the same build re-driven passed 9 of 9; it asks for an ADR and forbids a higher threshold",
+        "docs/redesign/fathom.md:157 - section 7 says the gate writes its numbers next to screenshots; it writes nothing (open documentation-auditor finding, same file)",
+        "docs/adr/0089-motion-is-transform-and-opacity-and-speed-is-a-gate-not-a-hope.md - a budget changes only by a later ADR: no budget changes here"
+      ],
+      "rollback": "Three commits (verdict and headroom in perf-budgets; control arm, summary and report in perf-gate; the ADR and fathom.md section 7). Reverting them restores the single-boolean verdict; budgets and exit codes are identical throughout, so no caller changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "apps/desktop: pnpm typecheck",
+        "apps/desktop: pnpm lint",
+        "apps/desktop: pnpm test",
+        "apps/desktop: pnpm perf:all"
+      ],
+      "runner_up": "The first-paint gate names source modules, not hashed chunks, when it breaches (build manifest + sourcemap attribution in first-paint.mjs), with the 40 kB gap to ADR 0095's 125 kB broken down by module.",
+      "body": "## Summary\nThe person who runs perf:all reads a FAIL and cannot tell the scene's red from the machine's: the backlog measured perf:chores red 4 runs in 8 on a loaded machine with a build that was green 9 of 9 when re-driven. The gate already has the instrument that tells them apart - its still-page self-test - and runs it once at the start. Run that still control beside every scene and give the verdict three states: pass, fail, and inconclusive (the machine), with headroom per budget and a written report.\n\n## Description\n`perf-budgets.mjs` gains `verdict(scene, control)` and `headroom(metrics, budgets)`, pure. A scene that fails only wall-clock budgets (frame p95, dropped share, long task) while the still control, measured in the same browser right after it, also misses one of those budgets is `inconclusive`; a failure on loops per frame or idle frame requests is always `fail`, because those are counts of work the machine cannot change (metric-gates/deterministic-proxy-gate). An inconclusive scene still makes the run exit 1: nothing is loosened, the verdict just stops lying about its cause (measurement-honesty/control-failure-is-not-a-datum-state, incomplete-not-verdict). `perf-gate.mjs` measures the still control after each scene, shows each line with its headroom, prints a summary count by state, and writes dist-perf/perf-report.json. The ADR records that a red is read beside its control and that no repeat-until-green rule exists; fathom.md section 7 is rewritten to what the gate does (closes the documentation finding in the same file).\n\n## Flow\n- pnpm perf:all on a loaded machine -> today: 'FAIL chores ... a 54 ms task' and a half-hour bisect of a scene that is fine -> after: 'INCONCLUSIVE chores - a 54 ms task; the still control ran a 61 ms task in the same minute: the machine, re-run' and exit 1\n- a real regression (a second frame loop, a 70 ms task on a quiet machine) -> FAIL exactly as today\n- a green run -> each scene shows how much room it has left, so a scene creeping to 48 ms of a 50 ms budget is seen before it breaks\n\n## Expected impact\nThe director and Lane B workers stop spending a run on a red that is the machine's (backlog: 4 of 8 runs) and stop trusting a green that has 2 ms left. The report file gives later runs a record to compare against. What could break: a control that is quieter than the scene's minute; the scene then fails as today, never passes.\n\n## Evaluation\nClaim: a perf verdict separates the scene's red from the machine's and shows headroom, without changing any budget or exit code\nBefore: 0 of 6 non-guard acceptance cases pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "perf-gate.mjs:226-237 the still/janky self-test runs only in the no-argument branch, never beside a scene; perf-gate.mjs:105-106 `console.log(`${r.ok ? \"pass\" : \"FAIL\"}  ${label}  ${JSON.stringify(r.metrics)}...`)`; perf-gate.mjs:184 `if (!r.ok) failed = true;`; perf-budgets.mjs:60-71 five failure checks with no class distinction; stabilize finding: 'failed at 54, 63, 52 and 55 ms ... passed 4 times at 0; the same dist-perf driven ... 9 runs, all gave 0 ms ... never a higher threshold'; fathom.md:157-161 per the documentation-auditor finding"
+    }
+  ],
+  "rehomed": [
+    "fathom.md section 7 describes a dev-server gate with screenshots and 12 budgets - S, effort 2, already an open backlog finding (folded into slot B's coupled doc)",
+    "A best-of-N or median repeat rule for long tasks - would be policy-loosen (hides an intermittent real task); rejected in favour of the control arm",
+    "Widen drivesIn to perf-<scene>-<variant> and add the Adopt studio drive - effort 4 in the open backlog, under the floor alone (kept as slot A runner-up)"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["metric-gates", "quality-gates", "measurement-honesty", "perf-instrumentation"],
+    "techniques": [
+      "deterministic-proxy-gate",
+      "noise-band-and-hysteresis",
+      "minimum-sample-floors",
+      "control-failure-is-not-a-datum-state",
+      "incomplete-not-verdict",
+      "vacuous-by-evaluation",
+      "blocking-by-input-determinism"
+    ]
+  },
+  "files_read": 26
+}

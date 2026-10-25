@@ -1,0 +1,137 @@
+{
+  "host": "ledgerbox-app-shell",
+  "cards": [
+    {
+      "context": "ledgerbox-app-shell",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Undo is a compare-and-set: it reverses only what its act left, or refuses",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/app/actions.ts",
+        "examples/ledgerbox/test/ledgerbox-app-shell.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-an-undo-reverses-only-the-state-its-act-left.md (a reader could ask why a reversible row can refuse its undo)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "categorize([X], 'travel') logs #1; categorize([X], 'software') logs #2; undoAction(#1) -> {ok:false, reason names X's number and 'software'}; X.category stays 'software'; activity #1 undone=0; no 'undo' activity row written",
+        "categorize([X, Y], 'travel') logs #1; categorize([X], 'software'); undoAction(#1) -> ok:false naming X; Y is NOT reverted either (all or nothing: a half-reversed batch is worse than either end)",
+        "matchAction(A, L) logs #1; unmatchAction(A, L); matchAction(B, L); undoAction(#1) -> ok:false ('no longer on A'); B still has its match row AND its payment row pay_match_L; B.balance_cents unchanged",
+        "draftReminderAction(X, 'gentle') logs #1; sendReminderAction(X); undoAction(#1) -> ok:false, reason says the letter was sent and cannot be taken back; activity #1 undone=0; no 'Undid #1' row",
+        "draftReminderAction(X, 'gentle') logs #1; draftReminderAction(X, 'firm') logs #2; sendReminderAction(X) (retires #1's draft); undoAction(#1) -> ok:false, reason says that draft was replaced",
+        "categorize([X], 'travel') logs #1; undoAction(#1) -> ok:true, X back to its prior category, #1 undone=1 (plain path unchanged)",
+        "matchAction(A, L) logs #1; undoAction(#1) -> ok:true; match and pay_match_L gone; A.balance_cents back to its value before the match (plain path unchanged)",
+        "exportSummaryAction('q3') logs #1; undoAction(#1) -> ok:true, the exports row is gone (plain path unchanged)"
+      ],
+      "guard_cases": [
+        "5",
+        "6",
+        "7"
+      ],
+      "premise": [
+        "examples/ledgerbox/app/actions.ts:618 - the categorize undo writes every prior category back unconditionally, so undoing an older refile silently erases a later one that was never undone",
+        "examples/ledgerbox/app/actions.ts:625 - the match undo deletes payments by id `pay_match_<line>` with no invoice scope; after unmatch(A) and match(B) that id is B's payment, so undoing A's old match strips B's money while B's match row stays",
+        "examples/ledgerbox/app/actions.ts:270 - matchAction mints the same payment id paymentIdFor(lineId) for whichever invoice the line goes to",
+        "examples/ledgerbox/app/actions.ts:667 - the reminder undo is `DELETE ... WHERE sent_at IS NULL`: for a sent or replaced draft it deletes nothing and returns normally",
+        "examples/demo-kit/src/activity/index.ts:124 - undoActivity marks the row undone and logs 'Undid #N' whenever applyUndo returns, so every no-op above is reported to the Trail and the caller as a successful undo",
+        "examples/ledgerbox/app/actions.ts:612 - UndoRefused already rolls the transaction back with nothing written; only the unmatch case (line 631) asks whether the world still matches",
+        "examples/ledgerbox/app/actions.ts:517 - sendReminderAction deletes every older unsent draft, which is the 'replaced' state case 5 must name"
+      ],
+      "rollback": "Two commits (payload after-state + guards in applyUndo; tests). git revert of both restores the unconditional reversals; payloads written with the extra `to` field still parse under the old union because the field is ignored.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root; ledgerbox's node --test suite)"
+      ],
+      "runner_up": "One act declaration per capability (resolve -> refuse -> write -> log -> inverse) replacing the eight hand-copied preambles in actions.ts; class parity is already pinned by ledgerbox-domain-lib.test.ts:279, so it buys less than closing the stale-undo class.",
+      "body": "## Summary\nEvery reversible act's undo checks that the rows it would reverse are still in the state the act left them, and refuses with a named reason (rolling back, writing nothing) when they are not. Today three of the five undo strategies reverse blind, and the kit then reports each no-op or clobber as a successful undo.\n\n## Description\n`applyUndo` is a hand-written inverse per act. Only `unmatch` (fixed in b90473c8) asks whether the world moved. The others: `categorize` restores the prior category over any later refile; `match` deletes the payment by a line-derived id that a later re-match to another invoice reuses, so it strips the other invoice's money and leaves its match row standing (the books then say a credit is applied that no balance shows); `reminder` silently deletes nothing for a sent or replaced draft, and `undoActivity` stamps the row undone and writes 'Undid #N' anyway, so the Trail lies. The move: each Undo payload records the after-state it must find (categorize: the category applied; match: the invoice + payment id it inserted; reminder: the draft id, which must still be unsent), and each case in `applyUndo` compares and throws `UndoRefused` with a sentence naming what changed. Batch categorize is all-or-nothing, per the execution-emitted-inverse rule that a half-reversed state is worse than either endpoint. Payloads written before the change, which lack the after-state, keep today's behaviour (the seed writes no undo payloads, so no seeded row is affected).\n\nThis is the precondition for any surface offering Undo: undoAction has no caller in components/ today, and r4's ledgerbox-model-tools card B proposes an Undo toast for every agent act. Offering an unguarded undo would make the money-corrupting path one click away. That card also edits app/actions.ts, so sequence this one first.\n\n## Flow\n- Extend the `Undo` union in actions.ts with the after-state fields; the four AUTO acts write them.\n- In `applyUndo`: categorize reads every target's current category and refuses if any differs from `to`; match checks the (invoice, line) match row and the payment row `(id, invoice_id)` both still exist, and deletes the payment scoped to that invoice; reminder checks the draft row exists with `sent_at IS NULL`, and otherwise refuses with 'sent - cannot be taken back' or 'replaced by a later draft'.\n- Export stays as it is. Unmatch keeps its existing guards.\n- Tests first: indexes 0-4 red on the tree, 5-7 green before and after.\n\n## Expected impact\nCloses the stale-undo defect class in the one file that writes money: no undo can strip another invoice's payment, erase a later refile, or report a no-op as done. The Trail's 'Undid' rows become true.\n\n## Evaluation\nClaim: undo refuses whenever the act's after-state is gone, and the plain path is unchanged.\nBefore: 3 of 8 acceptance cases pass (the guards at indexes 5-7)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in ledgerbox's node --test suite (scratch books via tempHome, offline)\nResult: better\nGate: none",
+      "evidence": "actions.ts:618-621 `case \"categorize\": for (const [id, category] of undo.prior) { tx.run(\"UPDATE invoices SET category = ? WHERE id = ?\", [category, id]); }` - no read of the current value. actions.ts:623-626 `case \"match\": tx.run(\"DELETE FROM matches WHERE invoice_id = ? AND line_id = ?\", ...); tx.run(\"DELETE FROM payments WHERE id = ?\", [paymentIdFor(undo.line_id)]);` - the payment delete has no invoice_id. actions.ts:270-271 matchAction INSERTs payments id paymentIdFor(lineId) for any invoice. actions.ts:666-667 `case \"reminder\": tx.run(\"DELETE FROM reminders WHERE id = ? AND sent_at IS NULL\", [undo.id]);`. demo-kit activity/index.ts:124-134: withTx { applyUndo; UPDATE activity SET undone = 1; logActivity 'Undid #N' ; return {ok:true} }. grep undoAction in examples/ledgerbox/components: 0 callers (only tests); the r4 ledgerbox-model-tools card B would add one."
+    },
+    {
+      "context": "ledgerbox-app-shell",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Send carries the letter you read; a stale one comes back redrafted",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/ledgerbox/app/actions.ts",
+        "examples/ledgerbox/lib/lanes/index.ts",
+        "examples/ledgerbox/components/lanes/model/sheet.ts",
+        "examples/ledgerbox/components/lanes/card/Decide.tsx",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx",
+        "examples/ledgerbox/lib/manifest.ts",
+        "examples/ledgerbox/test/ledgerbox-app-shell.test.ts",
+        "examples/ledgerbox/test/tool-handlers.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/ledgerbox/lib/lanes/index.ts + lib/manifest.ts (ledgerbox-domain-lib), components/lanes/model/sheet.ts + card/Decide.tsx (ledgerbox-lanes-ui), components/lanes/tools/BooksTools.tsx (ledgerbox-model-tools): one to five lines each to carry the draft id; the core is actions.ts and lands alone if they are sequenced late",
+        "docs/adr/NNNN-a-send-names-the-draft-it-was-approved-on.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "draftReminderAction(X,'gentle') -> d1; draftReminderAction(X,'firm') -> d2; sendReminderAction(X,'user',d1) -> ok:false, message says the letter read was replaced by a firm draft; no reminder has sent_at set; d1 and d2 both still unsent",
+        "then sendReminderAction(X,'user',d2) -> ok:true, to = d2.recipient, subject = d2.subject; d1 deleted (existing retire-on-send)",
+        "draftReminderAction(X,'gentle') -> d1; markPaidAction(X, part); sendReminderAction(X,'user',d1) -> ok:false, message gives the new owed figure and says 'redrafted, not sent'; result.draft present with a reminder_id d3 != d1 and a body stating the new balance; X has exactly one unsent reminder (d3); nothing sent",
+        "then sendReminderAction(X,'user',d3) -> ok:true (one press from the redraft to sent)",
+        "the stale-redraft writes one 'draft_reminder' activity row, reversible with an undo payload, actor = the send's actor",
+        "sendReminderAction(X,'user',sentId) for a reminder already sent -> ok:false 'already sent'; nothing written",
+        "draft d1 on X; X disputed or voided since; sendReminderAction(X,'user',d1) -> ok:false with the whyNotChase reason and NO redraft written (the chase refusal wins)",
+        "sendReminderAction(X) with no reminder id and a current draft -> ok:true as today; the send_reminder tool with no reminder_id behaves as today and passes reminder_id through when given (tool-handlers.test.ts)"
+      ],
+      "guard_cases": [
+        "1",
+        "6"
+      ],
+      "premise": [
+        "examples/ledgerbox/app/actions.ts:487 - sendReminderAction(ref, actor) takes no draft identity",
+        "examples/ledgerbox/app/actions.ts:494 - it sends whichever unsent draft is newest by created_at, so a draft written after the person read one (by them in another view or by the agent) is what goes",
+        "examples/ledgerbox/app/actions.ts:465 - draftReminderAction already returns reminder_id, which no send path accepts",
+        "examples/ledgerbox/app/actions.ts:505 - a letter whose figures moved is refused with 'Draft it again; it was not sent' - a dead end that hands the person a second round trip (press Draft, read, arm Send, confirm)",
+        "examples/ledgerbox/components/lanes/card/Decide.tsx:283 - the card's Send issues sendReminderAction(mark.id) though it drew the draft the person read",
+        "examples/ledgerbox/components/lanes/model/sheet.ts:115 - LnDetail.draft is {tone, body}, no id, filled at lib/lanes/index.ts:161",
+        "examples/ledgerbox/lib/manifest.ts:209 - send_reminder's only parameter is the invoice id",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:540 - the agent's send handler passes only the invoice id"
+      ],
+      "rollback": "Three commits: actions.ts (optional reminderId + stale redraft) with its tests; the draft-id plumbing (index.ts, sheet.ts, Decide.tsx); the tool param (manifest.ts, BooksTools.tsx, tool-handlers test). Each reverts alone: the id argument is optional, so callers that stop passing it get today's newest-draft behaviour.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root; ledgerbox's node --test suite)"
+      ],
+      "runner_up": "Dry-run every gated act in a rolled-back transaction so the gate shows the after-state (balance, state, letter) the act itself computes; the payoff is in Gate/Decide (lanes-ui), so the host cannot carry it.",
+      "body": "## Summary\nA send names the draft it was approved on, and refuses if that is no longer the letter on the invoice. When the books have moved since the draft, the refused send writes the corrected letter as the new draft and returns it, so the person reads it on the card and sends it with one press, instead of hitting 'Draft it again'.\n\n## Description\nApproval binds to an invoice today, not to a letter. sendReminderAction picks the newest unsent draft, so a firm draft written after the person read a gentle one goes out under the gentle one's approval (hitl-approval/gate-state-machines: approved content swapped before execution; resume-after-decision: what runs on approval is not what was shown). The card's client-side stillArmed closes its own confirm when the body changes, but the agent's path and any race with the server have no such check (concurrency-guards/preparation-is-the-staleness-window: the verdict was read at draft time and used at send). Separately, the stale-figures refusal is a dead end: the app already holds every fact the corrected letter needs (letterFor at actions.ts:422) and makes the person ask for it.\n\nThe move: sendReminderAction(ref, actor, reminderId?) compares the given id with the newest unsent draft and refuses, naming the tone and time of the replacement, when they differ. On stale figures it writes letterFor(invoice, draft.tone) as a new draft in the same transaction (AUTO, reversible, logged as draft_reminder by the send's actor), retires the stale one, and answers ok:false with the new draft attached and 'redrafted at $X owed - not sent'. Nothing reaches a person on a refused send. The draft id rides LnDetail to Decide's Send, and send_reminder gains an optional reminder_id (draft_reminder already returns it). The chase refusals (paid, void, disputed) still win, and nothing is redrafted for them.\n\n## Flow\n- actions.ts: optional reminderId; CAS against the newest unsent draft; 'already sent' answer for a sent id; stale-figures branch writes and returns the redraft.\n- lib/lanes/index.ts:161 + model/sheet.ts:115: draft carries its id.\n- Decide.tsx:283: Send passes detail.draft.id.\n- manifest.ts:209 + BooksTools.tsx:540: optional reminder_id, passed through; on a redraft the answer carries the new draft.\n- Tests first in ledgerbox-app-shell.test.ts and tool-handlers.test.ts.\n\n## Expected impact\nThe person (or Athena's gate card) approves a letter, and that letter is the one sent, or nothing is. A send refused because a payment landed now takes two presses to recover (read, Send) instead of four (Draft, read, arm, confirm). The card's draft block shows the corrected letter as soon as the refusal toasts, because refresh() re-renders the detail.\n\n## Evaluation\nClaim: a send never dispatches a letter other than the one named, and a stale letter returns already redrafted.\nBefore: 2 of 8 acceptance cases pass (the guards at indexes 1 and 6)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in ledgerbox's node --test suite (scratch books, offline)\nResult: better\nGate: none",
+      "evidence": "actions.ts:494-497 `SELECT id, tone, recipient, subject, body FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1`. actions.ts:505-509 `if (today.subject !== draft.subject || today.body !== draft.body) return fail(`... Draft it again; it was not sent.`)`. actions.ts:465 `const whole = { ...draft, reminder_id: id, invoice_id: invoiceId, tone };`. Decide.tsx:283 `issue: () => sendReminderAction(mark.id),`. sheet.ts:115 `draft: { tone: Tone; body: string } | null;`. lib/lanes/index.ts:161 `draft: draft ? { tone: draft.tone, body: draft.body } : null,`. manifest.ts:209 `{ name: \"send_reminder\", parameters: [INVOICE_ID] },`. BooksTools.tsx:540 `settle(sendReminderAction(String(id), \"athena\"))`. r1's ledgerbox-lanes-ui card rehomed 'Server compare-and-set for send_reminder' to this host."
+    }
+  ],
+  "rehomed": [
+    "Delete the two /api/invoices routes nothing calls (they served the retired Desk): S, and already an open stabilize-2026-10-16 finding for this context.",
+    "markPaidAction's repeat-payment and balance checks read outside the write transaction: S, and node:sqlite's synchronous path leaves no await between the read and the write in one process, so impact is below the floor.",
+    "Undo that a person can reach (a Trail or toast): owned by r4 ledgerbox-model-tools card B and lanes-ui; card A here is its precondition, not a duplicate.",
+    "One shared refusal module for actions.ts notADebt/whyNotChase and card/read.ts actRefusal: already the runner-up of r1 lanes-ui and r4 domain-lib, and its write set is mostly theirs."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": [
+      "undo-history",
+      "hitl-approval",
+      "concurrency-guards"
+    ],
+    "techniques": [
+      "execution-emitted-inverse",
+      "gate-state-machines",
+      "resume-after-decision",
+      "preparation-is-the-staleness-window"
+    ]
+  },
+  "files_read": 24
+}

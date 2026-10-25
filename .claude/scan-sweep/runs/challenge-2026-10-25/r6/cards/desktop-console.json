@@ -1,0 +1,136 @@
+{
+  "host": "desktop-console",
+  "cards": [
+    {
+      "context": "desktop-console",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The depth is the one authority over the window's shape; Rust is reconciled, not followed",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/depth/shape.ts",
+        "apps/desktop/src/depth/shape.test.ts",
+        "apps/desktop/src/console/follow.ts",
+        "apps/desktop/src/console/follow.test.ts",
+        "apps/desktop/src/console/follow.hook.test.tsx",
+        "apps/desktop/src/console/root.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/console/shell-sync.test.tsx",
+        "docs/adr/NNNN-the-depth-is-the-one-authority-over-the-windows-shape.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-depth-is-the-one-authority-over-the-windows-shape.md (who follows whom across the shape seam is a decision a reader could question; extends ADR 0088)",
+        "apps/desktop/src/depth/shape.ts and shape.test.ts are owned by desktop-stage-depth (its r4 cards edit Stage.tsx/layers.ts, not these)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "Echo ping-pong: a fake shell whose send resolves and then emits layout:changed with the shape it was sent; go(apps/a/page) then go(apps/a) in one tick, then flush all echoes -> the depth ends at {root:'apps',item:'a'}, send was called exactly ['page','scene'], and no echo moved the depth (before: the 'page' echo arrives while the depth is a scene, followLayout dives back to the page, which re-sends, and the two echoes keep flipping it)",
+        "One select in flight: send('page') is held unresolved; the depth rises to a scene -> send is not called again until the first resolves, then is called once with 'scene' (before: two layout_select invokes are in flight at once, and Tauri's async commands give no order between them)",
+        "Coalescing: while send('page') is in flight the depth goes scene -> page -> scene -> after the first resolves exactly one more send, 'scene' (the latest), and the channel reports synced",
+        "A refused select is retried: send('page') rejects; the depth then moves to a different page path (apps/b/page, the same shape) -> 'page' is sent again (before: shape.ts set last='page' before delivery, so the same shape is never re-sent and Rust stays in the scene while the depth draws a page band)",
+        "Unsolicited disagreement reconciles Rust, not the depth: with nothing in flight and the depth at {root:'mind',item:'engine'}, a layout:changed 'page' arrives -> the depth path is unchanged and send('scene') is issued once (before: followLayout moves the depth to a page)",
+        "Guard: the focused tab changing under a page still names the new page, and the last tab closing still leaves for {root:'apps'} (the existing followFocus cases)",
+        "Guard: with no shell nothing listens and nothing is sent; a listener that lands after unmount is taken down; a failed listen is logged (the existing follow.hook cases)",
+        "Guard: SHAPE_ID still equals layout.rs PAGE_SHAPE and SCENE_SHAPE"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "apps/desktop/src/console/follow.ts:5 - the follower's reason to exist: 'Rust selects a page when the welcome opens a first app'",
+        "apps/desktop/src/depth/shape.ts:27 - the only caller of layoutSelect in the tree (grep layoutSelect/layout_select over src, packages, src/)",
+        "apps/desktop/src-tauri/src/lib.rs:166 - layout_select is the only path into layout::select; no Rust code selects a shape on its own",
+        "apps/desktop/src-tauri/src/layout.rs:186 - select() emits layout:changed for every select, 'The chrome sets it, and the chrome also hears it back'",
+        "apps/desktop/src/lib/ipc.ts:169 - 'Emitted whenever the selected shape changes, whoever changed it'",
+        "apps/desktop/src/console/follow.ts:62 - every layout:changed is fed to followLayout against the depth as it is NOW, not as it was when the echoed select was sent",
+        "apps/desktop/src/console/follow.ts:29 - a 'page' event while the depth is a scene dives to the focused tab's page; follow.ts:32 a 'scene' event under a page rises",
+        "apps/desktop/src/console/follow.test.ts:27 - 'which is how its own round trip is ignored' holds only if the depth has not moved since the select",
+        "apps/desktop/src/depth/shape.ts:24 - last is set before the send is delivered and a refusal is only logged (shape.ts:27), so the same shape is never re-sent",
+        "apps/desktop/src-tauri/src/lib.rs:165 - layout_select is an async tauri command: each invoke is spawned, two quick invokes have no ordering guarantee"
+      ],
+      "rollback": "Each step is its own commit (channel in shape.ts with tests, follow.ts drops followLayout for reconcile, ADR + CHANGELOG); git revert of the series restores the push-and-follow pair unchanged. No Rust, no store, no persisted data is touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Crumb names leave the first frame: Console calls all five scenes' labeller hooks every render (Console.tsx:33-42), so each live.tsx's store hooks ride the first paint and the chrome re-renders on every tab title or playbook change; a name table loaded with each depth's chunk.",
+      "body": "## Summary\nThe window's shape has two writers and an echo between them. The depth pushes its shape to Rust (`depth/shape.ts`), Rust announces every selection back (`layout.rs` select), and the console follows that announcement as if Rust had decided something (`console/follow.ts` followLayout). Rust decides nothing: `layout_select` is its only way in and `shape.ts` its only caller. So the follower only ever hears its own echoes, and it judges each echo against where the depth is now, not where it was when the select was sent. Make the depth the single authority: one serialized, coalescing shape channel with an echo account, and a listener that reconciles Rust to the depth instead of moving the depth.\n\n## Description\nThree defects share one cause (two machines holding one fact with no sequence between them):\n1. Echo ping-pong: two shape changes inside one IPC round trip (open a page and press Escape, a hash written by the drive harness, followFocus leaving a page as the person rises) make the stale echo move the depth back, which sends again, whose echo flips it again.\n2. Unordered selects: `layout_select` is an async Tauri command, so two quick invokes can land in either order; Rust can end in `page` while the depth draws a scene, and the follower then follows the wrong final echo.\n3. A refused select is never retried: `last` is set before delivery, so the same shape is deduplicated forever after a refusal and Rust stays in the other shape.\nThe move (client-state / async-race-guards: a stale response is inert, one sequence per slot): `startShapeSync` becomes a channel with at most one select in flight, a pending slot that keeps only the latest wanted shape, a count of echoes owed, and an `unsynced` flag on refusal. `useFollowShell` keeps followFocus (tabs genuinely move under a page) and replaces followLayout with reconcile: an owed echo is consumed and ignored; an unowed disagreement re-sends the depth's shape. The depth is never moved by a layout event.\n\n## Flow\n- depth path changes -> channel.want(shapeOf(path))\n- idle: send now, owed += 1; in flight: pending = shape (latest wins)\n- send resolves: if pending differs from sent, send pending; reject: mark unsynced, the next want sends even an equal shape\n- layout:changed: owed > 0 -> owed -= 1, ignore; owed = 0 and shape != shapeOf(depth) -> channel.want(depth shape) forced\n- focused tab changes under a page -> followFocus as today\n\n## Expected impact\nThe page webview can no longer be shown over a scene, nor a scene yank the person back onto a page, from timing alone. The shape seam gets one owner and one rule, and the decision (the depth leads, Rust is reconciled) is written down where ADR 0088 left it implicit.\n\n## Evaluation\nClaim: no layout event moves the depth, at most one select is in flight, and a refused select is re-sent.\nBefore: 0 of 5 new acceptance cases pass (cases 0-4); guards 5-7 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases, offline in vitest with a fake send and a captured layout listener\nResult: better\nGate: none",
+      "evidence": "grep -rn 'layout_select\\|layoutSelect' apps/desktop/src packages src -> only lib/ipc.ts:82 (definition) and depth/shape.ts:11,21,22,27. grep 'layout::select' src-tauri/src -> only lib.rs:170. layout.rs:186-199: `/// Select a shape: remember it, re-lay, and announce it. The chrome sets it, and the chrome also hears it back` ... `crate::ui_emit(app, \"layout:changed\", ...)`. follow.ts:62-67: `onLayoutChanged((shape) => { const { path, go } = useDepth.getState(); ... const to = followLayout(path, shape, ...); if (to) go(to); })`. shape.ts:23-28: `if (shape === last) return; last = shape; void send(SHAPE_ID[shape]).catch(... console.error ...)`. lib.rs:165-166: `#[tauri::command(rename_all = \"snake_case\")] async fn layout_select(...)`. follow.ts:5-6 names a Rust-side selection ('when the welcome opens a first app') that no code path performs."
+    },
+    {
+      "context": "desktop-console",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Go anywhere by name: a summoned finder over every app, chore, account and Mind place",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/console/Console.tsx",
+        "apps/desktop/src/console/graph.test.ts",
+        "apps/desktop/src/depth/model.ts",
+        "apps/desktop/src/depth/model.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/console/places.ts",
+        "apps/desktop/src/console/places.test.ts",
+        "apps/desktop/src/console/finder.tsx",
+        "apps/desktop/src/console/finder.css",
+        "apps/desktop/src/console/finder.dom.test.tsx"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "apps/desktop/src/depth/model.ts (desktop-stage-depth): one additive export, itemsOf(root), reading the private GRAMMAR so the finder's fixed places are derived, not hand-listed"
+      ],
+      "generated": [],
+      "acceptance": [
+        "placesOf({apps:[{item:'host-1',label:'Ledgerbox'}], chores:[{id:'invoice-chase',title:'Invoice chase'}], accounts:[{id:'gh',label:'GitHub'}]}) -> contains the five roots, every fixed item itemsOf(root) gives for voice and mind (derived, so a new Mind item appears with no edit here), 'New chore', apps/host-1, chores/invoice-chase, accounts/gh; every path passes isValid; each carries its crumb trail ('Chores > Invoice chase')",
+        "rank('inv', places) -> first is {root:'chores',item:'invoice-chase'}; rank('mdev') -> first is {root:'mind',item:'devices'} (word-start hits outrank interior ones); rank('zzq') -> [] (a floor, not everything at three characters)",
+        "rank('', places, {recent:[mind/engine, chores/invoice-chase], here: chores/invoice-chase}) -> mind/engine first, the current place absent, then the roots",
+        "Ties are deterministic: two candidates with equal text score order by recency, then by formatHash of the path, the same on every run",
+        "opensFinder: Ctrl+K while typing in a field -> true; '/' outside a field -> true; '/' inside a field -> false",
+        "DOM: summon, type 'inv', Enter -> go called once with {root:'chores',item:'invoice-chase'} and the finder closes; Escape inside the finder -> it closes, go is not called, and the key is defaultPrevented so the stage does not also rise",
+        "Guard: places.ts and finder.tsx are lazy chunks; graph.test's walk from chrome.html carries neither in the first paint",
+        "Guard: with the finder closed, Escape still rises one level (escapeRises unchanged)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "docs/redesign/fathom.md:61 - the bar is 'every capability is at most three moves from D0'; fathom.md:62 promises dive by 'a click, Enter, or a number key'",
+        "apps/desktop/src/stage/Stage.tsx:72 - the only key the stage handles is Escape (rise); no key moves down or across",
+        "apps/desktop/src/stage/Stage.tsx:234 - the dock offers the five roots and nothing below them, so a chore or an app is always root, then scan a field, then press",
+        "apps/desktop/src/console/Console.tsx:33 - the console already gathers every scene's names for any path in one labeller",
+        "apps/desktop/src/scenes/chores/live.tsx:52 - chore titles are already in a store the console can read; accounts/live.tsx:36 connector labels; apps/live.tsx:51 app labels from the Browser model",
+        "apps/desktop/src/depth/model.ts:53 - GRAMMAR holds every fixed item (voice studio/settings, six Mind items) but is not exported, so today any list of places would be a second hand-kept copy",
+        "apps/desktop/src/console/Console.tsx:93 - the stage's trailing slot exists for a console-owned control, so the finder's button needs no Stage change"
+      ],
+      "rollback": "New files plus a lazy import and one trailing-slot button in Console.tsx and one additive export in depth/model.ts; reverting the commit series removes the finder with no data, store or route change left behind.",
+      "gate": "direction",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (first paint: the finder must stay a lazy chunk)"
+      ],
+      "runner_up": "Preview compare mode: one scene across every fixture x theme in one grid (console/preview.tsx), instead of flipping the ?picker=1 bar one combination at a time.",
+      "body": "## Summary\nReaching a chore, an app or a Mind instrument is root, scan the field, press - and for a chore deep in a catalogue of saved cases, a scroll too. The console already knows every place's name (its labeller) and every item list sits in a store it can read. Add a summoned finder (Ctrl+K or '/'): type three letters, Enter, and the depth dives straight there in one move, with Escape leaving everything as it was.\n\n## Description\nA pure `console/places.ts` builds the corpus from what exists: the roots, the grammar's fixed items via a new `itemsOf(root)` export (search / command-surface: one registry, never a parallel list), the Apps model's items, the playbooks' titles, the connectors' labels, and 'New chore'. Each entry is a Path plus its crumb trail from `crumbs(path, label)`, so the finder speaks the breadcrumb's words. `rank(query, places, {recent, here})` is banded subsequence matching (prefix > word-start > contiguous > gapped) with a floor, ties broken by recency then stable identity, and the empty query is the recent list (the 'switch back' gesture). The depth store's accepted moves feed the in-memory recent list. `finder.tsx` is a lazy chunk: the console holds only the open flag and the key listener, and the corpus is read inside the chunk, so the first paint is unchanged.\n\n## Flow\n- Ctrl+K anywhere, or '/' outside a field, or the finder button in the trailing slot -> finder opens with focus in the input, the recent places listed\n- each keystroke re-ranks synchronously; the selection starts on the top hit\n- Enter -> go(path), finder closes, the stage plays its normal dive\n- Escape -> finder closes, key consumed, no rise\n\n## Expected impact\nAny of roughly 120 places (five roots, eight fixed items, every chore, app and account) is one summon and three characters away instead of two to three presses with a visual scan; 'go back to the chore I was just in' is summon-Enter.\n\n## Evaluation\nClaim: a place is reachable by name in one move, ranked predictably, without touching the first paint.\nBefore: 0 of 6 new acceptance cases pass (cases 0-5); guards 6-7 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases, offline in vitest (pure places.ts, jsdom finder)\nResult: better\nGate: direction",
+      "evidence": "Stage.tsx:72-74: `export function escapeRises(e) { return e.key === \"Escape\" && ... }` - the only key binding; grep for digit/number-key handlers in src -> none. Stage.tsx:234-246 renders `ROOTS.map(...)` as the dock's only navigation. depth/model.ts:53-65 `const GRAMMAR` (not exported) with `voice: { items: [\"studio\", \"settings\"] }` and `mind: { items: [\"engine\", \"brain\", \"look\", \"data\", \"mic\", \"devices\"] }`. Console.tsx:33-42 `useLabeller` loops every scene's labeller. chores/live.tsx:52-55 `labeller(new Map((items ?? []).map((p) => [p.id, p.shortTitle])))`. No ADR or backlog names a finder or palette (grep -i 'palette|ctrl+k|quick open|jump to' docs/adr README.md docs/redesign -> colour palettes only)."
+    }
+  ],
+  "rehomed": [
+    "Delete followLayout outright since Rust never selects a shape on its own (follow.ts:27): S; folded into slot A as the reconcile rule",
+    "First paint 155 kB gz with no byte gate against ADR 0095's 125 kB: open stabilize-2026-10-16 backlog item, and the gate belongs to desktop-build-config / desktop-perf-gate; closing the gap is an owner call",
+    "The console reads OS reduced-motion only when it happens to re-render (Console.tsx:79): open stabilize-2026-10-16 backlog item, S",
+    "useFollowShell's focus effect has no dependency list and runs on every Console render (follow.ts:81): S",
+    "Number keys dive into the depths, as fathom.md:62 promises and Stage.tsx:72 does not do: S keyboard parity fix",
+    "Window roots as one declared table (root.tsx hand-lists the stores ADR 0026 names): already desktop-app-shell-ui's r2 runner-up and needs athena.tsx, another context's file",
+    "The surface blanks until settings hydrate (scenes.tsx:55): backlog-2026-10-13 line 22, S, void"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["module-design", "client-state", "search", "app-shell", "ipc-contract"],
+    "techniques": ["async-race-guards", "command-surface", "navigation-model"]
+  },
+  "files_read": 36
+}

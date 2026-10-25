@@ -1,0 +1,110 @@
+{
+  "host": "desktop-tasks-and-due",
+  "cards": [
+    {
+      "context": "desktop-tasks-and-due",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One tasks mirror per window: the runner reads the store, not a second bus and poll",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 6,
+      "write_set": [
+        "apps/desktop/src/stores/task-runner.ts",
+        "apps/desktop/src/stores/tasks.ts",
+        "apps/desktop/src/stores/task-runner.test.ts",
+        "apps/desktop/src/stores/tasks.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "her window starts the strip (startTasks) and the runner (startTaskRunner) with a counting fake follow -> the bus is followed exactly once (today: twice, tasks.ts:68 and task-runner.ts:139)",
+        "a bus that is refused at once and reconnects 10 times inside 1 s of fake clock, both started -> GET /tasks is read at most once per REREAD_MIN_MS in total (today the runner reads on every reconnect: 10 reads)",
+        "start with one daemon row `running` that no window runs and one `queued` -> the orphan is finished `failed` with ORPHANED exactly once, before the first POST /tasks/claim, and exactly one GET /tasks precedes that claim (today 3: the store's load, sweepOrphans, reread)",
+        "a task.changed frame {status:'killed'} for a task the runner runs -> its request aborts, no /finish is posted, its cards are withdrawn and declined, and useTasks shows the row killed - all from the one frame",
+        "a list read that no longer contains a task the runner runs (and is not finishing) -> the runner kills it, no /finish posted",
+        "a task.changed frame {status:'queued'} -> the runner claims (POST /tasks/claim) without waiting for any poll",
+        "the runner stops while the strip still holds the store -> the store keeps following and reading; the strip stops while the runner runs -> the runner still hears the next task.changed (counted holders, one follower)",
+        "Main with no runner (only SurfaceTasks holding the store) -> reads, frames and the 404-is-no-tasks rule behave exactly as today (tasks.test.ts unchanged and green)"
+      ],
+      "guard_cases": ["3", "4", "5", "7"],
+      "premise": [
+        "apps/desktop/src/stores/tasks.ts:68 - the tasks store follows the bus with its own followBus",
+        "apps/desktop/src/stores/task-runner.ts:139 - the runner follows the same bus again with a second followBus in the same window",
+        "apps/desktop/src/stores/task-runner.ts:321 - the runner's connected callback calls begin() -> reread() with no throttle",
+        "apps/desktop/src/stores/task-runner.ts:328 - plus its own TASK_POLL_MS (15 s) poll of GET /tasks",
+        "apps/desktop/src/stores/tasks.ts:219 - the store throttles a reconnect read to one per REREAD_MIN_MS precisely because 'a daemon with no bus refuses it at once' (tasks.ts:13-15)",
+        "apps/desktop/src/lib/fleet.ts:238 - followBus calls connected() before iterating, and retries every BUS_RETRY_MS = 1000 (fleet.ts:216), so a refusing daemon makes the runner read GET /tasks once a second",
+        "apps/desktop/src/stores/task-runner.ts:287 - sweepOrphans reads the list, then reread (task-runner.ts:265) reads it again on the same start",
+        "apps/desktop/src/companion/tasks.tsx:86 - her window's strip holds the store while apps/desktop/src/companion/live.tsx:302 starts the runner: both mirrors live in one window"
+      ],
+      "rollback": "Single feature commit (tests first, then the runner switched to the store's counted subscription); git revert of that commit restores the runner's own follow/every deps unchanged.",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"],
+      "runner_up": "One bus connection per window fanned out to devices, sleep, run, tasks and runner (five followBus streams today) - belongs to desktop-stores/desktop-client-lib, not this context.",
+      "body": "## Summary\nHer window mirrors GET /tasks twice: the tasks store (strip and Main) and the task runner each follow the bus, each read the list, and only one of them learned the throttle. Make the store the one mirror per window and have the runner subscribe to it.\n\n## Description\n`stores/tasks.ts` states the rule - the bus is the fast path, the list is the truth, a reconnect read is held to one per REREAD_MIN_MS because a daemon with no bus refuses at once. `stores/task-runner.ts` re-implements the same mirror for its own needs (kill on a non-running frame, claim on a queued one, sweep orphans once) with its own followBus, its own 15 s poll and an unthrottled read on every reconnect. Under a refusing bus followBus reconnects every second and calls `connected()` each pass, so the runner reads GET /tasks once a second while the store, beside it, reads once per 5 s. That is the parity drift a duplicated rule produces (realtime-events / push-vs-refetch-reconciliation: events are advice, the read is truth - one read path, exercised once). The move: `tasks.ts` exposes a counted subscription that hands a listener each applied frame and each settled list read; the runner takes a holder (`startTasks()`) and listens, dropping `follow` and `every` from RunnerDeps. The orphan sweep runs on the first settled list after start, so it still precedes the first claim.\n\n## Flow\n- startTaskRunner -> startTasks() holder + onTasks({frame, list})\n- frame -> taskChanged (kill / claim) exactly as today\n- first list -> sweepOrphans(rows) then reconcile + tickRunner; later lists -> reconcile (kill missing) + tickRunner\n- stop -> release the holder; the store's last holder ends the follow\n\n## Expected impact\nOne bus stream and one throttled read path per window instead of two; the once-a-second read storm under a refusing daemon closes; a future change to how tasks are mirrored lands once. Kill, claim and orphan semantics are pinned unchanged by guard cases.\n\n## Evaluation\nClaim: the runner and the store share one mirror without changing kill/claim/orphan behaviour.\nBefore: 4 of 8 acceptance cases pass (the four guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in task-runner.test.ts and tasks.test.ts\nResult: better\nGate: none",
+      "evidence": "grep followBus( apps/desktop/src -> stores/tasks.ts:68, stores/task-runner.ts:139 (plus devices.ts:62, run.ts:2389, sleep.ts:76). task-runner.ts:321-328: `deps.follow?.((event)=>{...}, () => void begin())` and `deps.every(TASK_POLL_MS, ...)`. tasks.ts:219-222: `function reconnected(){ if (deps.now() - lastRead >= REREAD_MIN_MS) void loadTasks(); }`. fleet.ts:216 `BUS_RETRY_MS = 1000`; fleet.ts:237-239 `connected?.(); for await (...)`. companion/tasks.tsx:86 `useEffect(() => startTasks(), [])`; companion/live.tsx:302 `useEffect(() => (hasShell() ? startTaskRunner() : undefined), [])`."
+    },
+    {
+      "context": "desktop-tasks-and-due",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The dock's due notice opens the staged review in place: prepare, skip, later",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/console/due-notice.tsx",
+        "apps/desktop/src/console/due-notice.css",
+        "apps/desktop/src/stores/due.ts",
+        "apps/desktop/src/stores/due-poll.ts",
+        "apps/desktop/src/scenes/chores/due-model.ts",
+        "apps/desktop/src/scenes/chores/due.test.tsx"
+      ],
+      "new_files": ["apps/desktop/src/console/due-notice.test.tsx"],
+      "shared_surfaces": ["CHANGELOG.md", "docs/adr/0131-a-chore-comes-due-as-a-staged-review.md (addendum: the dock line opens the review in place; §8 and §12 otherwise unchanged)", "docs/features/playbooks.md"],
+      "generated": [],
+      "acceptance": [
+        "a notice on show, pressed -> one GET /adopt/cases/<case>/review; the dock state becomes {kind:'reviewing', review} with the review's lines in LINE_ORDER; nothing is POSTed",
+        "reviewing, Open and prepare -> POST review {due_at, answer:'prepare'} exactly once, deps.open once per http(s) portal, deps.hand(command, {caseId, scheduled:true}), no /run; the next queued notice takes the dock",
+        "reviewing, Skip this one -> POST review {answer:'skip'}; the next queued notice takes the dock",
+        "Later -> no POST at all; the next queued notice takes the dock; the same (case, due_at) is not shown again in this window",
+        "a queued notice whose review was answered elsewhere meanwhile (GET review answers review.answer set, or review null) -> dropped before it is drawn, never stamped seen, and the next one takes its place (proactive-nudges / notice-delivery-decoupling: re-validate before late delivery)",
+        "three notices in one poll -> the dock line says '<title> is due · 2 more due'; after one is handled it says '· 1 more due'; the last says no count",
+        "the review read fails (daemon down) -> state {kind:'failed'} with one sentence, the notice stays on show, and 'Open the chore' still navigates to the chore's page as today",
+        "the seen stamp is sent once per (case, due_at), only after the dock has drawn the line (ADR 0131 §8, unchanged)"
+      ],
+      "guard_cases": ["3", "7"],
+      "premise": [
+        "apps/desktop/src/console/due-notice.tsx:29 - the notice is one button whose only act is dismiss + navigate",
+        "apps/desktop/src/console/due-notice.tsx:34 - it navigates to {root:'chores', item: playbook_id}: the playbook's topic page, not the due case, though the notice carries case_id",
+        "apps/desktop/src/scenes/chores/topic.tsx:328 - the review lives per case inside the 'Make it yours' section near the foot of the topic page, beside every other case of that playbook",
+        "apps/desktop/src/stores/due.ts:21 - dismiss is documented as 'she opened it, or put it away', yet the dock offers no put-away act",
+        "apps/desktop/src/stores/due-poll.ts:73 - notices queue in memory and show one at a time (due-poll.ts:83, :95) with no count of how many wait",
+        "apps/desktop/src/stores/due-poll.ts:32 - a notice is marked shown at poll time and never re-checked before it is drawn, so one answered on the topic page meanwhile is still announced",
+        "apps/desktop/src/scenes/chores/due-model.ts:85 - openAndPrepare is already pure and deps-injected (open, hand, answer), and ReviewView (scenes/chores/due.tsx:43) is a pure view: the act needs no new daemon route",
+        "docs/adr/0131-a-chore-comes-due-as-a-staged-review.md §10 - 'eight weekly chores on a Monday gets eight dock lines, shown one at a time'"
+      ],
+      "rollback": "One feature commit plus the ADR addendum commit; reverting both restores the single-button notice. No daemon route, contract or stored data changes.",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test", "cd apps/desktop && pnpm perf:all (the dock chunk is lazy; first paint must not grow)"],
+      "runner_up": "A task resting on a card reads 'needs you' with an Answer act on Main and the strip - blocked on the daemon's decision rows carrying task_id (daemon-service), so sequenced out.",
+      "body": "## Summary\nToday a due chore costs five steps: press the dock line, land on the playbook's topic page, scroll to 'Make it yours', find which of its cases is due, then read and press Open and prepare. The dock has the case id and the review is a pure, no-model read. Open the staged review in the dock itself, with its three answers, and say how many more wait.\n\n## Description\nThe dock line keeps its place and its rules (never a raised window, seen when drawn). Pressing it reads the case's review (GET .../review, the direct fetch due-poll already uses, so first paint pays nothing) and draws ReviewView in place: what to check first, then Open and prepare (openAndPrepare with the Playbooks module's open and hand, loaded on press), Skip this one, Later (put away with no answer: the review stays open on the topic page, where it is today), and 'Open the chore' for the full page. Before a queued notice is drawn its review is re-read: one answered elsewhere is dropped unstamped, not announced as false news (notice-delivery-decoupling). The line carries the queue's size, answering ADR 0131 §10's 'eight dock lines, shown one at a time' with a visible count. The staged-review rule stands: the person still sees the lines before preparing, and nothing is sent until she presses send (README §2, ADR 0131 §12).\n\n## Flow\n- poll -> queue -> re-validate head -> draw line '<title> is due · N more due' -> stamp seen\n- press -> reviewing (GET review) -> Open and prepare | Skip | Later | Open the chore\n- each answer -> next notice; failure -> one sentence, notice stays\n\n## Expected impact\nA due chore goes from five steps across two surfaces to two presses in the dock; stale notices stop; the person sees the backlog size. Operator-visible on every scheduled chore.\n\n## Evaluation\nClaim: the dock enters the review, answers it and moves on, without a navigation.\nBefore: 2 of 8 acceptance cases pass (the two guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases in console/due-notice.test.tsx and scenes/chores/due.test.tsx\nResult: better\nGate: none",
+      "evidence": "due-notice.tsx:29-38: `<button ... onClick={() => { dismiss(); go({ root: \"chores\", item: notice.playbook_id }); }}>{... `${notice.title} is due${more}`}</button>` - the only act. topic.tsx:318-328 renders `<Due ... caseId={c.case_id} .../>` per case inside the pa-adopt section. due-poll.ts:73 `const queue: DueNotice[] = []`, :83 `if (useDue.getState().notice === null && queue.length) useDue.setState({ notice: queue.shift() ?? null })`, :95 `dismiss: () => useDue.setState({ notice: queue.shift() ?? null })`. due-poll.ts:32-33 adds to `shown` at poll time. due-model.ts:70-97 PrepareDeps + openAndPrepare. lib/adopt.ts:446 CHORE_ROUTES.review(caseId) GET exists."
+    }
+  ],
+  "rehomed": [
+    "Due poll keeps asking every 60 s while Main is hidden (document.visibilityState) - S, under the size floor.",
+    "TaskRow's armed Kill survives a status change to done/failed (arm state not reset when isActive flips) - S, polish.",
+    "Ask on a queued task offers 'How is X going?' for work not yet started - S, wording."
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["realtime-events", "proactive-nudges", "client-state"],
+    "techniques": ["push-vs-refetch-reconciliation", "subscription-lifecycle", "notice-delivery-decoupling", "attention-budgets", "singleton-lifecycle"]
+  },
+  "files_read": 24
+}

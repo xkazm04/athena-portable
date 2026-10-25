@@ -1,0 +1,124 @@
+{
+  "host": "tidycrm-spatial-model-tools",
+  "cards": [
+    {
+      "context": "tidycrm-spatial-model-tools",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One remedy module: the agent reads every act target the dossier buttons fire on",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/components/blocks/model.ts",
+        "examples/tidycrm/components/blocks/tools/read.ts",
+        "examples/tidycrm/components/blocks/tools/BlocksTools.tsx",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx",
+        "examples/tidycrm/test/spatial-model-tools.test.ts"
+      ],
+      "new_files": [
+        "examples/tidycrm/components/blocks/model/remedies.ts",
+        "examples/tidycrm/test/remedies.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-agent-reads-every-act-target-the-dossier-fires-on.md",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx (owned by tidycrm-blocks-ui, not in r3: three button handlers switch to remediesOf(table), ~15 lines)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "remediesOf(table) for a seed table with phoneIds -> includes {kind:'phone', by:'rule', preview:{tool:'preview_normalize', args:{ids:table.phoneIds, rules:['phone_e164']}}, act:{tool:'normalize_fields', args:<same>}}; ids deep-equal table.phoneIds",
+        "remediesOf(table) for a seed table with staleIds -> act {tool:'flag_stale', args:{ids:table.staleIds}}; and the tidy remedy -> normalize_fields {ids:table.ids, rules:['trim_whitespace','lowercase_email']} - the same three argument sets the dossier's three AUTO buttons send (Gate.tsx:66, :78, :88)",
+        "remediesOf(table) for a table with attention -> a {kind:'duplicate', by:'person', pairs:[pair ids]} entry with NO act; the serialised remedies of every seed table never contain 'merge_contacts' or 'delete_contacts'",
+        "remediesOf(synthetic table with 1,201 staleIds) -> act split into batches of 500, 500, 201 (each <= MAX_IDS) whose concatenation equals staleIds in order",
+        "runTool(plan_repairs, {kind:'stale', page:n}) walked from page 0 until a page is short, on the scratch seed -> the union of returned ids equals the union of every table.staleIds (135 on the seed today); every page's JSON is <= 12,000 chars. Today: unknown tool",
+        "dossierRead(table).remedies deep-equals remediesOf(table) for every seed table (the L2 read_view and the tool cannot disagree)",
+        "guard: every Blocks registration, plan_repairs included, has readOnlyHint true and no consequentialHint; calling plan_repairs leaves sheet revision and the activity row count unchanged and reaches no view setter or nav verb",
+        "guard: tableRead(table) returns exactly its current keys (id..why), with awaiting_a_person still a separate boolean never folded into deviations"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/tidycrm/components/blocks/model/tables.ts:65 - outstandingIds, staleIds ('exactly what flag_stale may act on', :67) and phoneIds are on every BkTable the page holds",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx:66 - the person's button fires normalizeAction(table.phoneIds, ['phone_e164']); :78 normalizeAction(table.ids, ...); :88 flagStaleAction(table.staleIds)",
+        "examples/tidycrm/components/blocks/tools/read.ts:31 - tableRead carries counts by kind and no id list; read.ts:106 dossierRead sends ROW_SAMPLE (6) example rows only",
+        "examples/tidycrm/components/blocks/tools/search.ts:92 - searchRecords searches only the sampled rows and says so (:121)",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx:176 - normalize_fields and flag_stale (:206) require explicit contact ids",
+        "examples/journey/tests/journey.spec.ts:518 - the journey's own normalise beat sources ids from search_records {text:''}, i.e. the first 25 sample rows, because no read names the targets",
+        "examples/tidycrm/components/blocks/presence.ts:1 and sheet/Foot.tsx header - the sheet is 'the environment an agent works in rather than a console a person drives'"
+      ],
+      "rollback": "Three commits (remedies module + tests; read_view/plan_repairs wiring; Gate.tsx switched to the module). Revert in reverse order; the tool is additive and read-only, so removing it changes no other tool's schema.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root)"
+      ],
+      "runner_up": "One table-placement function read by the slab, the projected label and the wheel's hit test (resolveItem lays slabs in the live pose basis, Scene/useProjector in faceOf's)",
+      "body": "## Summary\nThe dossier's three AUTO repairs fire on id lists the sheet already carries (phoneIds, ids, staleIds), but no read tool exposes them, so an agent can only repair what happens to be in a table's six sample rows. Derive one remedy plan per table in the model, have the dossier's buttons and the agent's reads both take their arguments from it, and add a read-only plan_repairs tool that pages it.\n\n## Description\nThe parity seam: the person and the agent act on the same server actions, but the person's arguments are built inline in Gate.tsx from BkTable fields and the agent's must be scraped from samples. Measured on a scratch seed (2026-10-25, 46 tables): 120 rows have a malformed phone and 100 of them appear in any read; 135 rows are stale and unflagged and only 68 appear (50%); 14 of 45 tables with phone work have targets the agent cannot see. The journey's normalise beat works around it by previewing whatever the first 25 sampled rows are.\n\nmodel/remedies.ts is pure and client-safe: remediesOf(table) -> Remedy[] where each rule-repairable kind carries {preview, act} as tool name plus arguments, batched at MAX_IDS (lib/constants), and the person-only kind (duplicate) carries pair ids and by:'person' with no act at all (hitl-approval/oracle-before-gate: the preview is named before the act; the distinction read.ts exists to protect is kept). dossierRead adds remedies; plan_repairs {database?, kind?, page?} returns remedies across tables through the kit's boundedPage, read-only, description under the 240-char cap (ADR 0070). Gate.tsx's three handlers read the same module, so the button and the agent cannot drift (mcp-tools/tool-schema-design, one-authority-per-vocabulary).\n\nNot a policy change: normalize_fields and flag_stale stay AUTO, merge and delete stay GATED and are never named by a remedy; the agent gains opaque contact ids, fewer fields than the names, emails and phones dossierRead already sends.\n\n## Flow\n- agent: plan_repairs {kind:'stale'} -> pages of {table, database, act:{tool:'flag_stale', args:{ids}}}\n- agent proposes flag_stale with exactly those ids; the host classes it AUTO as today\n- person in the dossier: Flag N stale rows fires remediesOf(table).stale.act.args - the same list\n- duplicates: remedy says by:'person' and lists pair ids for read_pairs/preview_merge; nothing to call\n\n## Expected impact\nAn agent can carry out every repair the dossier offers, on every target, in one read per page instead of 46 open_item+read_view pairs that still miss half the stale rows. The journey's normalise beat can preview the real phone targets.\n\n## Evaluation\nClaim: every act target a dossier button fires on is reachable by a read, and both derive from one module\nBefore: 0 of 6 non-guard acceptance cases pass (module and tool absent); 68 of 135 stale targets and 100 of 120 phone targets visible to any read\nAfter: 8 of 8; 135 of 135 and 120 of 120\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "probe on a scratch seed (buildSheet via tempHome, 2026-10-25): {tables:46, phone:120, phoneSeen:100, stale:135, staleSeen:68, maxIdsPerTable:25, phoneTables:45, phoneTablesFullySeen:31}\nGate.tsx:66 onClick={() => run(() => normalizeAction(table.phoneIds, [\"phone_e164\"]))}\nGate.tsx:88 onClick={() => run(() => flagStaleAction(table.staleIds))}\ntables.ts:67 /** Ids stale and not yet flagged: exactly what `flag_stale` may act on. */\nread.ts:106 example_rows: table.rows.slice(0, ROW_SAMPLE)\ngrep outstandingIds|staleIds|phoneIds outside tests: only model/tables.ts, lib/blocks/index.ts, dossier/Gate.tsx - no tool reads them\njourney.spec.ts:518 const ids = itemsOf(await crm.read<Row>(\"search_records\", { text: \"\" }))"
+    },
+    {
+      "context": "tidycrm-spatial-model-tools",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Walk the sheet worst-first from inside the dossier, across databases, in one key",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/components/blocks/model.ts",
+        "examples/tidycrm/components/blocks/tools/search.ts",
+        "examples/tidycrm/components/blocks/tools/BlocksTools.tsx",
+        "examples/tidycrm/components/blocks/Dossier.tsx",
+        "examples/tidycrm/components/blocks/Blocks.tsx",
+        "examples/tidycrm/test/spatial-model-tools.test.ts"
+      ],
+      "new_files": [
+        "examples/tidycrm/components/blocks/model/worklist.ts",
+        "examples/tidycrm/test/worklist.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/tidycrm/components/blocks/Dossier.tsx and Blocks.tsx (owned by tidycrm-blocks-ui, not in r3: an onStep prop, a position line and two keys; ~60 lines)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "worklistOf(sheet) on the scratch seed -> excludes every table with deviationTotal 0 and attention false; its length equals the count of the rest; entry 0 is searchBlocks(sheet, {}).items[0]",
+        "worklistOf(sheet) order -> for every adjacent pair: attention before not, then deviationTotal descending, then ident ascending (a total, deterministic order)",
+        "stepWorklist(list, null, 'next') -> {group: list[0].database, item: list[0].ident, at: 1, of: list.length}",
+        "stepWorklist(list, {ident: list[k].ident, at: k+1}, 'next') where list[k+1] lives in another database -> {group: list[k+1].database, item: list[k+1].ident, at: k+2}",
+        "stepWorklist from the last entry with 'next', and from the first with 'previous' -> null (no wrap; the surface says the end was reached)",
+        "stepWorklist(listWithoutK, {ident: list[k].ident, at: k+1}, 'next') - the current table was cleared by a write and the refreshed list no longer holds it -> the entry that slid into its place (old list[k+1]), not the head of the list",
+        "runTool(next_table, {direction:'next'}) at L2 on the worst table -> the nav's openItem is reached once with (list[1].database, list[1].ident); result carries at 2, of N, the table's tableRead and arrives_in_ms = ARRIVAL_MS; at L0 it opens list[0]",
+        "guard: searchBlocks(sheet, {}) returns the same ids in the same order after worstFirst moves from tools/search.ts into model/worklist.ts"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "examples/tidycrm/components/blocks/sheet/Head.tsx:41 - the head prints 'deviations outstanding' and (:47) 'pairs awaiting a person' as figures with no way to go to them",
+        "examples/tidycrm/components/blocks/tools/search.ts:57 - worstFirst, the order 'a person is waiting on, then the most deviations', exists only behind the agent's search_blocks",
+        "examples/tidycrm/components/blocks/Blocks.tsx:314 - the dossier gets onClose={nav.up} and nothing else; Blocks.tsx:256 opens a table only from a card inside the current database",
+        "examples/tidycrm/components/blocks/beats.ts:99 - each database change costs ARRIVAL_MS (1,120 ms) of flight and dress before its cards can be read and clicked",
+        "examples/tidycrm/components/blocks/l0/cells.ts:24 - 43 of 46 tables touch an open pair, so the L0 colour cannot tell a reader which table to open next"
+      ],
+      "rollback": "Two commits (worklist module + search.ts reuse + next_table tool + tests; Dossier/Blocks wiring). Revert the surface commit alone to keep the tool, or both; search_blocks' order is pinned by the guard case either way.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root)"
+      ],
+      "runner_up": "The dossier's AUTO acts show their per-record diff before writing - previewNormalizeAction already exists and the person clicks 'Normalise phone - N rows' blind",
+      "body": "## Summary\nA person clearing the sheet works one table at a time, but the dossier can only be closed: the next-worst table is usually in another database, behind an Escape, a database jump with its 1.1 s flight and dress, and a visual search among five or six cards. Put the worst-first order in the model as a worklist, give the dossier next/previous (two keys and a 'next worst - 4 of 43' line), and give the agent the same walk as next_table.\n\n## Description\nThe order already exists - search_blocks sorts 'the tables a person is waiting on, then the most outstanding deviations' - but only an agent can reach it, and it is a private comparator inside tools/search.ts. model/worklist.ts takes it over (search.ts imports it, so the two cannot disagree) and adds a total tie-break on ident (table/sorting: deterministic order). stepWorklist(list, from, dir) is pure: it returns the next focus {group, item, at, of}, crosses databases freely, does not wrap, and when the table just repaired has left the refreshed list it continues from the slot it held rather than jumping to the head (hitl-approval/review-queues: the pending set from the system of record, enough context to decide in place). The dossier's step calls nav.openItem(group, item); when the group changes the camera flies under the card exactly as an agent's open_item does today, and useArrival stages that flight as it already does for any group change. next_table is read-and-move like open_item: readOnlyHint, no consequentialHint, description under 240 chars.\n\n## Flow\n- person opens the worst table (or presses the head's first step from L0)\n- repairs it in the dossier; the server refresh drops it from the list\n- presses ] : the camera flies to the next database under the card, the card re-keys to the next table, the line reads '2 of 42'\n- [ goes back; at the end the line says the list is done\n- agent: next_table {direction:'next'} -> the same focus and position, one call instead of search_blocks + open_item\n\n## Expected impact\nOne key per table instead of four acts and a visual search per table, across 43 tables; a person always knows how much is left. The agent's walk and the person's walk are the same list.\n\n## Evaluation\nClaim: the next table worth a person's attention is one step from any dossier, ordered by the rule search_blocks already uses\nBefore: 0 of 7 non-guard acceptance cases pass (no worklist module, no next_table)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "search.ts:57 function worstFirst(a: BkTable, b: BkTable): number { if (a.attention !== b.attention) return a.attention ? -1 : 1; return b.deviationTotal - a.deviationTotal; }\nBlocks.tsx:314 <Dossier key={table.ident} table={table} onClose={nav.up} motion={motion} />\nsheet/Head.tsx:47 <Stat value={sheet.unadjudicated} label=\"pairs awaiting a person\" ... /> (a figure, no action)\nbeats.ts:99 export const ARRIVAL_MS = FLIGHT + DRESS + SETTLE_PAD; (620 + 440 + 60)\ncells.ts:24 'in this seed 43 of the 46 tables touch an open pair, so the colour alone is nearly uniform'\nADR 0070: tidycrm 31 tools against MAX_TOOLS_PER_MANIFEST 96"
+    }
+  ],
+  "rehomed": [
+    "resolveItem (space/camera.ts:276) lays the slabs in the live pose basis while Scene.tsx:274 and useProjector.ts:71 use faceOf's: after a 0.6 rad orbit inside a database, aiming at BLK-06's drawn slab resolves BLK-05 and BLK-04/05 resolve null (probe on crm-eu and billing) - the fix is S (use faceOf in resolveItem plus a test at an orbited pose); the de-duplication is the slot A runner-up",
+    "WIDEST_DATABASE = 7 (beats.ts:80) is a hand-kept bound the deal does not enforce: assignDatabases gives ceil(n/9) tables per database, so a seed past 63 blocks overruns the dress beat silently - S, a test deriving the bound from the deal",
+    "useArrival claims every flight inside a database (already backlog, stabilize-2026-10-16, S) - not re-proposed; slot B's cross-database step relies on the group-change staging it keeps"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["mcp-tools", "hitl-approval", "table"],
+    "techniques": ["tool-schema-design", "oracle-before-gate", "review-queues", "sorting"]
+  },
+  "files_read": 41
+}

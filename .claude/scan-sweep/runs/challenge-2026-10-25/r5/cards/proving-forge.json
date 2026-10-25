@@ -1,0 +1,132 @@
+{
+ "host": "proving-forge",
+ "cards": [
+  {
+   "context": "proving-forge",
+   "slot": "A",
+   "lens": "architecture-challenger",
+   "title": "Forge flips are judged against the base's comparable set, not one draw",
+   "size": "M",
+   "effort": 6,
+   "impact": 8,
+   "risk": 5,
+   "write_set": [
+    "src/athena/proving/forge/base.py",
+    "src/athena/proving/forge/pick.py",
+    "src/athena/proving/forge/report.py",
+    "src/athena/proving/forge/run.py",
+    "src/athena/proving/forge/runner.py",
+    "tests/proving/forge/test_pick.py",
+    "tests/proving/forge/test_run_dry.py"
+   ],
+   "new_files": [
+    "tests/proving/forge/test_baseline.py"
+   ],
+   "shared_surfaces": [
+    "CHANGELOG.md",
+    "docs/adr/NNNN-a-forge-flip-is-measured-against-the-bases-comparable-runs.md (amends nothing; applies ADR 0128 to the forge)"
+   ],
+   "generated": [],
+   "acceptance": [
+    "baseline(base) for a bench whose latest run is exceeds but whose comparable set (latest + history under the same key, current key matching today's files and claude_code/sonnet/none) is short in 2 of 4 -> word 'short', n 4; a variant benched short is NOT counted as raw_flip or audited flip",
+    "baseline(base) for a bench whose latest 'comparable' key differs from comparability_key(content_digest(root), engine, model, approve) of the forge's bench config -> comparable false with reason 'no comparable run ...'; the report row carries baseline {comparable: false, reason}, no raw_flip / audited.flip / recall_drop, and that variant is excluded from proof-2's counts",
+    "base comparable recalls [1.0, 0.2, 0.9] (min 0.2, median 0.9), variant audited recall 0.7 -> recall_drop is measured from the base's minimum (-0.5): not counted in recall_drops_ge_0_2 (today: 1.0 - 0.7 = 0.3 is counted)",
+    "base comparable recalls [1.0, 1.0, 1.0], variant audited recall 0.7 -> recall_drop 0.3 counted; row.baseline {n: 3, word: 'exceeds', recall_median: 1.0, recall_min: 1.0}",
+    "a forge bench config of approve 'all' against a base benched with approve 'none' -> baseline comparable false (the instrument differs)",
+    "proof-2 when every benched variant's base has no comparable run -> status 'n-a', detail names how many bases were not comparable; when it PASSes its detail names the smallest baseline n it stands on",
+    "pick_detail over a library where one playbook's latest is exceeds but its comparable set is short in half -> it is drawn from the short pool; a playbook with no comparable run is left out and a note says how many and under which engine/model/approve",
+    "guard: an unkeyed bench (no 'comparable', as the existing make_library fixture writes) is a set of one under its latest verdict, so the four existing test_pick cases and the dry run's proof ids/status domain stay green"
+   ],
+   "guard_cases": ["7"],
+   "premise": [
+    "src/athena/proving/forge/base.py:52",
+    "src/athena/proving/forge/base.py:58",
+    "src/athena/proving/forge/report.py:343",
+    "src/athena/proving/forge/report.py:368",
+    "src/athena/proving/forge/report.py:383",
+    "src/athena/proving/forge/pick.py:47",
+    "src/athena/proving/forge/runner.py:343",
+    "src/athena/proving/playbooks/rank.py:78",
+    "src/athena/proving/playbooks/rank.py:106",
+    "src/athena/proving/playbooks/bench.py:1102",
+    "docs/adr/0128-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md:37"
+   ],
+   "rollback": "Two commits (baseline + pick; report + proof). git revert of both restores latest-draw comparison; the forge writes only under gitignored proving-runs/, so no data migrates.",
+   "gate": "none",
+   "gates_to_run": [
+    "uv run ruff check .",
+    "uv run ruff format --check .",
+    "uv run mypy",
+    "uv run pytest -m \"not provider and not eval\""
+   ],
+   "runner_up": "Validator enforces the 'change the facts' half: a variant that keeps the base's ids, amounts or world.today (test_validate.py:32 pins that the base itself is refused only for few-new-traps) is refused 'facts-unchanged', so proof-1's valid rate stops rewarding copies.",
+   "body": "## Summary\nThe forge's headline (proof-2: an audited exceeds->short flip or a recall drop >= 0.2) compares ONE variant draw against the base playbook's LATEST bench draw, read from bench.json's top-level verdict and recall. ADR 0128 already decided that a playbook is judged on its comparable set (same content digest, engine, model, approval; short in half or more is short; median recall). The forge ignores it, so a flip or a drop can be the base's own run-to-run noise or a base measured by another instrument.\n\n## Description\nAdd a `Baseline` to base.py, built with `rank.runs_of(bench, current)` where `current = comparability_key(content_digest(root), engine, model, approve)` of the forge's own bench config: n, key, pooled word (short when 2*short >= n), recall_median, recall_min, or comparable=false with a reason. pick.py draws short/exceeds by the pooled word and leaves out bases with no comparable run (with a note). report.py computes raw/audited flips only against a comparable baseline and measures recall_drop from the base's minimum comparable recall, so a drop must leave the base's observed range; every row carries its baseline (n travels with the number), and proof-2 says n-a when no benched variant has a comparable base and names the smallest n it stands on. run.py/runner.py thread one BenchConfig (engine/model/approve) to pick, bench and report so the baseline and the variant bench are the same instrument. Technique: eval-harness reliability-aggregation and selection-over-noise; measurement-honesty noise-band-and-hysteresis.\n\n## Flow\n- pick: pooled verdict under the forge's bench key -> shorts / exceeds, non-comparable bases noted\n- bench: unchanged, config passed through\n- report: per row baseline{n, word, median, min} -> flip/drop only when comparable -> proof-2 with n\n\n## Expected impact\nMeasured on the committed library: 95 benched bases, 75 stand on n=1, 5 unkeyed; clinic-denials' latest says exceeds while its comparable set is short in 2 of 4, so any short variant is reported as a flip today; ltc-claims' comparable recalls spread 0.801 (latest 0.547 above its min), duty-drawback 0.317, clinic-denials 0.278: a >= 0.2 drop on those is inside the base's own band. The proof line stops claiming a finding the base's noise explains.\n\n## Evaluation\nClaim: forge flips and drops are computed against the base's comparable set and carry its n.\nBefore: 0 of 8 acceptance cases pass (case 8 is a guard, green by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+   "evidence": "base.py:52-66 verdict_word/recall_value read bench['verdict']['word'] and bench['score']['recall_value'] (latest draw only). report.py:343 `flipped = base.verdict_word in (\"exceeds\", \"meets\") and word == \"short\"`; report.py:368-372 `drop = round(base.recall_value - float(c_recall), 3)`. pick.py:47-48 shorts/exceeds by b.verdict_word. runner.py:343 BenchConfig(engine, model) with approve default 'none'; no check that the base bench used the same. rank.py:78 runs_of / bench.py:1102 comparable_runs exist and are unused by the forge (grep comparable src/athena/proving/forge -> 0 hits). Library scan (uv run, read-only): Counter({'ok': 90, 'unkeyed': 5}); comparable-set sizes [(1, 75), (3, 18), (4, 2)]; pooled word differs from latest: [('clinic-denials', 4, 2 short, 'exceeds')]; recall spread n>=3: ltc-claims 0.801, duty-drawback 0.317, clinic-denials 0.278, cpg-deductions 0.077."
+  },
+  {
+   "context": "proving-forge",
+   "slot": "B",
+   "lens": "ux-elevation",
+   "title": "Each forge finding is a reviewable dossier, and `forge show` opens one",
+   "size": "M",
+   "effort": 6,
+   "impact": 7,
+   "risk": 4,
+   "write_set": [
+    "src/athena/proving/forge/report.py",
+    "src/athena/proving/forge/run.py",
+    "src/athena/proving/forge/__main__.py",
+    "tests/proving/forge/test_run_dry.py"
+   ],
+   "new_files": [
+    "src/athena/proving/forge/dossier.py",
+    "tests/proving/forge/test_dossier.py"
+   ],
+   "shared_surfaces": [
+    "CHANGELOG.md"
+   ],
+   "generated": [],
+   "acceptance": [
+    "dossier(store, base, variant) for a benched and audited variant -> one entry per audit item with table and row equal to find_rows(variant.world, key)[0], the truth's label, the auditor's why or note, and a state of finding / forge-error / unaudited from label_holds True / False / None",
+    "a trap_filed item -> entry.filed lists the bench card(s) whose key matches, with their params; a miss item -> entry.filed is [] and entry.cards_on_tool counts the cards the run filed on that tool",
+    "entry.rerun is the exact command `uv run python -m athena.proving.playbooks --dir <run>/forge/work/<pid>-v<k> bench <pid> --no-write --runs 3`, and that directory holds <pid>/world.json after dossier() (materialised when absent)",
+    "a benched variant with no audit file yet -> dossier lists the bench's misses and filed traps as 'unaudited' (from audit_items), so the operator can review before spending on the audit",
+    "the variant's diff against its base: today base->variant, row count per table base->variant, and the trap ids the base truth does not name",
+    "main(['show', '--run-dir', run, '<pid>-v1']) after a dry `all` -> exit 0, prints the row id, the label and the auditor's why for each item and the rerun line; an unknown name -> exit 2 'no variant <x>; known: ...'",
+    "report.json athena_findings and forge_errors entries carry table, row and rerun; report.md has a '## Review' section with one block per finding",
+    "guard: test_absent_values_are_omitted_never_zero and the proof lines of the dry report stay green (no None written, proof ids unchanged)"
+   ],
+   "guard_cases": ["7"],
+   "premise": [
+    "src/athena/proving/forge/report.py:354",
+    "src/athena/proving/forge/report.py:361",
+    "src/athena/proving/forge/run.py:176",
+    "src/athena/proving/forge/runner.py:338",
+    "src/athena/proving/forge/__main__.py:47",
+    "src/athena/proving/forge/base.py:91",
+    "src/athena/proving/playbooks/__main__.py:127"
+   ],
+   "rollback": "One commit adding dossier.py and the show stage plus report fields; git revert removes the stage and the extra report keys; nothing persistent outside gitignored proving-runs/.",
+   "gate": "none",
+   "gates_to_run": [
+    "uv run ruff check .",
+    "uv run ruff format --check .",
+    "uv run mypy",
+    "uv run pytest -m \"not provider and not eval\""
+   ],
+   "runner_up": "A `forge confirm` stage that re-benches only the variants proof-2 rests on k times and reports the flip as k-of-n, so a single variant draw never carries the headline.",
+   "body": "## Summary\nThe forge exists to answer one question per miss: is this an Athena defect or a bad generated label? The report hands the operator only `{playbook, k, kind, id, why}` per finding. Judging it means opening the variant JSON (a whole ~10k-token world) to find the row, the bench JSON to see what was filed, and the base playbook to see what changed, then hand-building a bench command against the work copy. The data is all in the run directory; the decision is made blind.\n\n## Description\nA pure `dossier.py` builds, per variant, the review set: every audit item (or, before the audit, every bench miss and filed trap as 'unaudited') with its table and row from the variant world, the truth's label, the auditor's why, what the bench filed (matching cards for a filed trap, a count on the tool for a miss), a short diff against the base (today, rows per table, new trap ids) and the exact re-bench command on the materialised work copy (`--dir <work> bench <pid> --no-write --runs 3`, a command the playbooks CLI already supports). report.py embeds table/row/rerun in athena_findings and forge_errors and renders a '## Review' section; a new `show <pid>-v<k>` stage prints one variant's dossier. Technique: eval-harness failure-attribution (a verdict names a case, not a cause; attribute before acting).\n\n## Flow\n- run `all` -> report.md '## Review': each finding with its row, label, auditor why, filed cards, rerun line\n- `python -m athena.proving.forge show --run-dir R pid-v2` -> the same dossier for one variant, audited or not\n- paste the rerun line -> k fresh draws of that variant, bench.json of the copy only\n\n## Expected impact\nFrom ~5 file opens and a hand-built command per finding to one read; the operator can attribute every finding (and every forge error) before trusting proof-2, and can review a benched variant before paying for its audit.\n\n## Evaluation\nClaim: every forge finding carries its row, label, verdict, filed cards and rerun command, and one variant's review set prints on demand.\nBefore: 0 of 8 acceptance cases pass (case 8 is a guard, green by design)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+   "evidence": "report.py:354-364 builds `entry = {playbook, k, kind, id}` and appends `why` only - no row, no table, no card, no path. run.py:176 writes audit items as `i.__dict__` (kind, tool, key, label, label_holds, why, cost_usd, note) - the row is not kept. runner.py:338 materialises the variant at forge/work/<pid>-v<k>/<pid>/, which the playbooks CLI can bench with its top-level `--dir` (playbooks/__main__.py:127) and `bench <id> --no-write --runs k`; nothing tells the operator. __main__.py:47 STAGES = pick, forge, bench, audit, report, all - no per-variant view. base.find_rows (base.py:91) already resolves an id to (table, row)."
+  }
+ ],
+ "rehomed": [
+  "S: a partial audit is final - run.py:165-187 writes the audit file even when items came back unusable (budget_exhausted -> label_holds None, audit.py:198-201), the resume at run.py:153 skips it forever, and rescore_corrected treats None as holding; refuse to write (or mark incomplete) when any item is None for a call failure (measurement-honesty incomplete-not-verdict).",
+  "S: store.py:473 _FIELDS hand-lists Variant's fields; derive it from dataclasses.fields(Variant)."
+ ],
+ "riders": [],
+ "registry": {
+  "subjects": ["eval-harness", "measurement-honesty", "test-input-generation"],
+  "techniques": ["reliability-aggregation", "selection-over-noise", "noise-band-and-hysteresis", "failure-attribution", "incomplete-not-verdict", "negative-space-generation"]
+ },
+ "files_read": 26
+}
