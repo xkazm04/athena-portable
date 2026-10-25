@@ -21,6 +21,11 @@
  * `held` is the gate's sentence for why queued tasks wait (device-vitals, ADR 0143), kept from the
  * list and from each `vitals.changed`, which carries it; an older daemon sends none, which is `null`.
  *
+ * It is the one mirror of the tasks in a window. The task runner in her window (`stores/task-runner.ts`)
+ * holds it like a surface, handing {@link startTasks} an ear that hears what the mirror applies - each
+ * frame, and each list a read answered - instead of following the bus and reading the list a second
+ * time beside it.
+ *
  * An older daemon has no `/tasks`: its 404 is "no tasks", not a problem, so neither surface shows
  * a line about a feature the daemon does not have. A daemon that is not up yet is not a problem
  * either - the bus follower waits for it and reads on connect.
@@ -58,15 +63,17 @@ export interface TasksDeps {
   follow?: (onTask: (task: TaskView) => void, onConnected: () => void) => () => void;
 }
 
+const liveApi = () => {
+  const found = endpoint(useDaemon.getState());
+  return found ? new DaemonApi(found) : null;
+};
+
 const LIVE: TasksDeps = {
-  api: () => {
-    const found = endpoint(useDaemon.getState());
-    return found ? new DaemonApi(found) : null;
-  },
-  now: () => Date.now(),
+  api: liveApi,
+  now: Date.now,
   follow: (onTask, onConnected) =>
     followBus(
-      () => LIVE.api(),
+      liveApi,
       (event) => {
         if (event.kind === "task.changed") onTask(event.task);
         else if (event.kind === "vitals.changed") useTasks.setState({ held: event.held });
@@ -108,8 +115,8 @@ export function withPositions(tasks: readonly TaskView[]): TaskView[] {
 
 /** One `task.changed`: the row replaced by id, or added; newest first; places counted again. */
 export function upsertTask(tasks: readonly TaskView[], task: TaskView): TaskView[] {
-  const next = tasks.some((t) => t.id === task.id) ? tasks.map((t) => (t.id === task.id ? task : t)) : [task, ...tasks];
-  return withPositions(next.sort((a, b) => -byAge(a, b)));
+  // Sorted again below, so the old row is dropped and the new one put anywhere.
+  return withPositions([task, ...tasks.filter((t) => t.id !== task.id)].sort((a, b) => -byAge(a, b)));
 }
 
 /** When a row ended, in epoch ms; `null` while it is active or when the stamp cannot be read. */
@@ -158,7 +165,7 @@ export function askAbout(task: Pick<TaskView, "title">): string {
  * every half minute otherwise, so a finished row leaves after {@link RECENT_MS} on its own.
  */
 export function useTasksNow(running: boolean): number {
-  const [now, setNow] = useState(() => deps.now());
+  const [now, setNow] = useState(deps.now);
   useEffect(() => {
     const timer = setInterval(() => setNow(deps.now()), running ? 1000 : 30_000);
     return () => clearInterval(timer);
@@ -172,22 +179,37 @@ function sentenceOf(doing: string, error: unknown): string {
   return `Could not ${doing}: ${why}`;
 }
 
+// -- who listens ---------------------------------------------------------------------------------
+
+/** What hears the mirror: `ear(rows)` for each list a read answered, `ear(null, row)` after each frame. */
+export type TasksEar = (list: TaskView[] | null, frame?: TaskView) => void;
+
+/**
+ * The one ear a window has (her window's task runner). A slot, not a list, and handed in through
+ * {@link startTasks} rather than a function of its own, to keep the first frame lean.
+ */
+let ear: TasksEar | undefined;
+
 // -- the reads -----------------------------------------------------------------------------------
 
-/** Frames applied since the read in flight began; a read that saw any is read once more. */
-let framesSinceRead = 0;
+/** A frame was applied since the read in flight began: that read is read once more. */
+let framed = false;
 let reading: Promise<void> | null = null;
 let lastRead = Number.NEGATIVE_INFINITY;
 
 async function readOnce(client: DaemonApi): Promise<void> {
-  framesSinceRead = 0;
+  framed = false;
   try {
     const view = await client.tasks();
     useTasks.setState({ tasks: view.tasks, cap: view.cap, held: view.held ?? null, loaded: true, problem: null });
+    ear?.(view.tasks);
   } catch (error) {
     // No `/tasks` on this daemon: it has no tasks to show, which is not a fault to tell anyone.
-    if (error instanceof ApiError && error.status === 404) useTasks.setState({ tasks: [], held: null, loaded: true, problem: null });
-    else useTasks.setState({ problem: sentenceOf("read her tasks", error) });
+    useTasks.setState(
+      error instanceof ApiError && error.status === 404
+        ? { tasks: [], held: null, loaded: true, problem: null }
+        : { problem: sentenceOf("read her tasks", error) },
+    );
   }
 }
 
@@ -196,14 +218,14 @@ async function readOnce(client: DaemonApi): Promise<void> {
  * arrived while the read was out may be older than the answer or newer, so the list is read once
  * more rather than guessed at.
  */
-export function loadTasks(): Promise<void> {
+export async function loadTasks(): Promise<void> {
   if (reading) return reading;
   const client = deps.api();
-  if (!client) return Promise.resolve(); // not up yet: the follower reads on connect
+  if (!client) return; // not up yet: the follower reads on connect
   lastRead = deps.now();
   reading = (async () => {
     await readOnce(client);
-    if (framesSinceRead > 0) await readOnce(client);
+    if (framed) await readOnce(client);
   })().finally(() => {
     reading = null;
   });
@@ -212,8 +234,9 @@ export function loadTasks(): Promise<void> {
 
 /** One `task.changed`, applied in place. */
 export function applyTask(task: TaskView): void {
-  framesSinceRead += 1;
+  framed = true;
   useTasks.setState((s) => ({ tasks: upsertTask(s.tasks, task), loaded: true }));
+  ear?.(null, task);
 }
 
 /** A bus (re)connect: read again, at most once per {@link REREAD_MIN_MS}. */
@@ -228,20 +251,21 @@ let unfollow: (() => void) | null = null;
 
 /**
  * Read the tasks and follow the bus until the returned stop is called. Counted: every caller gets
- * its own stop, each stop counts once, and the following ends with the last.
+ * its own stop, each stop counts once, and the following ends with the last. Each new holder has
+ * the list read for it (or joins the read that is out), so what it first sees was read after it came.
+ *
+ * A holder that brings an `ear` hears the mirror until its stop: the first list it hears is that read.
  */
-export function startTasks(): () => void {
-  holders += 1;
-  if (holders === 1) {
-    void loadTasks();
-    unfollow = deps.follow?.(applyTask, reconnected) ?? null;
-  }
+export function startTasks(heard?: TasksEar): () => void {
+  if (heard) ear = heard;
+  void loadTasks();
+  if (++holders === 1) unfollow = deps.follow?.(applyTask, reconnected) ?? null;
   let stopped = false;
   return () => {
     if (stopped) return;
     stopped = true;
-    holders -= 1;
-    if (holders === 0) {
+    if (heard) ear = undefined;
+    if (!--holders) {
       unfollow?.();
       unfollow = null;
     }
@@ -252,7 +276,7 @@ export function startTasks(): () => void {
 export async function stopTask(taskId: string): Promise<void> {
   const client = deps.api();
   if (!client) {
-    useTasks.setState({ problem: "Could not kill the task: Athena is not running here yet." });
+    useTasks.setState({ problem: sentenceOf("kill the task", "Athena is not running here yet.") });
     return;
   }
   let refused: string | null = null;
@@ -263,7 +287,7 @@ export async function stopTask(taskId: string): Promise<void> {
   }
   // A read already out may have left before the kill: wait for it, then read what the kill did.
   // The read clears the problem line when it succeeds, so a refusal is said after it, not before.
-  if (reading) await reading;
+  await reading;
   await loadTasks();
   if (refused) useTasks.setState({ problem: refused });
 }
@@ -272,8 +296,9 @@ export function resetTasksForTests(): void {
   unfollow?.();
   unfollow = null;
   holders = 0;
+  ear = undefined;
   reading = null;
-  framesSinceRead = 0;
+  framed = false;
   lastRead = Number.NEGATIVE_INFINITY;
   deps = LIVE;
   useTasks.setState({ ...EMPTY_TASKS });

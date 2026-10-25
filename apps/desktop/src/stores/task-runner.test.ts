@@ -4,18 +4,19 @@
  * executes its page calls on that tab, and finishes it; a kill aborts it at once.
  *
  * The real runner and the real run store against a fake daemon that answers `fetch` with the
- * daemon's own JSON and SSE frames, and a fake page per tab. No shell, no bus: frames a bus would
- * carry are handed to `taskChanged`, which is what the bus calls.
+ * daemon's own JSON and SSE frames, and a fake page per tab. No shell. Most cases hand the frames a
+ * bus would carry to `taskChanged`; the cases that start the runner drive the one tasks mirror of
+ * the window (`stores/tasks.ts`) through a fake bus, because that mirror is what the runner reads.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
 import type { Tab } from "@/lib/ipc";
 import type { TaskView } from "@/lib/tasks";
-import type { BusEvent } from "@/lib/fleet";
 import type { TabTools } from "@/stores/tools";
 
 import { resetRunForTests, setRunDeps, useRun } from "./run";
+import { REREAD_MIN_MS, resetTasksForTests, setTasksDeps, startTasks, useTasks } from "./tasks";
 import {
   ORPHANED,
   TASK_OPENING,
@@ -148,8 +149,41 @@ function tools(tabs: Tab[]): Record<number, TabTools> {
   return out;
 }
 
-function wire(daemon: ReturnType<typeof fakeDaemon>, tabs: Tab[], over: Partial<RunnerDeps> = {}) {
+/**
+ * The window's bus, faked: every follower is counted, and a reconnect is told the way `followBus`
+ * tells it - at once on following (it connects before its first wait), then on each pass.
+ */
+function fakeBus() {
+  const subs = new Set<{ onTask: (task: TaskView) => void; onConnected: () => void }>();
+  const bus = {
+    follows: 0,
+    stops: 0,
+    follow: (onTask: (task: TaskView) => void, onConnected: () => void) => {
+      const sub = { onTask, onConnected };
+      bus.follows += 1;
+      subs.add(sub);
+      onConnected();
+      return () => {
+        if (subs.delete(sub)) bus.stops += 1;
+      };
+    },
+    following: () => subs.size,
+    frame: (row: TaskView) => {
+      for (const sub of [...subs]) sub.onTask(row);
+    },
+    reconnect: () => {
+      for (const sub of [...subs]) sub.onConnected();
+    },
+  };
+  return bus;
+}
+
+let clock = Date.parse("2026-10-24T12:00:00Z");
+
+function wire(daemon: ReturnType<typeof fakeDaemon>, tabs: Tab[], over: Partial<RunnerDeps> = {}, bus = fakeBus()) {
   const calls: Array<{ tab: number; name: string }> = [];
+  // The window's one tasks mirror, on the same daemon.
+  setTasksDeps({ api: daemon.api, now: () => clock, follow: bus.follow });
   const deps: RunnerDeps = {
     api: daemon.api,
     tabs: () => tabs,
@@ -160,8 +194,6 @@ function wire(daemon: ReturnType<typeof fakeDaemon>, tabs: Tab[], over: Partial<
       return { ok: true, output: `${name} ran on ${tabId}` };
     },
     open: null,
-    follow: null,
-    every: () => () => {},
     wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     ...over,
   };
@@ -197,8 +229,13 @@ const T2 = "task_0123456789ac";
 beforeEach(() => {
   resetRunForTests();
   resetRunnerForTests();
+  resetTasksForTests();
+  clock = Date.parse("2026-10-24T12:00:00Z");
 });
-afterEach(() => resetRunnerForTests());
+afterEach(() => {
+  resetRunnerForTests();
+  resetTasksForTests();
+});
 
 describe("the task runner", () => {
   it("claims a task, binds a tab of its app that is not the focused one, runs it with task_id and finishes it", async () => {
@@ -344,19 +381,11 @@ describe("the task runner", () => {
 
   it("a kill heard on the bus does the same", async () => {
     const daemon = fakeDaemon({ claims: [task(T1)], runs: { [T1]: [{ hang: [] }] } });
-    let bus: ((event: BusEvent) => void) | null = null;
-    let connected: (() => void) | null = null;
-    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)], {
-      follow: (on, onConnect) => {
-        bus = on;
-        connected = onConnect;
-        return () => {};
-      },
-    });
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)], {}, bus);
     startTaskRunner();
-    connected!();
     await until(() => daemon.runs(T1).length === 1);
-    bus!({ kind: "task.changed", task: task(T1, { status: "killed" }) });
+    bus.frame(task(T1, { status: "killed" }));
     await until(() => daemon.runs(T1)[0]!.signal!.aborted, 1000);
     expect(daemon.finishes()).toEqual([]);
   });
@@ -451,15 +480,8 @@ describe("the task runner", () => {
 
   it("when her window goes, a task in flight is aborted and reported failed, and nothing more is claimed", async () => {
     const daemon = fakeDaemon({ claims: [task(T1)], runs: { [T1]: [{ hang: [] }] } });
-    let connected: (() => void) | null = null;
-    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)], {
-      follow: (_on, onConnect) => {
-        connected = onConnect;
-        return () => {};
-      },
-    });
+    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)]);
     const stop = startTaskRunner();
-    connected!();
     await until(() => daemon.runs(T1).length === 1);
     stop();
     await until(() => daemon.finishes().length === 1);
@@ -478,6 +500,147 @@ describe("the task runner", () => {
     await until(() => daemon.finishes().length === 1);
     expect(daemon.finishes()[0]).toEqual({ id: T2, status: "failed", result: null, error: ORPHANED });
     await until(() => daemon.seen.some((s) => s.path === "/tasks/claim"));
+  });
+});
+
+describe("one tasks mirror per window: the runner reads the store", () => {
+  const reads = (daemon: ReturnType<typeof fakeDaemon>) => daemon.seen.filter((s) => s.path === "/tasks").length;
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
+
+  it("case 1: her window starts the strip and the runner, and the bus is followed exactly once", async () => {
+    const daemon = fakeDaemon({});
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true)], {}, bus);
+    const strip = startTasks();
+    const runner = startTaskRunner();
+    await settle();
+    expect(bus.follows).toBe(1);
+    runner();
+    strip();
+  });
+
+  it("case 2: a bus refused at once that reconnects 10 times in 1 s reads GET /tasks at most once per beat in total", async () => {
+    const daemon = fakeDaemon({});
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true)], {}, bus);
+    const strip = startTasks();
+    const runner = startTaskRunner();
+    for (let n = 0; n < 10; n += 1) {
+      clock += 100;
+      bus.reconnect();
+      await settle();
+    }
+    expect(reads(daemon)).toBe(1);
+    clock += REREAD_MIN_MS;
+    bus.reconnect();
+    await settle();
+    expect(reads(daemon)).toBe(2);
+    runner();
+    strip();
+  });
+
+  it("case 3: an orphan is finished failed exactly once, before the first claim, after exactly one GET /tasks", async () => {
+    const daemon = fakeDaemon({ rows: [task(T2, { title: "Orphan" }), task(T1, { status: "queued", started_at: null })], claims: [] });
+    wire(daemon, [tab(1, LEDGER, true)]);
+    const strip = startTasks();
+    startTaskRunner();
+    await until(() => daemon.seen.some((s) => s.path === "/tasks/claim"));
+    await settle();
+    const order = daemon.seen.map((s) => s.path);
+    const firstClaim = order.indexOf("/tasks/claim");
+    expect(daemon.finishes()).toEqual([{ id: T2, status: "failed", result: null, error: ORPHANED }]);
+    expect(order.indexOf(`/tasks/${T2}/finish`)).toBeLessThan(firstClaim);
+    expect(order.slice(0, firstClaim).filter((p) => p === "/tasks")).toHaveLength(1);
+    strip();
+  });
+
+  it("case 4: one killed frame aborts its request, posts no finish, withdraws and declines its cards, and the strip shows it killed", async () => {
+    const card = {
+      kind: "decision.requested",
+      id: "apr_0000000000t3",
+      decision_kind: "approve",
+      action: "host.ledgerbox.send_reminder",
+      params: {},
+      rationale: "",
+      options: [],
+      expires_at: "",
+      origin: "host:ledgerbox",
+      surface: "panel",
+      capture_id: null,
+      tab_id: 2,
+      tab_nav: 1,
+    };
+    const daemon = fakeDaemon({ claims: [task(T1)], runs: { [T1]: [[card, finished()]] } });
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)], {}, bus);
+    const strip = startTasks();
+    startTaskRunner();
+    await until(() => useTaskRunner.getState().runs[T1]?.phase === "waiting");
+    bus.frame(task(T1, { status: "killed", finished_at: "2026-10-24T12:01:00Z" }));
+    expect(useTasks.getState().tasks.find((t) => t.id === T1)?.status).toBe("killed");
+    await until(() => useRun.getState().cards.length === 0);
+    await until(() => daemon.seen.some((s) => s.path === `/decisions/${card.id}`));
+    expect(daemon.seen.find((s) => s.path === `/decisions/${card.id}`)!.body).toMatchObject({ choice: "decline" });
+    await until(() => Object.keys(useTaskRunner.getState().runs).length === 0);
+    expect(daemon.finishes()).toEqual([]);
+    strip();
+  });
+
+  it("case 5: a list read that no longer holds a task the runner runs kills it, with no finish", async () => {
+    const script: Script = { claims: [task(T1)], runs: { [T1]: [{ hang: [] }] } };
+    const daemon = fakeDaemon(script);
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true), tab(2, LEDGER)], {}, bus);
+    startTaskRunner();
+    await until(() => daemon.runs(T1).length === 1);
+    script.rows = [];
+    clock += REREAD_MIN_MS;
+    bus.reconnect();
+    await until(() => daemon.runs(T1)[0]!.signal!.aborted, 1000);
+    await until(() => Object.keys(useTaskRunner.getState().runs).length === 0);
+    expect(daemon.finishes()).toEqual([]);
+  });
+
+  it("case 6: a queued frame claims at once, without waiting for any poll", async () => {
+    const daemon = fakeDaemon({ claims: [] });
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true)], {}, bus);
+    startTaskRunner();
+    await until(() => daemon.seen.some((s) => s.path === "/tasks/claim"));
+    await settle();
+    const before = daemon.seen.filter((s) => s.path === "/tasks/claim").length;
+    bus.frame(task(T2, { status: "queued", started_at: null }));
+    await until(() => daemon.seen.filter((s) => s.path === "/tasks/claim").length === before + 1);
+  });
+
+  it("case 7: holders are counted over one follower - the strip outlives the runner, and the runner outlives the strip", async () => {
+    const daemon = fakeDaemon({ claims: [] });
+    const bus = fakeBus();
+    wire(daemon, [tab(1, LEDGER, true)], {}, bus);
+    // The runner stops while the strip still holds the store: the store keeps following and reading.
+    const strip = startTasks();
+    const runner = startTaskRunner();
+    await settle();
+    runner();
+    expect(bus.following()).toBe(1);
+    bus.frame(task(T2, { status: "queued", started_at: null }));
+    expect(useTasks.getState().tasks.map((t) => t.id)).toEqual([T2]);
+    const before = reads(daemon);
+    clock += REREAD_MIN_MS;
+    bus.reconnect();
+    await settle();
+    expect(reads(daemon)).toBe(before + 1);
+    // The strip stops while the runner runs: the runner still hears the next frame.
+    const again = startTaskRunner();
+    strip();
+    expect(bus.following()).toBe(1);
+    expect(bus.follows).toBe(1);
+    await settle();
+    const claims = daemon.seen.filter((s) => s.path === "/tasks/claim").length;
+    bus.frame(task(T1, { status: "queued", started_at: null }));
+    await until(() => daemon.seen.filter((s) => s.path === "/tasks/claim").length === claims + 1);
+    again();
+    expect(bus.following()).toBe(0);
   });
 });
 

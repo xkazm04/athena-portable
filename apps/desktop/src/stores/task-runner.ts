@@ -3,10 +3,11 @@
  *
  * Athena hands a job to a background task with `core.delegate`; the daemon admits it and keeps the
  * row, and that is all the daemon can do, because a task that works in an app works on a page, and
- * only a window has pages. So her window is the executor. While it lives this runner follows
- * `task.changed` on the bus (and reads `GET /tasks` slowly, in case a frame was missed), and while
- * fewer than {@link TASKS_RUNNING_CAP} tasks run here and one is queued, it claims it
- * (`POST /tasks/claim`).
+ * only a window has pages. So her window is the executor. While it lives this runner holds the
+ * window's one tasks mirror (`stores/tasks.ts`) and hears each `task.changed` it applies and each
+ * `GET /tasks` it reads - it follows no bus and reads no list of its own, so the mirror's rule (one
+ * flight, a reconnect read at most once per beat) is the runner's too - and while fewer than
+ * {@link TASKS_RUNNING_CAP} tasks run here and one is queued, it claims it (`POST /tasks/claim`).
  *
  * A claimed task gets a tab of its own:
  * - a task for an app reuses an open tab of that app that is neither the focused tab - the person
@@ -47,7 +48,6 @@ import { ApiError, DaemonApi, type ExecuteRow, type TurnBody } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { isTerminal } from "@/lib/events";
 import { forgetUnsure, heldBefore, rememberUnsure, settleHostCall, withUnsure, type PageAnswer } from "@/lib/execute";
-import { followBus, type BusEvent } from "@/lib/fleet";
 import { TABS_READ, callOnPage } from "@/lib/hands";
 import { hasShell, tabsOpenBackground, type Tab } from "@/lib/ipc";
 import { catalogIdOf, hostOfDerivedId, manifestBodyOf } from "@/lib/manifest";
@@ -55,6 +55,7 @@ import { TASKS_RUNNING_CAP, type TaskView } from "@/lib/tasks";
 import { originOf } from "@/modules/browser/model";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
+import { startTasks } from "@/stores/tasks";
 import {
   MAX_CONTINUATIONS,
   bareName,
@@ -70,9 +71,6 @@ import {
 } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
-
-/** How often `GET /tasks` is read beside the bus: a frame missed between two streams is caught here. */
-export const TASK_POLL_MS = 15_000;
 
 /** How much of her last words a finished task reports, in characters. */
 export const TASK_RESULT_CAP = 600;
@@ -111,10 +109,6 @@ export interface RunnerDeps {
   open: ((url: string) => Promise<number>) | null;
   /** An approved call ran: its contract becomes the accepted one (ADR 0100). */
   accept?: (origin: string, tool: BridgeTool) => Promise<void>;
-  /** Follow the bus: `on` for each frame, `connected` on each (re)connect. `null`: no bus here. */
-  follow: ((on: (event: BusEvent) => void, connected: () => void) => () => void) | null;
-  /** The slow poll's timer. */
-  every: (ms: number, f: () => void) => () => void;
   wait: (ms: number) => Promise<void>;
   now?: () => Date;
 }
@@ -136,11 +130,6 @@ const LIVE: RunnerDeps = {
   // Behind the person's page, never focused (ADR 0141); a plain browser has no shell to open with.
   open: hasShell() ? (url) => tabsOpenBackground(url) : null,
   accept: (origin, tool) => useOrigins.getState().acceptContracts(origin, [tool]),
-  follow: hasShell() ? (on, connected) => followBus(() => deps.api(), on, connected) : null,
-  every: (ms, f) => {
-    const timer = setInterval(f, ms);
-    return () => clearInterval(timer);
-  },
   wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 };
 
@@ -261,38 +250,24 @@ export function taskChanged(task: TaskView): void {
   if (task.status === "queued" || (run && task.status !== "running")) void tickRunner();
 }
 
-/** Read `GET /tasks`: stop what is no longer running, and claim what is queued. */
-async function reread(): Promise<void> {
-  const api = deps.api();
-  if (!api) return;
-  let rows: TaskView[];
-  try {
-    rows = (await api.tasks()).tasks;
-  } catch {
-    return; // the bus or the next poll tries again
-  }
+/** A list the mirror read: stop what is no longer running, and claim what is queued. */
+function reconcile(rows: readonly TaskView[]): Promise<void> {
   for (const row of rows) taskChanged(row);
   for (const run of [...active.values()]) {
     if (!rows.some((r) => r.id === run.task.id) && !run.finishing) kill(run);
   }
-  await tickRunner();
+  return tickRunner();
 }
 
 /**
  * Tasks the daemon says are running that no window runs: her window closed (or reloaded) while they
  * ran, and the turns they were in went with it. They are reported failed so the cap they hold is
- * free again. Run once, before the first claim, so it can never mistake a task this window has just
- * claimed for one of them.
+ * free again. Run once, on the first list after start and before the first claim, so it can never
+ * mistake a task this window has just claimed for one of them.
  */
-async function sweepOrphans(): Promise<void> {
+async function sweepOrphans(rows: readonly TaskView[]): Promise<void> {
   const api = deps.api();
   if (!api) return;
-  let rows: TaskView[];
-  try {
-    rows = (await api.tasks()).tasks;
-  } catch {
-    return;
-  }
   for (const row of rows) {
     if (row.status !== "running" || active.has(row.id)) continue;
     await api.finishTask(row.id, "failed", null, ORPHANED).catch(report("orphan"));
@@ -304,32 +279,22 @@ let stopRunner: (() => void) | null = null;
 /**
  * Run delegated tasks while her window lives. Returns what stops it: every task this window runs
  * is aborted, as a window that closes would. Idempotent.
+ *
+ * It holds the tasks mirror like a surface does and reads it once more on start (joining a read
+ * that is out), so the first list it hears is read after it began: that list sweeps the orphans,
+ * and nothing - no frame, no later list - is acted on before the sweep is done.
  */
 export function startTaskRunner(): () => void {
   if (stopRunner) return stopRunner;
   halted = false;
-  let alive = true;
-  let swept = false;
-  const begin = async () => {
-    if (!swept) {
-      swept = true;
-      await sweepOrphans();
-    }
-    if (alive) await reread();
-  };
-  // The bus is followed from the start; the first (re)connect does the first read.
-  const offBus = deps.follow?.(
-    (event) => {
-      if (event.kind === "task.changed") taskChanged(event.task);
-    },
-    () => void begin(),
-  );
-  if (!offBus) void begin();
-  const offPoll = deps.every(TASK_POLL_MS, () => void (swept ? reread() : begin()));
+  let swept: Promise<void> | null = null;
+  const release = startTasks((list, frame) => {
+    if (list) swept ??= sweepOrphans(list);
+    // Before the first list nothing is claimed: that list is read after the frame, and holds it.
+    void swept?.then(() => (list ? reconcile(list) : frame && taskChanged(frame)));
+  });
   stopRunner = () => {
-    alive = false;
-    offBus?.();
-    offPoll();
+    release();
     halted = true;
     // The turns go with the window: each task in flight is reported failed, not left running.
     for (const run of [...active.values()]) {
