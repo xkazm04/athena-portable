@@ -28,6 +28,12 @@ round asked for that the script lacks — the turn ended ``engine_error`` behind
 unconsumed (a round scripted for a turn that no longer asks for it). ``exact=False`` is the one,
 greppable opt-out for a test that over-supplies on purpose.
 
+**A failing test explains itself.** Each daemon's stderr is drained from spawn time into a bounded
+tail (``forensics.StderrTail``), and when a test's call phase fails, ``pytest_runtest_makereport``
+attaches one ``athena daemon <n>`` section per daemon it started - argv, liveness, the transcript
+audit, the ledger's last rows, the fake providers' log tail, the stderr tail, all redacted - while
+those daemons are still alive to be asked. A passing test is asked nothing (ADR 0182).
+
 The HTTP helpers — the response shape, the SSE frame parser, the recorded ``claude`` round, the
 ``OP:`` envelope, the two-tool manifest — are imported from ``tests/daemon/conftest.py`` rather
 than written again: a second SSE parser is a second opinion about what a frame is.
@@ -35,6 +41,7 @@ than written again: a second SSE parser is a second opinion about what a frame i
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import socket
@@ -63,6 +70,9 @@ from daemon.conftest import (  # the shared HTTP helpers, deliberately reused
     manifest_body,
     op,
 )
+
+from . import forensics as _forensics
+from .forensics import StderrTail
 
 __all__ = [
     "APP_ID",
@@ -145,6 +155,8 @@ class Daemon:
     transcript: Path | None = None
     #: Whether teardown holds this daemon to its transcript exactly (``Spawn.scripted(exact=)``).
     exact: bool = False
+    #: Its stderr, drained from spawn time so a chatty child never blocks on a full pipe.
+    stderr_tail: StderrTail | None = field(default=None, repr=False)
     stopped: bool = field(default=False, repr=False)
 
     @property
@@ -300,6 +312,8 @@ class Daemon:
         except subprocess.TimeoutExpired:  # pragma: no cover - a daemon that will not die
             process.kill()
             process.wait(timeout=EXIT_TIMEOUT_S)
+        if self.stderr_tail is not None:
+            self.stderr_tail.join(2.0)
         for pipe in (process.stdout, process.stderr):
             if pipe is not None:
                 pipe.close()
@@ -577,8 +591,10 @@ class Spawn:
             cwd=str(self.tmp_path),
             env=self.environ(home),
         )
+        assert process.stderr is not None
+        tail = StderrTail(process.stderr, name=f"stderr-drain-{process.pid}")
         try:
-            line = _first_line(process, READY_TIMEOUT_S)
+            line = _first_line(process, READY_TIMEOUT_S, tail)
         except BaseException:
             _kill_tree(process)
             raise
@@ -594,6 +610,7 @@ class Spawn:
             argv=tuple(argv),
             transcript=transcript,
             exact=exact,
+            stderr_tail=tail,
         )
         self.started.append(daemon)
         return daemon
@@ -619,11 +636,16 @@ def _token_from(path: Path) -> str:
     return str(json.loads(path.read_text(encoding="utf-8"))["token"])
 
 
-def _first_line(process: subprocess.Popen[str], timeout: float) -> str:
+def _first_line(
+    process: subprocess.Popen[str], timeout: float, tail: StderrTail | None = None
+) -> str:
     """The daemon's first stdout line, or an explanation of why there is none.
 
     A thread, because a pipe cannot be polled on Windows. A daemon that never printed is killed by
-    the caller and the failure says whether the process died and what it put on stderr.
+    the caller and the failure says whether the process died and what it put on stderr. When
+    stdout ended (the child is exiting) the exit code is waited for briefly, so a child that died
+    at once is reported with its code rather than as ``None``; its stderr comes from ``tail``,
+    which has been draining it since spawn, or from the pipe itself when there is no tail.
     """
     assert process.stdout is not None
     box: list[str] = []
@@ -636,9 +658,15 @@ def _first_line(process: subprocess.Popen[str], timeout: float) -> str:
     reader.start()
     reader.join(timeout)
     if not box or not box[0].strip():
+        if box:  # stdout ended: the child is on its way out, so its code is moments away
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                process.wait(timeout=5)
         code = process.poll()
         stderr = ""
-        if code is not None and process.stderr is not None:
+        if code is not None and tail is not None:
+            tail.join(5.0)
+            stderr = tail.text()[-2000:]
+        elif code is not None and process.stderr is not None:
             stderr = process.stderr.read()[-2000:]
         raise AssertionError(
             f"no ready line within {timeout}s (exit code {code}); stderr: {stderr!r}"
@@ -646,11 +674,35 @@ def _first_line(process: subprocess.Popen[str], timeout: float) -> str:
     return box[0]
 
 
+#: Where the ``spawn`` fixture leaves its spawner on the test item, for the report hook.
+SPAWN_KEY = pytest.StashKey[Spawn]()
+
+
 @pytest.fixture
-def spawn(tmp_path: Path) -> Iterator[Spawn]:
+def spawn(tmp_path: Path, request: pytest.FixtureRequest) -> Iterator[Spawn]:
     """The spawner. Every daemon it starts is terminated before the test ends, always."""
     spawner = Spawn(tmp_path)
+    request.node.stash[SPAWN_KEY] = spawner
     try:
         yield spawner
     finally:
         spawner.stop_all()
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) -> Iterator[None]:
+    """A failed test's report carries one ``athena daemon <n>`` section per daemon it started.
+
+    Only the call phase, only when it failed: that is the one moment the daemons are still alive
+    (the fixture's teardown has not run) and the reader has a reason to look. A green test is
+    never asked anything, so the section costs nothing on a passing run.
+    """
+    outcome = yield
+    report: pytest.TestReport = outcome.get_result()  # type: ignore[attr-defined]
+    if report.when != "call" or not report.failed:
+        return
+    spawner = item.stash.get(SPAWN_KEY, None)
+    if spawner is None:
+        return
+    for number, daemon in enumerate(spawner.started, start=1):
+        report.sections.append((f"athena daemon {number}", _forensics.forensics(daemon)))
