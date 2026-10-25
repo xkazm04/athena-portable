@@ -160,7 +160,7 @@ export function buildSheet(): LnSheet {
         postedAt: m.line.posted_at,
         evidence: m.evidence,
       })),
-      draft: draft ? { tone: draft.tone, body: draft.body } : null,
+      draft: draft ? { id: draft.id, tone: draft.tone, body: draft.body } : null,
       sentCount: d.reminders.filter((rem) => rem.sent_at).length,
       mostlyPaid: isMostlyPaid(d.invoice),
     };

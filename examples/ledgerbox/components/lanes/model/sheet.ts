@@ -112,7 +112,8 @@ export interface LnDetail {
   candidates: LnCandidate[];
   /** `lineId` is what an unapply needs; without it the payload itself encoded a one-way door. */
   matched: { lineId: string; memo: string; amountCents: number; postedAt: string; evidence: string }[];
-  draft: { tone: Tone; body: string } | null;
+  /** `id` is what the card's Send names, so the letter read is the letter sent (ADR 0210). */
+  draft: { id: string; tone: Tone; body: string } | null;
   sentCount: number;
   /** Paid most of it and went quiet. Chasing is the wrong move; the card says so. */
   mostlyPaid: boolean;

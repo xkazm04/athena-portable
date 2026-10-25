@@ -67,7 +67,7 @@ function perform(issue: ActIssue): Promise<ActionResult> {
     case "mark_paid":
       return markPaidAction(issue.ref, issue.amountCents);
     case "send_reminder":
-      return sendReminderAction(issue.ref);
+      return sendReminderAction(issue.ref, "user", issue.reminderId);
     case "void_invoice":
       return voidInvoiceAction(issue.ref);
   }

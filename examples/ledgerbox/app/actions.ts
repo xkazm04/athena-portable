@@ -50,6 +50,9 @@ export interface DraftResult extends ActionResult {
 export interface SendResult extends ActionResult {
   to?: string;
   subject?: string;
+  /** Set on a send refused because the letter's figures moved: the corrected letter, already
+   *  written as the invoice's draft, so the next Send names it (ADR 0210). Nothing was sent. */
+  draft?: DraftResult["draft"];
   /** As on `DraftResult`: the credit that arrived while the letter waited for its gate. */
   settling_credit?: SettlingCredit;
 }
@@ -517,28 +520,107 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
 }
 
 /**
+ * Why the draft a send named is not the letter on the invoice. Read outside the write: the send
+ * writes nothing on this path.
+ */
+function notTheLetter(
+  invoice: InvoiceRow,
+  reminderId: string,
+  current: { tone: Tone; created_at: string } | undefined,
+): string {
+  const named = db().get<{ invoice_id: string; sent_at: string | null }>(
+    "SELECT invoice_id, sent_at FROM reminders WHERE id = ?",
+    [reminderId],
+  );
+  if (named && named.invoice_id !== invoice.id) {
+    return `That reminder is not one of ${invoice.number}'s - nothing was sent.`;
+  }
+  if (named?.sent_at) {
+    return `That reminder for ${invoice.number} was already sent on ${named.sent_at.slice(0, 10)} - it is not sent twice.`;
+  }
+  if (!current) return `That draft is no longer on ${invoice.number}, and nothing else is drafted - nothing was sent.`;
+  return `The letter you read for ${invoice.number} was replaced by a ${current.tone} draft written at ${current.created_at.slice(11, 16)} UTC. Read that one before sending; nothing was sent.`;
+}
+
+/**
+ * The stale-figures branch of a send: write today's letter in the stale draft's tone as the
+ * invoice's draft, retire the stale one, and answer the refusal with the new letter attached.
+ * AUTO and reversible, logged as a `draft_reminder` by whoever pressed Send - the act is the same
+ * one `draftReminderAction` performs. Nothing reaches a person.
+ */
+function redraft(
+  invoice: InvoiceRow,
+  stale: { id: string; tone: Tone },
+  letter: ReminderDraft,
+  actor: Actor,
+  verdict: ChaseVerdict | null,
+): SendResult {
+  // `_r` keeps the redraft's id apart from the stale draft's even inside one millisecond, so the
+  // stale draft's undo row can never reach the redraft (it refuses as replaced, ADR 0203).
+  const id = `rem_${invoice.id}_${Date.now()}_r`;
+  db().withTx((tx) => {
+    tx.run("DELETE FROM reminders WHERE id = ? AND sent_at IS NULL", [stale.id]);
+    tx.run(
+      "INSERT INTO reminders (id, invoice_id, tone, recipient, subject, body, created_at, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)",
+      [id, invoice.id, stale.tone, letter.to, letter.subject, letter.body, new Date().toISOString()],
+    );
+    logActivity(tx, {
+      actor,
+      action: "draft_reminder",
+      target: `invoice:${invoice.id}`,
+      summary: `Redrafted the ${stale.tone} reminder for ${invoice.number} at ${formatMoney(invoice.balance_cents)} owed, to ${letter.to_name} <${letter.to}>. Not sent.`,
+      reversible: true,
+      undo: { kind: "reminder", id } satisfies Undo,
+    });
+  });
+  refresh();
+  const warning = verdict && !verdict.block ? ` ${verdict.warning}` : "";
+  return {
+    ...fail(
+      `The ${stale.tone} reminder for ${invoice.number} states figures the books no longer hold - ${formatMoney(invoice.balance_cents)} is owed now. It was redrafted, not sent: read the new letter and send it.${warning}`,
+    ),
+    draft: { ...letter, reminder_id: id, invoice_id: invoice.id, tone: stale.tone },
+  };
+}
+
+/**
  * GATED - reaches a person. Simulated: the draft is stamped sent and logged, no mail is posted.
  *
  * The RECIPIENT is read off the stored draft rather than recomputed, and it goes into the activity
  * row and the answer. In the demo the send is carried by a connector outside the page, so the one
  * fact the books must keep is which address the letter went to - "sent to Solstice Partners" is
  * not a record of that, and a second derivation could name a different person than the draft did.
+ *
+ * `reminderId` is the draft the send was approved on - the `reminder_id` `draft_reminder`
+ * answered, the id the card drew. Given, the send is a compare-and-set: it goes only while that
+ * draft is still the newest unsent one on the invoice, so a draft written after the person read
+ * theirs (by them elsewhere, or by the agent) is never sent under their approval (ADR 0210).
+ * Omitted, the newest unsent draft is sent, as before.
+ *
+ * A letter whose figures the books no longer hold is not sent; it is redrafted at today's figures
+ * in the same tone, in the same transaction, and the redraft comes back on the refusal, so the
+ * person reads it and sends it with one press instead of four.
  */
-export async function sendReminderAction(ref: string, actor: Actor = "user"): Promise<SendResult> {
+export async function sendReminderAction(ref: string, actor: Actor = "user", reminderId?: string): Promise<SendResult> {
   if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
+  if (reminderId !== undefined && typeof reminderId !== "string") return fail("That is not a reminder id.");
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
   const invoice = getInvoice(invoiceId)!;
   const handle = db();
-  const draft = handle.get<{ id: string; tone: Tone; recipient: string; subject: string; body: string }>(
-    "SELECT id, tone, recipient, subject, body FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1",
+  const draft = handle.get<{ id: string; tone: Tone; recipient: string; subject: string; body: string; created_at: string }>(
+    "SELECT id, tone, recipient, subject, body, created_at FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC, id DESC LIMIT 1",
     [invoiceId],
   );
+  if (reminderId !== undefined && reminderId !== draft?.id) {
+    return fail(notTheLetter(invoice, reminderId, draft));
+  }
   if (!draft) return fail("Draft a reminder first - there is nothing to send.");
   // The verdict on the draft pinned its words, not the world. Paid, voided or disputed since it
-  // was written, it is not sent; nor is a letter whose figures the books no longer hold - a part
-  // payment since the draft would otherwise ask the client for money already received.
+  // was written, it is not sent - and not redrafted: there is no letter to write. Nor is a letter
+  // whose figures the books no longer hold - a part payment since the draft would otherwise ask
+  // the client for money already received.
   const why = whyNotChase(invoice);
   if (why) return fail(`${why} The reminder was not sent.`);
   const verdict = statementVerdict(invoice);
@@ -547,9 +629,7 @@ export async function sendReminderAction(ref: string, actor: Actor = "user"): Pr
   }
   const today = letterFor(invoice, draft.tone);
   if (today.subject !== draft.subject || today.body !== draft.body) {
-    return fail(
-      `The ${draft.tone} reminder for ${invoice.number} states figures the books no longer hold - ${formatMoney(invoice.balance_cents)} is owed now. Draft it again; it was not sent.`,
-    );
+    return redraft(invoice, draft, today, actor, verdict);
   }
 
   const sentAt = new Date().toISOString();
@@ -754,7 +834,7 @@ function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
       const draft = tx.get<{ sent_at: string | null }>("SELECT sent_at FROM reminders WHERE id = ?", [undo.id]);
       if (draft?.sent_at) return { refused: "already sent - a sent reminder cannot be taken back" };
       if (!draft) {
-        return { refused: "that draft was replaced by a later one when it was sent - there is no draft left to take back" };
+        return { refused: "that draft was replaced by a later one - there is no draft left to take back" };
       }
       tx.run("DELETE FROM reminders WHERE id = ? AND sent_at IS NULL", [undo.id]);
       return;

@@ -514,9 +514,12 @@ export function BooksTools({
     description:
       "Send the saved draft reminder to the client's billing contact. The card's draft block clears and its reminder count goes up. Reaches a person; simulated here and recorded against the invoice.",
     ...registration("send_reminder"),
-    handler: async ({ id }) => {
-      const result = await settle("send_reminder", sendReminderAction(String(id), "athena"));
-      if (!result.ok) return refused(result.message);
+    handler: async ({ id, reminder_id }) => {
+      const named = reminder_id === undefined || reminder_id === null ? undefined : String(reminder_id);
+      const result = await settle("send_reminder", sendReminderAction(String(id), "athena", named));
+      // A stale letter comes back redrafted: the refusal carries the new draft, whole, so the
+      // agent can show it and send it by its reminder_id.
+      if (!result.ok) return result.draft ? { ...refused(result.message), draft: result.draft } : refused(result.message);
       // Who it reached, in the answer as well as in the activity row.
       return result.to
         ? { ok: result.ok, message: result.message, to: result.to, subject: result.subject }

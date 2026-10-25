@@ -206,7 +206,19 @@ export const BOOKS_CAPABILITIES = [
       { name: "amount", type: "number", required: true, description: "Amount in dollars, e.g. 1250.00" },
     ],
   },
-  { name: "send_reminder", parameters: [INVOICE_ID] },
+  {
+    name: "send_reminder",
+    parameters: [
+      INVOICE_ID,
+      {
+        name: "reminder_id",
+        type: "string",
+        required: false,
+        description:
+          "The reminder_id draft_reminder returned. Given, only that draft is sent; a replaced or stale one is refused, a stale one comes back redrafted.",
+      },
+    ],
+  },
   { name: "void_invoice", parameters: [INVOICE_ID] },
   {
     name: "export_summary",

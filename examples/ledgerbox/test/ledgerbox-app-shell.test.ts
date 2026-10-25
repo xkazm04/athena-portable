@@ -19,6 +19,7 @@ tempHome("ledgerbox-app-shell-");
 
 const { db, listInvoices } = await import("../lib/db");
 const actions = await import("../app/actions");
+const { formatMoney } = await import("../lib/format");
 
 /** How many reminder rows - drafted or sent - an invoice has. */
 function remindersOf(invoiceId: string): number {
@@ -239,7 +240,7 @@ test("send_reminder re-checks the books: a letter the books no longer stand behi
   assert.equal((await actions.markPaidAction(partPaid.id, Math.floor(partPaid.balance_cents / 2))).ok, true);
   const stale = await actions.sendReminderAction(partPaid.id);
   assert.equal(stale.ok, false, stale.message);
-  assert.match(stale.message, /no longer hold - .* is owed now. Draft it again/);
+  assert.match(stale.message, /no longer hold - .* is owed now. It was redrafted, not sent/);
 
   // Disputed since the draft.
   const contested = fresh("overdue");
@@ -513,4 +514,122 @@ test("undo case 8 (guard): an export undoes as before", async () => {
   const undone = await actions.undoAction(exported.undoId!);
   assert.equal(undone.ok, true, undone.reason);
   assert.equal(db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n, before - 1, "the exports row is gone");
+});
+
+/* ---------------------------------------- a send names the draft it was approved on (ADR) */
+
+type ReminderRow = { id: string; tone: string; recipient: string; subject: string; body: string; sent_at: string | null };
+
+/** The reminders the acts wrote on an invoice (the seed's own rows are named `rem_<n>`). */
+function remindersOn(invoiceId: string): ReminderRow[] {
+  return db().all<ReminderRow>(
+    "SELECT id, tone, recipient, subject, body, sent_at FROM reminders WHERE invoice_id = ? AND id LIKE ? ORDER BY created_at, id",
+    [invoiceId, `rem_${invoiceId}_%`],
+  );
+}
+
+/**
+ * An untouched overdue invoice a reminder can be drafted for, and that first draft. Some overdue
+ * invoices have a credit sitting in the statement, and the draft is refused for them (ADR 0197).
+ */
+async function chased(tone: "gentle" | "firm") {
+  for (;;) {
+    const x = fresh("overdue");
+    const d1 = await actions.draftReminderAction(x.id, tone);
+    if (d1.ok) return { x, d1 };
+    assert.equal(d1.settling_credit !== undefined, true, d1.message);
+  }
+}
+
+function newestActivityId(): number {
+  return db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
+}
+
+test("send case 1: a send naming a draft a later one replaced is refused, and names the replacement", async () => {
+  const { x, d1 } = await chased("gentle");
+  await tick();
+  const d2 = await actions.draftReminderAction(x.id, "firm");
+  assert.equal(d2.ok, true, d2.message);
+  const sent = await actions.sendReminderAction(x.id, "user", d1.draft!.reminder_id);
+  assert.equal(sent.ok, false, "the letter read is not the letter on the invoice");
+  assert.match(sent.message, /replaced/);
+  assert.match(sent.message, /firm/);
+  const rows = remindersOn(x.id);
+  assert.equal(rows.filter((r) => r.sent_at).length, 0, "nothing was sent");
+  assert.deepEqual(
+    rows.map((r) => r.id).sort(),
+    [d1.draft!.reminder_id, d2.draft!.reminder_id].sort(),
+    "both drafts are still there, unsent",
+  );
+
+  // case 2 (guard): the draft that IS on the invoice goes, and the older one retires as before.
+  const ok = await actions.sendReminderAction(x.id, "user", d2.draft!.reminder_id);
+  assert.equal(ok.ok, true, ok.message);
+  assert.equal(ok.to, d2.draft!.to);
+  assert.equal(ok.subject, d2.draft!.subject);
+  assert.deepEqual(remindersOn(x.id).map((r) => r.id), [d2.draft!.reminder_id], "d1 retired");
+});
+
+test("send case 3: a letter whose figures moved comes back redrafted at the new balance, nothing sent", async () => {
+  const { x, d1 } = await chased("gentle");
+  const part = Math.floor(x.balance_cents / 3);
+  assert.equal((await actions.markPaidAction(x.id, part)).ok, true);
+  const owed = formatMoney(balanceOf(x.id));
+  const before = newestActivityId();
+  const stale = await actions.sendReminderAction(x.id, "athena", d1.draft!.reminder_id);
+  assert.equal(stale.ok, false, stale.message);
+  assert.ok(stale.message.includes(owed), `the refusal gives the new figure ${owed}: ${stale.message}`);
+  assert.match(stale.message, /redrafted, not sent/);
+  const d3 = stale.draft;
+  assert.ok(d3, "the redraft rides the answer");
+  assert.notEqual(d3.reminder_id, d1.draft!.reminder_id);
+  assert.ok(d3.body.includes(owed), "the new letter states the new balance");
+  const rows = remindersOn(x.id);
+  assert.deepEqual(rows.map((r) => r.id), [d3.reminder_id], "exactly one unsent reminder: the redraft");
+  assert.equal(rows[0]!.sent_at, null, "nothing sent");
+
+  // case 5: the redraft is one draft_reminder row, reversible, logged as the send's actor.
+  const written = db().all<{ action: string; actor: string; reversible: number; undo_json: string | null }>(
+    "SELECT action, actor, reversible, undo_json FROM activity WHERE id > ? ORDER BY id",
+    [before],
+  );
+  assert.deepEqual(
+    written.map((w) => ({ action: w.action, actor: w.actor, reversible: w.reversible, undo: w.undo_json !== null })),
+    [{ action: "draft_reminder", actor: "athena", reversible: 1, undo: true }],
+  );
+
+  // case 4: one press from the redraft to sent.
+  const sent = await actions.sendReminderAction(x.id, "user", d3.reminder_id);
+  assert.equal(sent.ok, true, sent.message);
+  assert.equal(sent.subject, d3.subject);
+});
+
+test("send case 6: a send naming a reminder already sent is refused as sent, and writes nothing", async () => {
+  const { x, d1 } = await chased("gentle");
+  assert.equal((await actions.sendReminderAction(x.id, "user", d1.draft!.reminder_id)).ok, true);
+  const before = { activity: newestActivityId(), rows: JSON.stringify(remindersOn(x.id)) };
+  const again = await actions.sendReminderAction(x.id, "user", d1.draft!.reminder_id);
+  assert.equal(again.ok, false, again.message);
+  assert.match(again.message, /already sent/);
+  assert.deepEqual({ activity: newestActivityId(), rows: JSON.stringify(remindersOn(x.id)) }, before, "nothing written");
+});
+
+test("send case 7 (guard): a disputed invoice refuses the send with the chase reason and is not redrafted", async () => {
+  const { x, d1 } = await chased("gentle");
+  assert.equal((await actions.markPaidAction(x.id, Math.floor(x.balance_cents / 3))).ok, true);
+  db().run("UPDATE invoices SET status = 'disputed' WHERE id = ?", [x.id]);
+  const before = newestActivityId();
+  const sent = await actions.sendReminderAction(x.id, "user", d1.draft!.reminder_id);
+  assert.equal(sent.ok, false, sent.message);
+  assert.match(sent.message, /disputed/);
+  assert.equal(sent.draft, undefined, "no redraft");
+  assert.deepEqual(remindersOn(x.id).map((r) => r.id), [d1.draft!.reminder_id], "no redraft written");
+  assert.equal(newestActivityId(), before);
+});
+
+test("send case 8: a send with no reminder id sends the current draft, as before", async () => {
+  const { x, d1 } = await chased("firm");
+  const sent = await actions.sendReminderAction(x.id);
+  assert.equal(sent.ok, true, sent.message);
+  assert.equal(sent.subject, d1.draft!.subject);
 });

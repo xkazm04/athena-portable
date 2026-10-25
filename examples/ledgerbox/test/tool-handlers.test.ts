@@ -58,6 +58,8 @@ let zoomVerbsMounted = 0;
 let zoomSpec: { detail: () => unknown } | null = null;
 /** The one server action that throws instead of answering, when a test asks for it. */
 let breaks: string | null = null;
+/** Every server action call a handler made, with the arguments it passed. */
+let calls: { name: string; args: unknown[] }[] = [];
 
 const RECORDER = Symbol.for("ledgerbox.test.recorder");
 (globalThis as Record<symbol, unknown>)[RECORDER] = {
@@ -73,6 +75,7 @@ const RECORDER = Symbol.for("ledgerbox.test.recorder");
   toaster: { toast: (_text: string, tone: string) => reached.push(`toast:${tone}`) },
   act(name: string, args: unknown[]) {
     reached.push(`act:${name}`);
+    calls.push({ name, args });
     if (breaks === name) return Promise.reject(new Error("database is locked"));
     return (actions as unknown as Record<string, (...a: unknown[]) => unknown>)[name]!(...args);
   },
@@ -442,4 +445,34 @@ test("guard: read_inbox keeps its envelope and order, search_invoices its area a
   assert.equal(noArea.ok, false);
   assert.match(String(noArea.error), /No area called nowhere/);
   assert.ok(Array.isArray(noArea.areas));
+});
+
+/* ------------------------------------------- a send names the draft it was approved on */
+
+test("send_reminder passes reminder_id through when given, and sends as before without it", async () => {
+  // Two untouched overdue invoices a draft can be written for (a credit in the statement refuses
+  // the draft on some, ADR 0197), each with its draft.
+  const used = new Set([chase.id, voidable.id, payable.id, creditFor]);
+  const ready: { id: string; draft: { reminder_id: string; subject: string } }[] = [];
+  for (const r of rows.filter((r) => r.state === "overdue" && !r.has_draft_reminder && !used.has(r.id)).reverse()) {
+    if (ready.length === 2) break;
+    const answer = JSON.parse((await drive("draft_reminder", { id: r.id, tone: "gentle" })).answer) as {
+      draft?: { reminder_id: string; subject: string };
+    };
+    if (answer.draft) ready.push({ id: r.id, draft: answer.draft });
+  }
+  const [withId, without] = ready;
+  assert.ok(withId && without, "two chaseable overdue invoices");
+
+  calls = [];
+  const named = await drive("send_reminder", { id: withId.id, reminder_id: withId.draft.reminder_id });
+  assert.deepEqual(calls, [{ name: "sendReminderAction", args: [withId.id, "athena", withId.draft.reminder_id] }]);
+  assert.equal((JSON.parse(named.answer) as { subject: string }).subject, withId.draft.subject);
+
+  calls = [];
+  const plain = await drive("send_reminder", { id: without.id });
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0]!.args.slice(0, 2), [without.id, "athena"]);
+  assert.equal(calls[0]!.args[2], undefined, "no reminder id is invented");
+  assert.equal((JSON.parse(plain.answer) as { ok: boolean }).ok, true, plain.answer);
 });

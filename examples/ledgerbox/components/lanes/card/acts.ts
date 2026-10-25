@@ -47,7 +47,7 @@ export type ActIssue =
   | { tool: "draft_reminder"; ref: string; tone: Tone }
   | { tool: "categorize"; ids: string[]; category: Category }
   | { tool: "mark_paid"; ref: string; amountCents: number }
-  | { tool: "send_reminder"; ref: string }
+  | { tool: "send_reminder"; ref: string; reminderId?: string }
   | { tool: "void_invoice"; ref: string };
 
 /** One row of the decision list. */
@@ -127,7 +127,9 @@ export function actSpecs(
           : `Reaches ${to} by email. You cannot un-send it.`),
       takeLabel: "Send it",
       blocked: send,
-      issue: { tool: "send_reminder", ref: mark.id },
+      // The draft the card drew: the server sends it only while it is still the letter on the
+      // invoice, closing the race `observe` cannot (an agent's redraft between arm and confirm).
+      issue: { tool: "send_reminder", ref: mark.id, ...(detail?.draft ? { reminderId: detail.draft.id } : {}) },
     },
     {
       tool: "void_invoice",
