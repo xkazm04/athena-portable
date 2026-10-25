@@ -4,7 +4,7 @@
  *
  * `Live` is where the halves meet: the run store's transcript and cards, the voice store's phase,
  * the page she is reading (tabs and tools), the origins table and the daemon go into
- * `selectCompanion`, one `CompanionModel` comes out, and the pure view renders it. Everything that
+ * `selectCompanion` (remembering, `memo.ts`), one `CompanionModel` comes out, and the pure view renders it. Everything that
  * happens *to* her — Rust's `athena:orient`, `snap`, `summon` and `chord`, the keyboard, the
  * stores — becomes an `Event` for the machine; everything she asks for — a size, a show, an
  * answer — leaves through `RuntimeDeps`.
@@ -19,7 +19,7 @@
  * delegated tasks for exactly as long as her window lives, which is what this component's life is.
  */
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { createElement, useEffect, useState, useSyncExternalStore } from "react";
+import { createElement, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { DaemonApi } from "@/lib/api";
 import {
@@ -57,13 +57,8 @@ import { startTaskRunner } from "@/stores/task-runner";
 import { useTools } from "@/stores/tools";
 import { useVoice } from "@/stores/voice";
 
-import {
-  approveRunsNothing,
-  ledgerFrom,
-  selectCompanion,
-  type CompanionActions,
-  type OriginView,
-} from "./model";
+import { createCompanionSelector, pickRun, stableSlice } from "./memo";
+import { approveRunsNothing, ledgerFrom, type CompanionActions, type OriginView } from "./model";
 import { createRuntime, lineOf, typingIn, type Runtime, type RuntimeDeps } from "./runtime";
 import { toolRows } from "./tools";
 import CompanionView from "./views";
@@ -302,7 +297,11 @@ export default function Live() {
   useEffect(() => (hasShell() ? startTaskRunner() : undefined), []);
   const snap = useSyncExternalStore(rt.subscribe, rt.getSnapshot);
 
-  const run = useRun();
+  // The run fields the model reads, picked shallow (memo.ts): a write to any other field does not
+  // render her, and the selector keeps every part of the model whose inputs held still (ADR 0185).
+  const [pickRunFields] = useState(() => stableSlice(pickRun));
+  const run = useRun(pickRunFields);
+  const [selectModel] = useState(createCompanionSelector);
   const daemon = useDaemon();
   const tabs = useTabs((s) => s.tabs);
   const byTab = useTools((s) => s.byTab);
@@ -333,10 +332,17 @@ export default function Live() {
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   // An opaque tab (`about:blank`, `file:`, `data:`) has no origin: `""` reads as none, like no tab.
   const origin = focused ? originOf(focused.url) || null : null;
-  const trust = { records, known, loaded: originsLoaded, problem: originsProblem, contracts };
-  const tools = focused ? toolRows(byTab[focused.id], gatedListsOf(trust, tabs, byTab)) : [];
+  const trust = useMemo(
+    () => ({ records, known, loaded: originsLoaded, problem: originsProblem, contracts }),
+    [records, known, originsLoaded, originsProblem, contracts],
+  );
+  const focusedTools = focused ? byTab[focused.id] : undefined;
+  const tools = useMemo(
+    () => (focused ? toolRows(focusedTools, gatedListsOf(trust, tabs, byTab)) : []),
+    [focused, focusedTools, trust, tabs, byTab],
+  );
   // What a card about a rewritten tool shows beside the new contract (ADR 0100).
-  const drifts = contractDriftsOf(trust, tabs, byTab);
+  const drifts = useMemo(() => contractDriftsOf(trust, tabs, byTab), [trust, tabs, byTab]);
   const toolsProblem = focused ? (byTab[focused.id]?.problem ?? null) : null;
   const ready = endpoint(daemon) !== null;
 
@@ -424,13 +430,13 @@ export default function Live() {
     esc: () => rt.dispatch({ t: "esc" }),
     // While she works, `send` reads the message as a correction (it stops her) or the next thing
     // to do (it waits in line): the composer never closes (fleet-surfaces, ADR 0141).
-    send: (message) => void run.send(message).catch(report("send")),
-    unqueue: (id) => run.unqueue(id),
-    stop: () => void run.stop().catch(report("stop")),
-    clear: () => run.clear(),
-    leaveSetup: () => run.leaveSetup(),
+    send: (message) => void useRun.getState().send(message).catch(report("send")),
+    unqueue: (id) => useRun.getState().unqueue(id),
+    stop: () => void useRun.getState().stop().catch(report("stop")),
+    clear: () => useRun.getState().clear(),
+    leaveSetup: () => useRun.getState().leaveSetup(),
     clearProject: () =>
-      void run.doneProject().then((problem) => {
+      void useRun.getState().doneProject().then((problem) => {
         if (problem) console.error(`[athena] done: ${problem}`);
       }, report("done")),
     pin: () => rt.dispatch({ t: "pin" }),
@@ -454,18 +460,22 @@ export default function Live() {
       if (isEngineId(id)) void useDaemon.getState().restart(id).catch(report("engine"));
     },
     goToTab: (tabId) => void useTabs.getState().focus(tabId).catch(report("tabs_focus")),
-    tick: (id) => run.tick(id),
+    tick: (id) => useRun.getState().tick(id),
     descend: (id) => rt.dispatch({ t: "descend", id }),
     rise: () => rt.dispatch({ t: "rise" }),
   };
 
-  const originViews: OriginView[] = known.map((o) => ({
-    origin: o,
-    enabled: records[o]?.enabled ?? false,
-    overrides: Object.keys(records[o]?.overrides ?? {}).length,
-  }));
+  const originViews: OriginView[] = useMemo(
+    () =>
+      known.map((o) => ({
+        origin: o,
+        enabled: records[o]?.enabled ?? false,
+        overrides: Object.keys(records[o]?.overrides ?? {}).length,
+      })),
+    [known, records],
+  );
 
-  const model = selectCompanion({
+  const model = selectModel({
     machine: snap.machine,
     run,
     voice: { phase: voicePhase, available: voiceAvailable, partial: voicePartial },

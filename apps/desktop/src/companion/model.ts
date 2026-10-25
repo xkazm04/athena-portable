@@ -642,14 +642,32 @@ export function sealStateOf(f: SealFacts): SealState {
   return SEAL_TABLE.find(([, when]) => when(f))?.[0] ?? "rest";
 }
 
-/** Build the view-model. Pure: every argument is a snapshot the caller already read. */
-export function selectCompanion(i: CompanionInputs): CompanionModel {
-  const m = i.machine;
-  const form = m.form;
-  const waiting = cardsOf(
+/**
+ * The parts of the model that cost something to derive. Each is a pure function of the inputs its
+ * `*Part` function reads, and nothing else, so `memo.ts` can keep one while those inputs hold still
+ * (ADR 0185). A part that starts reading a new input must add it to that part's keys in `memo.ts`;
+ * the step-by-step equality guard in `memo.test.ts` is the net for one that does not.
+ */
+export interface CompanionParts {
+  /** What the raw transcript has shown (`buildContext(run.transcript)`), for cards and the tape. */
+  turn: TurnContext;
+  messages: readonly PlainMessage[];
+  cards: CardView[];
+  sheet: SheetView | null;
+  steps: readonly TranscriptEntry[];
+  tape: TapeView;
+  suggestions: readonly string[];
+  record: RecordView;
+  origins: CompanionModel["origins"];
+  welcome: CompanionModel["welcome"];
+}
+
+/** Reads: run.cards, held, machine.decided, run.answering/refusals/captureWhy/targets/taskCards, tools, drifts, tabs, connectors. */
+export function cardsPart(i: CompanionInputs, turn: TurnContext): CardView[] {
+  return cardsOf(
     i.run.cards,
     i.held,
-    m,
+    i.machine,
     i.run.answering ?? {},
     i.run.refusals ?? {},
     i.run.captureWhy ?? {},
@@ -658,12 +676,95 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.drifts ?? {},
     i.tabs ?? [],
     i.connectors,
-    buildContext(i.run.transcript),
+    turn,
     i.run.taskCards ?? {},
   );
+}
+
+/** Reads: run.cards, run.slots, run.unticked, run.ran. */
+export const sheetPart = (i: CompanionInputs, cards: readonly CardView[]): SheetView | null => sheetView(i.run, cards);
+
+/** The last thing the person said, which the tape names. */
+export function lastUserOf(transcript: readonly TranscriptEntry[]): TranscriptEntry | undefined {
+  for (let k = transcript.length - 1; k >= 0; k--) if (transcript[k]!.kind === "user") return transcript[k];
+  return undefined;
+}
+
+/** Reads: run.phase, run.error, run.summary, tools, machine.working, machine.lingering, engine. */
+export function tapePart(
+  i: CompanionInputs,
+  steps: readonly TranscriptEntry[],
+  turn: TurnContext,
+  lastUser: TranscriptEntry | undefined,
+): TapeView {
+  return tapeOf(i.run, steps, i.tools, i.machine, i.engine, turn, lastUser);
+}
+
+/** Reads: run.calls (or run.transcript), decisions, tools, run.earlier, ledger, nowMs. */
+export function recordPart(i: CompanionInputs): RecordView {
+  return recordView({
+    calls: i.run.calls ?? i.run.transcript,
+    decisions: i.decisions,
+    tools: i.tools,
+    earlier: i.run.earlier ?? null,
+    ledger: i.ledger,
+    nowMs: i.nowMs,
+  });
+}
+
+/** Reads: origin, tools, toolsProblem, known. */
+export function originsPart(i: CompanionInputs): CompanionModel["origins"] {
+  return {
+    host: hostOf(i.origin),
+    offers: i.tools.slice(0, OFFERS_SHOWN).map((t) => ({ name: t.name, cls: t.class, description: t.description, tier: t.tier })),
+    offersFooter: i.tools.length > OFFERS_SHOWN ? `(showing ${OFFERS_SHOWN} of ${i.tools.length})` : "",
+    // A timeout is a page with no bridge, which is a fact and not a failure (stores/tools.ts).
+    pageProblem: i.toolsProblem && i.toolsProblem !== "timeout" ? i.toolsProblem : null,
+    pageSilent: i.toolsProblem === "timeout",
+    known: i.known,
+  };
+}
+
+/** Reads: engine, engineId, probes, probeProblem, probing, runningEngineId, daemonHealth, daemonLoaded, daemonError. */
+export function welcomePart(i: CompanionInputs): CompanionModel["welcome"] {
+  return {
+    engine: i.engine,
+    engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth, i.daemonLoaded, i.daemonError),
+  };
+}
+
+/** Every part, derived from scratch: what `selectCompanion` uses, and the oracle `memo.ts` is held to. */
+export function partsOf(i: CompanionInputs): CompanionParts {
+  const turn = buildContext(i.run.transcript);
+  const cards = cardsPart(i, turn);
+  const steps = stepsOfTurn(i.run.transcript);
+  return {
+    turn,
+    messages: plainMessages(i.run.transcript),
+    cards,
+    sheet: sheetPart(i, cards),
+    steps,
+    tape: tapePart(i, steps, turn, lastUserOf(i.run.transcript)),
+    suggestions: suggestionsFor(i.tools),
+    record: recordPart(i),
+    origins: originsPart(i),
+    welcome: welcomePart(i),
+  };
+}
+
+/** Build the view-model. Pure: every argument is a snapshot the caller already read. */
+export function selectCompanion(i: CompanionInputs): CompanionModel {
+  return assembleCompanion(i, partsOf(i));
+}
+
+/** The view-model from its inputs and its derived parts; everything left here is cheap. */
+export function assembleCompanion(i: CompanionInputs, p: CompanionParts): CompanionModel {
+  const m = i.machine;
+  const form = m.form;
+  const waiting = p.cards;
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
-  const steps = stepsOfTurn(i.run.transcript);
+  const steps = p.steps;
   const working = busy || m.working;
 
   const quietCard = n > 0 && form !== "slip" && form !== "ledger";
@@ -706,20 +807,20 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     badge: quietCard ? String(n) : "",
     sealLabel: sealLabel(form, n, mood),
     cards: waiting,
-    sheet: sheetView(i.run, waiting),
+    sheet: p.sheet,
     decision: m.decided
       ? { kind: m.decided.kind, by: m.decided.by, tearing: m.decided.tearing, sending: m.decided.sending }
       : null,
     listening: m.listening,
     heard: i.voice.partial,
     micAvailable: i.voice.available,
-    tape: tapeOf(i.run, steps, i.tools, m, i.engine),
+    tape: p.tape,
     tab: m.tab,
     pinned: m.pinned,
     say: m.say,
     talk: {
-      messages: plainMessages(i.run.transcript),
-      suggestions: suggestionsFor(i.tools),
+      messages: p.messages,
+      suggestions: p.suggestions,
       error: i.run.error
         ? {
             sentence: plainFailure(i.run.error.reason, i.engine),
@@ -739,27 +840,9 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       project: i.project ? projectView(i.project, i.shipped ?? []) : null,
       setup: !!i.run.setup,
     },
-    record: recordView({
-      calls: i.run.calls ?? i.run.transcript,
-      decisions: i.decisions,
-      tools: i.tools,
-      earlier: i.run.earlier ?? null,
-      ledger: i.ledger,
-      nowMs: i.nowMs,
-    }),
-    origins: {
-      host: hostOf(i.origin),
-      offers: i.tools.slice(0, OFFERS_SHOWN).map((t) => ({ name: t.name, cls: t.class, description: t.description, tier: t.tier })),
-      offersFooter: i.tools.length > OFFERS_SHOWN ? `(showing ${OFFERS_SHOWN} of ${i.tools.length})` : "",
-      // A timeout is a page with no bridge, which is a fact and not a failure (stores/tools.ts).
-      pageProblem: i.toolsProblem && i.toolsProblem !== "timeout" ? i.toolsProblem : null,
-      pageSilent: i.toolsProblem === "timeout",
-      known: i.known,
-    },
-    welcome: {
-      engine: i.engine,
-      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth, i.daemonLoaded, i.daemonError),
-    },
+    record: p.record,
+    origins: p.origins,
+    welcome: p.welcome,
     actions: i.actions,
   };
 }
@@ -1007,12 +1090,12 @@ function tapeOf(
   tools: readonly ToolRow[],
   m: MachineState,
   engine: string,
+  turn: TurnContext,
+  lastUser: TranscriptEntry | undefined,
 ): TapeView {
-  const lastUser = [...run.transcript].reverse().find((e) => e.kind === "user");
   const note = lastUser ? `acting on “${lastUser.text}”` : "acting on what she was asked";
   const last = steps[steps.length - 1];
   const before = steps[steps.length - 2];
-  const turn = buildContext(run.transcript);
   const cur: StepView = last
     ? stepOf(last, tools, turn)
     : {
@@ -1291,7 +1374,7 @@ export function plainMessages(entries: readonly TranscriptEntry[]): PlainMessage
 }
 
 /** Two deltas of one reply, with one blank line between them so paragraphs stay paragraphs. */
-function joinProse(first: string, second: string): string {
+export function joinProse(first: string, second: string): string {
   if (!first.trim()) return second;
   if (!second.trim()) return first;
   return `${first.trimEnd()}\n\n${second.trimStart()}`;
