@@ -181,7 +181,7 @@ describe("Your case, on the topic page", () => {
     expect(buttons()).not.toContain("Open your case");
   });
 
-  it("says it is looking while the answer is on its way", async () => {
+  it("case 7 (guard): says it is looking while the answer is on its way, on a first ever visit", async () => {
     await show(chorePath(ADOPT_PLAYBOOK), deps(new FakeClient(() => new Promise(() => {}))));
     expect(text()).toContain("Looking for a case you saved…");
   });
@@ -249,6 +249,109 @@ describe("Your runs, under the case", () => {
     const offline = new FakeClient(found([CASE]), () => Promise.reject(new ApiError(0, "offline", "down")));
     await show(chorePath(ADOPT_PLAYBOOK), deps(offline));
     expect(text()).toContain("Your runs could not be looked up: the daemon is not running.");
+  });
+});
+
+/** Render `path` once, synchronously: what the first frame after a move draws, before any answer lands. */
+const firstFrame = (path: Path, adopt?: AdoptDeps) => {
+  act(() => {
+    root.render(<ChoresView model={model()} path={path} go={go} adopt={adopt} />);
+  });
+};
+
+/** Settle what is on its way. */
+const settle = async () => {
+  await act(async () => {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  });
+};
+
+describe("warm across a move (ADR 0159)", () => {
+  it("case 2: back from the studio, the first frame names the case and offers Open your case, and asks again", async () => {
+    const client = new FakeClient(found([CASE]));
+    const d = deps(client);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    await show(adoptPath(ADOPT_PLAYBOOK), d);
+    firstFrame(chorePath(ADOPT_PLAYBOOK), d);
+    expect(text()).toContain("Airline credits, my 2026 trips");
+    expect(buttons()).toContain("Open your case");
+    expect(text()).not.toContain("Looking for a case you saved");
+    expect(client.asked).toEqual([ADOPT_PLAYBOOK, ADOPT_PLAYBOOK]);
+    await settle();
+  });
+
+  it("case 3: back from the studio, Your runs draws its receipt at once and asks once more", async () => {
+    const receipt = { ...PREVIEW_RECEIPT, case_id: CASE.case_id };
+    const client = new FakeClient(found([CASE]), (id) => runsOf(id, null, [receipt]));
+    const d = deps(client);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    expect(client.ran).toEqual([CASE.case_id]);
+    await show(adoptPath(ADOPT_PLAYBOOK), d);
+    firstFrame(chorePath(ADOPT_PLAYBOOK), d);
+    expect(text()).toContain("Run closed 2026-10-09");
+    expect(text()).not.toContain("Looking for your runs");
+    expect(client.ran).toEqual([CASE.case_id, CASE.case_id]);
+    await settle();
+    expect(client.ran).toEqual([CASE.case_id, CASE.case_id]);
+  });
+
+  it("case 4: a refresh that fails keeps the case drawn and says it could not be refreshed", async () => {
+    let up = true;
+    const client = new FakeClient(() =>
+      up
+        ? found([CASE])()
+        : Promise.reject(new ApiError(0, "offline", "The daemon is not running.")),
+    );
+    const d = deps(client);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    await show(adoptPath(ADOPT_PLAYBOOK), d);
+    up = false;
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    expect(text()).toContain("Airline credits, my 2026 trips");
+    expect(buttons()).toContain("Open your case");
+    expect(text()).toContain("Your saved case could not be refreshed: the daemon is not running.");
+    expect(text()).not.toContain("could not be looked up");
+  });
+
+  it("case 5: a refresh that brings a newer approval replaces the draft with no Looking in between", async () => {
+    let rev = 2;
+    const client = new FakeClient(() => found([{ ...CASE, approved_rev: rev }])());
+    const d = deps(client);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    await show(adoptPath(ADOPT_PLAYBOOK), d);
+    rev = 3;
+    firstFrame(chorePath(ADOPT_PLAYBOOK), d);
+    expect(text()).toContain("draft 2");
+    expect(text()).not.toContain("Looking for a case you saved");
+    await settle();
+    expect(text()).toContain("draft 3");
+    expect(text()).not.toContain("draft 2");
+    expect(text()).not.toContain("Looking for a case you saved");
+  });
+
+  it("case 6 (guard): forgetChores clears the reads, so the next mount starts cold", async () => {
+    const client = new FakeClient(found([CASE]));
+    const d = deps(client);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    act(() => root.unmount());
+    root = createRoot(host);
+    forgetChores();
+    firstFrame(chorePath(ADOPT_PLAYBOOK), d);
+    expect(text()).toContain("Looking for a case you saved…");
+    await settle();
+  });
+
+  it("rising to the catalogue draws Your chores at once, and asks again behind it", async () => {
+    const client = new FakeClient(found([CASE]));
+    const d = deps(client);
+    await show({ root: "chores" }, d);
+    expect(client.asked).toEqual([""]);
+    await show(chorePath(ADOPT_PLAYBOOK), d);
+    firstFrame({ root: "chores" }, d);
+    expect(host.querySelectorAll(".pa-yours__row")).toHaveLength(1);
+    expect(text()).not.toContain("Looking for the cases you saved");
+    expect(client.asked).toEqual(["", ADOPT_PLAYBOOK, ""]);
+    await settle();
   });
 });
 

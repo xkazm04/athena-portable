@@ -5,41 +5,56 @@
  * (`GET /adopt/cases/<proj>/runs`): the cards filed and what became of them, the calls that may have
  * completed, the dollars the approved cards asked for and what the ledger recorded. Every number says
  * where it came from; a run with nothing in it is not drawn as zeros, it is said. A card's parameters
- * are the page's, untrusted: they are shown as text in a fenced block, never as markup.
+ * are the page's, untrusted: they are shown as text in a fenced block, never as markup. The answer
+ * outlives a move (`./reads.ts`, ADR 0159) and a refresh that fails says so over the last receipts.
  */
-import { useEffect, useState } from "react";
-
-import type { Receipt, ReceiptCard } from "@/lib/adopt";
+import type { Receipt, ReceiptCard, RunsReply } from "@/lib/adopt";
 
 import type { AdoptDeps } from "./adopt/deps";
 import { why } from "./adopt/session";
 import { dayOf } from "./adopt/state";
+import { readKey, useRead } from "./reads";
+
+/** Why a read did not answer: the daemon is not running, or what it said. */
+export interface Failure {
+  offline: boolean;
+  detail: string;
+}
+
+export function failureOf(error: unknown): Failure {
+  const w = why(error);
+  return { offline: w.reason === "offline", detail: w.detail || w.reason };
+}
+
+/** The line said over a last answer a refresh could not replace, or "" when it is fresh. */
+export function staleLine(what: string, state: { stale?: Failure }): string {
+  if (!state.stale) return "";
+  return state.stale.offline
+    ? `${what} could not be refreshed: the daemon is not running. This is the last answer it gave.`
+    : `${what} could not be refreshed: ${state.stale.detail}. This is the last answer it gave.`;
+}
 
 /** What the page knows of one case's runs. */
 export type RunsState =
   | { kind: "looking" }
-  | { kind: "found"; open: Receipt | null; receipts: Receipt[]; footer: string }
-  | { kind: "failed"; offline: boolean; detail: string };
+  | { kind: "found"; open: Receipt | null; receipts: Receipt[]; footer: string; refreshing?: boolean; stale?: Failure }
+  | ({ kind: "failed" } & Failure);
 
-/** One case's runs, asked once per mount and case. */
+/** One case's runs: the last answer at once after a move, asked again behind it (ADR 0159). */
 export function useRuns(deps: AdoptDeps, caseId: string): RunsState {
-  const [answer, set] = useState<{ for: string; client: unknown; state: RunsState } | null>(null);
-  useEffect(() => {
-    let live = true;
-    const done = (state: RunsState) => live && set({ for: caseId, client: deps.client, state });
-    deps.client.runs(caseId).then(
-      (reply) => done({ kind: "found", open: reply.open, receipts: reply.receipts, footer: reply.footer }),
-      (error: unknown) => {
-        const w = why(error);
-        done({ kind: "failed", offline: w.reason === "offline", detail: w.detail || w.reason });
-      },
-    );
-    return () => {
-      live = false;
-    };
-  }, [deps, caseId]);
-  if (answer === null || answer.for !== caseId || answer.client !== deps.client) return { kind: "looking" };
-  return answer.state;
+  const client = deps.client;
+  const state = useRead<RunsReply>(readKey(client, `runs|${caseId}`), () => client.runs(caseId));
+  switch (state.kind) {
+    case "looking":
+      return state;
+    case "failed":
+      return { kind: "failed", ...failureOf(state.error) };
+    case "found": {
+      const { open, receipts, footer } = state.value;
+      const found = { kind: "found" as const, open, receipts, footer, refreshing: state.refreshing };
+      return state.refreshFailed === undefined ? found : { ...found, stale: failureOf(state.refreshFailed) };
+    }
+  }
 }
 
 /** The one line "Your runs" says when it has no receipt to show, or "" when it has. */
@@ -161,7 +176,7 @@ export default function Runs({ deps, caseId }: { deps: AdoptDeps; caseId: string
     <div className="pa-runs" aria-label="Your runs">
       <h4 className="pa-kpi__label">Your runs</h4>
       {shown.length ? (
-        <ul className="pa-cases">
+        <ul className="pa-cases" aria-busy={state.kind === "found" && state.refreshing ? true : undefined}>
           {shown.map((r) => (
             <ReceiptView key={`${r.since}|${r.until}`} r={r} />
           ))}
@@ -171,6 +186,11 @@ export default function Runs({ deps, caseId }: { deps: AdoptDeps; caseId: string
           {runsLine(state)}
         </p>
       )}
+      {state.kind === "found" && state.stale ? (
+        <p className="pa-muted" role="status">
+          {staleLine("Your runs", state)}
+        </p>
+      ) : null}
       {state.kind === "found" && state.footer ? <p className="pa-muted">{state.footer}</p> : null}
     </div>
   );

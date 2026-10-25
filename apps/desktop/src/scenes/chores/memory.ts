@@ -7,12 +7,14 @@
  * the catalogue's filters, order and last pick (coming back from a topic finds them as they
  * were), what the person said at the front door (it opens the studio the verdict leads to), and
  * where each topic page was scrolled (rising from its studio or its replay lands there again).
- * The catalogue's `Yours` toggle rides with its filters.
+ * The catalogue's `Yours` toggle rides with its filters. The daemon's answers outlive it too, in
+ * `reads.ts` (ADR 0159); forgetting the depth forgets them.
  */
 import { useSyncExternalStore } from "react";
 
 import type { CatalogueState } from "./catalogue";
 import { EDGE_ORDER } from "./model";
+import { forgetReads } from "./reads";
 
 export interface ChoresMemory {
   catalogue: CatalogueState;
@@ -50,6 +52,7 @@ export function rememberIntro(intro: ChoresMemory["intro"]) {
 export function forgetChores() {
   memory = fresh();
   scrolls.clear();
+  forgetReads();
   emit();
 }
 

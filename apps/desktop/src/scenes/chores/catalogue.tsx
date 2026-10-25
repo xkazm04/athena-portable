@@ -5,12 +5,12 @@
  * count riding the top edge, the jobs are chips under it, the order a three-way switch, and the
  * ledger one line per playbook: name, job, time saved, value. A press opens the topic page.
  *
- * "Your chores": handed the daemon's deps, the catalogue asks once for every saved case and each
- * case's open review, and draws them above the areas, what is due first (`yours.ts`), each one
+ * "Your chores": handed the daemon's deps, the catalogue asks for every saved case and each
+ * case's open review (kept warm across a move, `reads.ts`), and draws them above the areas, what is due first (`yours.ts`), each one
  * press from its case or its chore's page; `Yours` narrows the ledger to the chores with a case.
  * Without deps (the preview, no daemon) there is no band and the page is as it always was.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import Button from "@/components/Button";
 import Table, { type Column } from "@/components/Table";
@@ -29,13 +29,14 @@ import {
 } from "@/modules/playbooks/model";
 
 import type { AdoptDeps } from "./adopt/deps";
-import { why } from "./adopt/session";
 import { EDGE_ORDER, casePath, emptyLine } from "./model";
 import { totalsLine, valueCell } from "./worth";
 import { lead } from "./rich";
 import { JOB_TONE, timeCell } from "./facts";
 import Glyph from "./glyphs";
 import { hasCase, yoursLine, yoursOf, type YoursState } from "./yours";
+import { readKey, useRead } from "./reads";
+import { failureOf, staleLine, type Failure } from "./runs";
 
 export interface CatalogueState {
   category: CategoryFilter;
@@ -48,38 +49,26 @@ export interface CatalogueState {
 }
 
 /**
- * Every saved case (`cases('')`, ADR 0123) and each one's review (ADR 0131), asked once per mount.
- * A review that cannot be read is no review: the case is still listed, by its approval.
+ * Every saved case (`cases('')`, ADR 0123) and each one's review (ADR 0131). A review that cannot be
+ * read is no review: the case is still listed, by its approval. The answer outlives a move
+ * (`reads.ts`, ADR 0159): rising from a topic draws the band as it was and asks again behind it.
  */
-export function useYours(deps: AdoptDeps | undefined): YoursState | null {
-  // The answer is kept with the client it came from, so another client never shows an old one.
-  const [answer, set] = useState<{ client: unknown; state: YoursState } | null>(null);
-  useEffect(() => {
-    if (!deps) return;
-    let live = true;
-    const done = (state: YoursState) => live && set({ client: deps.client, state });
-    deps.client.cases("").then(
-      async (reply) => {
-        const chores = deps.chores;
-        const reviews = new Map<string, DueReview | null>();
-        if (chores) {
-          const read = await Promise.allSettled(reply.cases.map((c) => chores.review(c.case_id)));
-          read.forEach((r, i) => reviews.set(reply.cases[i]!.case_id, r.status === "fulfilled" ? r.value : null));
-        }
-        done({ kind: "found", cases: reply.cases, footer: reply.footer, reviews });
-      },
-      (error: unknown) => {
-        const w = why(error);
-        done({ kind: "failed", offline: w.reason === "offline", detail: w.detail || w.reason });
-      },
-    );
-    return () => {
-      live = false;
-    };
-  }, [deps]);
+export function useYours(deps: AdoptDeps | undefined): (YoursState & { stale?: Failure }) | null {
+  const client = deps?.client;
+  const chores = deps?.chores;
+  const state = useRead<Extract<YoursState, { kind: "found" }>>(client ? readKey(client, "all-cases", chores) : null, async () => {
+    const reply = await client!.cases("");
+    const reviews = new Map<string, DueReview | null>();
+    if (chores) {
+      const read = await Promise.allSettled(reply.cases.map((c) => chores.review(c.case_id)));
+      read.forEach((r, i) => reviews.set(reply.cases[i]!.case_id, r.status === "fulfilled" ? r.value : null));
+    }
+    return { kind: "found", cases: reply.cases, footer: reply.footer, reviews };
+  });
   if (!deps) return null;
-  if (answer === null || answer.client !== deps.client) return { kind: "looking" };
-  return answer.state;
+  if (state.kind === "looking") return state;
+  if (state.kind === "failed") return { kind: "failed", ...failureOf(state.error) };
+  return state.refreshFailed === undefined ? state.value : { ...state.value, stale: failureOf(state.refreshFailed) };
 }
 
 const SORTS: { id: string; label: string; sort: LedgerSort; why: string }[] = [
@@ -268,6 +257,11 @@ export default function Catalogue({
             {said ? (
               <p className="pa-muted" role="status">
                 {said}
+              </p>
+            ) : null}
+            {saved.kind === "found" && saved.stale ? (
+              <p className="pa-muted" role="status">
+                {staleLine("Your chores", saved)}
               </p>
             ) : null}
             {yours?.elsewhereLine ? <p className="pa-muted">{yours.elsewhereLine}</p> : null}

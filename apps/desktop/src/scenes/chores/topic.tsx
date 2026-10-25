@@ -7,7 +7,9 @@
  *
  * "Your case" (ADR 0123): the chore's saved cases, asked of the daemon through the studio's deps
  * (`GET /adopt/cases`), each opened in the studio with its approved brief and no re-interview. Each
- * state is said: no daemon in this window, looking, none saved yet, could not be looked up.
+ * state is said: no daemon in this window, looking, none saved yet, could not be looked up. The
+ * answer outlives a move (`./reads.ts`, ADR 0159): back from the studio or the replay the page is
+ * drawn as it was, asked again behind it, and a refresh that fails says so over the last answer.
  *
  * "Your runs" (ADR 0124): under each case, the receipts of its runs (`./runs.tsx`).
  *
@@ -24,12 +26,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Button from "@/components/Button";
 import StatusDot from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
-import type { CaseSummary } from "@/lib/adopt";
+import type { CaseSummary, CasesReply } from "@/lib/adopt";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
 import type { AdoptDeps } from "./adopt/deps";
-import { why } from "./adopt/session";
 import { dayOf } from "./adopt/state";
 import { adoptPath, casePath, lowerFirst, runPath } from "./model";
 import { beforeAfterOf, blueprintOf, fitRows, worthOf } from "./worth";
@@ -40,7 +41,8 @@ import { stillsOf } from "./facts";
 import Flow from "./flow";
 import Glyph from "./glyphs";
 import Due from "./due";
-import Runs from "./runs";
+import Runs, { failureOf, staleLine, type Failure } from "./runs";
+import { readKey, useRead } from "./reads";
 
 /** Where the two times come from: the hand figure is typed by the author, hers is measured (spark chores-uat recertify). */
 const TIME_SOURCE = "by hand is the author's estimate, hers is from the test run";
@@ -49,31 +51,29 @@ const TIME_SOURCE = "by hand is the author's estimate, hers is from the test run
 export type CasesState =
   | { kind: "no-daemon" }
   | { kind: "looking" }
-  | { kind: "found"; cases: CaseSummary[]; footer: string }
-  | { kind: "failed"; offline: boolean; detail: string };
+  | { kind: "found"; cases: CaseSummary[]; footer: string; refreshing?: boolean; stale?: Failure }
+  | ({ kind: "failed" } & Failure);
 
-/** The saved cases of `playbookId`, asked once per mount. Without deps, it says there is no daemon. */
+/**
+ * The saved cases of `playbookId`. Without deps, it says there is no daemon. The last answer
+ * outlives a move and is drawn at once, then asked again behind it (`reads.ts`, ADR 0159).
+ */
 export function useCases(deps: AdoptDeps | undefined, playbookId: string): CasesState {
-  // The answer is kept with what it answered, so a later chore or client never shows an old one.
-  const [answer, set] = useState<{ for: string; client: unknown; state: CasesState } | null>(null);
-  useEffect(() => {
-    if (!deps) return;
-    let live = true;
-    const done = (state: CasesState) => live && set({ for: playbookId, client: deps.client, state });
-    deps.client.cases(playbookId).then(
-      (reply) => done({ kind: "found", cases: reply.cases, footer: reply.footer }),
-      (error: unknown) => {
-        const w = why(error);
-        done({ kind: "failed", offline: w.reason === "offline", detail: w.detail || w.reason });
-      },
-    );
-    return () => {
-      live = false;
-    };
-  }, [deps, playbookId]);
+  const client = deps?.client;
+  const state = useRead<CasesReply>(client ? readKey(client, `cases|${playbookId}`) : null, () =>
+    client!.cases(playbookId),
+  );
   if (!deps) return { kind: "no-daemon" };
-  if (answer === null || answer.for !== playbookId || answer.client !== deps.client) return { kind: "looking" };
-  return answer.state;
+  switch (state.kind) {
+    case "looking":
+      return state;
+    case "failed":
+      return { kind: "failed", ...failureOf(state.error) };
+    case "found": {
+      const found = { kind: "found" as const, cases: state.value.cases, footer: state.value.footer, refreshing: state.refreshing };
+      return state.refreshFailed === undefined ? found : { ...found, stale: failureOf(state.refreshFailed) };
+    }
+  }
 }
 
 /** The one line the "Your case" block says when it has no case to show, or "" when it has. */
@@ -315,7 +315,7 @@ export default function Topic({
               Your case
             </h3>
             {cases.length ? (
-              <ul className="pa-cases">
+              <ul className="pa-cases" aria-busy={saved.kind === "found" && saved.refreshing ? true : undefined}>
                 {cases.map((c) => (
                   <li key={c.case_id} className="pa-case">
                     <span className="pa-case__title">{c.title || p.shortTitle}</span>
@@ -335,6 +335,11 @@ export default function Topic({
                 {casesLine(saved)}
               </p>
             )}
+            {saved.kind === "found" && saved.stale ? (
+              <p className="pa-muted" role="status">
+                {staleLine("Your saved case", saved)}
+              </p>
+            ) : null}
             {saved.kind === "found" && saved.footer ? <p className="pa-muted">{saved.footer}</p> : null}
           </div>
           <div className="pa-adopt__row">
