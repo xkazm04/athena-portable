@@ -168,10 +168,11 @@ test("every act the decision list offers on an open invoice is one the books tak
   assert.ok(open.length > 50, "the seed's open invoices");
   const newest = () => db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
   const disagree: string[] = [];
-  // One known gap, pinned exactly rather than tolerated: the books refuse to chase an invoice the
-  // statement looks to have paid (lib/chase.ts, ADR 0197) and the card does not predict it yet -
-  // the press comes back naming the credit to apply. When `actRefusal` learns it, this list empties.
-  const awaitingCard: string[] = [];
+  // The books refuse to chase an invoice the statement looks to have paid (lib/chase.ts, ADR 0197),
+  // and the card asks the same verdict: those refusals are predicted, not waited for.
+  const settled = settlingCredits();
+  assert.ok(settled.size > 0, "the seed holds invoices an unapplied credit covers");
+  const refusedForCredit: string[] = [];
   for (const mark of open) {
     const detail = sheet.details[mark.id];
     const acts = {
@@ -194,18 +195,57 @@ test("every act the decision list offers on an open invoice is one the books tak
       const result = await answer!;
       assert.equal(newest(), before, `${act} on ${mark.number} was rolled back`);
       const offered = actRefusal(act as keyof typeof acts, mark, detail) === null;
-      if (act === "draft_reminder" && offered && !result.ok && "settling_credit" in result) {
-        awaitingCard.push(mark.id);
-        continue;
-      }
+      if (act === "draft_reminder" && !result.ok && "settling_credit" in result) refusedForCredit.push(mark.id);
       if (offered !== result.ok) {
         disagree.push(`${mark.number} (${mark.state}) ${act}: card ${offered ? "offers" : "holds back"}, books ${result.ok ? "take it" : `refuse: ${result.message}`}`);
       }
     }
   }
   assert.deepEqual(disagree, []);
+  assert.deepEqual(refusedForCredit.sort(), open.filter((m) => settled.has(m.id)).map((m) => m.id).sort());
+});
+
+test("a covered invoice's decision list offers no Draft - it asks for the credit to be applied first, and names it", () => {
+  const sheet = books();
   const settled = settlingCredits();
-  assert.deepEqual(awaitingCard.sort(), open.filter((m) => settled.has(m.id)).map((m) => m.id).sort());
+  const covered = openMarks(sheet).filter((m) => settled.has(m.id));
+  assert.ok(covered.length >= 10, `the seed's open invoices an unapplied credit covers: ${covered.length}`);
+  for (const mark of covered) {
+    const credit = settled.get(mark.id)!;
+    const detail = sheet.details[mark.id];
+    assert.deepEqual(detail?.settling, credit, `${mark.number}: the card carries the chase's credit`);
+    const specs = machine.actSpecs(mark, detail, "firm", mark.category);
+    assert.equal(specs.find((s) => s.tool === "draft_reminder"), undefined, `${mark.number} offers no Draft`);
+    const apply = specs[0]!;
+    assert.equal(apply.tool, "match_bank_line", `${mark.number}: the first act applies the credit`);
+    assert.equal(apply.label, "Apply the credit first");
+    assert.equal(apply.blocked, null, "the apply is a press the books take");
+    assert.equal(apply.gated, false, "applying a credit is reversible, so it does not arm");
+    assert.ok(apply.reaches.includes(credit.line_id), `${mark.number}: names bank line ${credit.line_id}`);
+    assert.ok(apply.reaches.includes(credit.memo), `${mark.number}: names the credit's memo`);
+    assert.deepEqual(apply.issue, { tool: "match_bank_line", ref: mark.id, lineId: credit.line_id });
+    const refusal = actRefusal("draft_reminder", mark, detail);
+    assert.ok(refusal?.includes(credit.line_id), `${mark.number}: the Draft refusal names the credit`);
+  }
+});
+
+test("an uncovered invoice still drafts", () => {
+  const sheet = books();
+  const settled = settlingCredits();
+  const chaseable = openMarks(sheet).filter(
+    (m) => !settled.has(m.id) && m.state !== "disputed" && m.state !== "draft" && m.balanceCents > 0,
+  );
+  assert.ok(chaseable.length > 20, "the seed's chaseable invoices");
+  for (const mark of chaseable) {
+    const detail = sheet.details[mark.id];
+    assert.equal(detail?.settling, null, `${mark.number}: no credit covers it`);
+    const specs = machine.actSpecs(mark, detail, "gentle", mark.category);
+    assert.equal(specs.find((s) => s.tool === "match_bank_line"), undefined, `${mark.number}: no apply-first act`);
+    const draft = specs[0]!;
+    assert.equal(draft.tool, "draft_reminder");
+    assert.equal(draft.blocked, null, `${mark.number} drafts`);
+    assert.deepEqual(draft.issue, { tool: "draft_reminder", ref: mark.id, tone: "gentle" });
+  }
 });
 
 /* ------------------------------ one act machine per card: one armed gate, one write in flight, one door */
@@ -230,15 +270,18 @@ test("case 1: actSpecs gates exactly what the class table gates, and every liste
   for (const mark of open) {
     const detail = sheet.details[mark.id];
     const specs = machine.actSpecs(mark, detail, "gentle", mark.category);
+    // A covered invoice's first act applies its credit instead of drafting (lib/chase.ts).
+    const first = detail?.settling ? "match_bank_line" : "draft_reminder";
     assert.deepEqual(
       specs.map((s) => s.tool),
-      ["draft_reminder", "categorize", "mark_paid", "send_reminder", "void_invoice"],
+      [first, "categorize", "mark_paid", "send_reminder", "void_invoice"],
     );
     for (const spec of specs) {
       assert.equal(spec.gated, !isAuto(TOOL_CLASSES[spec.tool]), `${mark.number} ${spec.tool} gated`);
       assert.equal(spec.question !== null && spec.subject !== null, spec.gated, `${mark.number} ${spec.tool} asks only if gated`);
     }
     for (const tool of LISTED) {
+      if (tool === "draft_reminder" && detail?.settling) continue;
       const spec = specs.find((s) => s.tool === tool)!;
       assert.equal(spec.blocked, actRefusal(tool, mark, detail), `${mark.number} ${tool} blocked line`);
       if (spec.blocked) assert.equal(spec.reaches, spec.blocked, "a refused row says why in place of what it reaches");
@@ -342,6 +385,21 @@ test("case 7: an armed void whose act becomes refused closes, and focus goes to 
   const { state } = machine.reduceActs(armedOn("void_invoice", subject), { type: "observe", specs: refused });
   assert.equal(state.armed, null);
   assert.equal(state.focus, "heading");
+});
+
+test("an applied credit's row gives way to Draft, so focus goes to the list's heading, not the body", () => {
+  const sheet = books();
+  const mark = openMarks(sheet).find((m) => m.state === "overdue" && !sheet.details[m.id]?.settling)!;
+  // After the apply settles, the invoice is no longer covered: its specs have Draft, not the apply row.
+  const after = machine.actSpecs(mark, sheet.details[mark.id], "gentle", mark.category);
+  const settled = machine.reduceActs(issuingOf("match_bank_line"), {
+    type: "settle",
+    ticket: 1,
+    result: { ok: true, message: "Applied." },
+  }).state;
+  assert.equal(settled.focus, "row:match_bank_line", "the answered act's row is asked for first");
+  const { state } = machine.reduceActs(settled, { type: "observe", specs: after });
+  assert.equal(state.focus, "heading", "a row that is gone cannot take focus");
 });
 
 test("case 8 (guard): stillArmed's truth table and the send subject's dependence on the draft body are unchanged", () => {

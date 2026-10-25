@@ -6,6 +6,7 @@
  * something, or is it a slot being filled? Neither is layout — they are
  * judgements about one invoice, which is why they live here and not in the JSX.
  */
+import { creditNamed } from "@/lib/chase";
 import { formatDate, formatMoneyShort } from "@/lib/format";
 import type { LnDetail, LnMark } from "../model";
 
@@ -128,7 +129,7 @@ export function actRefusal(act: ListedAct, mark: LnMark, detail: LnDetail | unde
       }
       if (mark.balanceCents <= 0) return "Blocked: nothing is owed, so there is nothing to chase.";
       if (mark.state === "disputed") return "Blocked: the invoice is disputed. Resolve the dispute before chasing.";
-      return null;
+      return settledRefusal(detail);
     case "mark_paid":
       if (NOT_A_DEBT.has(mark.state)) {
         return unsent
@@ -148,12 +149,22 @@ export function actRefusal(act: ListedAct, mark: LnMark, detail: LnDetail | unde
       }
       if (mark.balanceCents <= 0) return "Blocked: nothing is owed now, so the reminder cannot go.";
       if (mark.state === "disputed") return "Blocked: the invoice is disputed. Resolve the dispute before chasing.";
-      return null;
+      return settledRefusal(detail);
     case "void_invoice":
       if (mark.state === "void") return "Blocked: this invoice is already void.";
       if (mark.paidCents > 0) return "Blocked: there are credits applied to this invoice. Unapply them first.";
       return null;
   }
+}
+
+/**
+ * The chase verdict's block, as the card states it: the books (`lib/chase.ts` chaseVerdict, asked by
+ * the draft and again by the send) refuse to chase an invoice an unapplied credit settles, and the
+ * card carries that credit (`LnDetail.settling`) so the row says so before the press.
+ */
+function settledRefusal(detail: LnDetail | undefined): string | null {
+  const credit = detail?.settling;
+  return credit ? `Blocked: ${creditNamed(credit)}, and it has not been applied. Apply the credit first.` : null;
 }
 
 /**

@@ -30,6 +30,7 @@
  * needs the send to name the draft it was armed on (app/actions.ts).
  */
 import type { Category, Tone } from "@/lib/constants";
+import { creditNamed } from "@/lib/chase";
 import { formatMoney } from "@/lib/format";
 import { isAuto } from "@/lib/manifest";
 import { TOOL_CLASSES } from "@/lib/tool-classes";
@@ -37,14 +38,18 @@ import type { ActionResult } from "@/lib/types";
 import type { LnDetail, LnMark } from "../model";
 import { actRefusal, gateSubject, stillArmed } from "./read";
 
-/** The acts on the decision list, in the order a bookkeeper would consider them. */
-export type ListTool = "draft_reminder" | "categorize" | "mark_paid" | "send_reminder" | "void_invoice";
-/** Every write the card can issue: the list's five, plus Evidence's apply and unapply. */
-export type CardTool = ListTool | "match_bank_line" | "unmatch";
+/**
+ * The acts on the decision list, in the order a bookkeeper would consider them. `match_bank_line`
+ * stands in Draft's place on an invoice an unapplied credit settles: the books refuse that chase.
+ */
+export type ListTool = "draft_reminder" | "match_bank_line" | "categorize" | "mark_paid" | "send_reminder" | "void_invoice";
+/** Every write the card can issue: the list's acts, plus Evidence's unapply. */
+export type CardTool = ListTool | "unmatch";
 
 /** What a listed act issues, as data. The view turns it into the server action call. */
 export type ActIssue =
   | { tool: "draft_reminder"; ref: string; tone: Tone }
+  | { tool: "match_bank_line"; ref: string; lineId: string }
   | { tool: "categorize"; ids: string[]; category: Category }
   | { tool: "mark_paid"; ref: string; amountCents: number }
   | { tool: "send_reminder"; ref: string; reminderId?: string }
@@ -92,15 +97,30 @@ export function actSpecs(
   // one control that moves money.
   const balance = formatMoney(mark.balanceCents);
 
+  // The card asks the chase: while the statement holds an unapplied credit that settles this
+  // invoice, the books refuse a reminder (lib/chase.ts), so Draft is not offered - the act that
+  // lifts the refusal is, through the same match the Evidence column issues.
+  const credit = detail?.settling;
+  const first: Omit<ActSpec, "gated" | "question" | "subject"> = credit
+    ? {
+        tool: "match_bank_line",
+        label: "Apply the credit first",
+        reaches: `${creditNamed(credit)}. Applies it to ${mark.number} - reversible, it writes an undo row. Chase only what remains.`,
+        takeLabel: "Apply it",
+        blocked: null,
+        issue: { tool: "match_bank_line", ref: mark.id, lineId: credit.line_id },
+      }
+    : {
+        tool: "draft_reminder",
+        label: `Draft a ${tone} reminder`,
+        reaches: draft ?? "Nobody. It writes a draft on this invoice and replaces any draft already there.",
+        takeLabel: "Draft it",
+        blocked: draft,
+        issue: { tool: "draft_reminder", ref: mark.id, tone },
+      };
+
   const rows: Omit<ActSpec, "gated" | "question" | "subject">[] = [
-    {
-      tool: "draft_reminder",
-      label: `Draft a ${tone} reminder`,
-      reaches: draft ?? "Nobody. It writes a draft on this invoice and replaces any draft already there.",
-      takeLabel: "Draft it",
-      blocked: draft,
-      issue: { tool: "draft_reminder", ref: mark.id, tone },
-    },
+    first,
     {
       tool: "categorize",
       label: "Refile this invoice",
@@ -207,6 +227,7 @@ export interface ActStep {
 
 const LIST_TOOLS: ReadonlySet<CardTool> = new Set<CardTool>([
   "draft_reminder",
+  "match_bank_line",
   "categorize",
   "mark_paid",
   "send_reminder",
@@ -259,10 +280,12 @@ export function reduceActs(state: ActState, event: ActEvent): ActStep {
           armed = null;
         }
       }
-      // A row that turned disabled under a pending focus cannot take it.
+      // A row that turned disabled under a pending focus cannot take it, nor can one that left the
+      // list (an applied credit's row, replaced by Draft).
       if (focus && focus !== "heading") {
         const tool = focus.slice("row:".length);
-        if (event.specs.find((s) => s.tool === tool)?.blocked) focus = "heading";
+        const row = event.specs.find((s) => s.tool === tool);
+        if (!row || row.blocked) focus = "heading";
       }
       if (armed === state.armed && focus === state.focus) return ok(state);
       return ok({ ...state, armed, focus });

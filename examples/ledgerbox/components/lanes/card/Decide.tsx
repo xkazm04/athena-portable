@@ -45,6 +45,7 @@ import {
   categorizeAction,
   draftReminderAction,
   markPaidAction,
+  matchAction,
   sendReminderAction,
   voidInvoiceAction,
 } from "@/app/actions";
@@ -62,6 +63,8 @@ function perform(issue: ActIssue): Promise<ActionResult> {
   switch (issue.tool) {
     case "draft_reminder":
       return draftReminderAction(issue.ref, issue.tone);
+    case "match_bank_line":
+      return matchAction(issue.ref, issue.lineId);
     case "categorize":
       return categorizeAction(issue.ids, issue.category);
     case "mark_paid":

@@ -163,6 +163,7 @@ export function buildSheet(): LnSheet {
       draft: draft ? { id: draft.id, tone: draft.tone, body: draft.body } : null,
       sentCount: d.reminders.filter((rem) => rem.sent_at).length,
       mostlyPaid: isMostlyPaid(d.invoice),
+      settling: settling.get(r.id) ?? null,
     };
   }
 

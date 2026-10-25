@@ -105,6 +105,7 @@ const DETAIL = (mark: LnMark): LnDetail => ({
   sentCount: 0,
   // Deliberately the WRONG answer: the projection must decide by isMostlyPaid, not copy a flag.
   mostlyPaid: mark.paidCents < 70_000,
+  settling: null,
 });
 
 const SHEET: LnSheet = {

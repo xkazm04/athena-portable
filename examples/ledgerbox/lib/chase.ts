@@ -68,6 +68,15 @@ function arrived(c: Pick<SettlingCredit, "amount_cents" | "posted_at" | "memo">)
   return `${formatMoney(c.amount_cents)} arrived ${dayMonth.format(new Date(c.posted_at))} as "${c.memo}"`;
 }
 
+/**
+ * `$17,775.00 arrived 28 Jun as "SEPA CR ..." (bank line bl_12), short by $25.00` - the credit named
+ * the way the refusal names it, so the card's apply-first row and the books' refusal say one thing.
+ */
+export function creditNamed(c: SettlingCredit): string {
+  const gap = c.short_by_cents ? `, short by ${formatMoney(c.short_by_cents)}` : "";
+  return `${arrived(c)} (bank line ${c.line_id})${gap}`;
+}
+
 /** The status sentence's clause for an invoice the statement looks to have paid. */
 export function looksPaid(credit: SettlingCredit): string {
   return `Looks paid: ${arrived(credit)} - apply it before chasing.`;
@@ -81,11 +90,10 @@ export function chaseVerdict(row: ChaseRow, credits: readonly ChaseCredit[]): Ch
   const settling = settlingCredit(row, credits);
   if (settling) {
     const short = settling.short_by_cents;
-    const gap = short ? `, short by ${formatMoney(short)}` : "";
     const then = short ? `, then chase the ${formatMoney(short)} that remains` : " before chasing";
     return {
       block: true,
-      message: `${row.number} looks paid: ${arrived(settling)} (bank line ${settling.line_id})${gap}, and it has not been applied. Apply it with match_bank_line${then}.`,
+      message: `${row.number} looks paid: ${creditNamed(settling)}, and it has not been applied. Apply it with match_bank_line${then}.`,
       settling_credit: settling,
     };
   }

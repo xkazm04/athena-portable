@@ -12,6 +12,7 @@
  * data expressed as geometry, not styling.
  */
 
+import type { SettlingCredit } from "@/lib/chase";
 import type { Category, InvoiceState, Tone } from "@/lib/types";
 import type { Heat } from "@/lib/lanes/heat";
 
@@ -117,6 +118,12 @@ export interface LnDetail {
   sentCount: number;
   /** Paid most of it and went quiet. Chasing is the wrong move; the card says so. */
   mostlyPaid: boolean;
+  /**
+   * The unapplied credit the statement holds for this invoice (`lib/db.ts` settlingCredits), or
+   * null. The books refuse to chase while it stands (lib/chase.ts), so the card offers to apply it
+   * in place of Draft.
+   */
+  settling: SettlingCredit | null;
 }
 
 export interface LnTotals {
