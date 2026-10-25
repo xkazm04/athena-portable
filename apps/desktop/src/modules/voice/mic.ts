@@ -68,6 +68,12 @@ export function peakDb(pcm: Int16Array): number {
 }
 
 /**
+ * The silent take's last sentence, true where the picker sits above the take (Voice settings). A
+ * surface with no picker (the studio) swaps it for one that names where the picker is.
+ */
+export const PICK_ABOVE = "Pick another input above.";
+
+/**
  * What a take whose peak is under `floorDb` (`lib/voice`'s `LEVEL_FLOOR_DB`) says, or `null` for a
  * take a listener can write down. Silence is the input's fault, so it names the microphone, not
  * the engines.
@@ -76,7 +82,7 @@ export function silentTake(pcm: Int16Array, floorDb: number): string | null {
   const db = peakDb(pcm);
   if (db >= floorDb) return null;
   const level = Number.isFinite(db) ? `${Math.round(db)} dB` : "no level";
-  return `This microphone sounded silent (${level}). Pick another input above.`;
+  return `This microphone sounded silent (${level}). ${PICK_ABOVE}`;
 }
 
 /** What the voice setup store asks of the microphone choice; `LIVE_MIC` is the real one. */

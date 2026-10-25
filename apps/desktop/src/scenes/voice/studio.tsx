@@ -30,6 +30,7 @@ import {
   type StepId,
   type VoiceModel,
 } from "@/modules/voice/model";
+import { PICK_ABOVE } from "@/modules/voice/mic";
 import { EngineState, InstallBlock, Kbd } from "@/modules/voice/parts";
 import { primary, KeyField, WhisperModels } from "@/modules/voice/pieces";
 
@@ -98,7 +99,18 @@ function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>, r
   useTakeEndsWithPlace(model);
 }
 
-export default function StudioAct({ model, avatar = "halo" }: { model: VoiceModel; avatar?: AvatarId }) {
+const NOWHERE = () => {};
+
+export default function StudioAct({
+  model,
+  avatar = "halo",
+  onSettings = NOWHERE,
+}: {
+  model: VoiceModel;
+  avatar?: AvatarId;
+  /** Dive to Voice settings, where the microphone is picked. */
+  onSettings?: () => void;
+}) {
   const { studio, actions, dock } = model;
   const root = useRef<HTMLDivElement | null>(null);
   const step = studio.step;
@@ -174,7 +186,7 @@ export default function StudioAct({ model, avatar = "halo" }: { model: VoiceMode
         ) : null}
 
         <section className="vsc-card" key={`card-${step}`} data-step={step} aria-label={STEP_LABEL[step]}>
-          <Card model={model} />
+          <Card model={model} onSettings={onSettings} />
         </section>
 
         <footer className="vsc-keys" aria-label="Keys for this step">
@@ -259,7 +271,7 @@ function Rail({ model, avatar }: { model: VoiceModel; avatar: AvatarId }) {
 
 // -- the cards ---------------------------------------------------------------------------------
 
-function Card({ model }: { model: VoiceModel }) {
+function Card({ model, onSettings }: { model: VoiceModel; onSettings: () => void }) {
   switch (model.studio.step) {
     case "engine":
       return <EngineCard model={model} />;
@@ -277,7 +289,7 @@ function Card({ model }: { model: VoiceModel }) {
     case "pick":
       return <PickCard model={model} />;
     case "hear":
-      return <HearCard model={model} />;
+      return <HearCard model={model} onSettings={onSettings} />;
     case "ready":
       return <ReadyCard model={model} />;
   }
@@ -351,8 +363,19 @@ function PickCard({ model }: { model: VoiceModel }) {
   );
 }
 
-function HearCard({ model }: { model: VoiceModel }) {
+/**
+ * The microphone's error as the studio says it. A silent take's "pick another input above" is
+ * true in Voice settings, which has the picker, not here: the studio names where it is instead.
+ */
+function studioMicError(error: string): { text: string; toSettings: boolean } {
+  return error.endsWith(PICK_ABOVE)
+    ? { text: `${error.slice(0, -PICK_ABOVE.length)}Pick another microphone in Voice settings.`, toSettings: true }
+    : { text: error, toSettings: false };
+}
+
+function HearCard({ model, onSettings }: { model: VoiceModel; onSettings: () => void }) {
   const { hear, columns, actions } = model;
+  const micError = hear.micError ? studioMicError(hear.micError) : null;
   const table = acts(model);
   const pickActs = [table.pick_stt_1, table.pick_stt_2] as const;
   return (
@@ -366,10 +389,17 @@ function HearCard({ model }: { model: VoiceModel }) {
         />
         <span className="typo-caption">Hold Space or this button, say anything, then let go.</span>
       </span>
-      {hear.micError ? (
+      {micError ? (
         <p className="typo-caption vs-error" role="alert">
-          {hear.micError}
+          {micError.text}
         </p>
+      ) : null}
+      {micError?.toSettings ? (
+        <span className="row">
+          <Button size="sm" variant="secondary" onClick={onSettings}>
+            Open Voice settings
+          </Button>
+        </span>
       ) : null}
       <div className="vsc-takes">
         {columns.map((col, i) => (

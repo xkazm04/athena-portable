@@ -12,6 +12,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Path } from "@/depth/model";
+import { silentTake } from "@/modules/voice/mic";
 import { INERT_ACTIONS, type VoiceActions, type VoiceModel } from "@/modules/voice/model";
 
 import { fixtures } from "./fixtures";
@@ -314,6 +315,28 @@ describe("the field and settings move", () => {
     click(button("Refresh"));
     expect(calls).toEqual(["reopenStudio", "refresh"]);
     expect(moves).toEqual([STUDIO]);
+  });
+});
+
+describe("a silent take says where another microphone is picked", () => {
+  // The real sentence a silent take produces, not a copy of it.
+  const silent = silentTake(new Int16Array(1600), -60)!;
+
+  it("the studio, which has no picker, points to Voice settings and its control dives there", () => {
+    const moves: Path[] = [];
+    const { model } = spy("mic-refused", { hear: { recording: false, micError: silent, takes: {} } });
+    mount(model, STUDIO, (to) => moves.push(to));
+    expect(host.textContent).toContain("This microphone sounded silent (no level). Pick another microphone in Voice settings.");
+    expect(host.textContent).not.toContain("Pick another input above.");
+    click(button("Open Voice settings"));
+    expect(moves).toEqual([SETTINGS]);
+  });
+
+  it("settings, which has the picker above the take, keeps its 'above' wording", () => {
+    const { model } = spy("typical", { hear: { recording: false, micError: silent, takes: {} } });
+    mount(model, SETTINGS);
+    expect(host.textContent).toContain("This microphone sounded silent (no level). Pick another input above.");
+    expect(host.textContent).not.toContain("in Voice settings");
   });
 });
 

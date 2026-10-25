@@ -103,7 +103,7 @@ export default function VoiceScene({ model: raw, path, go, avatar = "halo", onAv
     );
   }
   return path.item === "studio" ? (
-    <StudioAct model={model} avatar={avatar} />
+    <StudioAct model={model} avatar={avatar} onSettings={() => go(SETTINGS)} />
   ) : (
     <SettingsAct model={model} avatar={avatar} onAvatar={onAvatar} />
   );
