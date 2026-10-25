@@ -7,6 +7,11 @@
  * anything runs, a person *answers* it, and the gate *proves* the answer covers this action with
  * these parameters before the call leaves the surface.
  *
+ * A granted card is spent the moment the gate lets its call through (ADR 0038): `consumedAt` is
+ * set once and a second citation is refused `approval_spent`. A citation whose parameters differ
+ * from the card's is refused `validator_failed` and spends nothing, so a caller that guesses wrong
+ * cannot use up the person's real approval - the daemon's order, `harness/hooks.py` `_check_grant`.
+ *
  * `describe` is the load-bearing half. An approval that is only an id is a token a later call can
  * borrow; binding it to the tool and a canonical rendering of its parameters is what makes
  * "granted for this action" checkable, which is what the daemon does on the real path.
@@ -21,6 +26,8 @@ export interface Card {
   readonly tool: string;
   readonly describe: string;
   status: CardStatus;
+  /** When the gate let this card's call through; `null` until then, and set once. */
+  consumedAt: string | null;
 }
 
 /** Stable rendering of one proposed action: the same arguments always describe the same way. */
@@ -35,7 +42,7 @@ export function describe(origin: string, tool: string, params: Record<string, un
 export class ApprovalError extends Error {
   constructor(
     message: string,
-    readonly reason: "user_denied" | "pending_approval" | "unknown_ref",
+    readonly reason: "user_denied" | "pending_approval" | "unknown_ref" | "validator_failed" | "approval_spent",
   ) {
     super(message);
     this.name = "ApprovalError";
@@ -47,7 +54,7 @@ export class Approvals {
 
   /** A card, pending. Nothing has run; a GATED call may not proceed until this is answered. */
   request(origin: string, tool: string, params: Record<string, unknown>): Card {
-    const card: Card = { id: `apr_${randomUUID().slice(0, 12)}`, origin, tool, describe: describe(origin, tool, params), status: "pending" };
+    const card: Card = { id: `apr_${randomUUID().slice(0, 12)}`, origin, tool, describe: describe(origin, tool, params), status: "pending", consumedAt: null };
     this.cards.set(card.id, card);
     return card;
   }
@@ -76,8 +83,10 @@ export class Approvals {
   }
 
   /**
-   * Prove the approval was granted for *this* action and *these* parameters. Throws otherwise —
-   * a GATED tool never executes without a resolved, matching decision (invariant 3).
+   * Prove the approval was granted for *this* action and *these* parameters, and spend it. Throws
+   * otherwise - a GATED tool never executes without a resolved, matching, unspent decision
+   * (invariant 3). The checks run in the daemon's order: exists, answered, matches (a mismatch is
+   * `validator_failed` and spends nothing), unspent (`approval_spent`), then the one spend.
    */
   prove(id: string | null, origin: string, tool: string, params: Record<string, unknown>): Card {
     if (!id) throw new ApprovalError(`${tool} is GATED and no approval was cited`, "pending_approval");
@@ -87,8 +96,12 @@ export class Approvals {
     if (card.status === "denied") throw new ApprovalError(`${card.id} was declined`, "user_denied");
     const wanted = describe(origin, tool, params);
     if (card.describe !== wanted) {
-      throw new ApprovalError(`${card.id} was granted for ${card.describe}, not ${wanted}`, "unknown_ref");
+      throw new ApprovalError(`${card.id} was granted for ${card.describe}, not ${wanted}`, "validator_failed");
     }
+    if (card.consumedAt !== null) {
+      throw new ApprovalError(`${card.id} has already been spent on ${tool}`, "approval_spent");
+    }
+    card.consumedAt = new Date().toISOString();
     return card;
   }
 }

@@ -29,23 +29,41 @@ export interface ConnectorPort {
   readonly allowed: Set<string>;
 }
 
+/**
+ * A closed schema: every named argument is required and no other is accepted, which is what the
+ * real connector specs publish and what the gate pipeline checks a call against before it leaves.
+ */
+function closed(properties: Record<string, unknown>, required: readonly string[]): Record<string, unknown> {
+  return { type: "object", properties, required: [...required], additionalProperties: false };
+}
+
 /** A read: reversible, no side effects. `classify` makes this AUTO and nothing else has a say. */
-export function readTool(name: string, description: string, properties: Record<string, unknown> = {}): GateTool {
+export function readTool(
+  name: string,
+  description: string,
+  properties: Record<string, unknown> = {},
+  required: readonly string[] = Object.keys(properties),
+): GateTool {
   return {
     name,
     description,
-    inputSchema: { type: "object", properties },
+    inputSchema: closed(properties, required),
     athena: { reversible: true, side_effects: "none" },
     annotations: { readOnlyHint: true, consequentialHint: false },
   };
 }
 
 /** A write that leaves the application. `classify` makes this GATED whatever the service prefers. */
-export function writeTool(name: string, description: string, properties: Record<string, unknown> = {}): GateTool {
+export function writeTool(
+  name: string,
+  description: string,
+  properties: Record<string, unknown> = {},
+  required: readonly string[] = Object.keys(properties),
+): GateTool {
   return {
     name,
     description,
-    inputSchema: { type: "object", properties },
+    inputSchema: closed(properties, required),
     athena: { reversible: false, side_effects: "external" },
     annotations: { readOnlyHint: false, consequentialHint: true },
   };

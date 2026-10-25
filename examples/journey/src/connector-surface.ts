@@ -4,19 +4,18 @@
  *
  * This is `Surface` for a connector: the same `decide` over the same flags, the same approval
  * table, the same ledger, and one thing a page does not have — an egress allow-list checked from
- * the arguments after the approval is proved. A connector cannot argue itself out of GATED any
+ * the arguments after the approval is proved. Both surfaces run one pipeline (`gate-pipeline.ts`);
+ * this class supplies the transport, the allow-list and the read cap. A connector cannot argue itself out of GATED any
  * more than a page can, so nothing here reads a preference.
  */
-import { decide, manifestOf, type Decision, type GateTool, type HostManifest } from "@athena/bridge/gate";
-import { ApprovalError, type Approvals, type Card } from "./approvals.ts";
+import { decide, freshNonce, manifestOf, type Decision, type GateTool, type HostManifest } from "@athena/bridge/gate";
+import type { Approvals, Card } from "./approvals.ts";
 import { EgressRefused, type ConnectorPort } from "./connectors/port.ts";
+import { GateRefusal, READ_CAP, runGate, type GateResult } from "./gate-pipeline.ts";
 import type { Ledger, LedgerRow } from "./ledger.ts";
-import { parse, rowOf, withRow } from "./surface.ts";
+import { parse } from "./surface.ts";
 
-export interface ConnectorResult {
-  readonly output: string;
-  readonly row: LedgerRow;
-  readonly approval: Card | null;
+export interface ConnectorResult extends GateResult {
   readonly target: string | null;
 }
 
@@ -28,6 +27,8 @@ export interface ConnectorRefused {
 
 export class ConnectorSurface {
   private readonly decisions: Map<string, Decision>;
+  /** One nonce for the whole session, as on a page surface: every read is fenced with it. */
+  readonly nonce = freshNonce();
 
   constructor(
     readonly port: ConnectorPort,
@@ -68,52 +69,29 @@ export class ConnectorSurface {
   }
 
   async run(name: string, params: Record<string, unknown> = {}, approval: Card | null = null): Promise<ConnectorResult> {
-    const cls = this.classOf(name);
     const target = this.port.targetOf(name, params);
-    // Every refusal writes its row before it throws (invariant 6, failures included): the gate's,
-    // the allow-list's and the service's own. `refused` reads the row back rather than writing one.
-    const refuse = (error: Error, reason: string): Error =>
-      withRow(error, this.ledger.write({
+    // The same pipeline as a page: validate against the published schema, prove and spend the
+    // card, then the allow-list (after the approval, as the service checks it), then the call, a
+    // read capped at READ_CAP inside the fence, and one row for every outcome.
+    const result = await runGate(
+      { approvals: this.approvals, ledger: this.ledger, nonce: this.nonce },
+      {
         app: this.origin,
+        origin: this.origin,
         tier: 3,
-        tool: name,
-        cls,
-        outcome: "refused",
-        reason,
-        approval: cls === "GATED" ? (approval?.id ?? null) : null,
+        name,
+        cls: this.classOf(name),
+        schema: this.port.listTools().find((tool) => tool.name === name)?.inputSchema,
+        params,
+        approval,
         target,
-      }));
-    let card: Card | null = null;
-    if (cls === "GATED") {
-      try {
-        card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
-      } catch (error) {
-        throw error instanceof ApprovalError ? refuse(error, error.reason) : error;
-      }
-    }
-    // Second, and only after the approval: the switch layers on the gate, it does not replace it.
-    if (target !== null && !this.port.allowed.has(target)) {
-      const egress = new EgressRefused(this.port.id, target);
-      throw refuse(egress, egress.reason);
-    }
-
-    let output: string;
-    try {
-      output = String(await this.port.call(name, params));
-    } catch (error) {
-      throw refuse(error instanceof Error ? error : new Error(String(error)), "unknown");
-    }
-    const row = this.ledger.write({
-      app: this.origin,
-      tier: 3,
-      tool: name,
-      cls,
-      outcome: "ok",
-      reason: null,
-      approval: card?.id ?? null,
-      target,
-    });
-    return { output, row, approval: card, target };
+        egress: (to) => (this.port.allowed.has(to) ? null : new EgressRefused(this.port.id, to).message),
+        transport: async () => ({ ok: true, output: String(await this.port.call(name, params)) }),
+        label: this.port.id,
+        readCap: READ_CAP,
+      },
+    );
+    return { ...result, target };
   }
 
   async read<T = unknown>(name: string, params: Record<string, unknown> = {}): Promise<T> {
@@ -143,9 +121,11 @@ export class ConnectorSurface {
     try {
       await this.run(name, params, card);
     } catch (error) {
-      const reason = error instanceof ApprovalError ? error.reason : error instanceof EgressRefused ? error.reason : null;
-      // `run` wrote the row when it refused; this only hands it back.
-      if (reason) return { reason, message: (error as Error).message, row: rowOf(error as Error) };
+      // `run` wrote the row when it refused; this only hands it back. A service that failed is not
+      // the gate holding, so it is not reported as one.
+      if (error instanceof GateRefusal && error.stage !== "transport") {
+        return { reason: error.reason, message: error.message, row: error.row };
+      }
       throw error;
     }
     throw new Error(`${name} ran when it should have been refused; the gate did not hold`);

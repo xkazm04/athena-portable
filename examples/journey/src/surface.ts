@@ -15,7 +15,6 @@
 import {
   Budget,
   decide,
-  fence,
   freshNonce,
   manifestOf,
   type Decision,
@@ -25,17 +24,13 @@ import {
 } from "@athena/bridge/gate";
 import type { Page } from "@playwright/test";
 import { envInt, originOf, type AppSpec } from "./apps.ts";
-import { ApprovalError, type Approvals, type Card } from "./approvals.ts";
+import type { Approvals, Card } from "./approvals.ts";
+import { GateRefusal, runGate, type GateResult } from "./gate-pipeline.ts";
 import type { Ledger, LedgerRow } from "./ledger.ts";
 import { call, hand, handTools, installBridge, list } from "./relay.ts";
 
-export interface Result {
-  readonly output: string;
-  /** What a prompt would actually carry: the output, neutralised and fenced (section 3.2). */
-  readonly fenced: string;
-  readonly row: LedgerRow;
-  readonly approval: Card | null;
-}
+/** What a prompt would actually carry is `fenced`: the output, neutralised and fenced (section 3.2). */
+export type Result = GateResult;
 
 export interface Refused {
   readonly reason: string;
@@ -184,52 +179,29 @@ export class Surface {
    * already be granted for exactly this action. Every outcome, refusals included, is one row.
    */
   async run(name: string, params: Record<string, unknown> = {}, approval: Card | null = null): Promise<Result> {
-    const cls = this.classOf(name);
     const tier = this.tierOf(name);
-    // Every refusal below writes its row before it throws, so "failures included" holds for the
-    // calls the gate stops as well as the ones the page refuses; `refused` reads the row back.
-    const refuse = (error: Error, reason: string): Error =>
-      withRow(error, this.ledger.write({
+    // The class comes from the gate and the schema from what the page published; the pipeline
+    // writes every row, refusals included, and refuses with the row attached (`rowOf`).
+    return runGate(
+      { approvals: this.approvals, ledger: this.ledger, nonce: this.nonce },
+      {
         app: this.app.id,
+        origin: this.origin,
         tier,
-        tool: name,
-        cls,
-        outcome: "refused",
-        reason,
-        // The card the caller cited, which is the card a granted call would have recorded.
-        approval: cls === "GATED" ? (approval?.id ?? null) : null,
-        target: null,
-      }));
-    let card: Card | null = null;
-    if (cls === "GATED") {
-      try {
-        card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
-      } catch (error) {
-        throw error instanceof ApprovalError ? refuse(error, error.reason) : error;
-      }
-    }
-
-    const ticket = this.budget.take(this.origin);
-    if (!ticket.ok) {
-      throw refuse(new Error(`${this.origin}: ${ticket.message}`), ticket.reason ?? "budget_exhausted");
-    }
-
-    // Two transports, one gate. A hand goes to the hands namespace and a page tool to the page's,
-    // and everything either side of this line — the class, the approval, the budget, the row — is
-    // the same code for both.
-    const answer = tier === 2 ? await hand(this.page, name, params) : await call(this.page, name, params);
-    if (answer.ok !== true) throw refuse(new Error(`${name}: ${answer.error}`), answer.reason ?? "unknown");
-    const row = this.ledger.write({
-      app: this.app.id,
-      tier,
-      tool: name,
-      cls,
-      outcome: "ok",
-      reason: null,
-      approval: card?.id ?? null,
-      target: null,
-    });
-    return { output: answer.output, fenced: fence(answer.output, "untrusted", this.nonce), row, approval: card };
+        name,
+        cls: this.classOf(name),
+        schema: this.tools.find((tool) => tool.name === name)?.inputSchema,
+        params,
+        approval,
+        admit: () => {
+          const ticket = this.budget.take(this.origin);
+          return ticket.ok ? null : { reason: ticket.reason ?? "budget_exhausted", message: `${this.origin}: ${ticket.message}` };
+        },
+        // Two transports, one gate: a hand goes to the hands namespace and a page tool to the
+        // page's, and everything either side of this line is the same code for both.
+        transport: () => (tier === 2 ? hand(this.page, name, params) : call(this.page, name, params)),
+      },
+    );
   }
 
   /** An AUTO read, as JSON when the tool answered JSON. Refuses to run anything GATED. */
@@ -265,17 +237,15 @@ export class Surface {
     try {
       await this.run(name, params, card);
     } catch (error) {
-      // `run` wrote the row when it refused; this only hands it back.
-      if (error instanceof ApprovalError) return { reason: error.reason, message: error.message, row: rowOf(error) };
+      // `run` wrote the row when it refused; this only hands it back. A refusal the page itself
+      // returned is not the gate holding, so it is not reported as one.
+      if (error instanceof GateRefusal && error.stage !== "transport" && error.stage !== "admit") {
+        return { reason: error.reason, message: error.message, row: error.row };
+      }
       throw error;
     }
     throw new Error(`${name} executed without a granted approval; the gate did not hold`);
   }
-}
-
-/** Attach the ledger row a refusal wrote to the error that reports it. */
-export function withRow<E extends Error>(error: E, row: LedgerRow): E & { row: LedgerRow } {
-  return Object.assign(error, { row });
 }
 
 /** The row a refusal wrote before it threw. A refusal with none is a refusal the record lost. */

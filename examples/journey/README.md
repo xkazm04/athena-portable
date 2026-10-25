@@ -70,6 +70,15 @@ Classification is `@athena/bridge/gate` imported into Node — `flagsOf` → `cl
 plus `manifestOf`, `Budget` and `fence`. The gate is a plain ES module with no DOM, so it needs no
 shim and no page context; a second copy of the policy would be a second policy (`src/surface.ts`).
 
+Every tier runs one pipeline, `src/gate-pipeline.ts`, in the daemon's order: validate the arguments
+against the schema the tool published (`validator_failed`), prove the card and spend it (a card
+runs once; a second citation is `approval_spent`, and a citation with other parameters is
+`validator_failed` and spends nothing, ADR 0038), then a connector's egress allow-list
+(`foreign_origin`, with the card already spent, as the service checks it), the call, and the
+output fenced, a connector read cut at `READ_CAP` 1600 inside the fence. The transport is
+injected, so the gate has an offline spec that boots nothing:
+`pnpm --filter @athena/journey exec playwright test tests/gate-pipeline.spec.ts` (ADR 0153).
+
 ## What it asserts
 
 ### Act 1 — Ledgerbox (`localhost:3001`)
@@ -148,6 +157,8 @@ this tree — only `src/athena/connectors/port.py`. So the journey models them i
 - reads are reads, writes are `GATED` *and* behind an egress allow-list derived from the
   arguments — recipients for mail, page ids for notes — checked **after** the approval is proved,
   because the switch layers on the gate and never replaces it;
+- schemas are closed (every argument required, no other accepted) and a call is checked against
+  them before it leaves, and a read is capped at `READ_CAP` and fenced, as the real service does;
 - no tool returns, lists, mints or rotates a credential, and the fakes hold none.
 
 The mail allow-list is built from the registry contacts of exactly the clients act 1 chases, which
@@ -161,8 +172,9 @@ is why Solstice Partners cannot receive mail even by accident.
 | `tests/journey.spec.ts` | one test, four steps — see below |
 | `src/boot.ts` | boot, readiness, database freshness, tree kill |
 | `src/relay.ts` | `inject.js` at document start and the `athena-webmcp` relay |
-| `src/surface.ts` | the surface: the real gate, the manifest, the budget, the fence |
-| `src/approvals.ts` | the approvals fake: card → answer → `describe` proves it covers this call |
+| `src/surface.ts` | the surface: the real gate, the manifest, the budget, the page transport |
+| `src/gate-pipeline.ts` | the one pipeline every tier runs: validate, prove and spend, egress, call, fence, row |
+| `src/approvals.ts` | the approvals fake: card → answer → `describe` proves it covers this call, once |
 | `src/connector-surface.ts` | tier 3 at the same gate, plus the egress allow-list |
 | `src/connectors/` | the seam, `FakeMail` and `FakeNotes` |
 | `src/ledger.ts` | one row per call and the act 4 table |
