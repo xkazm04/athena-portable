@@ -8,10 +8,12 @@
  * state still says what is true in plain words (her line for the step, the daemon's reasons).
  *
  * A pure function of the model, the way the module's studio was. The keys are the module's own
- * table (`keyAction`), carried out by `keys.ts` on the document, so the chips in the dock and the
- * keyboard cannot disagree.
+ * table (`keyAction`), carried out by `keys.ts` on the document. Whether each act may run, and the
+ * sentence said when it may not, is `keys.ts` `acts()`: the document keys, the dock's chips, the
+ * cards' buttons and the hero's quiet line all read that one table, and a refused key is said in
+ * the act's live region instead of being swallowed.
  */
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 import VoiceArt from "@/art/voice";
 import type { AvatarId } from "@/avatar/types";
@@ -32,7 +34,7 @@ import { EngineState, InstallBlock, Kbd } from "@/modules/voice/parts";
 import { primary, KeyField, WhisperModels } from "@/modules/voice/pieces";
 
 import { Her, useStudioFace } from "./face";
-import { perform, studioKey } from "./keys";
+import { acts, holdAct, perform, studioKey } from "./keys";
 import { Chip, HOTKEY, HoldButton, Hero, useTakeEndsWithPlace } from "./parts";
 
 const TITLE: Record<Exclude<StepId, "ready">, string> = {
@@ -50,11 +52,23 @@ function poseOf(model: VoiceModel): Pose {
   return "resting";
 }
 
-/** Document-level keys while the studio is on screen; see `keys.ts` for why not an element. */
-function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>): void {
+/** A refused key's reason, said once in the live region; `n` makes a repeat a new sentence. */
+interface Refusal {
+  step: StepId;
+  text: string;
+  n: number;
+}
+
+/**
+ * Document-level keys while the studio is on screen; see `keys.ts` for why not an element. A key
+ * the act table refuses is left to the page (not prevented) and its reason handed to `refuse`.
+ */
+function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>, refuse: (text: string) => void): void {
   const latest = useRef(model);
+  const said = useRef(refuse);
   useEffect(() => {
     latest.current = model;
+    said.current = refuse;
   });
   useEffect(() => {
     const on = (phase: "down" | "up") => (e: KeyboardEvent) => {
@@ -63,8 +77,13 @@ function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>): 
       if (root.current?.closest("[inert]")) return;
       const act = studioKey(latest.current, e, phase);
       if (act === null) return;
-      e.preventDefault();
-      perform(latest.current, act);
+      if (perform(latest.current, act)) {
+        e.preventDefault();
+        return;
+      }
+      // A key let go only ends what it started; a refusal is said for the press, not the release.
+      const reason = acts(latest.current)[act].reason;
+      if (phase === "down" && reason) said.current(reason);
     };
     const down = on("down");
     const up = on("up");
@@ -82,18 +101,20 @@ function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>): 
 export default function StudioAct({ model, avatar = "halo" }: { model: VoiceModel; avatar?: AvatarId }) {
   const { studio, actions, dock } = model;
   const root = useRef<HTMLDivElement | null>(null);
-  useStudioKeys(model, root);
-
   const step = studio.step;
+  const [refusal, setRefusal] = useState<Refusal | null>(null);
+  useStudioKeys(model, root, (text) => setRefusal((r) => ({ step, text, n: (r?.n ?? 0) + 1 })));
+  const table = acts(model);
+
   const n = STEP_ORDER.indexOf(step) + 1;
   const title = step === "ready" ? (model.available ? "She is ready." : "Nearly there.") : TITLE[step];
   const recording = step === "hear";
   const speakingStep = step === "pick";
   const kokoroDone = studio.done.includes("install") || model.kokoro?.state === "ready";
-  // Space plays only an installed voice and records only when a listener can hear the take
-  // (keys.ts), so the hero's quiet line names Space only when it acts.
-  const canHear = model.columns.some((c) => c.ready);
-  const canPlay = model.voice !== null && model.kokoro?.state === "ready";
+  // The hero's quiet line names Space only when the act it would run is allowed, and otherwise
+  // says that act's own refusal, word for word.
+  const hold = table[holdAct(model)];
+  const play = table.toggle_preview;
 
   return (
     <div className="vsc vsc--studio" data-step={step} ref={root}>
@@ -120,6 +141,11 @@ export default function StudioAct({ model, avatar = "halo" }: { model: VoiceMode
               <h1 className="vsc-title">{title}</h1>
               <p className="vsc-lead">{model.line}</p>
             </div>
+            {refusal && refusal.step === step ? (
+              <p className="typo-caption" key={refusal.n}>
+                {refusal.text}
+              </p>
+            ) : null}
           </div>
         </header>
 
@@ -131,12 +157,12 @@ export default function StudioAct({ model, avatar = "halo" }: { model: VoiceMode
               meters={model.meters}
               idle={
                 recording
-                  ? canHear
+                  ? hold.enabled
                     ? "Quiet. Hold Space and speak."
-                    : "Quiet. No listener is ready to hear a take yet."
-                  : canPlay
+                    : `Quiet. ${hold.reason}`
+                  : play.enabled
                     ? "Quiet. Press Space or Play to hear her."
-                    : "Quiet. Her voice is not installed yet."
+                    : `Quiet. ${play.reason}`
               }
             />
             <p className="vsc-hero__note">
@@ -152,10 +178,10 @@ export default function StudioAct({ model, avatar = "halo" }: { model: VoiceMode
         </section>
 
         <footer className="vsc-keys" aria-label="Keys for this step">
-          {dock.canBack ? <Chip k="B" label="Back" onPress={() => actions.studio({ t: "back" })} /> : null}
+          {table.back.enabled ? <Chip k="B" label="Back" onPress={() => actions.studio({ t: "back" })} /> : null}
           <span className="vs-push" />
-          {dock.canSkip ? <Chip k="S" label="Skip" onPress={() => actions.studio({ t: "skip" })} /> : null}
-          <Chip k="Enter" label={dock.primaryLabel} primary disabledReason={dock.primaryDisabledReason} onPress={primary(model)} />
+          {table.skip.enabled ? <Chip k="S" label="Skip" onPress={() => actions.studio({ t: "skip" })} /> : null}
+          <Chip k="Enter" label={dock.primaryLabel} primary disabledReason={table.primary.reason} onPress={primary(model)} />
         </footer>
       </div>
     </div>
@@ -285,12 +311,12 @@ function EngineCard({ model }: { model: VoiceModel }) {
 }
 
 function PickCard({ model }: { model: VoiceModel }) {
-  const { voice, kokoro, preview } = model;
+  const { voice, preview } = model;
   if (!voice) return <p className="typo-body">Kokoro lists no voices. Check again once it is installed.</p>;
   const mine = preview.voice === voice.id;
   const playing = mine && preview.phase === "playing";
   const synth = mine && preview.phase === "synth";
-  const notReady = kokoro?.state === "ready" ? undefined : "Her voice is not installed yet.";
+  const play = acts(model).toggle_preview;
   return (
     <div className="stack">
       <div className="vsc-voice" data-playing={playing ? "true" : "false"} data-picked={model.studio.voice === voice.id ? "true" : "false"}>
@@ -304,7 +330,7 @@ function PickCard({ model }: { model: VoiceModel }) {
           <Button
             size="sm"
             variant={playing ? "primary" : "secondary"}
-            disabledReason={notReady}
+            disabledReason={play.reason}
             aria-pressed={playing}
             onClick={() => model.actions.togglePreview(voice.id)}
           >
@@ -327,13 +353,14 @@ function PickCard({ model }: { model: VoiceModel }) {
 
 function HearCard({ model }: { model: VoiceModel }) {
   const { hear, columns, actions } = model;
-  const anyReady = columns.some((c) => c.ready);
+  const table = acts(model);
+  const pickActs = [table.pick_stt_1, table.pick_stt_2] as const;
   return (
     <div className="stack" style={{ gap: 12 }}>
       <span className="row">
         <HoldButton
           recording={hear.recording}
-          disabledReason={anyReady ? undefined : "No listener is ready yet — install a Whisper model or add a key below."}
+          disabledReason={table[holdAct(model)].reason}
           onStart={actions.recordStart}
           onStop={actions.recordStop}
         />
@@ -366,7 +393,7 @@ function HearCard({ model }: { model: VoiceModel }) {
                 size="sm"
                 variant={col.picked ? "primary" : "secondary"}
                 aria-pressed={col.picked}
-                disabledReason={col.ready ? undefined : (col.reason ?? "Not ready.")}
+                disabledReason={pickActs[i]?.reason}
                 onClick={() => actions.studio({ t: "pick_stt", engine: col.id })}
               >
                 <Kbd>{String(i + 1)}</Kbd>

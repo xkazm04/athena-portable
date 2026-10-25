@@ -12,6 +12,7 @@ import { describe, expect, it } from "vitest";
 import { STEP_ORDER } from "@/modules/voice/model";
 
 import { fixtureIds, fixtures } from "./fixtures";
+import { acts } from "./keys";
 import { micBins } from "./parts";
 import VoiceScene, { SETTINGS, STUDIO, withMoves } from "./view";
 
@@ -215,6 +216,21 @@ describe("the studio", () => {
     expect(out).toContain("Her voice is not installed yet.");
   });
 
+  it("pick without Kokoro: Play, the hero's quiet line and settings' Play say one sentence, from acts()", () => {
+    const pick = fixtures.pick!;
+    const absent = { ...pick, kokoro: pick.kokoro && { ...pick.kokoro, state: "absent" as const } };
+    const reason = acts(absent).toggle_preview.reason;
+    expect(reason).toBeTruthy();
+    const studio = renderToStaticMarkup(<VoiceScene model={absent} path={STUDIO} go={go} />);
+    const settings = renderToStaticMarkup(<VoiceScene model={{ ...absent, mode: "settings" }} path={SETTINGS} go={go} />);
+    // The studio's Play is wrapped by its reason; the hero's idle line says the same sentence.
+    expect(studio).toMatch(new RegExp(`title="${reason}"[^>]*><button[^>]*disabled[^>]*><kbd[^>]*>Space`));
+    expect(studio).toContain(`>Quiet. ${reason}<`);
+    // Settings' Play: its reason sits on the wrapper right before the button that says Play.
+    expect(settings).toMatch(new RegExp(`title="${reason}"[^>]*><button[^>]*disabled[^>]*>Play<`));
+    expect(studio).not.toContain('title="Her voice is not installed yet."');
+  });
+
   it("ready: Start talking, the facts, and the chord", () => {
     const out = draw("ready", STUDIO);
     expect(out).toContain("She is ready.");
@@ -255,7 +271,7 @@ describe("settings", () => {
     const out = renderToStaticMarkup(<VoiceScene model={bare} path={SETTINGS} go={go} />);
     expect(out).toContain("Needs install");
     expect(out).toContain("Install now");
-    expect(out).toContain("Install Kokoro first.");
+    expect(out).toContain(acts(bare).toggle_preview.reason ?? "no reason");
   });
 
   it("input: the listener rail, Whisper's models with their standing, and the install of one", () => {

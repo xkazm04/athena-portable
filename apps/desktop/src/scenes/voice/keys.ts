@@ -40,15 +40,72 @@ export function studioKey(model: VoiceModel, e: KeyLike, phase: "down" | "up"): 
   return keyAction(model.studio.step, e.key, phase);
 }
 
-/** Carry an action out against the model's own actions. Returns whether anything was done. */
-export function perform(model: VoiceModel, act: Exclude<KeyAction, null>): boolean {
+export type Act = Exclude<KeyAction, null>;
+
+/** Whether an act may run now, and when it may not, the one sentence every surface says for it. */
+export interface ActState {
+  enabled: boolean;
+  reason?: string;
+}
+
+const ok: ActState = { enabled: true };
+const refused = (reason: string): ActState => ({ enabled: false, reason });
+
+/** The listener sentence the Hold button, Space and the hero all say when no take could be heard. */
+const NO_LISTENER = "No listener is ready yet — install a Whisper model or add a key below.";
+
+/**
+ * Every act's availability, derived once from the model's own facts (the dock, the listeners'
+ * readiness, Kokoro, the take). The key handler, the dock's chips, the cards' buttons, the hero's
+ * quiet line and settings' Play all read this table, so a key and the control it mirrors cannot
+ * disagree and one fact has one sentence (wizard-flows: validity is a predicate, not a flag).
+ */
+export function acts(model: VoiceModel): Record<Act, ActState> {
+  const { dock, hear, columns, voice, kokoro } = model;
+  const pick = (i: number): ActState => {
+    const col = columns[i];
+    if (!col) return refused("There is no listener in this place.");
+    return col.ready ? ok : refused(col.reason ?? "Not ready.");
+  };
+  return {
+    choose_engine: ok,
+    back: dock.canBack ? ok : refused("This is the first step; there is nothing to go back to."),
+    skip: dock.canSkip ? ok : refused("This is the last step; there is nothing to skip."),
+    primary: dock.primaryDisabledReason ? refused(dock.primaryDisabledReason) : ok,
+    toggle_preview: !voice
+      ? refused("Kokoro lists no voices until it is installed.")
+      : kokoro?.state === "ready"
+        ? ok
+        : refused("Her voice is not installed yet. Install Kokoro first."),
+    // With no listener ready a take would be recorded and thrown away (live.ts recordStop).
+    record_start: hear.recording
+      ? refused("A take is already recording.")
+      : columns.some((c) => c.ready)
+        ? ok
+        : refused(NO_LISTENER),
+    record_stop: hear.recording ? ok : refused("No take is recording."),
+    pick_stt_1: pick(0),
+    pick_stt_2: pick(1),
+  };
+}
+
+/** The act the Hold button stands for right now: it starts a take, and while one records it ends it. */
+export function holdAct(model: VoiceModel): "record_start" | "record_stop" {
+  return model.hear.recording ? "record_stop" : "record_start";
+}
+
+/**
+ * Carry an action out against the model's own actions, only when the act table allows it. Returns
+ * whether anything was done, so a refused key is neither swallowed nor silent.
+ */
+export function perform(model: VoiceModel, act: Act): boolean {
+  if (!acts(model)[act].enabled) return false;
   const { actions } = model;
   switch (act) {
     case "choose_engine":
       actions.studio({ t: "choose_engine" });
       return true;
     case "back":
-      if (!model.dock.canBack) return false;
       actions.studio({ t: "back" });
       return true;
     case "skip":
@@ -58,23 +115,18 @@ export function perform(model: VoiceModel, act: Exclude<KeyAction, null>): boole
       primary(model)();
       return true;
     case "toggle_preview":
-      if (!model.voice || model.kokoro?.state !== "ready") return false;
-      actions.togglePreview(model.voice.id);
+      if (model.voice) actions.togglePreview(model.voice.id);
       return true;
     case "record_start":
-      // As the Hold button: with no listener ready a take would be recorded and thrown away.
-      if (model.hear.recording || !model.columns.some((c) => c.ready)) return false;
       actions.recordStart();
       return true;
     case "record_stop":
-      if (!model.hear.recording) return false;
       actions.recordStop();
       return true;
     case "pick_stt_1":
     case "pick_stt_2": {
       const col = model.columns[act === "pick_stt_1" ? 0 : 1];
-      if (!col?.ready) return false;
-      actions.studio({ t: "pick_stt", engine: col.id });
+      if (col) actions.studio({ t: "pick_stt", engine: col.id });
       return true;
     }
   }

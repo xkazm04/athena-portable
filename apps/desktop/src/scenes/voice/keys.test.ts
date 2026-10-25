@@ -1,16 +1,22 @@
+// @vitest-environment jsdom
 /**
  * Tests for the studio's keys in the scene — README section 3.1, ADR 0028 and 0087.
  *
  * `model.test.ts` pins the table (`keyAction`); these pin that each key the table names is carried
  * out against the model's own actions on the right step, that a text field or a button keeps what
- * is its own, and that Escape is left to the stage.
+ * is its own, and that Escape is left to the stage. The act table (`acts`) is pinned here too: each
+ * act's availability and its refusal sentence, and that every control in the studio that mirrors an
+ * act reads that one entry (a DOM is needed for that parity, hence jsdom).
  */
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { INERT_ACTIONS, type VoiceActions, type VoiceModel } from "@/modules/voice/model";
+import { INERT_ACTIONS, type KeyAction, type VoiceActions, type VoiceModel } from "@/modules/voice/model";
 
-import { fixtures } from "./fixtures";
-import { ownsKey, perform, studioKey, type KeyLike } from "./keys";
+import { fixtureIds, fixtures } from "./fixtures";
+import { acts, ownsKey, perform, studioKey, type KeyLike } from "./keys";
+import VoiceScene, { STUDIO } from "./view";
 
 /** The model with every action recorded, so a key's effect is a list of calls. */
 function spy(fixture: string): { model: VoiceModel; calls: string[] } {
@@ -148,4 +154,95 @@ describe("who owns a key", () => {
     expect(key("pick", " ", "down", { repeat: true }).act).toBeNull();
     expect(key("pick", "Escape").act).toBeNull();
   });
+});
+
+describe("one act table: every act's availability and its reason come from acts()", () => {
+  it("record_start is refused with the listener's sentence on hear-muted, record_stop runs while recording, and perform obeys", () => {
+    expect(acts(fixtures["hear-muted"]!).record_start).toEqual({
+      enabled: false,
+      reason: "No listener is ready yet — install a Whisper model or add a key below.",
+    });
+    expect(acts(fixtures.recording!).record_stop).toEqual({ enabled: true });
+    const { model, calls } = spy("hear-muted");
+    expect(perform(model, "record_start")).toBe(false);
+    expect(calls).toEqual([]);
+  });
+
+  it("primary is refused with the dock's own reason, and perform says it did nothing", () => {
+    const { model, calls } = spy("hear-muted");
+    expect(acts(model).primary).toEqual({ enabled: false, reason: model.dock.primaryDisabledReason });
+    expect(perform(model, "primary")).toBe(false);
+    expect(calls).toEqual([]);
+  });
+});
+
+type Act = Exclude<KeyAction, null>;
+
+/** What a rendered control says of itself: disabled, and the reason its wrapper carries. */
+function stateOf(button: HTMLButtonElement): { enabled: boolean; reason?: string } {
+  if (!button.disabled) return { enabled: true };
+  return { enabled: false, reason: button.parentElement?.getAttribute("title") ?? undefined };
+}
+
+/** The controls in the studio that mirror an act, found in the studio's own markup. */
+function controlsOf(model: VoiceModel): Partial<Record<Act, HTMLButtonElement | null>> {
+  const doc = new DOMParser().parseFromString(
+    renderToStaticMarkup(createElement(VoiceScene, { model, path: STUDIO, go: () => {} })),
+    "text/html",
+  );
+  const chip = (k: string) =>
+    [...doc.querySelectorAll<HTMLButtonElement>(".vsc-keys button")].find((b) => b.querySelector("kbd")?.textContent === k) ?? null;
+  const hold = doc.querySelector<HTMLButtonElement>('button[title="Hold to talk; let go to send"]');
+  const takes = [...doc.querySelectorAll(".vsc-take")].map((t) => t.querySelector<HTMLButtonElement>(":scope > .row button"));
+  return {
+    choose_engine: doc.querySelector<HTMLButtonElement>(".vsc-opt"),
+    back: chip("B"),
+    skip: chip("S"),
+    primary: chip("Enter"),
+    toggle_preview: doc.querySelector<HTMLButtonElement>(".vsc-card .vsc-voice button"),
+    // The Hold button is the take's one control: it starts a take, and while one records it ends it.
+    record_start: model.hear.recording ? null : hold,
+    record_stop: model.hear.recording ? hold : null,
+    pick_stt_1: takes[0] ?? null,
+    pick_stt_2: takes[1] ?? null,
+  };
+}
+
+const ACTS: readonly Act[] = [
+  "choose_engine",
+  "back",
+  "skip",
+  "primary",
+  "toggle_preview",
+  "record_start",
+  "record_stop",
+  "pick_stt_1",
+  "pick_stt_2",
+];
+
+describe("table parity: no control in the studio decides on its own", () => {
+  it("the table has one entry per act the module's keys can name", () => {
+    expect(Object.keys(acts(fixtures.typical!)).sort()).toEqual([...ACTS].sort());
+  });
+  for (const id of fixtureIds) {
+    describe(id, () => {
+      const model = fixtures[id]!;
+      let controls: ReturnType<typeof controlsOf> | null = null;
+      for (const act of ACTS) {
+        it(act, () => {
+          controls ??= controlsOf(model);
+          const control = controls[act] ?? null;
+          const entry = acts(model)[act];
+          if (act === "back" || act === "skip") {
+            if (!controls.primary) return; // a gate stands in front of the studio: no dock is drawn
+            // The dock shows B and S only while they act, so a hidden chip is the refusal.
+            expect(control === null ? { enabled: false } : stateOf(control)).toEqual({ enabled: entry.enabled });
+            return;
+          }
+          if (!control) return; // this act has no control on this rendering
+          expect(stateOf(control)).toEqual(entry.enabled ? { enabled: true } : { enabled: false, reason: entry.reason });
+        });
+      }
+    });
+  }
 });

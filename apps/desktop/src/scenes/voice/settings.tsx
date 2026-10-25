@@ -26,6 +26,7 @@ import { KeyField, ToneControl, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
 import { FacePicker } from "./face";
+import { acts } from "./keys";
 import { HOTKEY, useTakeEndsWithPlace } from "./parts";
 
 const STT_HINT: Record<SttEngineId, string> = {
@@ -146,7 +147,7 @@ function Output({ model, avatar, onAvatar }: { model: VoiceModel; avatar: Avatar
                 size="sm"
                 variant={playing ? "primary" : "secondary"}
                 aria-pressed={playing}
-                disabledReason={kokoro?.state === "ready" ? undefined : "Install Kokoro first."}
+                disabledReason={acts(model).toggle_preview.reason}
                 onClick={() => model.actions.togglePreview(voice.id)}
               >
                 {playing ? "Stop" : synth ? "Getting ready..." : "Play"}

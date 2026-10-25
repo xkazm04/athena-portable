@@ -234,6 +234,29 @@ describe("the studio's document keys", () => {
     ]);
   });
 
+  /** The studio's polite live region: the step's words, and a refused key's reason. */
+  const liveRegion = () => host.querySelector(".vsc-title")!.closest("[aria-live='polite']")!;
+
+  it("a refused Space on hear-muted opens no microphone, is not swallowed, and says why", () => {
+    const { model, calls } = spy("hear-muted");
+    mount(model, STUDIO);
+    const space = new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true });
+    act(() => void document.body.dispatchEvent(space));
+    expect(calls).toEqual([]);
+    expect(space.defaultPrevented).toBe(false);
+    expect(liveRegion().textContent).toContain("No listener is ready yet — install a Whisper model or add a key below.");
+  });
+
+  it("a refused Enter on the hear step with no pick runs nothing, is not swallowed, and says the dock's reason", () => {
+    const { model, calls } = spy("hear-muted");
+    mount(model, STUDIO);
+    const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    act(() => void document.body.dispatchEvent(enter));
+    expect(calls).toEqual([]);
+    expect(enter.defaultPrevented).toBe(false);
+    expect(liveRegion().textContent).toContain(model.dock.primaryDisabledReason!);
+  });
+
   it("a focused button keeps its own Enter, so the dock does not act twice", () => {
     const { model, calls } = spy("engine");
     mount(model, STUDIO);
