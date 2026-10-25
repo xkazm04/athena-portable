@@ -52,6 +52,8 @@ export const SETTING_KEYS = {
   onboarded: "onboarded",
   /** Has the Voice studio been finished once (ADR 0028)? After it, the module opens on settings. */
   voiceStudioDone: "voice_studio_done",
+  /** The microphone every capture opens, by the browser's device id; empty is the system default. */
+  voiceInput: "voice_input",
   /**
    * The tool contracts the user accepted, web origin to tool name to `lib/contract.ts`'s record
    * (ADR 0100). A settings row, not an `origins` column: the store ships no migrations.

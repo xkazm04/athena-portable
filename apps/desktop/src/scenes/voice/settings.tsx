@@ -2,9 +2,9 @@
  * Voice settings, drawn as two instruments — README section 3.1, ADR 0028, 0087 and 0089.
  *
  * Output (her voice: the engine and its install, the voice and a play button, where the engine
- * lives) on the left, Input (how she hears you: the listener, Whisper's models, the OpenAI key, a
- * test take) on the right. Every row is a fact in a sentence and the control that changes it, as the
- * module's settings were. The key is typed once and never shown back; Replace and Remove are
+ * lives) on the left, Input (how she hears you: the listener, Whisper's models, the OpenAI key, the
+ * microphone and a test take through it) on the right. Every row is a fact in a sentence and the
+ * control that changes it, as the module's settings were. The key is typed once and never shown back; Replace and Remove are
  * there, and Keep the stored key cancels a replacement.
  *
  * Pure, over the same model as the studio. The test take is the one place a take records here, and
@@ -22,7 +22,7 @@ import StatusDot from "@/components/StatusDot";
 import type { SttEngineId } from "@/lib/voice-setup";
 import { sttName, voiceMeta, type VoiceModel } from "@/modules/voice/model";
 import { EngineState, HoldToTalk, InstallBlock, Kbd } from "@/modules/voice/parts";
-import { KeyField, ToneControl, WhisperModels } from "@/modules/voice/pieces";
+import { KeyField, MicPicker, ToneControl, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
 import { FacePicker } from "./face";
@@ -216,6 +216,9 @@ function Input({ model }: { model: VoiceModel }) {
       ) : null}
       <Row label="OpenAI key" fact="Sealed on this machine and never shown again.">
         <OpenAiKey model={model} />
+      </Row>
+      <Row label="Microphone" fact="The input she hears you through. The take below shows its level.">
+        <MicPicker recording={model.hear.recording} />
       </Row>
       <Row label="Test take" fact={`One take through ${name}.`}>
         <HoldToTalk

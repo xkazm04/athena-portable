@@ -28,7 +28,7 @@ import { create } from "zustand";
 import type { Endpoint } from "@/lib/api";
 import { hasShell } from "@/lib/ipc";
 import { SETTING_KEYS, settingRead, settingWrite } from "@/lib/store";
-import { currentLevel } from "@/lib/voice";
+import { LEVEL_FLOOR_DB, currentLevel } from "@/lib/voice";
 import {
   ACTIVE_INSTALL,
   VoiceSetupApi,
@@ -97,6 +97,9 @@ const LIVE: VoiceSetupDeps = {
 };
 
 let deps: VoiceSetupDeps = LIVE;
+
+/** The microphone choice, the inputs and the silent-take check: Voice settings' own, loaded on first use. */
+const micModule = () => import("./mic");
 
 export function setVoiceSetupDeps(next: Partial<VoiceSetupDeps>): void {
   deps = { ...LIVE, ...next };
@@ -274,7 +277,8 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     rt.recording = true;
     rt.recorder ??= deps.recorder();
     set((s) => ({ hear: { ...s.hear, recording: true, micError: null } }));
-    rt.recorder.start().catch((error: unknown) => {
+    // The input the person chose in Voice settings, else the system default.
+    rt.recorder.start(micModule().then((m) => m.micChoice())).catch((error: unknown) => {
       rt.recording = false;
       set((s) => ({
         hear: {
@@ -301,6 +305,14 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     if (!rt.api || engines.length === 0 || mine !== rt.take) return;
     if (pcm.length === 0) {
       set((s) => ({ hear: { ...s.hear, micError: "The take was empty — hold a little longer." } }));
+      return;
+    }
+    // A take that heard nothing is the microphone's fault: it is said here, not sent to be blamed on
+    // every engine as "(heard nothing)".
+    const silent = (await micModule()).silentTake(pcm, LEVEL_FLOOR_DB);
+    if (mine !== rt.take) return;
+    if (silent) {
+      set((s) => ({ hear: { ...s.hear, micError: silent } }));
       return;
     }
     const pending: Take = { state: "pending", text: "", ms: null, error: null };

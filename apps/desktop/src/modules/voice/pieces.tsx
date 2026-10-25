@@ -5,9 +5,10 @@
  * step (one table, `primary`), Whisper's model rail with the install of a model not yet on disk,
  * and the OpenAI key field that is a draft until saved and is never displayed back. Pure: every
  * act is a call on `model.actions`. These were the studio view's exports; the view itself went with
- * the module bar.
+ * the module bar. `MicPicker` is the input every capture opens, set where a silent microphone
+ * points the person.
  */
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import Button from "@/components/Button";
 import PillGroup from "@/components/PillGroup";
@@ -15,6 +16,7 @@ import { TextInput } from "@/components/FormField";
 
 import type { Tone } from "@/lib/voice-setup";
 
+import { chooseMic, micChoice, micState, micView, refreshMics, subscribeMics } from "./mic";
 import { TONE_COPY, type VoiceModel } from "./model";
 import { InstallBlock } from "./parts";
 
@@ -170,6 +172,40 @@ export function KeyField({ model, onDone }: { model: VoiceModel; onDone?: () => 
       </span>
       <span className="typo-caption">Sealed on this machine. Takes go to OpenAI — this one is cloud.</span>
       {model.saveError ? <p className="typo-caption vs-error">{model.saveError}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * The microphone every capture opens: the system default or one of the inputs the browser lists.
+ * One tap chooses and stores it; the take below it shows the level of the one chosen, so the
+ * person sees which input moves. `recording` is that take's, so the names are read again after it. A chosen device that is unplugged says so under the rail.
+ */
+export function MicPicker({ recording = false }: { recording?: boolean }) {
+  const now = useSyncExternalStore(subscribeMics, micState, micState);
+  // The row is read when the picker first shows; the inputs then, and after every take, because
+  // the browser names them only once the microphone was granted.
+  useEffect(() => void micChoice(), []);
+  useEffect(() => void refreshMics(), [recording]);
+  const view = micView(now.mics, now.choice);
+  return (
+    <div className="stack">
+      <PillGroup
+        ariaLabel="Microphone"
+        value={view.chosen ?? ""}
+        onChange={(id) => void chooseMic(id || null)}
+        options={[
+          { value: "", label: "System default", hint: "Whatever the system calls its input" },
+          ...view.options.map((m) => ({ value: m.id, label: m.label })),
+        ]}
+      />
+      {view.note ? (
+        <p className="typo-caption" role="status">
+          {view.note}
+        </p>
+      ) : (
+        <p className="typo-caption">Every take and every press opens {view.label}.</p>
+      )}
     </div>
   );
 }

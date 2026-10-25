@@ -300,6 +300,10 @@ export interface MicrophoneApis {
 export interface MicrophoneSession {
   /** Stop the tracks and disconnect the graph. Idempotent. */
   stop: () => void;
+  /** The chosen device was not there, so this is the system default. */
+  fellBack?: boolean;
+  /** The device's own name, as the browser gives it, if it gives one. */
+  label?: string;
 }
 
 /**
@@ -309,15 +313,27 @@ export interface MicrophoneSession {
  * shell's `tauri://` asset protocol and a `data:` blob both make awkward, and a 4096-sample
  * buffer at 48 kHz is 85 ms of latency on a push-to-talk key nobody notices. It is deprecated and
  * it is everywhere; the day it goes, this function is the one place to change.
+ *
+ * `deviceId` is the input the person chose (the `voice_input` row); without one, the constraints
+ * are exactly the default input's.
  */
 export async function openMicrophone(
   apis: MicrophoneApis,
   onChunk: (pcm: Int16Array) => void,
+  deviceId?: string | null,
 ): Promise<MicrophoneSession> {
-  const stream = await apis.getUserMedia({
-    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-    video: false,
-  });
+  const audio = { channelCount: 1, echoCancellation: true, noiseSuppression: true };
+  // A stored device is a reference, not a promise: one that is gone falls back to the default.
+  let fellBack = false;
+  let stream: MediaStream;
+  try {
+    stream = await apis.getUserMedia({ audio: deviceId ? { deviceId: { exact: deviceId }, ...audio } : audio, video: false });
+  } catch (error) {
+    // Gone (OverconstrainedError) or refused: the default is asked once, and its refusal is the one thrown.
+    if (!deviceId) throw error;
+    fellBack = true;
+    stream = await apis.getUserMedia({ audio, video: false });
+  }
   // Whatever throws after the microphone is granted must not leave it live: the original error
   // is rethrown once the tracks are stopped and a created context is closed.
   let context: AudioContext | null = null;
@@ -343,6 +359,8 @@ export async function openMicrophone(
     micLevel = 0;
     let stopped = false;
     return {
+      fellBack,
+      label: stream.getTracks()[0]?.label,
       stop: () => {
         if (stopped) return;
         stopped = true;

@@ -5,11 +5,12 @@
  */
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { fixtures } from "./fixtures";
 import { INERT_ACTIONS, type VoiceModel } from "./model";
-import { KeyField } from "./pieces";
+import { LIVE_MIC, setMicSeam } from "./mic";
+import { KeyField, MicPicker } from "./pieces";
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
@@ -59,4 +60,39 @@ it("Enter saves the trimmed key when nothing is in flight", () => {
   enter(input);
   expect(saved).toEqual(["sk-second"]);
   expect(input.value).toBe("");
+});
+
+describe("the microphone picker", () => {
+  const picker = async (stored: string | null) => {
+    const writes: Array<string | null> = [];
+    setMicSeam({
+      ...LIVE_MIC,
+      read: async () => stored,
+      write: async (id) => void writes.push(id),
+      list: async () => [
+        { id: "a", label: "USB Headset" },
+        { id: "b", label: "Realtek Array" },
+      ],
+    });
+    await act(async () => root.render(<MicPicker />));
+    return writes;
+  };
+  const option = (name: string) =>
+    [...host.querySelectorAll<HTMLButtonElement>('[role="radio"]')].find((b) => b.textContent?.includes(name))!;
+
+  it("lists the system default and every input, and one tap chooses and stores one", async () => {
+    const writes = await picker(null);
+    expect(option("System default").getAttribute("aria-checked")).toBe("true");
+    await act(async () => option("Realtek Array").click());
+    expect(option("Realtek Array").getAttribute("aria-checked")).toBe("true");
+    expect(host.textContent).toContain("Every take and every press opens Realtek Array.");
+    await act(async () => option("System default").click());
+    expect(writes).toEqual(["b", null]);
+  });
+
+  it("an unplugged choice reads as the default and says why", async () => {
+    await picker("z");
+    expect(option("System default").getAttribute("aria-checked")).toBe("true");
+    expect(host.textContent).toContain("The microphone you chose is not connected; using the system default.");
+  });
 });

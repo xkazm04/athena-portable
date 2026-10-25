@@ -138,11 +138,12 @@ export class TakeRecorder {
 
   constructor(private readonly apis: () => MicrophoneApis | null) {}
 
-  start(): Promise<void> {
+  /** Open the microphone: `device` when one was chosen (it may still be being read), else the default. */
+  start(device?: string | null | Promise<string | null>): Promise<void> {
     this.chunks = [];
     const apis = this.apis();
     if (!apis) return Promise.reject(new Error("this webview offers no microphone"));
-    const opening = openMicrophone(apis, (pcm) => this.chunks.push(pcm));
+    const opening = Promise.resolve(device).then((id) => openMicrophone(apis, (pcm) => this.chunks.push(pcm), id));
     this.opening = opening.catch(() => null);
     return opening.then(() => undefined);
   }

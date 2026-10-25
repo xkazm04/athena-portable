@@ -59,6 +59,7 @@ import {
   type SocketFactory,
   type SocketLike,
 } from "@/lib/voice";
+import { SETTING_KEYS, settingRead } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
 import {
@@ -103,8 +104,10 @@ export interface VoiceDeps {
    */
   config: () => Promise<{ ready: boolean; reason: string | null }>;
   socket: SocketFactory;
-  /** Open the microphone; `null` where the webview offers none. */
-  openMic: ((onChunk: (pcm: Int16Array) => void) => Promise<MicrophoneSession>) | null;
+  /** Open the microphone (the chosen device, else the default); `null` where the webview offers none. */
+  openMic: ((onChunk: (pcm: Int16Array) => void, deviceId?: string | null) => Promise<MicrophoneSession>) | null;
+  /** The stored `voice_input` row, read at every press (Main's Voice settings writes it). */
+  micDevice?: () => Promise<string | null>;
   /**
    * The player, or `null` where there is no audio output (the headless test). Live, it is loaded
    * with `import()` when the socket opens, so Main's first frame does not carry it.
@@ -189,15 +192,18 @@ const LIVE: VoiceDeps = {
   socket: (url, protocols) => new WebSocket(url, protocols) as unknown as SocketLike,
   openMic:
     typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia
-      ? (onChunk) =>
+      ? (onChunk, deviceId) =>
           openMicrophone(
             {
               getUserMedia: (c) => navigator.mediaDevices.getUserMedia(c),
               audioContext: () => new AudioContext(),
             },
             onChunk,
+            deviceId,
           )
       : null,
+  // No shell, no row: the read rejects and the press opens the default, as an empty row does.
+  micDevice: () => settingRead<string>(SETTING_KEYS.voiceInput),
   player: async () =>
     typeof AudioContext === "undefined"
       ? null
@@ -258,6 +264,8 @@ export function resetVoiceForTests(): void {
 export const useVoice = create<VoiceState>((set, get) => {
   let socket: VoiceSocket | null = null;
   let mic: MicrophoneSession | null = null;
+  /** The name of the input the last press opened, for the sentence a silent utterance gets. */
+  let micLabel: string | undefined;
   /** Each press takes the next number and anything that ends listening takes another, so a press
    * that finds its number stale stops: it sends no start and keeps no microphone. */
   let pressToken = 0;
@@ -296,7 +304,7 @@ export const useVoice = create<VoiceState>((set, get) => {
           if (event.text.trim()) runPush({ id: `v${Date.now()}`, kind: "user", text: event.text });
           // An utterance that ends here starts no turn, so no turn.finished will bring the key
           // back: the transcript's own outcome does, with its own sentence (ADR 0110).
-          const ended = endedBecause(event);
+          const ended = endedBecause(event, micLabel);
           if (ended !== null && get().phase === "thinking") set({ phase: "idle", reason: ended });
         } else {
           set({ partial: event.text });
@@ -606,15 +614,20 @@ export const useVoice = create<VoiceState>((set, get) => {
         return;
       }
       try {
-        const opened = await deps.openMic((pcm) => {
-          if (token === pressToken) live.sendAudio(pcm);
-        });
+        // The chosen input, read at every press: Voice settings in Main writes the row.
+        const opened = await deps.openMic(
+          (pcm) => {
+            if (token === pressToken) live.sendAudio(pcm);
+          },
+          await deps.micDevice?.().catch(() => null),
+        );
         if (token !== pressToken) {
           // Listening ended while the microphone was opening: it is never kept.
           opened.stop();
           return;
         }
         mic = opened;
+        micLabel = opened.label;
       } catch (error) {
         if (token === pressToken) fail(`microphone: ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -743,13 +756,14 @@ export async function startVoice(): Promise<void> {
  * card (`message`, `answer`) or does not say how it ended (a daemon from before ADR 0110). A stop
  * word ends it quietly: the person said what they meant.
  */
-function endedBecause(event: VoiceTranscript): string | null {
+function endedBecause(event: VoiceTranscript, label?: string): string | null {
   switch (event.outcome) {
     case "too_short":
       return "hold the key while you speak";
     case "silent": {
       const level = typeof event.peak_dbfs === "number" ? ` (${Math.round(event.peak_dbfs)} dB)` : "";
-      return `your microphone sounded silent${level}, check the input in Voice settings`;
+      // Named, and pointed at the picker that can change it (Voice settings, Input).
+      return `your microphone${label ? ` (${label})` : ""} sounded silent${level}, choose another input in Voice settings`;
     }
     case "no_words":
       return "I heard sound but no words, try again";

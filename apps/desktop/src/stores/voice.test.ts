@@ -1212,3 +1212,43 @@ describe("her voice outlives its voice.stopped: one timeline (ADR: her lines que
     expect(useVoice.getState()).toMatchObject({ phase: "idle", generation: null, speakingText: "" });
   });
 });
+
+describe("the microphone the person chose (ADR: the microphone is a choice)", () => {
+  function chosenMic() {
+    const opened: Array<string | null | undefined> = [];
+    return {
+      opened,
+      open: async (_onChunk: (pcm: Int16Array) => void, deviceId?: string | null) => {
+        opened.push(deviceId);
+        return { stop: () => {}, fellBack: false, label: deviceId === "b" ? "Realtek Array" : "Default" };
+      },
+    };
+  }
+
+  it("case 7: a press opens the stored device, and a silent utterance names it and points at the picker", async () => {
+    const mic = chosenMic();
+    const { socket } = wire({ openMic: mic.open, micDevice: async () => "b" });
+    await startVoice();
+    await useVoice.getState().press();
+    expect(mic.opened).toEqual(["b"]);
+    useVoice.getState().release();
+    await socket.emit({ kind: "voice.transcript", text: "", final: true, outcome: "silent", peak_dbfs: -72 });
+    expect(useVoice.getState().reason).toBe(
+      "your microphone (Realtek Array) sounded silent (-72 dB), choose another input in Voice settings",
+    );
+  });
+
+  it("guard (case 8): with no row stored the press opens the default and sends the same start frame", async () => {
+    const plain = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    const before = plain.socket.frames().find((f) => f.type === "start");
+    resetVoiceForTests();
+    const mic = chosenMic();
+    const chosen = wire({ openMic: mic.open, micDevice: async () => null });
+    await startVoice();
+    await useVoice.getState().press();
+    expect(mic.opened).toEqual([null]);
+    expect(chosen.socket.frames().find((f) => f.type === "start")).toEqual(before);
+  });
+});

@@ -10,6 +10,7 @@ import type { InstallState, VoiceConfig } from "@/lib/voice-setup";
 import { HOTKEY } from "@/scenes/voice/parts";
 
 import { fixtures } from "./fixtures";
+import { micView } from "./mic";
 import {
   HEAR_IDLE,
   INERT_ACTIONS,
@@ -333,5 +334,25 @@ describe("Kokoro's size", () => {
     expect(line(withKokoro(123))).toBe("I need the engine and my voice on disk first — about 123 MB, once.");
     expect(line(withKokoro(null))).toBe("I need the engine and my voice on disk first, once.");
     expect(line(withKokoro("gone"))).toBe("I need the engine and my voice on disk first, once.");
+  });
+});
+
+describe("the microphone the person chose", () => {
+  const A = { id: "a", label: "USB Headset" };
+  const B = { id: "b", label: "Realtek Array" };
+
+  it("case 4: a chosen device that is not connected reads as the system default, and says so", () => {
+    expect(micView([A, B], "z")).toEqual({
+      options: [A, B],
+      chosen: null,
+      label: "System default",
+      note: "The microphone you chose is not connected; using the system default.",
+    });
+    expect(micView([A, B], "b")).toEqual({ options: [A, B], chosen: "b", label: "Realtek Array", note: null });
+  });
+
+  it("nothing chosen is the system default with no note", () => {
+    expect(micView([A, B], null)).toMatchObject({ chosen: null, label: "System default", note: null });
+    expect(micView(undefined, undefined)).toMatchObject({ options: [], chosen: null, note: null });
   });
 });

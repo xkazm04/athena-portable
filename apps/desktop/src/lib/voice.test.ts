@@ -462,3 +462,69 @@ describe("her lines play on one timeline (ADR: her lines queue on one playback t
     expect(player.position(2)).toBe(50);
   });
 });
+
+describe("the microphone the person chose (ADR: the microphone is a choice)", () => {
+  const TODAY = { channelCount: 1, echoCancellation: true, noiseSuppression: true };
+
+  function rig(refuse: (constraints: MediaStreamConstraints) => Error | null = () => null) {
+    const asked: MediaStreamConstraints[] = [];
+    const stream = { getTracks: () => [{ stop: vi.fn(), label: "Realtek Array" }] } as unknown as MediaStream;
+    const node = () => ({ connect: vi.fn(), disconnect: vi.fn() });
+    const context = {
+      sampleRate: 48_000,
+      destination: {},
+      close: () => Promise.resolve(),
+      createMediaStreamSource: node,
+      createScriptProcessor: () => ({ ...node(), onaudioprocess: null }),
+      createGain: () => ({ ...node(), gain: { value: 1 } }),
+    };
+    const apis = {
+      getUserMedia: (constraints: MediaStreamConstraints) => {
+        asked.push(constraints);
+        const no = refuse(constraints);
+        return no ? Promise.reject(no) : Promise.resolve(stream);
+      },
+      audioContext: () => context as unknown as AudioContext,
+    };
+    return { apis, asked };
+  }
+
+  it("case 2: a chosen device is asked for by its exact id, with the same processing as the default", async () => {
+    const { apis, asked } = rig();
+    const session = await openMicrophone(apis, () => undefined, "b");
+    expect(asked).toEqual([{ audio: { deviceId: { exact: "b" }, ...TODAY }, video: false }]);
+    expect(session.fellBack).toBe(false);
+    expect(session.label).toBe("Realtek Array");
+    session.stop();
+  });
+
+  it("case 3: a chosen device that is gone falls back to the default and says so", async () => {
+    const overconstrained = Object.assign(new Error("no device with that id"), { name: "OverconstrainedError" });
+    const { apis, asked } = rig((c) => ((c.audio as { deviceId?: unknown }).deviceId ? overconstrained : null));
+    const session = await openMicrophone(apis, () => undefined, "gone");
+    expect(asked).toEqual([
+      { audio: { deviceId: { exact: "gone" }, ...TODAY }, video: false },
+      { audio: TODAY, video: false },
+    ]);
+    expect(session.fellBack).toBe(true);
+    session.stop();
+  });
+
+  it("a default that refuses too is the refusal thrown, and nothing is asked a third time", async () => {
+    const gone = Object.assign(new Error("no device with that id"), { name: "OverconstrainedError" });
+    const denied = Object.assign(new Error("Permission denied"), { name: "NotAllowedError" });
+    const { apis, asked } = rig((c) => ((c.audio as { deviceId?: unknown }).deviceId ? gone : denied));
+    await expect(openMicrophone(apis, () => undefined, "b")).rejects.toBe(denied);
+    expect(asked).toHaveLength(2);
+  });
+
+  it("guard (case 8): with no device chosen the constraints are exactly today's", async () => {
+    for (const none of [undefined, null]) {
+      const { apis, asked } = rig();
+      const session = await openMicrophone(apis, () => undefined, none);
+      expect(asked).toEqual([{ audio: TODAY, video: false }]);
+      expect(session.fellBack).toBe(false);
+      session.stop();
+    }
+  });
+});

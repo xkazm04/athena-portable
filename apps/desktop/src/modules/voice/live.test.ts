@@ -11,9 +11,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VoiceSetupApi, type InstallState, type VoiceConfig } from "@/lib/voice-setup";
 
-import type { PreviewPlayer, TakeRecorder } from "./audio";
+import { TakeRecorder, type PreviewPlayer } from "./audio";
+import { LIVE_MIC, chooseMic, listMicrophones, setMicSeam } from "./mic";
 import { fixtures } from "./fixtures";
-import { INSTALL_POLL_MS, resetVoiceSetupForTests, setVoiceSetupDeps, useVoiceSetup } from "./live";
+import { INSTALL_POLL_MS, resetVoiceSetupForTests, setVoiceSetupDeps, useVoiceSetup, type VoiceSetupDeps } from "./live";
 import { TEST_LINE, TONE_SAMPLE_LINE } from "./model";
 
 const AT = { url: "http://daemon", token: "t" };
@@ -128,7 +129,10 @@ const settle = async () => {
   for (let i = 0; i < 8; i += 1) await tick();
 };
 
-function wire(config: VoiceConfig, over: { done?: boolean | null; readFails?: string; refuseDone?: string } = {}) {
+function wire(
+  config: VoiceConfig,
+  over: { done?: boolean | null; readFails?: string; refuseDone?: string; deps?: Partial<VoiceSetupDeps> } = {},
+) {
   const d = daemon(config);
   const p = fakePlayer();
   const waits: number[] = [];
@@ -154,13 +158,15 @@ function wire(config: VoiceConfig, over: { done?: boolean | null; readFails?: st
       written.push(done);
     },
     player: () => p.player,
-    recorder: () => fakeRecorder(new Int16Array([1, 2, 3])),
+    // A take a person spoke into: loud enough to clear the level floor.
+    recorder: () => fakeRecorder(new Int16Array([8000, -8000, 4000])),
     wait: async (ms) => {
       waits.push(ms);
       if (stepping) await new Promise<void>((go) => (parked = go));
     },
     now: () => new Date(2026, 9, 7, 20, 0),
     publish: (c) => void published.push(c.ready),
+    ...over.deps,
   });
   const stepWaits = () => {
     stepping = true;
@@ -171,6 +177,7 @@ function wire(config: VoiceConfig, over: { done?: boolean | null; readFails?: st
 
 beforeEach(() => {
   resetVoiceSetupForTests();
+  setMicSeam(null);
 });
 
 const S = () => useVoiceSetup.getState();
@@ -481,5 +488,65 @@ describe("the key", () => {
     S().actions.removeKey();
     await settle();
     expect(d.calls.some((c) => c.method === "DELETE" && c.path === "/voice/key?provider=openai")).toBe(true);
+  });
+});
+
+describe("the microphone the person chose (ADR: the microphone is a choice)", () => {
+  it("case 1: inputs only, a blank label named by its position, never dropped", async () => {
+    const device = (kind: string, label: string, deviceId: string) => ({ kind, label, deviceId, groupId: "" }) as MediaDeviceInfo;
+    const list = await listMicrophones(async () => [
+      device("audioinput", "USB Headset", "a"),
+      device("videoinput", "Cam", "cam"),
+      device("audioinput", "", "c"),
+      device("audioinput", "Realtek Array", "b"),
+    ]);
+    expect(list).toEqual([
+      { id: "a", label: "USB Headset" },
+      { id: "c", label: "Microphone 2" },
+      { id: "b", label: "Realtek Array" },
+    ]);
+  });
+
+  it("case 5: choosing a microphone writes the row once, and the next take opens that device", async () => {
+    const asked: MediaStreamConstraints[] = [];
+    const node = () => ({ connect: () => {}, disconnect: () => {} });
+    const apis = {
+      getUserMedia: async (c: MediaStreamConstraints) => {
+        asked.push(c);
+        return { getTracks: () => [{ stop: () => {}, label: "Realtek Array" }] } as unknown as MediaStream;
+      },
+      audioContext: () =>
+        ({
+          sampleRate: 48_000,
+          destination: {},
+          close: () => Promise.resolve(),
+          createMediaStreamSource: node,
+          createScriptProcessor: () => ({ ...node(), onaudioprocess: null }),
+          createGain: () => ({ ...node(), gain: { value: 1 } }),
+        }) as unknown as AudioContext,
+    };
+    const writes: string[] = [];
+    setMicSeam({ ...LIVE_MIC, write: async (id) => void writes.push(id ?? "") });
+    wire(READY_CONFIG, { done: true, deps: { recorder: () => new TakeRecorder(() => apis) } });
+    await S().connect(AT);
+    await chooseMic("b");
+    expect(writes).toEqual(["b"]);
+    S().actions.recordStart();
+    await settle();
+    expect((asked.at(-1)?.audio as { deviceId?: unknown }).deviceId).toEqual({ exact: "b" });
+    S().actions.recordStop();
+    await settle();
+  });
+
+  it("case 6: a silent take is caught here, names the microphone, and reaches no engine", async () => {
+    // One second of an input that hears nothing at all.
+    const { d } = wire(READY_CONFIG, { done: true, deps: { recorder: () => fakeRecorder(new Int16Array(16_000)) } });
+    await S().connect(AT);
+    S().actions.recordStart();
+    S().actions.recordStop();
+    await settle();
+    expect(d.calls.filter((c) => c.path.startsWith("/voice/transcribe"))).toEqual([]);
+    expect(S().hear.micError).toBe("This microphone sounded silent (no level). Pick another input above.");
+    expect(S().hear.takes.whisper).toBeUndefined();
   });
 });
