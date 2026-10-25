@@ -21,10 +21,14 @@ MEASURED = sys.platform == "win32" or sys.platform.startswith("linux")
 #: Allocate and touch 200 MiB, say so, close stdout, and stay alive a moment: the transport reads
 #: a Linux child's high-water mark between its stdout closing and its exit.
 ALLOCATE = (
-    "import sys, time\n"
-    "block = bytearray(200 * 1024 * 1024)\n"
+    "import os, time\n"
+    # A non-zero fill touches every page: ``bytearray(n)`` alone is calloc'd zero pages, which a
+    # Linux kernel never makes resident, so its VmHWM would stay at the interpreter's own size.
+    "block = bytearray(b'\\x01') * (200 * 1024 * 1024)\n"
     "print('done', flush=True)\n"
-    "sys.stdout.close()\n"
+    # ``sys.stdout.close()`` leaves fd 1 open (the standard streams do not own it), so the pipe
+    # would reach EOF only at the child's exit and the transport would find no process to read.
+    "os.close(1)\n"
     "time.sleep(0.5)\n"
 )
 

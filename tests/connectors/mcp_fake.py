@@ -1,4 +1,4 @@
-"""A stdlib fake MCP server over Streamable HTTP, on loopback (connectors/mcp; ADR 0123).
+"""A stdlib fake MCP server over Streamable HTTP, on loopback (connectors/mcp; ADR 0144).
 
 Stateless JSON-RPC by hand, the way Gravitone's ``/api/mcp`` is: ``initialize`` answers the
 asked protocol version, a notification is 202, ``tools/list`` lists :attr:`FakeMcp.tools`,

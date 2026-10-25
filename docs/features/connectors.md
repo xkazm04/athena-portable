@@ -86,7 +86,7 @@ the browser, reached through one vault (ADR 0021).
 
 ## MCP servers
 
-An external MCP server's tools are connector tools (ADR 0123). `ATHENA_HOME/mcp.json` (or `athena
+An external MCP server's tools are connector tools (ADR 0144). `ATHENA_HOME/mcp.json` (or `athena
 serve --mcp-config <path>`) lists the servers:
 
 ```json

@@ -1,4 +1,4 @@
-"""One MCP server as a :class:`~athena.connectors.port.ConnectorPort` (README §4; ADR 0123).
+"""One MCP server as a :class:`~athena.connectors.port.ConnectorPort` (README §4; ADR 0144).
 
 The catalog merges an :class:`McpService` with :meth:`Catalog.merge_connector` exactly as it merges
 a vault connector, so its tools are ``connector.<id>.<tool>`` under the origin ``connector:<id>``

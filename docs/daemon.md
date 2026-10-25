@@ -471,7 +471,7 @@ the catalog derives from `reversible` and `side_effects` (ADR 0021). Credentials
 under `ATHENA_HOME/connectors/`, sealed by the keystore, DPAPI or an owner-only file, and never in
 a brain. `--no-connectors` starts the daemon without the vault.
 
-An MCP server's tools are connector tools too (ADR 0123): `--mcp-config <path>` names the servers
+An MCP server's tools are connector tools too (ADR 0144): `--mcp-config <path>` names the servers
 file, by default `$ATHENA_HOME/mcp.json` (absent is none; a named file must exist, and a bad one is
 the failure line). Each server is `{"id", "url", "token_env"}`; the token is read from that
 environment variable at each request. Its tools are listed at start and, while it holds none, again

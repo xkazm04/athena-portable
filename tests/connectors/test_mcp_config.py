@@ -1,5 +1,5 @@
 """``ATHENA_HOME/mcp.json``: what is admitted, and that every refusal names the field and never the
-value (connectors/mcp/config.py; ADR 0123)."""
+value (connectors/mcp/config.py; ADR 0144)."""
 
 from __future__ import annotations
 

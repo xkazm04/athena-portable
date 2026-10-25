@@ -449,7 +449,7 @@ class AthenaDaemon:
     #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
     case_turns: CaseTurns = field(init=False, repr=False)
     #: Run as each turn starts, inside the writer lock and before the turn is composed: an MCP
-    #: server that listed no tools is listed again here (ADR 0123).
+    #: server that listed no tools is listed again here (ADR 0144).
     turn_hooks: list[Callable[[], None]] = field(default_factory=list)
     #: The person's projects (ADR 0225), over this brain; bound by wiring. ``None`` here, every
     #: ``space_id`` names no project and a turn runs in core.
@@ -1158,7 +1158,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             # daemon was started (ADR 0140, "Identity").
             peer = PeerHost(brain_paths.athena_home() / "peer", port=args.peer_port)
         # The ids no MCP server may take are the built-in connectors', vault or no vault, so a
-        # configuration means the same thing with and without --no-connectors (ADR 0123).
+        # configuration means the same thing with and without --no-connectors (ADR 0144).
         mcp = load_mcp_config(
             args.mcp_config or brain_paths.athena_home() / MCP_CONFIG_FILENAME,
             required=args.mcp_config is not None,

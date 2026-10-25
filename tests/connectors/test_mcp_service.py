@@ -1,4 +1,4 @@
-"""An MCP server as a connector port, against a real loopback fake (connectors/mcp; ADR 0123).
+"""An MCP server as a connector port, against a real loopback fake (connectors/mcp; ADR 0144).
 
 The fake is ``mcp_fake.FakeMcp``, a stdlib ``http.server`` on 127.0.0.1 port 0: every request
 here crosses a real socket through the production ``UrllibTransport``.
