@@ -20,15 +20,15 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { placeholderTakes } from './lib/timeline.mjs';
+
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JOURNEY = path.resolve(HERE, '..');
 const OUT = path.join(JOURNEY, 'take', 'placeholder');
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 
-const FILES = { web: 'take.json', card: 'cards.take.json', proving: 'proving.take.json', desktop: 'desktop.take.json' };
 const COLOURS = { web: '0x1d3557', card: '0x0b0e14', proving: '0x2a9d8f', desktop: '0x6d597a' };
-const LEAD_MS = 500;
 
 function parseArgs(argv) {
   const args = {
@@ -61,41 +61,21 @@ async function main() {
   await rm(OUT, { recursive: true, force: true });
   await mkdir(path.join(OUT, 'audio'), { recursive: true });
 
-  const segments = new Map();
-  for (const act of script.acts) {
-    const segment = act.segment ?? 'web';
-    if (!segments.has(segment)) segments.set(segment, []);
-    segments.get(segment).push(act);
-  }
-
-  const durations = {};
-  for (const [segment, acts] of segments) {
-    const beats = [];
-    const speedups = [];
-    let at = LEAD_MS;
-    for (const act of acts) {
-      for (const beat of act.beats) {
-        if (beat.cue && args.waitMs > 0) {
-          speedups.push({ start_ms: at, end_ms: at + args.waitMs, factor: act.speedup ?? 4, waiting_for: beat.cue });
-          at += args.waitMs;
-        }
-        const caption = beat.voice === 'mira' ? `Mira: ${beat.line}` : beat.voice === 'athena' ? `Athena: ${beat.line}` : beat.line;
-        beats.push({ id: beat.id, start_ms: at, end_ms: at + args.beatMs, caption });
-        durations[beat.id] = Math.round(args.beatMs * 0.8);
-        at += args.beatMs;
-      }
-    }
-    const video = `${segment}.placeholder.mp4`;
+  // The takes are planned by scripts/lib/timeline.mjs (the same captions and clock compose reads);
+  // this file only renders them.
+  const { segments, durations } = placeholderTakes(script, args);
+  for (const { segment, file, take, videoMs } of segments) {
+    const { video, beats, speedups } = take;
     await execFileAsync(FFMPEG, [
       '-y', '-hide_banner', '-loglevel', 'error',
-      '-f', 'lavfi', '-i', `color=c=${COLOURS[segment]}:s=1440x900:r=25:d=${((at + LEAD_MS) / 1000).toFixed(3)}`,
+      '-f', 'lavfi', '-i', `color=c=${COLOURS[segment]}:s=1440x900:r=25:d=${(videoMs / 1000).toFixed(3)}`,
       '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', path.join(OUT, video),
     ]);
     await writeFile(
-      path.join(OUT, FILES[segment]),
+      path.join(OUT, file),
       `${JSON.stringify({ segment, video, width: 1440, height: 900, script: path.relative(JOURNEY, args.script), video_offset_uncertainty_ms: 0, beats, speedups, notes: ['placeholder'] }, null, 2)}\n`,
     );
-    console.log(`${segment}: ${beats.length} beats, ${speedups.length} wait(s), ${((at + LEAD_MS) / 1000).toFixed(1)} s -> ${path.relative(JOURNEY, path.join(OUT, video))}`);
+    console.log(`${segment}: ${beats.length} beats, ${speedups.length} wait(s), ${(videoMs / 1000).toFixed(1)} s -> ${path.relative(JOURNEY, path.join(OUT, video))}`);
   }
 
   // A tone per beat, where the narration would be: compose lays and mixes these exactly as clips.

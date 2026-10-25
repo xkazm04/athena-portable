@@ -298,7 +298,15 @@ already on disk unless `--force`, and refuses to spend more than 20,000 characte
 **Re-takes.** A script edit is `pnpm narrate -- --only <ids> --force`, then the recorder, then
 compose: no editing session. `pnpm compose -- --dry` prints the ffmpeg command without running it.
 A beat whose mp3 is missing is skipped with a warning rather than failing the cut, and a clip
-longer than its beat is trimmed with a 200 ms fade so two clips can never overlap.
+longer than its room (its beat's end or the next voiced beat's start, whichever is first, a
+crossfaded seam included) is trimmed with a 200 ms fade so two clips can never overlap.
+
+**The plan is one module.** Where every beat, clip, speed-up label and caption lands is derived
+once, by `scripts/lib/timeline.mjs` (`planTake`, `planFilm`, `layClips`, `holdOf`, `captionOf`,
+`ffmpegArgs`); `compose.mjs`, `record-desktop.mjs` and `placeholders.mjs` are IO around it, and the
+desktop recorder holds a beat by `src/script.ts`'s rule, stale-clip check included. `pnpm test:unit`
+tests it offline (no ffmpeg, no take, no server): the film's ffmpeg argv against a snapshot, the
+seams, and parity with `src/script.ts` beat by beat. `pnpm test` is the e2e and boots the apps.
 
 Both scripts need `ffmpeg` and `ffprobe` on `PATH` and nothing else: they are plain Node ESM with
 no dependencies beyond the runtime.

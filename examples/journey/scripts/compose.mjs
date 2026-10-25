@@ -25,6 +25,11 @@
  * script's `max_ms` (else 2:59) is refused before ffmpeg runs, unless --allow-long; --dry prints
  * the plan, the timeline and the ffmpeg command and runs nothing. The ffmpeg on PATH is used, or
  * the one `FFMPEG` (and `FFPROBE`) names.
+ *
+ * Both modes are IO around one pure plan, `scripts/lib/timeline.mjs` (planTake, planFilm and the
+ * one clip-laying rule, layClips, which trims a clip at its beat's end or the next voiced beat's
+ * start, whichever comes first, so no two clips overlap, a crossfaded seam included). This file
+ * reads the takes, probes lengths, asks for the plan and its ffmpeg argv, and runs or prints it.
  */
 
 import { execFile, spawn } from 'node:child_process';
@@ -35,13 +40,21 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import {
+  clock,
+  DEFAULT_MAX_MS,
+  ffmpegArgs,
+  FRAME_MS,
+  planFilm,
+  planTake,
+  SEGMENT_TAKES,
+} from './lib/timeline.mjs';
+
 const execFileAsync = promisify(execFile);
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JOURNEY = path.resolve(HERE, '..');
 
-const FADE_MS = 200;
-const AUDIO_RATE = 48_000;
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 const FFPROBE = process.env.FFPROBE || 'ffprobe';
 
@@ -101,36 +114,6 @@ function fail(message) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------- subtitles
-
-function srtTime(ms) {
-  const clamped = Math.max(0, Math.round(ms));
-  const h = Math.floor(clamped / 3_600_000);
-  const m = Math.floor((clamped % 3_600_000) / 60_000);
-  const s = Math.floor((clamped % 60_000) / 1000);
-  const milli = clamped % 1000;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(milli).padStart(3, '0')}`;
-}
-
-function buildSrt(beats) {
-  const lines = [];
-  let index = 0;
-  for (const beat of beats) {
-    const caption = String(beat.caption ?? '').trim();
-    if (!caption) continue;
-    const start = Number(beat.start_ms) || 0;
-    const end = Math.max(start + 500, Number(beat.end_ms) || start + 500);
-    index += 1;
-    lines.push(String(index), `${srtTime(start)} --> ${srtTime(end)}`, caption, '');
-  }
-  return lines.join('\n');
-}
-
-/** ffmpeg filtergraph escaping: the option separator and the Windows drive colon. */
-function escapeForFilter(p) {
-  return p.replace(/\\/g, '/').replace(/:/g, '\\:').replace(/'/g, "\\'");
-}
-
 // ---------------------------------------------------------------- ffprobe
 
 async function probeDurationMs(file) {
@@ -148,7 +131,52 @@ async function probeDurationMs(file) {
   return Math.round(seconds * 1000);
 }
 
-// ---------------------------------------------------------------- main
+// ---------------------------------------------------------------- IO around the plan
+
+async function readDurations(audioDir, warnMissing) {
+  const durationsPath = path.join(audioDir, 'durations.json');
+  if (existsSync(durationsPath)) return JSON.parse(await readFile(durationsPath, 'utf8'));
+  if (warnMissing) console.warn(`warn: no ${path.relative(JOURNEY, durationsPath)}; clip lengths come from ffprobe`);
+  return {};
+}
+
+/** { id: { file, ms } } for every id whose mp3 is on disk: durations.json's length, else ffprobe's. */
+async function audioOf(ids, audioDir, durations) {
+  const audio = {};
+  for (const id of ids) {
+    const file = path.join(audioDir, `${id}.mp3`);
+    if (!existsSync(file)) continue;
+    let ms = Number(durations[id]);
+    if (!Number.isFinite(ms) || ms <= 0) ms = await probeDurationMs(file);
+    audio[id] = { file, ms };
+  }
+  return audio;
+}
+
+/** The subtitle path as the filtergraph names it: relative to the cwd ffmpeg runs in, when it can be. */
+function filterPathOf(srtPath) {
+  const rel = path.relative(process.cwd(), srtPath);
+  return rel.startsWith('..') || path.isAbsolute(rel) ? srtPath : rel;
+}
+
+function printCommand(cmd) {
+  console.log('');
+  console.log(cmd.map((a) => (/[\s;'"]/.test(a) ? `"${a}"` : a)).join(' '));
+}
+
+async function runFfmpeg(cmd) {
+  const code = await new Promise((resolve) => {
+    const child = spawn(cmd[0], cmd.slice(1), { stdio: ['ignore', 'inherit', 'inherit'] });
+    child.on('error', (err) => {
+      console.error(String(err?.message ?? err));
+      resolve(127);
+    });
+    child.on('close', resolve);
+  });
+  if (code !== 0) fail(`ffmpeg exited ${code}`);
+}
+
+// ---------------------------------------------------------------- take mode
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -160,221 +188,56 @@ async function main() {
 
   const video = path.resolve(takeDir, take.video ?? '');
   if (!existsSync(video)) fail(`the take names a video that is not there: ${video}`);
-
-  const beats = Array.isArray(take.beats) ? [...take.beats] : [];
-  beats.sort((a, b) => (Number(a.start_ms) || 0) - (Number(b.start_ms) || 0));
-  if (beats.length === 0) console.warn('warn: the take has no beats; the cut will be silent');
+  if (!Array.isArray(take.beats) || take.beats.length === 0) console.warn('warn: the take has no beats; the cut will be silent');
 
   const audioDir = path.join(takeDir, 'audio');
-  const durationsPath = path.join(audioDir, 'durations.json');
-  let durations = {};
-  if (existsSync(durationsPath)) durations = JSON.parse(await readFile(durationsPath, 'utf8'));
-  else console.warn(`warn: no ${path.relative(JOURNEY, durationsPath)}; clip lengths come from ffprobe`);
-
+  const durations = await readDurations(audioDir, true);
   const videoMs = await probeDurationMs(video);
+  const audio = await audioOf((take.beats ?? []).map((b) => b.id), audioDir, durations);
 
-  // Each clip is placed at its beat's start and, if it overruns the beat, trimmed with a fade
-  // so two clips can never overlap.
-  const clips = [];
-  let previousEnd = -1;
-  for (const beat of beats) {
-    const mp3 = path.join(audioDir, `${beat.id}.mp3`);
-    if (!existsSync(mp3)) {
-      console.warn(`warn: beat ${beat.id} has no mp3 at ${path.relative(JOURNEY, mp3)}, skipping`);
-      continue;
-    }
-    const start = Math.max(0, Number(beat.start_ms) || 0);
-    const beatEnd = Math.max(start, Number(beat.end_ms) || start);
-    let clipMs = Number(durations[beat.id]);
-    if (!Number.isFinite(clipMs) || clipMs <= 0) clipMs = await probeDurationMs(mp3);
-
-    const room = Math.max(0, Math.min(beatEnd, videoMs) - start);
-    if (room <= 0) {
-      console.warn(`warn: beat ${beat.id} starts at or past the end of the video, skipping`);
-      continue;
-    }
-    if (start < previousEnd) {
-      console.warn(`warn: beat ${beat.id} starts before the previous beat ends; it will be trimmed`);
-    }
-    const keep = Math.min(clipMs, room);
-    clips.push({ id: beat.id, file: mp3, start, keep, trimmed: keep < clipMs });
-    previousEnd = start + keep;
+  const plan = planTake({ take, video, videoMs, audio });
+  for (const s of plan.skipped) {
+    if (s.reason === 'no-audio') {
+      console.warn(`warn: beat ${s.id} has no mp3 at ${path.relative(JOURNEY, path.join(audioDir, `${s.id}.mp3`))}, skipping`);
+    } else if (s.reason === 'past-end') console.warn(`warn: beat ${s.id} starts at or past the end of the video, skipping`);
+    else console.warn(`warn: beat ${s.id} leaves no room before the next beat starts, skipping`);
   }
 
-  // ---- filtergraph
-  const inputs = ['-i', video, '-f', 'lavfi', '-t', (videoMs / 1000).toFixed(3), '-i', `anullsrc=r=${AUDIO_RATE}:cl=stereo`];
-  for (const clip of clips) inputs.push('-i', clip.file);
-
-  const chains = [];
-  const format = `aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo`;
-  chains.push(`[1:a]${format}[bed]`);
-  clips.forEach((clip, i) => {
-    const parts = [format];
-    if (clip.trimmed) {
-      const keepS = clip.keep / 1000;
-      parts.push(`atrim=0:${keepS.toFixed(3)}`, 'asetpts=PTS-STARTPTS');
-      parts.push(`afade=t=out:st=${Math.max(0, keepS - FADE_MS / 1000).toFixed(3)}:d=${(FADE_MS / 1000).toFixed(3)}`);
-    }
-    parts.push(`adelay=${clip.start}:all=1`);
-    chains.push(`[${i + 2}:a]${parts.join(',')}[a${i}]`);
-  });
-
-  let audioLabel;
-  if (clips.length === 0) {
-    audioLabel = '[bed]';
-  } else {
-    const ins = ['[bed]', ...clips.map((_, i) => `[a${i}]`)].join('');
-    chains.push(`${ins}amix=inputs=${clips.length + 1}:normalize=0:duration=first:dropout_transition=0[aout]`);
-    audioLabel = '[aout]';
-  }
-
-  let videoLabel = '0:v';
   let srtPath = null;
   if (args.captions) {
     srtPath = args.out.replace(/\.mp4$/i, '') + '.srt';
-    const srt = buildSrt(beats);
     await mkdir(path.dirname(srtPath), { recursive: true });
-    if (!args.dry) await writeFile(srtPath, `${srt}\n`);
-    let filterPath = path.relative(process.cwd(), srtPath);
-    if (filterPath.startsWith('..') || path.isAbsolute(filterPath)) filterPath = srtPath;
-    chains.push(`[0:v]subtitles=${escapeForFilter(filterPath)}:force_style='FontSize=7,MarginV=16,Outline=1,Shadow=0'[vout]`);
-    videoLabel = '[vout]';
+    if (!args.dry) await writeFile(srtPath, `${plan.srt}\n`);
   }
+  const cmd = ffmpegArgs(plan, { out: args.out, ffmpeg: FFMPEG, srtFilterPath: srtPath ? filterPathOf(srtPath) : undefined });
 
-  const filter = chains.join(';');
-  const cmd = [
-    FFMPEG,
-    '-y',
-    ...inputs,
-    '-filter_complex',
-    filter,
-    '-map',
-    videoLabel,
-    '-map',
-    audioLabel,
-    '-c:v',
-    'libx264',
-    '-preset',
-    'medium',
-    '-crf',
-    '20',
-    '-pix_fmt',
-    'yuv420p',
-    '-r',
-    '25',
-    '-c:a',
-    'aac',
-    '-ar',
-    String(AUDIO_RATE),
-    '-b:a',
-    '192k',
-    '-ac',
-    '2',
-    '-movflags',
-    '+faststart',
-    '-shortest',
-    args.out,
-  ];
-
+  const trimmed = plan.clips.filter((c) => c.trimmed).map((c) => c.id);
   console.log(
-    `${clips.length} clip(s) on ${(videoMs / 1000).toFixed(2)} s of video` +
-      (clips.some((c) => c.trimmed)
-        ? `; trimmed: ${clips.filter((c) => c.trimmed).map((c) => c.id).join(', ')}`
-        : ''),
+    `${plan.clips.length} clip(s) on ${(videoMs / 1000).toFixed(2)} s of video` +
+      (trimmed.length ? `; trimmed: ${trimmed.join(', ')}` : ''),
   );
   if (srtPath) console.log(`captions: ${path.relative(JOURNEY, srtPath)}`);
 
-  if (args.dry) {
-    console.log('');
-    console.log(cmd.map((a) => (/[\s;'"]/.test(a) ? `"${a}"` : a)).join(' '));
-    return;
-  }
+  if (args.dry) return printCommand(cmd);
 
   await mkdir(path.dirname(args.out), { recursive: true });
-  const code = await new Promise((resolve) => {
-    const child = spawn(cmd[0], cmd.slice(1), { stdio: ['ignore', 'inherit', 'inherit'] });
-    child.on('error', (err) => {
-      console.error(String(err?.message ?? err));
-      resolve(127);
-    });
-    child.on('close', resolve);
-  });
-  if (code !== 0) fail(`ffmpeg exited ${code}`);
-
+  await runFfmpeg(cmd);
   const outMs = await probeDurationMs(args.out);
   console.log(`\nwrote ${path.relative(JOURNEY, args.out)} — ${(outMs / 1000).toFixed(2)} s`);
 }
 
 // ---------------------------------------------------------------- film mode
 
-const SEGMENT_TAKES = {
-  web: 'take.json',
-  card: 'cards.take.json',
-  proving: 'proving.take.json',
-  desktop: 'desktop.take.json',
-};
-const FILM_W = 1440;
-const FILM_H = 900;
-const FILM_FPS = 25;
-const FRAME_MS = 1000 / FILM_FPS;
-const DEFAULT_MAX_MS = 179_000;
-
-function clock(ms) {
-  const s = Math.max(0, ms) / 1000;
-  return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`;
-}
-
-/**
- * One act's window of its segment video, split where the recorder logged a wait: real-time
- * stretches at factor 1 and waiting stretches at their factor, contiguous from `from` to `to`.
- */
-function rangesOf(from, to, speedups, speedOverride) {
-  const fast = speedups
-    .map((r) => ({
-      from: Math.max(from, Number(r.start_ms) || 0),
-      to: Math.min(to, Number(r.end_ms) || 0),
-      factor: speedOverride ?? (Number(r.factor) || 4),
-    }))
-    .filter((r) => r.to - r.from >= FRAME_MS * 2 && r.factor > 1)
-    .sort((a, b) => a.from - b.from);
-  const out = [];
-  let at = from;
-  for (const r of fast) {
-    if (r.from < at) r.from = at;
-    if (r.to <= r.from) continue;
-    if (r.from > at) out.push({ from: at, to: r.from, factor: 1 });
-    out.push(r);
-    at = r.to;
-  }
-  if (to > at) out.push({ from: at, to, factor: 1 });
-  return out.filter((r) => r.to - r.from >= FRAME_MS);
-}
-
-/** Segment clock -> milliseconds from the start of the piece, through the piece's speed ranges. */
-function mapThrough(ranges, t) {
-  let out = 0;
-  for (const r of ranges) {
-    if (t <= r.from) break;
-    out += (Math.min(t, r.to) - r.from) / r.factor;
-  }
-  return out;
-}
-
-function srtBlock(index, start, end, text) {
-  return [String(index), `${srtTime(start)} --> ${srtTime(end)}`, text, ''].join('\n');
-}
-
 async function film(args) {
   if (!existsSync(args.script)) fail(`no script at ${path.relative(JOURNEY, args.script)}`);
   const script = JSON.parse(await readFile(args.script, 'utf8'));
   const maxMs = args.maxS !== undefined ? args.maxS * 1000 : Number(script.max_ms) || DEFAULT_MAX_MS;
-  const xfadeMs = args.xfade || 0;
 
   // ---- the takes, one per segment the script uses
-  const takes = new Map();
+  const takes = {};
   for (const act of script.acts) {
     const segment = act.segment ?? 'web';
-    if (takes.has(segment)) continue;
+    if (takes[segment]) continue;
     const name = SEGMENT_TAKES[segment];
     if (!name) fail(`act ${act.id}: unknown segment ${segment}`);
     const file = path.join(args.takes, name);
@@ -387,218 +250,58 @@ async function film(args) {
     const take = JSON.parse(await readFile(file, 'utf8'));
     const video = path.resolve(path.dirname(file), take.video ?? '');
     if (!existsSync(video)) fail(`${path.relative(JOURNEY, file)} names a video that is not there: ${video}`);
-    takes.set(segment, { file, take, video, videoMs: await probeDurationMs(video) });
+    takes[segment] = { take, video, videoMs: await probeDurationMs(video) };
   }
 
-  // ---- the pieces: one per act, cut from its segment's video
-  const pieces = [];
-  for (const act of script.acts) {
-    const segment = act.segment ?? 'web';
-    const { take, video, videoMs } = takes.get(segment);
-    const ids = new Set(act.beats.map((b) => b.id));
-    const marks = (take.beats ?? []).filter((m) => ids.has(m.id));
-    const missing = act.beats.filter((b) => !marks.some((m) => m.id === b.id)).map((b) => b.id);
-    if (marks.length === 0) fail(`act ${act.id}: the ${segment} take has none of its beats (${[...ids].join(', ')})`);
-    if (missing.length) console.warn(`warn: act ${act.id}: the ${segment} take has no mark for ${missing.join(', ')}`);
-    for (const m of marks) if (m.error) console.warn(`warn: beat ${m.id} was recorded with an error: ${m.error}`);
-    const from = Math.max(0, Math.min(...marks.map((m) => Number(m.start_ms) || 0)));
-    const to = Math.min(videoMs, Math.max(...marks.map((m) => Number(m.end_ms) || 0)));
-    if (to <= from) fail(`act ${act.id}: its beats fall outside the ${segment} video (${videoMs} ms)`);
-    const ranges = rangesOf(from, to, take.speedups ?? [], args.speed);
-    const ms = ranges.reduce((sum, r) => sum + (r.to - r.from) / r.factor, 0);
-    pieces.push({ act, segment, video, from, to, ranges, ms, marks, at: 0 });
-  }
-
-  // ---- the timeline: where each piece starts in the film (a crossfade overlaps neighbours)
-  const fade = pieces.length > 1 ? Math.round(Math.min(xfadeMs, ...pieces.map((p) => p.ms / 2))) : 0;
-  let at = 0;
-  for (const p of pieces) {
-    p.at = at;
-    at += p.ms - fade;
-  }
-  const totalMs = Math.round(at + fade);
-
-  // ---- the beats, on the film's clock
-  const placed = [];
-  for (const p of pieces) {
-    for (const m of p.marks) {
-      placed.push({
-        id: m.id,
-        caption: m.caption,
-        start: Math.round(p.at + mapThrough(p.ranges, Number(m.start_ms) || 0)),
-        end: Math.round(p.at + mapThrough(p.ranges, Number(m.end_ms) || 0)),
-      });
+  const audioDir = path.join(args.takes, 'audio');
+  const options = { script, takes, xfade: args.xfade, speed: args.speed, maxMs, allowLong: args.allowLong, captions: args.captions };
+  const planOf = (audio) => {
+    try {
+      return planFilm({ ...options, audio });
+    } catch (err) {
+      return fail(String(err?.message ?? err));
     }
-  }
-  placed.sort((a, b) => a.start - b.start);
+  };
 
-  // ---- the plan, printed whether or not it runs
-  console.log(`film: ${path.relative(JOURNEY, args.script)}: ${pieces.length} pieces, ${placed.length} beats`);
-  for (const p of pieces) {
+  // ---- the cut first (the limit is decided before any clip is probed), then the clips on it
+  const cut = planOf({});
+  for (const w of cut.warnings) console.warn(`warn: ${w}`);
+  console.log(`film: ${path.relative(JOURNEY, args.script)}: ${cut.pieces.length} pieces, ${cut.placed.length} beats`);
+  for (const p of cut.pieces) {
     const fast = p.ranges.filter((r) => r.factor > 1);
     console.log(
-      `  ${clock(p.at)}  ${p.act.id.padEnd(10)} ${p.segment.padEnd(8)} ` +
+      `  ${clock(p.at)}  ${p.act.padEnd(10)} ${p.segment.padEnd(8)} ` +
         `${((p.to - p.from) / 1000).toFixed(1)} s recorded -> ${(p.ms / 1000).toFixed(1)} s` +
         (fast.length
           ? `; sped up: ${fast.map((r) => `${((r.to - r.from) / 1000).toFixed(1)} s at ${r.factor}x`).join(', ')}`
           : ''),
     );
   }
-  console.log(`  total ${clock(totalMs)} (${totalMs} ms)${fade ? `, crossfade ${fade} ms` : ''}; limit ${clock(maxMs)}`);
-  if (totalMs > maxMs) {
-    const over = `the cut runs ${clock(totalMs)}, over the ${clock(maxMs)} limit`;
-    if (!args.allowLong) fail(`refused: ${over}. Shorten the script, raise --speed, or pass --allow-long for a draft.`);
-    console.warn(`warn: ${over} (--allow-long)`);
-  }
+  console.log(`  total ${clock(cut.totalMs)} (${cut.totalMs} ms)${cut.fade ? `, crossfade ${cut.fade} ms` : ''}; limit ${clock(maxMs)}`);
+  if (cut.refused) fail(`refused: ${cut.refused}. Shorten the script, raise --speed, or pass --allow-long for a draft.`);
+  if (cut.over) console.warn(`warn: ${cut.over} (--allow-long)`);
 
-  // ---- audio clips, as the take's compose lays them: at the beat, trimmed with a fade at the
-  // beat's end so two clips never overlap
-  const audioDir = path.join(args.takes, 'audio');
-  const durationsPath = path.join(audioDir, 'durations.json');
-  const durations = existsSync(durationsPath) ? JSON.parse(await readFile(durationsPath, 'utf8')) : {};
-  const clips = [];
-  for (const beat of placed) {
-    const mp3 = path.join(audioDir, `${beat.id}.mp3`);
-    if (!existsSync(mp3)) {
-      console.warn(`warn: beat ${beat.id} has no mp3 at ${path.relative(JOURNEY, mp3)}, silent`);
-      continue;
+  const durations = await readDurations(audioDir, false);
+  const plan = planOf(await audioOf(cut.placed.map((b) => b.id), audioDir, durations));
+  for (const s of plan.skipped) {
+    if (s.reason === 'no-audio') {
+      console.warn(`warn: beat ${s.id} has no mp3 at ${path.relative(JOURNEY, path.join(audioDir, `${s.id}.mp3`))}, silent`);
     }
-    let clipMs = Number(durations[beat.id]);
-    if (!Number.isFinite(clipMs) || clipMs <= 0) clipMs = await probeDurationMs(mp3);
-    const room = Math.max(0, Math.min(beat.end, totalMs) - beat.start);
-    if (room <= 0) continue;
-    const keep = Math.min(clipMs, room);
-    clips.push({ id: beat.id, file: mp3, start: beat.start, keep, trimmed: keep < clipMs });
   }
-  const trimmed = clips.filter((c) => c.trimmed).map((c) => c.id);
-  console.log(`  ${clips.length} clip(s)${trimmed.length ? `; trimmed to their beat: ${trimmed.join(', ')}` : ''}`);
+  const trimmed = plan.clips.filter((c) => c.trimmed).map((c) => c.id);
+  console.log(`  ${plan.clips.length} clip(s)${trimmed.length ? `; trimmed to their beat or the next: ${trimmed.join(', ')}` : ''}`);
 
-  // ---- subtitles: the speed-up label top right, always; the captions at the bottom, on request
-  const blocks = [];
-  for (const p of pieces) {
-    for (const r of p.ranges.filter((x) => x.factor > 1)) {
-      const s = p.at + mapThrough(p.ranges, r.from);
-      const e = p.at + mapThrough(p.ranges, r.to);
-      blocks.push({ s, e, text: `{\\an9}sped up ${r.factor}x` });
-    }
-  }
-  if (args.captions) {
-    for (const b of placed) {
-      const text = String(b.caption ?? '').trim();
-      if (text) blocks.push({ s: b.start, e: Math.max(b.start + 500, b.end), text });
-    }
-  }
-  blocks.sort((a, b) => a.s - b.s);
   const srtPath = args.out.replace(/\.mp4$/i, '') + '.srt';
-  const srt = blocks.map((b, i) => srtBlock(i + 1, b.s, b.e, b.text)).join('\n');
-
-  // ---- the filtergraph: every piece's ranges cut from its video, normalised to one look,
-  // concatenated (or crossfaded), then the subtitles; the audio bed with the clips mixed in
-  const files = [...new Set(pieces.map((p) => p.video))];
-  const uses = new Map(files.map((f) => [f, 0]));
-  for (const p of pieces) uses.set(p.video, uses.get(p.video) + p.ranges.length);
-  const inputs = [];
-  for (const f of files) inputs.push('-i', f);
-  const bedIndex = files.length;
-  inputs.push('-f', 'lavfi', '-t', (totalMs / 1000).toFixed(3), '-i', `anullsrc=r=${AUDIO_RATE}:cl=stereo`);
-  for (const clip of clips) inputs.push('-i', clip.file);
-
-  const chains = [];
-  const taps = new Map();
-  files.forEach((f, i) => {
-    const n = uses.get(f);
-    const labels = Array.from({ length: n }, (_, k) => `[s${i}_${k}]`);
-    chains.push(`[${i}:v]split=${n}${labels.join('')}`);
-    taps.set(f, labels);
-  });
-  const look =
-    `fps=${FILM_FPS},scale=${FILM_W}:${FILM_H}:force_original_aspect_ratio=decrease,` +
-    `pad=${FILM_W}:${FILM_H}:(ow-iw)/2:(oh-ih)/2:color=0x0b0e14,setsar=1,format=yuv420p`;
-  pieces.forEach((p, i) => {
-    const parts = p.ranges.map((r, j) => {
-      const tap = taps.get(p.video).shift();
-      const speed = r.factor > 1 ? `(PTS-STARTPTS)/${r.factor}` : 'PTS-STARTPTS';
-      chains.push(
-        `${tap}trim=start=${(r.from / 1000).toFixed(3)}:end=${(r.to / 1000).toFixed(3)},setpts=${speed},${look}[r${i}_${j}]`,
-      );
-      return `[r${i}_${j}]`;
-    });
-    chains.push(
-      // One timebase for every piece: xfade refuses two inputs whose timebases differ, and concat
-      // hands back a finer one than a single range does.
-      parts.length === 1
-        ? `${parts[0]}settb=1/${FILM_FPS}[p${i}]`
-        : `${parts.join('')}concat=n=${parts.length}:v=1:a=0,settb=1/${FILM_FPS}[p${i}]`,
-    );
-  });
-  if (pieces.length === 1) chains.push('[p0]null[vcat]');
-  else if (!fade) chains.push(`${pieces.map((_, i) => `[p${i}]`).join('')}concat=n=${pieces.length}:v=1:a=0[vcat]`);
-  else {
-    let prev = '[p0]';
-    for (let i = 1; i < pieces.length; i += 1) {
-      const label = i === pieces.length - 1 ? '[vcat]' : `[x${i}]`;
-      chains.push(
-        `${prev}[p${i}]xfade=transition=fade:duration=${(fade / 1000).toFixed(3)}:offset=${(pieces[i].at / 1000).toFixed(3)}${label}`,
-      );
-      prev = label;
-    }
-  }
-  let videoLabel = '[vcat]';
-  if (blocks.length) {
-    let filterPath = path.relative(process.cwd(), srtPath);
-    if (filterPath.startsWith('..') || path.isAbsolute(filterPath)) filterPath = srtPath;
-    chains.push(
-      `[vcat]subtitles=${escapeForFilter(filterPath)}:force_style='FontSize=10,MarginV=18,MarginR=18,Outline=1,Shadow=0'[vout]`,
-    );
-    videoLabel = '[vout]';
-  }
-
-  const format = `aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo`;
-  chains.push(`[${bedIndex}:a]${format}[bed]`);
-  clips.forEach((clip, i) => {
-    const parts = [format];
-    if (clip.trimmed) {
-      const keepS = clip.keep / 1000;
-      parts.push(`atrim=0:${keepS.toFixed(3)}`, 'asetpts=PTS-STARTPTS');
-      parts.push(`afade=t=out:st=${Math.max(0, keepS - FADE_MS / 1000).toFixed(3)}:d=${(FADE_MS / 1000).toFixed(3)}`);
-    }
-    parts.push(`adelay=${clip.start}:all=1`);
-    chains.push(`[${bedIndex + 1 + i}:a]${parts.join(',')}[a${i}]`);
-  });
-  const audioLabel = clips.length === 0 ? '[bed]' : '[aout]';
-  if (clips.length) {
-    chains.push(
-      `[bed]${clips.map((_, i) => `[a${i}]`).join('')}amix=inputs=${clips.length + 1}:normalize=0:duration=first:dropout_transition=0[aout]`,
-    );
-  }
-
-  const cmd = [
-    FFMPEG, '-y', '-hide_banner', '-loglevel', 'error', '-stats', ...inputs,
-    '-filter_complex', chains.join(';'),
-    '-map', videoLabel, '-map', audioLabel,
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', '-r', String(FILM_FPS),
-    '-c:a', 'aac', '-ar', String(AUDIO_RATE), '-b:a', '192k', '-ac', '2',
-    '-movflags', '+faststart', '-t', (totalMs / 1000).toFixed(3), args.out,
-  ];
+  const cmd = ffmpegArgs(plan, { out: args.out, ffmpeg: FFMPEG, srtFilterPath: filterPathOf(srtPath) });
 
   if (args.dry) {
-    console.log(`\nsubtitles: ${blocks.length} block(s), would be written to ${path.relative(JOURNEY, srtPath)}`);
-    console.log('');
-    console.log(cmd.map((a) => (/[\s;'"]/.test(a) ? `"${a}"` : a)).join(' '));
-    return;
+    console.log(`\nsubtitles: ${plan.blocks.length} block(s), would be written to ${path.relative(JOURNEY, srtPath)}`);
+    return printCommand(cmd);
   }
 
   await mkdir(path.dirname(args.out), { recursive: true });
-  if (blocks.length) await writeFile(srtPath, `${srt}\n`);
-  const code = await new Promise((resolve) => {
-    const child = spawn(cmd[0], cmd.slice(1), { stdio: ['ignore', 'inherit', 'inherit'] });
-    child.on('error', (err) => {
-      console.error(String(err?.message ?? err));
-      resolve(127);
-    });
-    child.on('close', resolve);
-  });
-  if (code !== 0) fail(`ffmpeg exited ${code}`);
+  if (plan.blocks.length) await writeFile(srtPath, `${plan.srt}\n`);
+  await runFfmpeg(cmd);
   const outMs = await probeDurationMs(args.out);
   console.log(`\nwrote ${path.relative(JOURNEY, args.out)}: ${(outMs / 1000).toFixed(2)} s (${clock(outMs)})`);
   if (outMs > maxMs + FRAME_MS && !args.allowLong) fail(`the written cut runs ${clock(outMs)}, over the ${clock(maxMs)} limit`);

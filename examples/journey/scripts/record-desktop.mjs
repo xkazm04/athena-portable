@@ -31,6 +31,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { captionOf, holdOf } from './lib/timeline.mjs';
+
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JOURNEY = path.resolve(HERE, '..');
@@ -75,25 +77,6 @@ function parseArgs(argv) {
 function fail(message, code = 1) {
   console.error(message);
   process.exit(code);
-}
-
-// ---------------------------------------------------------------- the script's clock
-
-/** `src/script.ts`'s hold rule, restated for a plain .mjs: max(clip, settle) + breath. */
-function holdOf(beat, script, durations) {
-  let clip = Number(durations[beat.id]);
-  if (!(clip > 0)) {
-    clip = script.chars_per_second
-      ? (beat.line.length / script.chars_per_second) * 1000
-      : (beat.line.split(/\s+/).filter(Boolean).length / (script.words_per_second || 2.5)) * 1000;
-  }
-  return Math.round(Math.max(clip, Number(beat.settle_ms) || 0) + (Number(script.breath_ms) || 0));
-}
-
-function captionOf(beat) {
-  if (beat.voice === 'mira') return `Mira: ${beat.line}`;
-  if (beat.voice === 'athena') return `Athena: ${beat.line}`;
-  return beat.line;
 }
 
 // ---------------------------------------------------------------- the picture
@@ -246,6 +229,10 @@ async function main() {
   if (acts.length === 0) fail(`${path.relative(JOURNEY, args.script)} has no desktop acts`);
   const durationsPath = path.join(TAKE, 'audio', 'durations.json');
   const durations = existsSync(durationsPath) ? JSON.parse(readFileSync(durationsPath, 'utf8')) : {};
+  // The hold rule is src/script.ts's, from scripts/lib/timeline.mjs: a clip the narration manifest
+  // says was read from a line of another length is not paced to, exactly as the web recorder does.
+  const manifestPath = path.join(TAKE, 'audio', 'manifest.json');
+  const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : undefined;
 
   const have = await grabbers();
   const order = args.grabber ? [args.grabber] : ['ddagrab', 'gdigrab'];
@@ -258,7 +245,7 @@ async function main() {
     let total = 0;
     for (const act of acts) {
       for (const beat of act.beats) {
-        const hold = holdOf(beat, script, durations);
+        const hold = holdOf(beat, script, durations, manifest);
         total += hold;
         console.log(
           `  ${beat.id.padEnd(4)} ${String(hold).padStart(6)} ms  ${beat.cue ? `cue ${beat.cue}, then ` : ''}` +
@@ -332,7 +319,7 @@ async function main() {
           }
         }
         if (error) console.error(`beat ${beat.id} failed: ${error}`);
-        const remaining = holdOf(beat, script, durations) - (Date.now() - startedAt);
+        const remaining = holdOf(beat, script, durations, manifest) - (Date.now() - startedAt);
         if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
         marks.push({
           id: beat.id,
