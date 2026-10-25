@@ -12,7 +12,15 @@ import { entry as accounts } from "./accounts";
 import { entry as apps } from "./apps";
 import { entry as chores } from "./chores";
 import { entry as mind } from "./mind";
+import { entry as projects } from "./projects";
 import type { DepthScene } from "./types";
 import { entry as voice } from "./voice";
 
-export const DEPTH_SCENES: Readonly<Record<Root, DepthScene>> = { apps, chores, accounts, voice, mind };
+export const DEPTH_SCENES: Readonly<Record<Root, DepthScene>> = {
+  projects,
+  apps,
+  chores,
+  accounts,
+  voice,
+  mind,
+};

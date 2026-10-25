@@ -1,5 +1,5 @@
 /**
- * The depth model — README section 3.1 and 3.5, ADR 0087 and 0088.
+ * The depth model — README section 3.1 and 3.5, ADR 0087, 0088 and 0225.
  *
  * Main is one scene and everything else is a depth below it. This file is the whole of the
  * navigation: where you are (a `Path`), how you move (`go`, `rise`, `settle`), what the chrome
@@ -7,8 +7,8 @@
  * (`shapeOf`, the one thing Rust is told). It is pure. It imports no store, no Tauri and no view,
  * so every rule here is tested without a DOM and the preview harness can render any depth.
  *
- * **A path has a fixed grammar, not a string of segments.** A root (Apps, Chores, Accounts, Voice,
- * Mind), then an item under it, then one sub-level of a kind the root allows. The grammar is why
+ * **A path has a fixed grammar, not a string of segments.** A root (Projects, Apps, Chores,
+ * Accounts, Voice, Mind), then an item under it, then one sub-level of a kind the root allows. The grammar is why
  * "every capability is at most three moves from the surface" is a property that holds, not a
  * habit: `depthOf` is 0 to 3 and no path is deeper.
  *
@@ -19,12 +19,22 @@
  * under a root is opaque here; whether it names anything is the scene's to say.
  */
 
-export const ROOTS = ["apps", "chores", "accounts", "voice", "mind"] as const;
+export const ROOTS = ["projects", "apps", "chores", "accounts", "voice", "mind"] as const;
 
 export type Root = (typeof ROOTS)[number];
 
+/**
+ * The depths the surface lights, in the order she shows them (ADR 0225). Projects replaced Apps on
+ * the surface: an app is reached from the project it is paired into, from the Projects field's
+ * "All apps" door and from the stage's dock, so `apps` stays a legal root without a light of its own.
+ */
+export const SURFACE_ROOTS = ["projects", "chores", "accounts", "voice", "mind"] as const satisfies readonly Root[];
+
+export type SurfaceRoot = (typeof SURFACE_ROOTS)[number];
+
 /** The words a person reads, which are not the module ids (ADR 0087). */
 export const ROOT_LABEL: Readonly<Record<Root, string>> = {
+  projects: "Projects",
   apps: "Apps",
   chores: "Chores",
   accounts: "Accounts",
@@ -32,7 +42,7 @@ export const ROOT_LABEL: Readonly<Record<Root, string>> = {
   mind: "Mind",
 };
 
-export type SubKind = "page" | "tool" | "run" | "adopt" | "case" | "allowlist";
+export type SubKind = "page" | "tool" | "run" | "adopt" | "case" | "allowlist" | "memory";
 
 export interface Sub {
   kind: SubKind;
@@ -54,6 +64,8 @@ const GRAMMAR: Readonly<
   Record<Root, { items: readonly string[] | "open"; subs: Readonly<Partial<Record<SubKind, boolean>>> }>
 > = {
   // A boolean says whether the sub-level takes an argument.
+  // An item is a space id (`spc_…`) or the reserved `core`, Athena's own memory (ADR 0225).
+  projects: { items: "open", subs: { memory: false } },
   apps: { items: "open", subs: { page: false, tool: true } },
   // The id "new" is the front door (ADR 0098); the Chores scene reserves it, no chore may take it.
   // `case/<proj_id>` is the studio on a saved case (ADR 0123).

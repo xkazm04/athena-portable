@@ -27,6 +27,7 @@ import Stage from "./Stage";
 import "./preview.css";
 
 const ITEMS: Record<string, string[]> = {
+  projects: ["core", "spc_0a1b2c3d4e5f"],
   apps: ["host-1", "host-2", "mail"],
   chores: ["flight-compensation", "carrier-refunds"],
   accounts: ["gmail", "notion"],
@@ -35,6 +36,7 @@ const ITEMS: Record<string, string[]> = {
 };
 
 const SUBS: Record<string, { kind: string; arg?: string; label: string }[]> = {
+  projects: [{ kind: "memory", label: "Memory" }],
   apps: [
     { kind: "page", label: "Open the page" },
     { kind: "tool", arg: "page_read", label: "page_read" },
@@ -51,6 +53,8 @@ function Placeholder({ path, onGo }: { path: Path; onGo: (to: Path) => void }) {
   const title = crumbs(path).at(-1)!.label;
   const children: { label: string; to: Path; key: string }[] = [];
   if (path.root === null) {
+    // Every root, not only the surface's lights (ADR 0225): the harness reaches Apps from here, and
+    // `scripts/perf-stage.drive.mjs` dives into it.
     for (const r of ROOTS) children.push({ label: ROOT_LABEL[r], to: { root: r }, key: r });
   } else if (path.item === undefined) {
     for (const item of ITEMS[path.root] ?? []) children.push({ label: item, to: { root: path.root, item }, key: item });

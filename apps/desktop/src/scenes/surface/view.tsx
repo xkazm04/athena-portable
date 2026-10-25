@@ -20,7 +20,7 @@ import { lazy, Suspense, useState, type FormEvent } from "react";
 
 import Glyph from "@/art/glyphs";
 import Bell from "@/bell/Bell";
-import { ROOTS, type Root } from "@/depth/model";
+import { SURFACE_ROOTS, type Root } from "@/depth/model";
 import type { View } from "@/modules/types";
 
 import type { SurfaceModel } from "./model";
@@ -42,7 +42,8 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
 
   const light = model.lights.find((l) => l.root === focused) ?? null;
   // The five lights sit left to right, so the lean is where the focused one is along them.
-  const lean = focused === null ? 0 : (ROOTS.indexOf(focused) - (ROOTS.length - 1) / 2) / ((ROOTS.length - 1) / 2);
+  const lights: readonly Root[] = SURFACE_ROOTS;
+  const lean = focused === null ? 0 : (lights.indexOf(focused) - (lights.length - 1) / 2) / ((lights.length - 1) / 2);
 
   // The press is acknowledged by her window coming forward; a window that does not is said where
   // the hand-over's own outcome is said, in the error colour.

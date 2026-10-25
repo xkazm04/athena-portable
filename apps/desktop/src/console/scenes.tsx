@@ -2,7 +2,7 @@
  * Which scene answers to which place — README section 3.5, ADR 0087 and 0090.
  *
  * One function from a depth path to the scene drawn for it. The surface is the first act until the
- * machine has been woken and her bell after; each of the five depths is its own scene
+ * machine has been woken and her bell after; each of the six depths is its own scene
  * (`LIVE_SCENES`, one per root, and a test pins that none is missing). Nothing here knows a store:
  * a scene's `Live` reads what it needs, and the console's root started the stores.
  */
@@ -14,6 +14,7 @@ import { live as accounts } from "@/scenes/accounts/live";
 import { live as apps } from "@/scenes/apps/live";
 import { live as chores } from "@/scenes/chores/live";
 import { live as mind } from "@/scenes/mind/live";
+import { live as projects } from "@/scenes/projects/live";
 import { Live as Surface } from "@/scenes/surface/live";
 import type { LiveScene } from "@/scenes/types";
 import { live as voice } from "@/scenes/voice/live";
@@ -26,6 +27,7 @@ import { Live as Waking } from "@/scenes/waking/live";
  * a compile error until it has one.
  */
 export const LIVE_SCENES: Readonly<Record<Root, LiveScene>> = {
+  projects,
   apps,
   chores,
   accounts,

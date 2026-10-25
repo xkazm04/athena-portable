@@ -46,10 +46,11 @@ describe("the surface", () => {
 
   it("offers all five depths as buttons with their stat", () => {
     const h = html("typical");
-    for (const word of ["Apps", "Chores", "Accounts", "Voice", "Mind"]) {
+    for (const word of ["Projects", "Chores", "Accounts", "Voice", "Mind"]) {
       expect(h).toContain(`surface__light-name">${word}<`);
     }
     expect(h).toContain("12 of 16 tested · $551 back found");
+    expect(h).not.toContain(`surface__light-name">Apps<`); // Apps left the surface (ADR 0225)
     expect(h.match(/class="surface__light focus-ring"/g)).toHaveLength(5);
   });
 

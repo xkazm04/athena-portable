@@ -18,6 +18,7 @@ const base: SurfaceSources = {
     { id: "calendar", host: "calendar.example.test", enabled: false },
   ],
   openTabs: 3,
+  projects: { count: 3, loaded: true, failed: false, active: "Renovation" },
   accounts: [
     {
       id: "gmail",
@@ -52,6 +53,7 @@ export const fixtures: Record<string, SurfaceModel> = {
   empty: make({
     apps: [],
     openTabs: 0,
+    projects: { count: 0, loaded: true, failed: false, active: "" },
     accounts: [],
     chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
     voiceAvailable: false,
@@ -73,11 +75,13 @@ export const fixtures: Record<string, SurfaceModel> = {
       enabled: i % 3 !== 2,
     })),
     openTabs: 12,
+    projects: { count: 9, loaded: true, failed: false, active: "" },
   }),
   // The shipped playbooks load lazily: until they arrive the light says it is counting.
   counting: make({ chores: { total: 0, benched: 0, foundUsd: 0, loaded: false, failed: false } }),
   degraded: make({
     inShell: false,
+    projects: { count: 0, loaded: false, failed: true, active: "" },
     engine: {
       label: "Claude Code",
       standing: "missing",

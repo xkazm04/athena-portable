@@ -1,11 +1,11 @@
 /**
  * The surface, as the running app uses it — the one file here that knows a store exists.
  *
- * It reads and starts nothing: the app root starts the stores (README 3.5). Nine are read here:
+ * It reads and starts nothing: the app root starts the stores (README 3.5). Ten are read here:
  * her status (the mirror, with her face's phase beside it), the origins, the tabs, the connectors,
  * the voice's availability, the engine's probe, the daemon (which engine it runs, and whether it
- * started), the shipped playbooks and the settings. `useSurfaceModel` is a hook so the console can
- * compose the same model into other views.
+ * started), the shipped playbooks, the settings and the projects (ADR 0225). `useSurfaceModel` is a
+ * hook so the console can compose the same model into other views.
  */
 import { createElement, useEffect, useMemo } from "react";
 
@@ -27,6 +27,7 @@ import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { usePlaybooks } from "@/stores/playbooks";
 import { useSettings } from "@/stores/settings";
+import { spaceById, useSpaces } from "@/stores/spaces";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
@@ -80,6 +81,10 @@ export function useSurfaceModel(): SurfaceModel {
   const daemonError = useDaemon((s) => s.lastError);
   const playbooks = usePlaybooks((s) => s.items);
   const playbooksProblem = usePlaybooks((s) => s.problem);
+  const spaces = useSpaces((s) => s.spaces);
+  const spacesLoaded = useSpaces((s) => s.loaded);
+  const spacesProblem = useSpaces((s) => s.problem);
+  const activeSpace = useSpaces((s) => s.activeId);
   // Counting the chores needs the shipped set; fetched once, after the first frame has been drawn.
   useEffect(() => {
     const ask = () => void usePlaybooks.getState().load();
@@ -117,6 +122,13 @@ export function useSurfaceModel(): SurfaceModel {
         return row ? [{ id: origin, host: hostOf(origin), enabled: row.enabled }] : [];
       }),
       openTabs: tabs.length,
+      projects: {
+        count: spaces.length,
+        // A list that could not be read is said as such, even after an earlier one answered.
+        loaded: spacesLoaded && spacesProblem === "",
+        failed: spacesProblem !== "",
+        active: spaceById(spaces, activeSpace)?.name ?? "",
+      },
       accounts: connectors.map((c) => {
         // The connectors module's standing, word and sentence: the need says it as the level does.
         const { standing: s, word, sentence } = standingOf(c, undefined, notice);
@@ -165,6 +177,10 @@ export function useSurfaceModel(): SurfaceModel {
     daemonError,
     playbooks,
     playbooksProblem,
+    spaces,
+    spacesLoaded,
+    spacesProblem,
+    activeSpace,
   ]);
 }
 

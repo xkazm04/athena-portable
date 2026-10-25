@@ -1,0 +1,749 @@
+/* The Projects depth — README section 3.5, ADR 0087, 0089 and 0225. Tokens only; a project's hue
+ * is its data, never a colour of the theme's, and is mixed toward `--foreground` so a ring keeps its
+ * contrast on the light and the dark water alike. No text under 12px; transform, rotate, scale and
+ * opacity are all that move, and under Calm nothing turns. The item under attention is display
+ * type, as in the Apps field. */
+
+.projects {
+  height: 100%;
+  overflow: auto;
+  padding: 4vh 6vw 14vh 5vw;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.projects--field {
+  container-type: inline-size;
+  gap: 10px;
+}
+
+/* A project's tint: its hue, pulled toward the foreground. Core, which has none, is the primary. */
+.orbit,
+.orrery__name,
+.projects__chip,
+.projects--project,
+.projects--memory {
+  --tint: color-mix(in oklab, hsl(var(--hue, 210) 72% 52%) 72%, var(--foreground));
+}
+.projects--core {
+  --tint: var(--primary);
+}
+
+/* ---- the head, as the Apps field's -------------------------------------------------------- */
+
+.projects__head {
+  display: grid;
+  gap: 8px;
+  max-width: 56rem;
+}
+.projects__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.projects--project .projects__eyebrow::before,
+.projects--memory .projects__eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.55em;
+  border-radius: 50%;
+  background: var(--tint);
+}
+.projects__marquee {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.projects__marquee--project {
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+}
+.projects__line {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  min-height: 3em;
+}
+.projects__line--short {
+  min-height: 0;
+}
+.projects__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- the orrery --------------------------------------------------------------------------- */
+
+/* One plane unit (`--u`) is a hundredth of the plane's width. It is the smaller of a share of the
+ * field's width and what the window's height leaves under the head, so the whole system is on the
+ * screen at the sizes the Apps scene supports, from a narrow window to a wide monitor. */
+.orrery {
+  --u: clamp(3px, min(0.8cqw, (100vh - 470px) / 50), 15px);
+  position: relative;
+  height: calc(var(--u) * 100 * var(--k) + 5.5rem);
+  min-height: 15rem;
+}
+/* Her light on the water, under everything. */
+.orrery::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 46);
+  height: calc(var(--u) * 46 * var(--k));
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--primary) 18%, transparent), transparent);
+  pointer-events: none;
+}
+.orrery__plane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 100);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scaleY(var(--k));
+  pointer-events: none;
+}
+/* Where rings will be, while there are none: two faint guides, so the sun is not adrift. */
+.orrery[data-lonely] .orrery__plane::before,
+.orrery[data-lonely] .orrery__plane::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border-subtle);
+}
+.orrery[data-lonely] .orrery__plane::before {
+  width: 53%;
+}
+.orrery[data-lonely] .orrery__plane::after {
+  width: 80%;
+}
+
+/* A ring: a circle on the tilted plane, turning. Its halo is a shadow on both sides of the line,
+ * as bright as the project's memory is deep (`--halo`, 0..1). */
+.orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--r) * 100%);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--tint) 50%, transparent);
+  box-shadow:
+    0 0 calc(2px + var(--halo) * 22px) calc(var(--halo) * 3px) color-mix(in srgb, var(--tint) calc(var(--halo) * 44%), transparent),
+    inset 0 0 calc(2px + var(--halo) * 20px) calc(var(--halo) * 2px) color-mix(in srgb, var(--tint) calc(var(--halo) * 30%), transparent);
+  animation: orbit-turn var(--period) linear infinite;
+  transition:
+    opacity var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.orbit[data-quiet] {
+  border-style: dashed;
+}
+.orbit[data-active] {
+  border-color: color-mix(in srgb, var(--tint) 85%, transparent);
+}
+.orbit[data-hot] {
+  border-color: var(--tint);
+  border-width: 2.5px;
+}
+.orbit[data-dim] {
+  opacity: 0.3;
+}
+.orbit[data-reverse],
+.orbit[data-reverse] .moon {
+  animation-direction: reverse;
+}
+
+/* A moon rides an arm at its own angle; it turns back by the arm's angle and the ring's turn, and
+ * is stretched back by the tilt, so it travels the ellipse upright and round. */
+.orbit__arm {
+  position: absolute;
+  inset: 0;
+  rotate: var(--a);
+}
+.moon {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: max(24px, calc(var(--u) * 4.2));
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% -50%;
+  rotate: calc(-1 * var(--a));
+  scale: 1 calc(1 / var(--k));
+  animation: moon-turn var(--period) linear infinite;
+}
+.moon .orb {
+  width: 100%;
+  height: 100%;
+}
+/* The moons ride; they do not also bob. */
+.moon .orb__float {
+  animation: none;
+  will-change: auto;
+}
+.moon--more {
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--card-bg);
+  border: 1.5px solid color-mix(in srgb, var(--tint) 60%, transparent);
+}
+@keyframes orbit-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes moon-turn {
+  from {
+    rotate: calc(-1 * var(--a));
+  }
+  to {
+    rotate: calc(-1 * var(--a) - 360deg);
+  }
+}
+
+/* The things a person acts on are HTML on top of the drawing, placed in plane units. */
+.orrery__names {
+  position: absolute;
+  inset: 0;
+}
+.orrery__sun {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  padding: 2px 8px 6px;
+  font: inherit;
+  color: var(--foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    opacity var(--duration-fast) var(--ease-fast),
+    scale var(--duration-fast) var(--ease-fast);
+}
+.orrery__sun:hover,
+.orrery__sun[data-hot] {
+  scale: 1.06;
+}
+.orrery__sun[data-dim] {
+  opacity: 0.6;
+}
+.sun__art {
+  display: block;
+  width: max(52px, calc(var(--u) * 10));
+}
+.sun__art .bell {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.orrery__sun-name {
+  margin-top: -6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  text-shadow:
+    0 0 4px var(--background),
+    0 0 8px var(--background);
+}
+
+.orrery__name {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--u));
+  top: calc(50% + var(--y) * var(--u));
+  translate: -50% -50%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 7px;
+  max-width: 11rem;
+  padding: 5px 12px 6px 10px;
+  font: inherit;
+  color: var(--foreground);
+  text-align: left;
+  background: color-mix(in srgb, var(--card-bg) 84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tint) 42%, var(--line));
+  border-radius: 14px;
+  box-shadow: var(--shadow-elevation-1);
+  cursor: pointer;
+  transition:
+    opacity var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast),
+    scale var(--duration-fast) var(--ease-fast);
+}
+.orrery__name:hover,
+.orrery__name[data-hot] {
+  z-index: 2;
+  scale: 1.05;
+  border-color: var(--tint);
+  background: var(--card-bg);
+}
+.orrery__name[data-dim] {
+  opacity: 0.55;
+}
+.orrery__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 22%, transparent);
+}
+.orrery__label {
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Where she works, said in a word and not by the colour alone. */
+.orrery__here {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.orrery__caption {
+  grid-column: 2 / -1;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.orrery__invite {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(30rem, 86%);
+  margin: 0;
+  translate: -50% 0;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+/* A narrow field keeps the drawing and the names; the counts move to the marquee and the labels. */
+@container (max-width: 640px) {
+  .orrery__caption,
+  .orrery__here {
+    display: none;
+  }
+  .orrery__name {
+    max-width: 7rem;
+    padding: 4px 9px;
+  }
+}
+
+/* ---- under the orrery --------------------------------------------------------------------- */
+
+.projects__rest {
+  display: grid;
+  gap: 8px;
+}
+.projects__chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.projects__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 10px;
+  font: inherit;
+  color: var(--foreground);
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tint) 40%, var(--line));
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.projects__chip:hover {
+  background: var(--wash);
+  border-color: var(--tint);
+}
+
+.projects__acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px 28px;
+}
+.projects__new {
+  flex: 1 1 22rem;
+  display: grid;
+  gap: 8px;
+  max-width: 40rem;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+.projects__new--lead {
+  max-width: 48rem;
+  padding: 22px 24px;
+  border-color: var(--accent);
+  box-shadow: 0 0 28px var(--glow);
+}
+.projects__new-title {
+  margin: 0;
+  font-size: 1rem;
+}
+.projects__new--lead .projects__new-title {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+.projects__new-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.projects__input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.projects__door {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  max-width: 18rem;
+  padding-top: 14px;
+}
+.projects__refusal {
+  color: var(--status-error);
+}
+
+/* ---- one project, and core ---------------------------------------------------------------- */
+
+.projects--project {
+  grid-template-columns: minmax(240px, 36%) 1fr;
+  gap: 0 4vw;
+}
+.projects--missing {
+  grid-template-columns: 1fr;
+}
+.projects__art {
+  container-type: inline-size;
+  position: sticky;
+  top: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding-top: 4vh;
+}
+.orrery--portrait {
+  --u: 0.96cqw;
+  width: 100%;
+  height: calc(var(--u) * 100 * var(--k) + 2.5rem);
+  min-height: 0;
+}
+.orrery__sun--still {
+  cursor: default;
+  pointer-events: none;
+}
+.projects__stylised {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-align: center;
+}
+.projects__detail {
+  display: grid;
+  gap: 16px;
+  max-width: 50rem;
+  min-width: 0;
+}
+.projects__name {
+  display: grid;
+  gap: 4px;
+}
+.projects__name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+.projects__rename {
+  flex: 1 1 18rem;
+  min-width: 0;
+  padding: 0 0 2px;
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--tint);
+  border-radius: 0;
+}
+.projects__section {
+  display: grid;
+  gap: 8px;
+}
+.projects__section-title {
+  margin: 0;
+  font-size: 1rem;
+}
+.projects__section > .btn {
+  justify-self: start;
+}
+.projects__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.projects__textarea {
+  min-height: 7.5em;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
+}
+.projects__count {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.projects__apps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.projects__app {
+  position: relative;
+}
+.projects__app-open {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 8.5rem;
+  padding: 6px 8px 10px;
+  font: inherit;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.projects__app-open:hover {
+  background: var(--wash);
+  border-color: var(--line-strong);
+}
+.projects__app-host {
+  max-width: 100%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.projects__app-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  font: inherit;
+  line-height: 1;
+  color: var(--muted-foreground);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.projects__app-remove:hover {
+  color: var(--status-error);
+  border-color: var(--status-error);
+}
+
+.projects__picks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.projects__pick {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 14px;
+  font: inherit;
+  color: var(--foreground);
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--card-raised) 70%, transparent);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-fast);
+}
+.projects__pick:hover {
+  background: var(--wash);
+}
+.projects__pick-where {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.projects__chores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.projects__chore {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 4px 4px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--tint);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+.projects__chore-open {
+  padding: 4px 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--foreground);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.projects__chore-open:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--tint);
+  text-underline-offset: 3px;
+}
+
+/* ---- memory ------------------------------------------------------------------------------- */
+
+.projects__memory {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-width: 62rem;
+}
+.projects__memory-row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+.projects__kind {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.projects__memory-row[data-kind="fact"] .projects__kind,
+.projects__memory-row[data-kind="procedural"] .projects__kind {
+  color: var(--accent-text);
+}
+.projects__memory-line {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.projects__memory-when {
+  white-space: nowrap;
+}
+.projects__make-core {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Calm and narrow windows -------------------------------------------------------------- */
+
+:root[data-motion="calm"] .orbit,
+:root[data-motion="calm"] .moon {
+  animation: none;
+}
+:root[data-motion="calm"] .orrery__name:hover,
+:root[data-motion="calm"] .orrery__name[data-hot],
+:root[data-motion="calm"] .orrery__sun:hover,
+:root[data-motion="calm"] .orrery__sun[data-hot] {
+  scale: none;
+}
+
+@media (max-width: 899px) {
+  .projects--project {
+    grid-template-columns: 1fr;
+  }
+  .projects__art {
+    position: static;
+    padding-top: 0;
+    max-width: 30rem;
+    justify-self: center;
+    width: 100%;
+  }
+  .projects__memory-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .projects__make-core {
+    grid-column: auto;
+  }
+}

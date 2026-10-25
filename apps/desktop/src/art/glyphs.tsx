@@ -43,6 +43,19 @@ const warn = (x: number, y: number) => (
 );
 
 const ART: Record<Root, (f: Facts) => ReactElement> = {
+  // Her core as a small sun, two projects as tilted rings around it, their apps as moons (ADR 0225).
+  projects: (f) => (
+    <g className="glyph__float" fill="none">
+      <ellipse cx="60" cy="46" rx="50" ry="22" stroke={STROKE} strokeWidth="1.5" strokeDasharray="2 4" />
+      <ellipse cx="60" cy="46" rx="32" ry="14" stroke={ink(f, 0)} strokeWidth="2" />
+      <circle cx="60" cy="46" r="15" fill="color-mix(in srgb, var(--accent) 16%, transparent)" />
+      <circle cx="60" cy="46" r="8" fill="var(--foreground)" />
+      <rect x="83" y="29" width="14" height="11" rx="2.5" fill="var(--card-bg)" stroke="var(--accent)" strokeWidth="1.5" />
+      <rect x="22" y="53" width="12" height="9.5" rx="2.5" fill="var(--card-bg)" stroke="var(--accent)" strokeWidth="1.5" />
+      <rect x="99" y="54" width="12" height="9.5" rx="2.5" fill="var(--card-bg)" stroke={STROKE} strokeWidth="1.5" />
+      <rect x="14" y="30" width="10" height="8" rx="2" fill="var(--card-bg)" stroke={STROKE} strokeWidth="1.5" />
+    </g>
+  ),
   apps: (f) => (
     <g className="glyph__float">
       <rect x="16" y="14" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 6%, transparent)" stroke={ink(f, 2)} strokeWidth="1.5" />

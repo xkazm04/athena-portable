@@ -1,11 +1,12 @@
 /**
- * The surface's view-model — README section 3.1 and 3.5, ADR 0026, 0087.
+ * The surface's view-model — README section 3.1 and 3.5, ADR 0026, 0087 and 0225.
  *
- * The surface is Athena and the five lights beneath her. It is a **mirror** (decision D1, ADR 0087):
- * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports
- * and the phase her face mirrors on `athena:face` (ADR 0222), and talking to her is handing text to
- * her own window. Nothing here pretends otherwise: the ask box says it hands the words over, and the
- * cards waiting are answered in her window.
+ * The surface is Athena and the five lights beneath her: Projects first, where Apps stood until
+ * ADR 0225 (`SURFACE_ROOTS`); the apps she reaches are still her tendrils. It is a **mirror**
+ * (decision D1, ADR 0087): Main holds no run and no microphone, so what it shows of her is what
+ * `athena:status` reports and the phase her face mirrors on `athena:face` (ADR 0222), and talking to
+ * her is handing text to her own window. Nothing here pretends otherwise: the ask box says it hands
+ * the words over, and the cards waiting are answered in her window.
  *
  * What needs the person is named on the surface, each one press from its item (`needs`): an
  * account to reconnect, an engine that cannot run, a restart that is pending. Every need is a dive,
@@ -19,7 +20,7 @@ import type { GlyphFacts } from "@/art/glyphs";
 import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose, type PoseInput } from "@/bell/pose";
-import { ROOTS, ROOT_LABEL, type Path, type Root } from "@/depth/model";
+import { ROOT_LABEL, SURFACE_ROOTS, type Path, type Root, type SurfaceRoot } from "@/depth/model";
 import type { Standing } from "@/modules/setup/readiness";
 import { pillText } from "@/stores/athena";
 
@@ -49,6 +50,11 @@ export interface SurfaceSources {
    * `word` and `line` are the connectors module's own standing for the account (`standingOf`):
    * the surface names why an account needs the person in the words its level uses.
    */
+  /**
+   * The person's projects (ADR 0225): how many, whether the list has answered or failed, and the
+   * name of the one she works in, "" for her core.
+   */
+  projects: { count: number; loaded: boolean; failed: boolean; active: string };
   accounts: readonly { id: string; label: string; connected: boolean; attention: boolean; word: string; line: string }[];
   /**
    * `loaded` is false while the shipped playbooks are still being fetched (they load lazily);
@@ -185,6 +191,12 @@ function needsOf(s: SurfaceSources): Need[] {
   return needs;
 }
 
+/** The apps in a few words, said by the Projects light while there is no project to count. */
+function appsStat(apps: number, on: number, openTabs: number): string {
+  if (apps === 0) return openTabs > 0 ? `${plural(openTabs, "page")} open` : "no app yet";
+  return `${on} of ${plural(apps, "app")} on`;
+}
+
 export function selectSurface(s: SurfaceSources): SurfaceModel {
   const onApps = s.apps.filter((a) => a.enabled);
   const connected = s.accounts.filter((a) => a.connected);
@@ -195,18 +207,19 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
 
   const needs = needsOf(s);
   // Each light's glyph facts take its own attention; the rest is the light's numbers.
-  const lights: Record<Root, Omit<Light, "root" | "to" | "art"> & { art: Omit<GlyphFacts, "attention"> }> = {
-    apps: {
-      label: ROOT_LABEL.apps,
-      stat:
-        s.apps.length === 0
-          ? s.openTabs > 0
-            ? `${plural(s.openTabs, "page")} open`
-            : "none yet"
-          : `${onApps.length} of ${s.apps.length} on` + (s.openTabs > 0 ? ` · ${s.openTabs} open` : ""),
-      hint: "The web apps she works in: open one, switch one on or off.",
+  const lights: Record<SurfaceRoot, Omit<Light, "root" | "to" | "art"> & { art: Omit<GlyphFacts, "attention"> }> = {
+    projects: {
+      label: ROOT_LABEL.projects,
+      stat: !s.projects.loaded
+        ? s.projects.failed
+          ? "could not be read"
+          : "reading…"
+        : s.projects.count === 0
+          ? `none yet · ${appsStat(s.apps.length, onApps.length, s.openTabs)}`
+          : `${plural(s.projects.count, "project")} · in ${s.projects.active || "core"}`,
+      hint: "Where she works: each project keeps its own brief, apps, chores and memory.",
       attention: false,
-      art: { filled: onApps.length, of: s.apps.length },
+      art: { filled: s.projects.count, of: s.projects.loaded ? s.projects.count : null },
     },
     chores: {
       label: ROOT_LABEL.chores,
@@ -261,7 +274,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     waiting: s.athena.cards,
     windowVisible: s.windowVisible,
     reach,
-    lights: ROOTS.map((root) => {
+    lights: SURFACE_ROOTS.map((root) => {
       const l = lights[root];
       const first = l.attention ? needs.find((n) => n.to.root === root) : undefined;
       return { root, to: first?.to ?? { root }, ...l, art: { attention: l.attention, ...l.art } };

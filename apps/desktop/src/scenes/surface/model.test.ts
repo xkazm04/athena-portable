@@ -1,4 +1,4 @@
-/** Tests for the surface's model — README section 3.1, ADR 0026 and 0087. */
+/** Tests for the surface's model — README section 3.1, ADR 0026, 0087 and 0225. */
 import { describe, expect, it } from "vitest";
 
 import { fixtures } from "./fixtures";
@@ -34,8 +34,8 @@ describe("the reach", () => {
 
 describe("the five lights", () => {
   it("are the five depths, in order, each with a stat and a hint", () => {
-    expect(typical.lights.map((l) => l.root)).toEqual(["apps", "chores", "accounts", "voice", "mind"]);
-    expect(typical.lights.map((l) => l.label)).toEqual(["Apps", "Chores", "Accounts", "Voice", "Mind"]);
+    expect(typical.lights.map((l) => l.root)).toEqual(["projects", "chores", "accounts", "voice", "mind"]);
+    expect(typical.lights.map((l) => l.label)).toEqual(["Projects", "Chores", "Accounts", "Voice", "Mind"]);
     for (const l of typical.lights) {
       expect(l.stat.length).toBeGreaterThan(0);
       expect(l.hint.length).toBeGreaterThan(0);
@@ -44,7 +44,8 @@ describe("the five lights", () => {
 
   it("count what is live", () => {
     const by = Object.fromEntries(typical.lights.map((l) => [l.root, l]));
-    expect(by.apps!.stat).toBe("3 of 5 on · 3 open");
+    expect(by.projects!.stat).toBe("3 projects · in Renovation");
+    expect(by.apps).toBeUndefined();
     expect(by.chores!.stat).toBe("12 of 16 tested · $551 back found");
     expect(by.accounts!.stat).toBe("1 of 3 connected");
     expect(by.voice!.stat).toBe("ready to talk");
@@ -62,7 +63,7 @@ describe("the five lights", () => {
 
   it("say so when a count is not known yet or there is nothing", () => {
     const by = Object.fromEntries(fixtures.empty!.lights.map((l) => [l.root, l]));
-    expect(by.apps!.stat).toBe("none yet");
+    expect(by.projects!.stat).toBe("none yet · no app yet");
     expect(by.accounts!.stat).toBe("none connected");
     expect(by.mind!.stat).toBe("checking the engine");
     expect(by.voice!.stat).toBe("not set up");
@@ -73,10 +74,23 @@ describe("the five lights", () => {
     expect(by.chores!.stat).toBe("counting…");
   });
 
-  it("count a page open before any app is registered", () => {
+  it("count a page open before any app is registered, while there is no project", () => {
     const m = selectSurface({ ...src(), apps: [], openTabs: 2 });
-    expect(m.lights[0]!.stat).toBe("2 pages open");
-    expect(selectSurface({ ...src(), apps: [], openTabs: 1 }).lights[0]!.stat).toBe("1 page open");
+    expect(m.lights[0]!.stat).toBe("none yet · 2 pages open");
+    expect(selectSurface({ ...src(), apps: [], openTabs: 1 }).lights[0]!.stat).toBe("none yet · 1 page open");
+    const apps = [
+      { id: "a", host: "a.example.test", enabled: true },
+      { id: "b", host: "b.example.test", enabled: false },
+    ];
+    expect(selectSurface({ ...src(), apps }).lights[0]!.stat).toBe("none yet · 1 of 2 apps on");
+  });
+
+  it("say where she works once there are projects, and when the list is not known", () => {
+    const at = (projects: SurfaceSources["projects"]) => selectSurface({ ...src(), projects }).lights[0]!.stat;
+    expect(at({ count: 1, loaded: true, failed: false, active: "" })).toBe("1 project · in core");
+    expect(at({ count: 2, loaded: true, failed: false, active: "Taxes" })).toBe("2 projects · in Taxes");
+    expect(at({ count: 0, loaded: false, failed: false, active: "" })).toBe("reading…");
+    expect(at({ count: 0, loaded: false, failed: true, active: "" })).toBe("could not be read");
   });
 });
 
@@ -184,6 +198,7 @@ function src(): SurfaceSources {
     windowVisible: false,
     apps: [],
     openTabs: 0,
+    projects: { count: 0, loaded: true, failed: false, active: "" },
     accounts: [],
     chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
     voiceAvailable: false,

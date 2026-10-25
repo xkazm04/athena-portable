@@ -6,6 +6,7 @@ import {
   ROOTS,
   ROOT_LABEL,
   SURFACE,
+  SURFACE_ROOTS,
   crumbs,
   depthOf,
   formatHash,
@@ -37,6 +38,12 @@ function everyPath(): Path[] {
     out.push({ root: "chores", item: id, sub: { kind: "case", arg: "proj_0123456789ab" } });
     out.push({ root: "accounts", item: id });
     out.push({ root: "accounts", item: id, sub: { kind: "allowlist" } });
+    out.push({ root: "projects", item: id });
+    out.push({ root: "projects", item: id, sub: { kind: "memory" } });
+  }
+  for (const item of ["core", "spc_0123456789ab"]) {
+    out.push({ root: "projects", item });
+    out.push({ root: "projects", item, sub: { kind: "memory" } });
   }
   for (const item of ["studio", "settings"]) out.push({ root: "voice", item });
   for (const item of ["engine", "brain", "look", "data", "mic", "devices"]) out.push({ root: "mind", item });
@@ -66,6 +73,10 @@ describe("the grammar", () => {
       { root: null, item: "a" },
       { root: "constructor" as never },
       { root: "apps", item: "a", sub: { kind: "constructor" as never } },
+      { root: "projects", item: "spc_0123456789ab", sub: { kind: "tool", arg: "x" } }, // a tool is an app's
+      { root: "projects", item: "core", sub: { kind: "memory", arg: "fact" } }, // memory takes none
+      { root: "projects", sub: { kind: "memory" } }, // whose memory?
+      { root: "apps", item: "a", sub: { kind: "memory" } }, // memory is a project's
     ];
     for (const p of bad) expect(isValid(p), JSON.stringify(p)).toBe(false);
   });
@@ -73,6 +84,36 @@ describe("the grammar", () => {
   it("is never deeper than three moves from the surface", () => {
     for (const p of all) expect(depthOf(p)).toBeLessThanOrEqual(3);
     expect(Math.max(...all.map(depthOf))).toBe(3);
+  });
+});
+
+describe("the Projects depth (ADR 0225)", () => {
+  it("is a root with its own word, whose items are space ids or core, each with a memory below", () => {
+    expect(ROOT_LABEL.projects).toBe("Projects");
+    for (const p of [
+      { root: "projects" },
+      { root: "projects", item: "spc_0123456789ab" },
+      { root: "projects", item: "spc_0123456789ab", sub: { kind: "memory" } },
+      { root: "projects", item: "core" },
+      { root: "projects", item: "core", sub: { kind: "memory" } },
+    ] satisfies Path[]) {
+      expect(isValid(p), JSON.stringify(p)).toBe(true);
+      expect(parseHash(formatHash(p))).toEqual(p);
+    }
+    expect(depthOf({ root: "projects", item: "core", sub: { kind: "memory" } })).toBe(3);
+    expect(parseHash("#/projects/spc_0123456789ab/tool/x")).toEqual(SURFACE);
+  });
+
+  it("leads the surface, which no longer lights Apps, though Apps stays a place", () => {
+    expect([...SURFACE_ROOTS]).toEqual(["projects", "chores", "accounts", "voice", "mind"]);
+    expect(SURFACE_ROOTS).not.toContain("apps" as never);
+    expect(isValid({ root: "apps", item: "https://a.example.test" })).toBe(true);
+    for (const root of SURFACE_ROOTS) expect(ROOTS).toContain(root);
+  });
+
+  it("falls back to the item and the sub-level kind where the scene names nothing", () => {
+    const c = crumbs({ root: "projects", item: "core", sub: { kind: "memory" } });
+    expect(c.map((x) => x.label)).toEqual(["Athena", "Projects", "core", "memory"]);
   });
 });
 
