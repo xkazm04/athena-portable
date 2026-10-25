@@ -84,8 +84,8 @@ _PLAIN_NAME = re.compile(r"[A-Za-z0-9_-]{1,40}\Z")
 #: The most characters the capabilities block may hold (ADR 0070). It is the prompt's own budget
 #: for the block, imported rather than copied so the two cannot drift: the budget there is a
 #: tripwire, and this is the cap that keeps it from tripping. Core entries are always shown;
-#: foreign entries are added in the block's order until the next would pass it, and the rest are
-#: cut and announced.
+#: foreign entries shed their description, then their parameters, before any name is cut
+#: (ADR 0171), and every degraded tier and cut is announced.
 CAPABILITIES_CHARS = BUDGETS["capabilities"]
 
 _CLASS_ORDER = (ToolClass.GATED, ToolClass.READ, ToolClass.AUTO)
@@ -610,10 +610,13 @@ class Catalog:
         something.
 
         The block holds at most :data:`CAPABILITIES_CHARS` characters (ADR 0070). Athena's own
-        entries are always shown. A page's or connector's entry is added in the order above until
-        the next one would pass the bound, and every one after it is cut; a sentence and the
-        ``(showing N of M)`` footer say so. The cut is the prompt's only: a name left out keeps
-        its class and its registration, and the gate treats it exactly as before.
+        entries are always shown in full. Past the bound a page's or connector's entry sheds
+        detail before its name (ADR 0171): first its description, then its parameters, the
+        name-only entries of one origin sharing a line, each degraded tier announced by a counted
+        sentence. The tier never rises along the order above. Only when the name-only roster
+        itself passes the bound are the names after a prefix cut, which a sentence and the
+        ``(showing N of M)`` footer say. Neither a tier nor the cut changes a class or a
+        registration: the gate treats every entry exactly as before.
 
         The footer's ``M`` counts the names this render could address: an entry not enabled in
         ``lane``, or of a switched-off origin, is not one, so it is neither listed nor counted as
@@ -649,42 +652,60 @@ class Catalog:
             "",
         ]
         ordered = [entry for cls in _CLASS_ORDER for entry in entries if entry.cls is cls]
-        rendered = {entry.name: _capability_line(entry) for entry in ordered}
+        foreign = [entry for entry in ordered if entry.origin != "core"]
+        n = len(foreign)
+        position = {entry.name: i for i, entry in enumerate(foreign)}
+        full_lines = {entry.name: _capability_line(entry) for entry in ordered}
+        signature_lines = {entry.name: _signature_line(entry) for entry in foreign}
 
-        # What the block carries besides its entry lines, each counted at its longest: the
-        # header, a heading and a blank line per class, the cut sentence and the footer at M of M.
-        used = len("\n".join(lines)) + 1
-        used += sum(len(f"### {cls.value}") + 2 for cls in _CLASS_ORDER)
-        used += len(_cut_sentence(total)) + 2 + len(f"(showing {total} of {total})") + 1
-        used += sum(len(rendered[e.name]) + 1 for e in ordered if e.origin == "core")
-        kept: set[str] = set()
-        full = False
-        for entry in ordered:
-            if entry.origin == "core":
-                kept.add(entry.name)
-                continue
-            cost = len(rendered[entry.name]) + 1
-            if full or used + cost > CAPABILITIES_CHARS:
-                full = True
-                continue
-            used += cost
-            kept.add(entry.name)
-        shown = [entry for entry in ordered if entry.name in kept]
+        def render(full: int, signature: int, listed: int) -> str:
+            def tier(entry: ToolEntry) -> str:
+                i = position.get(entry.name)
+                if i is None or i < full:
+                    return full_lines[entry.name]
+                if i < signature:
+                    return signature_lines[entry.name]
+                return _BARE if i < listed else _CUT
 
-        for cls in _CLASS_ORDER:
-            group = [entry for entry in shown if entry.cls is cls]
-            if not group:
-                continue
-            lines.append(f"### {cls.value}")
-            lines.extend(rendered[entry.name] for entry in group)
-            lines.append("")
-        if len(shown) < len(ordered):
-            lines += [_cut_sentence(len(ordered) - len(shown)), ""]
-        lines.append(f"(showing {len(shown)} of {total})")
+            out = list(lines)
+            for cls in _CLASS_ORDER:
+                group = [(e, tier(e)) for e in ordered if e.cls is cls]
+                group = [(e, line) for e, line in group if line is not _CUT]
+                if not group:
+                    continue
+                out.append(f"### {cls.value}")
+                out.extend(_group_lines(group))
+                out.append("")
+            for count, sentence in (
+                (signature - full, _signature_sentence),
+                (listed - signature, _bare_sentence),
+                (n - listed, _cut_sentence),
+            ):
+                if count:
+                    out += [sentence(count), ""]
+            out.append(f"(showing {len(ordered) - n + listed} of {total})")
+            return "\n".join(out).rstrip() + "\n"
+
+        def fits(full: int, signature: int, listed: int) -> bool:
+            return len(render(full, signature, listed)) <= CAPABILITIES_CHARS
+
+        # The tier falls along the block's order and never rises, so the block stays a pure
+        # function of the registry (ADR 0171). Each split is the highest that fits: full detail
+        # while the rest fits at the parameter tier, else parameters while the rest fits at name
+        # only, else a prefix of the names and a cut.
+        plan: tuple[int, int, int]
+        if fits(n, n, n):
+            plan = (n, n, n)
+        elif fits(0, n, n):
+            plan = (_highest(0, n - 1, lambda a: fits(a, n, n)), n, n)
+        elif fits(0, 0, n):
+            plan = (0, _highest(0, n - 1, lambda b: fits(0, b, n)), n)
+        else:
+            plan = (0, 0, _highest(0, n - 1, lambda c: fits(0, 0, c)))
         return PromptBlock(
             name="capabilities",
-            text="\n".join(lines).rstrip() + "\n",
-            shown=len(shown),
+            text=render(*plan),
+            shown=len(ordered) - n + plan[2],
             total=total,
         )
 
@@ -698,6 +719,71 @@ def _capability_line(entry: ToolEntry) -> str:
     if foreign:
         description = json.dumps(neutralise_text(description), ensure_ascii=False)
     return f"- `{entry.name}`({params}) — {description}{cap}"
+
+
+def _signature_line(entry: ToolEntry) -> str:
+    """A foreign entry's line without its description: name, parameters and cap (ADR 0171)."""
+    params = _params_line(entry.params_schema, foreign=True)
+    cap = f" [cap {entry.cap_chars} chars]" if entry.cap_chars else ""
+    return f"- `{entry.name}`({params}){cap}"
+
+
+#: Markers for an entry rendered by name only, or left out; compared by identity.
+_BARE = "\x00bare"
+_CUT = "\x00cut"
+
+
+def _group_lines(group: list[tuple[ToolEntry, str]]) -> list[str]:
+    """One class's lines in order; consecutive name-only entries of one origin share a line.
+
+    A name-only entry carries its registered name and nothing else, so no page or connector text
+    reaches the block through it (ADR 0068).
+    """
+    out: list[str] = []
+    run: list[str] = []
+    run_origin = ""
+    for entry, line in group:
+        if line is _BARE and run and entry.origin == run_origin:
+            run.append(entry.name)
+            continue
+        if run:
+            out.append("- " + ", ".join(f"`{name}`" for name in run))
+            run = []
+        if line is _BARE:
+            run, run_origin = [entry.name], entry.origin
+        else:
+            out.append(line)
+    if run:
+        out.append("- " + ", ".join(f"`{name}`" for name in run))
+    return out
+
+
+def _highest(lo: int, hi: int, ok: Callable[[int], bool]) -> int:
+    """The largest ``x`` in ``[lo, hi]`` with ``ok(x)``, for an ``ok`` true up to a point and false
+    after it; ``lo`` when none is."""
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if ok(mid):
+            lo = mid
+        else:
+            hi = mid - 1
+    return lo
+
+
+def _signature_sentence(count: int) -> str:
+    """What the block says when the bound left page or connector descriptions out (ADR 0171)."""
+    return (
+        f"{count} names are listed without their descriptions: this block had room for their "
+        "parameters only."
+    )
+
+
+def _bare_sentence(count: int) -> str:
+    """What the block says when the bound left parameters out as well (ADR 0171)."""
+    return (
+        f"{count} names are listed by name only, one line per page or connector, without "
+        "parameters or descriptions. Each is addressable and gated as its class says."
+    )
 
 
 def _cut_sentence(cut: int) -> str:
