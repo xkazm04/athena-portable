@@ -64,7 +64,11 @@ export function buildSheet(): BkSheet {
   const byId = new Map<string, Contact>(rows.map((r) => [r.id, r]));
   const domainOf = new Map<string, string>(rows.map((r) => [r.id, r.domain]));
   const pairsByDomain = new Map<string, MergePair[]>();
+  // Every record a listed pair names, whichever block the pair is attached to.
+  const listedMembers = new Set<string>();
   for (const pair of openPairs) {
+    listedMembers.add(pair.keep_id);
+    listedMembers.add(pair.drop_id);
     const domain = domainOf.get(pair.keep_id) ?? domainOf.get(pair.drop_id);
     if (!domain) continue;
     const list = pairsByDomain.get(domain);
@@ -98,15 +102,19 @@ export function buildSheet(): BkSheet {
       stale: 0,
     };
     for (const c of sorted) {
-      if (c.in_open_pair === 1) counts.duplicate += 1;
+      // A flagged record whose pair is not in the listed (capped) set has no pair to be counted
+      // by, so it stands for its own unseen pair. One whose pair is listed is counted there.
+      if (c.in_open_pair === 1 && !listedMembers.has(c.id)) counts.duplicate += 1;
       if (c.phone_ok === 0) counts.phone += 1;
       if (c.is_stale === 1 && c.stale_flagged === 0) counts.stale += 1;
     }
 
     const pairs = pairsByDomain.get(domain) ?? [];
     // A duplicate deviation is counted in pairs, not records: two rows are one
-    // unresolved identity, not two problems.
-    if (pairs.length > 0) counts.duplicate = pairs.length;
+    // unresolved identity, not two problems. A pair is attached to one block only
+    // (the keeper's), so a pair across two domains is counted once, there, and
+    // not again as a record on the drop's block.
+    counts.duplicate += pairs.length;
     // And a conflict deviation is counted in spellings, not records, for the same
     // reason: one domain spelled four ways is one disagreement, not fifteen. It is
     // also the figure its own clause prints, so the two cannot drift apart.

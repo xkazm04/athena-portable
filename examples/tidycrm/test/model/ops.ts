@@ -70,6 +70,7 @@ export const REACH = [
   "refused undo",
   "merge adopts the drop's phone",
   "refused merge",
+  "open pair across two domains",
 ] as const;
 export type Reach = (typeof REACH)[number];
 export type Tally = Record<Reach, number>;
@@ -148,6 +149,7 @@ export function apply(op: Op): Outcome {
   );
   if (twoPairs()) reached.push("contact in two open pairs");
   if (emptiedDomain()) reached.push("domain emptied of working contacts");
+  if (crossDomainPair()) reached.push("open pair across two domains");
   return { ok, reversibleId: fresh?.id ?? null, reached };
 }
 
@@ -157,6 +159,17 @@ function twoPairs(): boolean {
       `SELECT c FROM (SELECT keep_id AS c FROM merge_pairs WHERE status = 'open'
                       UNION ALL SELECT drop_id FROM merge_pairs WHERE status = 'open')
         GROUP BY c HAVING COUNT(*) > 1 LIMIT 1`,
+    ) !== undefined
+  );
+}
+
+function crossDomainPair(): boolean {
+  return (
+    db().get(
+      `SELECT p.id FROM merge_pairs p
+         JOIN contacts k ON k.id = p.keep_id
+         JOIN contacts d ON d.id = p.drop_id
+        WHERE p.status = 'open' AND k.domain <> d.domain LIMIT 1`,
     ) !== undefined
   );
 }
@@ -279,11 +292,12 @@ export function generate(r: () => number, ops: readonly OpName[], lastReversible
       const between = new Set(
         pairs.filter((p) => p.keep_id === keep?.id || p.drop_id === keep?.id).flatMap((p) => [p.keep_id, p.drop_id]),
       );
-      // On the keeper's domain, as every pair the seed's matcher proposes is. A cross-domain pair
-      // is double-counted by the sheet today; traces/cross-domain-pair.json pins that as a todo.
-      const drop = pick(
-        working.filter((c) => c.id !== keep?.id && c.domain === keep?.domain && !between.has(c.id)),
-      );
+      // Mostly on the keeper's domain, as every pair the seed's matcher proposes is, and otherwise
+      // across two domains: such a pair is attached to the keeper's block only, and the sheet must
+      // count it once (traces/cross-domain-pair.json).
+      const candidates = working.filter((c) => c.id !== keep?.id && !between.has(c.id));
+      const sameDomain = candidates.filter((c) => c.domain === keep?.domain);
+      const drop = (r() < 0.7 ? pick(sameDomain) : undefined) ?? pick(candidates.filter((c) => c.domain !== keep?.domain));
       const n = pairs.filter((p) => p.id.startsWith("pair_x")).length + 1;
       return { op: name, args: [`pair_x${String(n).padStart(3, "0")}`, keep?.id ?? "", drop?.id ?? ""] };
     }
