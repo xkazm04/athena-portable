@@ -81,8 +81,16 @@ def test_a_listener_without_the_flag_refuses_a_real_loopback_socket(
         bound = strict.bound
         assert bound is not None
         with socket.create_connection(bound, timeout=5) as raw:
-            raw.sendall(b"GET /peer/hello HTTP/1.1\r\nHost: x\r\n\r\n")
-            assert raw.recv(4096) == REFUSAL
+            # The refusal never reads the request, so it closes a socket with our bytes unread;
+            # TCP answers that close with a reset, and on Windows a reset that lands before
+            # recv() discards the 403 already buffered (WinError 10053/10054). An abort or a
+            # reset is the same refusal, delivered without its bytes; anything read is REFUSAL.
+            try:
+                raw.sendall(b"GET /peer/hello HTTP/1.1\r\nHost: x\r\n\r\n")
+                answer = raw.recv(4096)
+            except (ConnectionAbortedError, ConnectionResetError):
+                return
+            assert answer == REFUSAL
     finally:
         strict.close()
 
