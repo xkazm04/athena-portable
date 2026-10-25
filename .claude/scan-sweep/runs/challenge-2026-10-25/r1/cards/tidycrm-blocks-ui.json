@@ -1,0 +1,119 @@
+{
+  "host": "tidycrm-blocks-ui",
+  "cards": [
+    {
+      "context": "tidycrm-blocks-ui",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Dossier acts from the mutation's own planner: offer, count, refusal (ADR 0107)",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx",
+        "examples/tidycrm/components/blocks/model/tables.ts",
+        "examples/tidycrm/lib/blocks/index.ts",
+        "examples/tidycrm/test/blocks-ui.test.ts"
+      ],
+      "new_files": [
+        "examples/tidycrm/lib/acts.ts",
+        "examples/tidycrm/test/acts.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-tidycrm-dossier-act-is-offered-exactly-when-its-mutation-would-accept-it.md (extends ADR 0107 from hirelane to tidycrm)",
+        "examples/tidycrm/lib/blocks/index.ts (tidycrm-domain-lib / spatial-model-tools: builds BkTable)",
+        "examples/tidycrm/components/blocks/model/tables.ts (tidycrm-spatial-model-tools: BkTable gains `acts`)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "every seeded table: table.acts.tidy.count === planNormalize(table.ids, ['trim_whitespace','lowercase_email']).length (today the button prints table.ids.length: 800 labelled vs 78 that would change, 46 of 46 tables overclaim) -> equal for all 46",
+        "run normalizeAction on one table's ids, rebuild the sheet -> that table's acts.tidy is {enabled:false, reason:'nothing_to_tidy'} with the REFUSAL sentence, not an enabled 'Tidy ... N rows' button",
+        "flagStale(table.staleIds) on BLK-05, rebuild -> acts.delete stays enabled with count 5 and ids covering the flagged stale rows, and deleteContacts(acts.delete.ids) is accepted (today staleIds drops 5 -> 0 and the gated delete reads 'Nothing stale to delete')",
+        "parity sweep: for every table and every act (tidy, phone, flag, keep_both, merge, delete), enabled <=> the action, run inside a rolled-back transaction, returns ok and changes something, and the count the act prints equals the number of records the action reports changing",
+        "guard: on the fresh seed acts.phone.count === table.phoneIds.length for every table (120 = 120 today)",
+        "guard: acts.merge.enabled and acts.keep_both.enabled are true exactly when table.pairs.length > 0",
+        "Gate.tsx source with comments stripped contains no availability predicate of its own (no `.length === 0`, no `staleIds`/`phoneIds`/`ids.length`) and reads every disabled/label decision from `table.acts`"
+      ],
+      "guard_cases": ["4", "5"],
+      "premise": [
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx:76 - tidy is enabled on `table.ids.length === 0` and labelled `{table.ids.length} rows` (:81), every live row, not the rows the rule would change",
+        "examples/tidycrm/lib/mutations.ts:125 - planNormalize returns only contacts with changes; :142 normalizeFields answers 'Nothing to normalise' when the plan is empty",
+        "examples/tidycrm/lib/blocks/index.ts:176 - staleIds keeps only stale_flagged === 0, so the reversible flag empties the list the gated delete is offered on",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx:170 - delete is disabled on `table.staleIds.length === 0`, while :144 tells the reader flagging is the reversible alternative to it",
+        "examples/tidycrm/lib/mutations.ts:421 - deleteContacts accepts any non-deleted id, flagged or not: the action's accept set and the button's offer set are two predicates kept by discipline",
+        "docs/adr/0107-a-dossier-act-is-offered-exactly-when-its-action-would-accept-it.md - the house decision (one pure acts module, server guards with the same predicates, parity test through the real actions) exists for hirelane only"
+      ],
+      "rollback": "One commit series, reverted with git revert: lib/acts.ts and test/acts.test.ts go, BkTable loses `acts`, Gate.tsx returns to its inline predicates. No schema change, no data migration, no manifest or tool change.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; tidycrm's node --test suite)"
+      ],
+      "runner_up": "One declared catalogue of act flags (reversible, side effects) that both HostCapabilities' tool registrations and the dossier's AUTO/GATED zones derive their class from, so placement cannot drift from HostTool.default_class.",
+      "body": "## Summary\nThe dossier decides what it offers from its own inline predicates, and the mutation decides what it accepts from another. They have drifted: the tidy act labels 800 rows across the 46 tables where 78 would change, and flagging stale rows (the reversible act) makes the gated delete vanish for good. Port ADR 0107 to tidycrm: one acts module, built server-side from the mutation's own planner, that every dossier control renders from.\n\n## Description\n`lib/acts.ts` (pure except for the planner it is handed) computes, per table, `{tidy, phone, flag, keep_both, merge, delete}`, each `{enabled, count, ids, reason?}` with one REFUSAL vocabulary. `lib/blocks/index.ts` attaches it to `BkTable.acts` while it already has every row in memory, using `planChanges` (lib/normalize.ts) so it adds no queries. The delete act targets stale rows flagged or not, which is exactly what deleteContacts already accepts. It stays behind arm and confirm, so no gate is weakened. `Gate.tsx` stops computing availability and reads `table.acts`. The parity test runs every seeded table through every act against the real mutations, each call rolled back, as hirelane's test/acts.test.ts does. This is registry technique hitl-approval/cosmetic-vs-enforced-threshold-invariant (two threshold tables kept by discipline alone) and law count-carries-predicate.\n\n## Flow\n- buildSheet -> per table, acts = actsFor(rows, pairs) via planChanges -> BkTable.acts\n- Dossier -> Gate renders each control's disabled state, label count and refusal from acts\n- person flags 5 stale rows -> sheet revalidates -> delete still offered on the 5, gated\n- test/acts.test.ts: every act x every table, offer <=> accept, printed count == changed count\n\n## Expected impact\nNo dossier button promises work its action will not do, and the reversible step no longer locks out the irreversible one. A new availability rule then has one home, as in hirelane.\n\n## Evaluation\nClaim: quality - the offer set and the accept set of every dossier act are one predicate\nBefore: 0 of 5 non-guard acceptance cases pass (probe on the fresh seed: tidy overclaims on 46/46 tables, 800 labelled vs 78 planned; BLK-05 staleIds 5 -> 0 after flagging)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in test/acts.test.ts\nResult: better\nGate: none",
+      "evidence": "Read-only probe in a temp home (tempHome + buildSheet + planNormalize + flagStale, scratchpad): {\"tables\":46,\"phoneOver\":0,\"phoneTot\":120,\"phonePlan\":120,\"tidyOver\":46,\"tidyLabel\":800,\"tidyPlan\":78,\"conflict\":10,\"compMismatch\":4,\"staleTables\":44} and {\"ident\":\"BLK-05\",\"staleBefore\":5,\"staleIdsAfterFlag\":0}. Gate.tsx:76 `disabled={pending || table.ids.length === 0}`; Gate.tsx:81 `Tidy whitespace and email case · {table.ids.length} rows`; Gate.tsx:170 `disabled={table.staleIds.length === 0}`; lib/blocks/index.ts:176 `.filter((c) => c.is_stale === 1 && c.stale_flagged === 0)`; lib/mutations.ts:421 `getContacts(cap(ids)).filter((c) => c.deleted_at === null)`."
+    },
+    {
+      "context": "tidycrm-blocks-ui",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The fourth check gets its repair: settle a company spelling in the dossier",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/tidycrm/components/blocks/Dossier.tsx",
+        "examples/tidycrm/components/blocks/dossier/Checks.tsx",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx"
+      ],
+      "new_files": [
+        "examples/tidycrm/components/blocks/dossier/settle.ts",
+        "examples/tidycrm/components/blocks/dossier/Settle.tsx",
+        "examples/tidycrm/test/settle.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/tidycrm/components/blocks/style/ (tidycrm-style) only if bk-chip[aria-pressed], bk-table and bk-truncated, which already exist, do not cover the preview"
+      ],
+      "generated": [],
+      "acceptance": [
+        "settleState(table) for a table with spellings.length < 2 -> {kind:'none'}: no chooser, no act (guard: the Checks band already hides spellings then)",
+        "settleState for a conflicted table -> chooser lists every spelling, consensus first, nothing pre-selected (choosing which spelling is the company's real name is the person's decision, not the data's)",
+        "reduce(choose(spelling)) -> {kind:'previewing', spelling}; reduce(previewed(plan)) -> {kind:'ready', plan} whose act label reads 'File {plan.rewrites} contacts under \"{spelling}\"'; reduce(previewed(string)) -> {kind:'refused', reason}",
+        "on the 4 seeded conflicted tables where whitespace variants exist, the count the ready act prints is planCompany's rewrites, not records - n (the naive figure is wrong on 4 of 10 conflicted tables) -> equals resolveCompany's reported count",
+        "a stale preview cannot fire: choose A, choose B, then A's preview lands -> state stays previewing B (the act is never offered against a plan for a spelling the person moved off)",
+        "after the ready act runs resolveCompany(domain, spelling) and the sheet is rebuilt -> the table carries no conflict deviation, spellings.length === 1, and settleState returns {kind:'none'}",
+        "undoWrite(the resolve_company activity id) -> buildSheet restores the original spellings and the conflict deviation (guard: the AUTO band's undo promise holds for the new act)"
+      ],
+      "guard_cases": ["0", "6"],
+      "premise": [
+        "examples/tidycrm/components/blocks/dossier/Checks.tsx:46 - competing spellings print as inert spans; the conflict check is reported, not actionable",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx:60 - the AUTO bar repairs phone, whitespace, stale and pairs: three of the four checks have a repair here, conflict has none",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx:357 - resolve_company exists and is AUTO, but only an agent can reach it; app/actions.ts:135 and :143 already expose preview and write to the client",
+        "examples/tidycrm/lib/mutations.ts:265 - planCompany rewrites `c.company !== canonical` (untrimmed), while lib/db.ts:385 groups spellings by TRIM(company): the dossier cannot compute the true count itself, so it has to ask the preview",
+        "examples/tidycrm/lib/mutations.ts:295 - resolveCompany logs `reversible: true` with a normalize undo, so the act belongs in the AUTO zone by the class rule"
+      ],
+      "rollback": "Revert the series: settle.ts, Settle.tsx and the test go, Checks.tsx returns its spans, Gate.tsx loses the one AUTO control. No server action, mutation, schema or tool changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; tidycrm's node --test suite)"
+      ],
+      "runner_up": "ADR 0111 parity for tidycrm: AUTO writes return undoId (lib/mutations.ts), the toast carries Undo through the kit's existing ToastAction, and the dossier shows a receipt for the last act. Today the AUTO band promises undo and no surface calls undoAction.",
+      "body": "## Summary\nThe dossier lists four checks. For three of them the AUTO bar has a repair. For the company-spelling conflict, on 10 of the 46 tables, it prints the competing spellings and offers nothing. The resolve_company write already exists, is reversible and is AUTO, but only an agent can reach it. The change: make the spellings a chooser, preview the rewrite, and offer one AUTO act that files the domain under the chosen spelling.\n\n## Description\n`dossier/settle.ts` is a pure state machine: none | choosing | previewing(spelling) | ready(plan) | refused(reason). Each preview carries the spelling it was asked for, so a late answer for an abandoned choice is dropped. `Checks.tsx` turns the spelling spans into an aria-pressed chip group, with nothing pre-selected, because which spelling is the company's real name is the person's decision. `Settle.tsx` shows previewCompanyAction's rewrites and its bounded sample of changes, `(showing N of M)` included. `Gate.tsx` gains one AUTO control, 'File N contacts under \"X\"', run through the existing useRun. The control keeps ADR 0022's two zones, and arming still takes the bar. The count comes from the preview because the naive records - n is wrong on 4 of 10 conflicted tables (whitespace variants). This is registry technique hitl-approval/oracle-before-gate: the person sees what the write will change before it runs.\n\n## Flow\n- open a conflicted table -> Checks band shows the spellings as a chooser\n- pick one -> previewCompanyAction -> 'rewrites 7 of 15: sample...'\n- AUTO bar: 'File 7 contacts under \"Pinegrove Collective\"' -> resolveCompanyAction -> toast -> sheet revalidates -> conflict check turns to a pass\n- undo is unchanged: the activity row is reversible and the agent's undo or a later receipt puts it back\n\n## Expected impact\nA person can clear every check the dossier prints without leaving it or asking an agent, and sees the true rewrite before committing.\n\n## Evaluation\nClaim: user - every check the dossier reports has a repair it can run, previewed\nBefore: 0 of 5 non-guard acceptance cases pass (no settle module; the dossier has no path to resolveCompany; naive count wrong on 4/10 conflicted tables by probe)\nAfter: 7 of 7\nMethod: gate - the acceptance cases in test/settle.test.ts (pure reducer plus real planCompany/resolveCompany/undoWrite in a temp home)\nResult: better\nGate: none",
+      "evidence": "Probe on the fresh seed: conflict tables 10, of which 4 have planCompany(domain, consensus).rewrites !== records - consensus.n. Checks.tsx:52-58 renders `<span className=\"bk-spelling\">` with no handler. Gate.tsx:60-105 AUTO buttons: phone_e164, trim_whitespace+lowercase_email, flagStale, resolvePair(kept_both); no resolveCompany import (Gate.tsx:13-19). HostCapabilities.tsx:357-372 registers resolve_company reversible:true sideEffects:data. app/actions.ts:135 previewCompanyAction, :143 resolveCompanyAction. lib/mutations.ts:265 `.filter((c) => c.company !== canonical)`; lib/db.ts:385 `SELECT TRIM(company) AS company, COUNT(*)`."
+    }
+  ],
+  "rehomed": [
+    "Gold-outranks-red precedence is hand-copied four times (Field.tsx:52 toneOf, l0/cells.ts:29 markOfTable, l0/octants/Scene.tsx:293 slab tone, sheet/Foot.tsx:36 markTone): one claimOf() is S, effort 2",
+    "Dossier.tsx:177 Tab-trap selector omits [tabindex] and input elements: S, and the Shift+Tab escape is already a stabilize backlog item",
+    "Octant dots placed once (Scene.tsx:151 `placed` ref) never repaint after a write: already backlog 'The L0 table dots keep their first colour and size after any write'"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["hitl-approval", "quality-gates", "undo-history", "async-ui-states"],
+    "techniques": ["cosmetic-vs-enforced-threshold-invariant", "oracle-before-gate", "gate-state-machines"]
+  },
+  "files_read": 46
+}

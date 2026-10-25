@@ -1,0 +1,24 @@
+{"card":"journey-stage-src/A","status":"landed","shas":["21bf269ce8cec44029e4deaf9f9405551c1c71f6"],
+ "tests_added":[
+  "examples/journey/tests/gate-pipeline.spec.ts::case 1: a granted send_mail card cited twice runs once and is refused approval_spent the second time",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 2: the page tier through the pipeline with a fake transport runs a GATED card once and refuses the replay",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 3: a card cited with changed parameters is refused validator_failed and is not spent",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 4: a misspelled connector argument is refused validator_failed before port.call, with one row",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 5: a 5000-character connector read is fenced with the surface nonce and cut at READ_CAP inside the fence",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 6: an approved send to a recipient off the allow-list is refused foreign_origin and the card is spent",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 7 (guard): declineAndRun(send_mail) is user_denied, sends nothing and writes one row with the card",
+  "examples/journey/tests/gate-pipeline.spec.ts::case 8 (guard): approveAndRun(send_mail) to an allow-listed recipient is ok with its target and a granted card"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{
+  "pnpm --filter @athena/journey typecheck":0,
+  "pnpm --filter @athena/journey lint":0,
+  "pnpm --filter @athena/journey exec playwright test tests/gate-pipeline.spec.ts":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":9,"lines_changed":654,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of three. Validation reuses the demo kit's argumentErrors (door.ts as 59287f5 left it) with one allowance: an unnamed argument is refused only when the schema is closed (additionalProperties:false), production's check_schema rule, so shell hands (open schemas) are not refused for keys the daemon would pass; kit pages and the connector fakes are closed, so for them it is the kit verdict exactly. The kit validator does not know JSON Schema 'integer' or maxLength; no kit page or hand publishes integer today. Connector writes are fenced uncapped (production caps and fences reads only). ADR 0153 added. approvals.ts change is small (consumedAt + two reasons) so slot B can serialise consumedAt.",
+ "notes":"The gate spec runs offline under the Playwright runner with no page fixture (0.5 s); the full journey (four booted servers) was NOT run - the card's by-hand gate remains for the coordinator/operator: confirm no beat in journey.spec.ts / take.spec.ts re-cites a card or passes an extra connector key (grep says none). Page-tier calls now validate against the page's published schema before the card is spent, so a page validator_failed now lands before consumption rather than after. Surface.refused/ConnectorSurface.refused report only gate-stage refusals (transport failures still throw, as before). withRow removed from surface.ts (no other user). No sibling reds seen."}

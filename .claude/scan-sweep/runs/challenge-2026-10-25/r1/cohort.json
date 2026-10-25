@@ -1,0 +1,107 @@
+{
+  "cohort": [
+    {
+      "name": "journey-stage-src",
+      "group": "Example Apps",
+      "files": 27,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "daemon-service",
+      "group": "Daemon and Channels",
+      "files": 23,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "voice-face-sidecar",
+          "files": 7
+        }
+      ]
+    },
+    {
+      "name": "desktop-scenes-chores",
+      "group": "Desktop Companion",
+      "files": 23,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "desktop-modules-registry",
+          "files": 5
+        }
+      ]
+    },
+    {
+      "name": "demo-kit-ui-webmcp",
+      "group": "Page Bridge and Demo Kit",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "page-bridge",
+          "files": 6
+        }
+      ]
+    },
+    {
+      "name": "adopt-engine",
+      "group": "Agent Core",
+      "files": 19,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "cli-and-wiring",
+          "files": 8
+        }
+      ]
+    },
+    {
+      "name": "proving-adopt-tiers",
+      "group": "Proving Ground",
+      "files": 16,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "proving-hosted-server",
+          "files": 8
+        },
+        {
+          "name": "proving-sandbox",
+          "files": 9
+        },
+        {
+          "name": "proving-docread",
+          "files": 9
+        }
+      ]
+    },
+    {
+      "name": "atlas-lanes-drawing",
+      "group": "Example Apps",
+      "files": 25,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "desktop-scenes-mind-surface",
+      "group": "Desktop Companion",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "tidycrm-blocks-ui",
+      "group": "Example Apps",
+      "files": 23,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "ledgerbox-lanes-ui",
+      "group": "Example Apps",
+      "files": 24,
+      "reason": "never challenged",
+      "riders": []
+    }
+  ]
+}

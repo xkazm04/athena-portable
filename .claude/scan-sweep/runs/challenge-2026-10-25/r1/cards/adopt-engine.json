@@ -1,0 +1,135 @@
+{
+  "host": "adopt-engine",
+  "cards": [
+    {
+      "context": "adopt-engine",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "An approval pins the draft it saw: case and rehearsal run from one snapshot",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/adopt/session.py",
+        "src/athena/adopt/loop.py",
+        "src/athena/adopt/cases.py",
+        "src/athena/adopt/showcase.py",
+        "tests/adopt/test_loop.py",
+        "tests/adopt/test_cases.py",
+        "tests/adopt/test_showcase.py"
+      ],
+      "new_files": [
+        "docs/adr/0144-an-approval-pins-the-draft-it-was-shown.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0144-an-approval-pins-the-draft-it-was-shown.md (a decision a reader could question: a research guess that lands after the draft is not saved into the case until the next draft carries it; NOTE the ADR directory already holds two 0123 files, so test_adr_numbering is red at base and the builder must take the next free number after whatever fixes that)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "1. A session drafts brief rev 1 while fact slot f1 is open; a rules lane then settles f1 = '$1,500' (session.apply_findings, source research, guessed); approve(1) and CaseBook.save(session, 1) -> the saved case's slot f1 has value '' and status 'open' exactly as rev 1 was drafted, and case.open_slot_ids equals rev 1's open_slot_ids (today the late value '$1,500' is saved under an approval of a brief that said 'not known yet')",
+        "2. approve(1) with a Showcase whose spawn defers the job; a document lane then updates p2 before the deferred job runs -> the shape leg's prompt (captured by a fake run_leg) carries the slot values of draft 1, not the late p2 value (today showcase.py reads session.slots at run time)",
+        "3. approve(1); an answer then arrives and the loop drafts rev 2 before the deferred showcase job runs -> shape_world is handed rev 1's Brief (its command and portals), not rev 2's (today showcase.py reads session.brief, which is rev 2)",
+        "4. CaseBook.save(session, 7) for a rev that was never drafted -> ValueError, nothing written to goals/ (unchanged)",
+        "5. approve(1) after an answer made brief 1 stale -> refused with 'stale_rev:' and no on_approve call (unchanged)",
+        "6. A reopened case whose slots hold no date or amount: approve(case.approved_rev) with no model call -> the rewritten case keeps the same brief_md and command and appends one approval (unchanged; the reopen registers the approved brief as a draft)",
+        "7. After case 1, a new answer drafts rev 2 -> rev 2's setup line for f1 now reads '$1,500 (from research)': a late finding is carried by the next draft, never lost (unchanged)"
+      ],
+      "guard_cases": ["4", "5", "6", "7"],
+      "premise": [
+        "src/athena/adopt/cases.py:332 - CaseBook.save reads the live session.slots at approval time, not the slots the approved brief was drafted from",
+        "src/athena/adopt/cases.py:339 - the only binding to the approval is brief.rev == rev; the slots and answers saved beside it (cases.py:362-394) are whatever the session holds when the request lands",
+        "src/athena/adopt/lanes.py:146 - a lane that finishes applies its updates through session.apply_findings at any moment, brief drafted or not",
+        "src/athena/adopt/session.py:293 - apply_findings changes slots and emits adopt.slots but never touches brief_stale (session.py:225); only an answer marks a brief stale (loop.py:145)",
+        "src/athena/adopt/loop.py:463 - _write_brief snapshots slots once, drafts from them (loop.py:499-514) and keeps only the Brief: the slots it stands on are discarded",
+        "src/athena/adopt/showcase.py:684 - the rehearsal reads session.brief at run time, and showcase.py:696 reads session.slots, though research.py:366 handed it the approved rev",
+        "src/athena/adopt/routes.py:401 - the approve route saves the case from the live session right after loop.approve",
+        "src/athena/adopt/loop.py:27 - the module's own law: 'approval names the rev it approves ... What is approved is exactly what was shown'"
+      ],
+      "rollback": "One feature commit (Draft value + recording in _write_brief/reopen + save/showcase reading it, tests first) plus the ADR/CHANGELOG commit; git revert of both restores live-state reads. No contract, wire or on-disk shape changes, so nothing to migrate back.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "One round in flight: answers posted while a round runs (loop.py:147, each queues a full audit+interview pair) coalesce into the next round, one card and half the legs.",
+      "body": "## Summary\nA brief and the slots and answers it was drafted from become one immutable Draft, recorded when the brief is written. Approving rev N binds that Draft: the case file and the rehearsal are built from it, never from whatever the live session holds when they happen to run.\n\n## Description\nThe studio's law is draft-preview-apply (loop.py:27): what is approved is exactly what was shown. The rev check enforces that for the Brief object only. Everything around it is read live: CaseBook.save takes session.slots and session.answers at request time (cases.py:332), and the showcase takes session.brief and session.slots when its background thread gets round to them (showcase.py:684, 696). Research lanes run beside the conversation for up to 4.5 minutes (accounts up to 9) and apply findings whenever they finish (lanes.py:146); a dropped document does the same. None of that marks the brief stale (session.py:293). So a person approves a brief that says 'Deposit: not known yet' and the case file records '$1,500' under that approval; on reopen it comes back as source 'memory' (cases.py:258). An answer typed after approving drafts rev 2, and a rehearsal that has not started yet shapes rev 2's world. This is resume-after-decision's 're-generation after approval' defect (hitl-approval): the approval pinned a rev number, not the artifact.\n\nThe move: session.py gains a frozen Draft(rev, brief, slots, answers) and a small rev -> Draft map. loop._write_brief and sessions.reopen record one. loop.approve resolves the Draft for the rev it accepts. CaseBook.save(session, rev) and Showcase.run(session, rev) take session.draft_of(rev) and stop reading live state. Late findings stay on the live slots and reach the next draft (case 7), so nothing is lost and nothing unseen is approved. The hook signatures, the wire contract and the case file's shape stay the same.\n\n## Flow\n- _write_brief: snapshot slots and answers, draft, record Draft(rev, brief, slots, answers)\n- reopen: record the case's approved brief as Draft(approved_rev, ...)\n- approve(rev): unchanged refusals; on success the Draft for rev is the one approved\n- save(session, rev) / Showcase.run(session, rev): read the approved Draft only\n\n## Expected impact\nA whole class of 'approved X, saved or rehearsed Y' defects closes: what the case file records and what the rehearsal plays are, byte for byte, what the person approved. Measured by cases 1-3.\n\n## Evaluation\nClaim: the case file and the rehearsal are built from the approved draft, never from slots or a brief that changed after it was shown.\nBefore: 0 of 3 behaviour cases pass (1, 2, 3); guards 4-7 green\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "cases.py:329-339: `with self._lock, session.case_lock: with session.lock: brief = session.brief; slots = session.slots; answers = list(session.answers) ... if brief is None or brief.rev != rev: raise ValueError`. lanes.py:146-148: `if outcome is not None and outcome.updates and lane.status == \"done\": guessed = [...]; session.apply_findings(guessed, source=...)` with no brief check. session.py:293-303 apply_findings -> set_slots, no brief_stale. loop.py:145-146 is the only `session.brief_stale = True`. showcase.py:684 `brief = session.brief`; :696 `slots=session.slots`. research.py:365-366 `def on_approve(self, session, rev): self.showcase.start(session, rev)`; showcase.py:664-667 run(session, rev) calls self._run(session), dropping rev. Lane budgets: research.py:72 ACCOUNTS_TIMEOUT_S = 540 s, research.py:314 rules 270 s."
+    },
+    {
+      "context": "adopt-engine",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A yearly chore's suggested cadence lands before her deadline, not a year out",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "src/athena/adopt/cadence.py",
+        "src/athena/adopt/chores.py",
+        "tests/adopt/test_chores.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/BACKLOG.md (close B-C8)",
+        "docs/adr/0131-a-chore-comes-due-as-a-staged-review.md (amend decision 4's suggestion rule: anchored to a dated line of the approved case when one exists)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "1. suggest_for_case(times_per_year=1, brief_md with '**Dates that matter:**\\n- Protest deadline: May 15, 2026 (Texas Tax Code). If missed: ...', slots=(), today=2026-10-25) -> CadenceRule(kind='every_days', every_days=365, start='2027-05-01', at='09:00'), and the basis names 'Protest deadline', 'May 15' and that it comes due two weeks before",
+        "2. The same case with today=2026-03-01 -> start '2026-05-01' (this year's date is still ahead)",
+        "3. The same case with today=2026-05-10 (inside the two weeks) -> start '2026-05-11', basis still says it comes due before May 15",
+        "4. Two dated lines (June 30 and May 15), today=2026-10-25 -> anchored on May 15, the first that comes round",
+        "5. A brief whose dates name only a rule ('30 days after the notice arrives') -> the rule equals cad.suggest(1, today)[0] and the basis adds that the brief names no calendar date (unchanged rule)",
+        "6. times_per_year 12, 52 and None with the same dated brief -> exactly what cad.suggest returns today (unchanged)",
+        "7. No dated brief line but a confirmed fact slot 'Notice date' = '2026-04-20', today=2026-10-25 -> start '2027-04-06', basis names the notice date from her case",
+        "8. GET /adopt/cases/<proj>/cadence on a saved case whose approved brief carries the May 15 line, with no cadence set and the clock at 2026-10-25 -> reply.suggested.start == '2027-05-01' and reply.suggested_basis names the deadline (ChoreClock with a fake clock, no model)"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "src/athena/adopt/cadence.py:265 - suggest() reads only economics.times_per_year and today",
+        "src/athena/adopt/cadence.py:284 - a yearly chore's first occurrence is today + 365: wherever the chore's window falls",
+        "src/athena/adopt/chores.py:551 - _cadence_reply holds the saved case (chores.py:541) and still calls suggest(times, today), so the person's own dates never reach the suggestion",
+        "src/athena/adopt/loop.py:604 - every approved brief already carries a 'Dates that matter' section, one line per deadline in the shape loop.py:624 writes ('what: when (rule). If missed: ...'), saved verbatim as Case.brief_md (cases.py:405)",
+        "src/athena/adopt/cases.py:106 - the case already knows which fact slots name a date (perishable)",
+        "docs/BACKLOG.md:67 - B-C8 open: 'Due cadence anchored to the chore's window for yearly chores', acceptance 'a property-tax chore adopted in October comes due before the protest window'",
+        "docs/uat-insights/2026-10-23-chores.md:32 - UAT finding 10: yearly chores come due every 365 days from today and miss the window",
+        "apps/desktop/src/scenes/chores/due.tsx:257 - the Due panel already shows 'Suggested: <suggested_text>, because <suggested_basis>' and ADR 0131 decision 4 gives it a 'Use the suggestion' button: the leap lands with no desktop change"
+      ],
+      "rollback": "One commit (cadence.suggest_for_case plus its parser of dated brief lines and slots, chores._cadence_reply calling it, tests) plus the ADR-amendment/BACKLOG/CHANGELOG commit; reverting restores the times_per_year-only suggestion. Nothing is written to a cadence file by a suggestion, so no stored data moves.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Every re-drafted brief opens with what changed since the last draft, or since the approval on a reopened case, so re-approving is a decision on the delta (parsed from Brief.md sections, no contract change).",
+      "body": "## Summary\nWhen she sets up a yearly chore, the Due panel suggests a cadence that comes due two weeks before the date her own approved brief names (her protest deadline, her notice date). Today it suggests 'every 365 days from today', which for a chore adopted after its window means it comes due after the deadline has passed.\n\n## Description\n43 of the 95 playbooks say economics.times_per_year = 1. For all of them cadence.suggest (cadence.py:265) proposes every_days = 365 starting a year from today. A property-tax protest adopted in October therefore comes due next October, months after the May window closes (UAT 2026-10-23 finding 10, backlog B-C8). The app already has the date. Each approved brief carries 'Dates that matter' (loop.py:604), written per deadline as 'what: when (rule). If missed: ...', and saved verbatim in the case file. Fact slots that name a date are already told apart (cases.py:106 perishable). The decision is made blind while the data sits in the same file the route has just loaded (chores.py:541).\n\nThe change: a pure cadence.suggest_for_case(times_per_year, brief_md, slots, today). For a chore that comes round once or twice a year, it reads the calendar dates in the brief's 'Dates that matter' lines and in her confirmed date facts. It accepts 'May 15', '15 May', 'May 15, 2026' and ISO dates. A date that names only a rule ('30 days after the notice') is not an anchor. The function takes the first month and day that comes round after today and suggests every round(365/count) days, starting 14 days before that date (tomorrow when it is closer than that). The basis is worded to read after the panel's 'because': 'your brief's Protest deadline falls on May 15, so it comes due two weeks before'. Every other chore, and a yearly one with no calendar date, gets exactly today's suggestion, and the basis says why (cases 5 and 6). A suggestion is still written nowhere until she presses 'Use the suggestion' (ADR 0131). An every_days rule of 365 drifts one day per leap year, and the 14-day lead absorbs that for over a decade. A true 'yearly' rule kind would change the contract and is left out.\n\n## Flow\n- Due panel opens a case with no cadence -> GET /adopt/cases/<proj>/cadence\n- _cadence_reply -> suggest_for_case(times, case.brief_md, case.slots, today)\n- the panel shows 'Suggested: every 365 days at 09:00, counted from 2027-05-01, because your brief's Protest deadline falls on May 15...' -> one press uses it\n\n## Expected impact\nFor the 43 yearly playbooks, a person whose brief carries a calendar date gets a first review two weeks before that date, not up to a year late. B-C8's acceptance ('a property-tax chore adopted in October comes due before the protest window') becomes a test (cases 1 and 8).\n\n## Evaluation\nClaim: a yearly chore's suggested cadence is anchored to the calendar date in her own approved case.\nBefore: 0 of 6 behaviour cases pass (1, 2, 3, 4, 7, 8); guards 5-6 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "cadence.py:277-288: `count = float(times_per_year); every = max(1, min(366, round(365 / count))) ... start = (today + timedelta(days=every)).isoformat(); return (CadenceRule(kind=\"every_days\", every_days=every, start=start, at=\"09:00\"), f\"the playbook says {said}\")`. chores.py:548-551: `economics = playbook.get(\"economics\"); times = economics.get(\"times_per_year\") ...; suggested, basis = cad.suggest(times, now.astimezone(tz).date())`. Count over playbooks/*/playbook.json economics.times_per_year: {1: 43, 12: 15, 4: 11, None: 8, 52: 7, 2: 5, 6: 3, 50: 2, 5: 1} (n=95, 2026-10-25). property-tax-appeal fit.who: 'inside the protest window (usually May 15 or 30 days after the notice)'. loop.py:602-609 renders ('Dates that matter', dates) as '**Dates that matter:**' + '- ' lines; loop.py:624 `line = f\"{what.rstrip('.:')}: {when.rstrip('.')}\"`. due.tsx:257 `Not set. Suggested: ${reply.suggested_text}, because ${reply.suggested_basis}.`"
+    }
+  ],
+  "rehomed": [
+    "cli-and-wiring: docs/adr holds two 0123 files (0123-an-approved-brief-is-a-case-file-in-the-brain.md, 0123-an-mcp-server-is-a-connector-port.md), so tests/test_adr_numbering.py:38 and :52 are red at base. Renumber the later one and re-point its citations. S, but it gates every card that adds an ADR.",
+    "cli-and-wiring: `athena doctor` has no adopt stage, so a tiers.json that fails load_tiers or an install with no playbook library makes POST /adopt answer 503 (routes.py:170) while doctor reports ok (cli.py:64). S.",
+    "legs.py:84 DEFAULT_TIMEOUT_S has no 'intake' kind, so the intake leg silently takes the 180 s fallback (legs.py:533). XS.",
+    "session.py:118 the process-wide _HOOKS registry is a test-only seam now that wiring binds hooks per store (wiring.py:597). Dead-seam removal, S.",
+    "cases.py:258 a reopened research or account guess is re-sourced as 'memory', so its brief line drops '(from research)' for '(my guess)'. S."
+  ],
+  "riders": [
+    {
+      "name": "cli-and-wiring",
+      "checked": "Read cli.py and wiring.py in full and the test names in test_cli, test_wiring, test_refusal_parity, test_smoke and test_adr_numbering. Traced _wire_adopt (per-store hooks, case book, chore clock) and the doctor stages. The doctor's logged_in=None deviation is already recorded. A missing adopt doctor stage and the duplicate ADR 0123 that reddens test_adr_numbering are both S, so they are rehomed rather than carded."
+    }
+  ],
+  "registry": {
+    "subjects": ["hitl-approval", "scheduling", "proactive-nudges", "agent-cli-transport"],
+    "techniques": ["resume-after-decision", "gate-state-machines", "next-run-computation"]
+  },
+  "files_read": 38
+}

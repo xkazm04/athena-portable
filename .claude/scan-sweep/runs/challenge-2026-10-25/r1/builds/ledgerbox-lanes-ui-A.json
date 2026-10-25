@@ -1,0 +1,24 @@
+{"card":"ledgerbox-lanes-ui/A","status":"landed","shas":["993055fe"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 1: actSpecs gates exactly what the class table gates, and every listed act's blocked line is actRefusal's",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 2: arming one act disarms any other, so the card never holds two armed confirms",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 3: nothing confirms or arms while another act on the invoice is in flight",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 4: a double click on the door issues once - the second press is refused before any render",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 5: an armed send closes when the letter under it changes, and focus goes back to its row",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 6: a stale answer is ignored, and a thrown act closes its gate and hands focus to its row",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 7: an armed void whose act becomes refused closes, and focus goes to the heading, not the disabled row",
+  "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts::case 8 (guard): stillArmed's truth table and the send subject's dependence on the draft body are unchanged"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{
+  "examples/ledgerbox: pnpm typecheck":0,
+  "examples/ledgerbox: pnpm lint":0,
+  "examples/ledgerbox: pnpm test (100 pass)":0,
+  "root: pnpm typecheck":0,
+  "root: pnpm lint":0
+ },
+ "files_changed":8,"lines_changed":965,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"useRun.ts and Evidence.tsx left unchanged (shrunk write set): useRun's run is already a fine transport, and Evidence keeps its pending/onMatch/onUnmatch props, which Card now feeds from the door (busy = issuing !== null, match/unmatch via door.take). ActDoor gained setTransport so the card can hand it a re-made run from an effect (react-hooks/refs forbade a ref read inside the useState initializer). The categorize row now carries a blocked line ('already filed under X') while its reaches line stays its own text, as before. Red-before was measured against a stub acts.ts whose functions throw (module absent fails the whole file), so the guard case shows green before. Three source-regex tests over Decide.tsx/Gate.tsx were removed, as the card's Flow asked; lines_changed (965) exceeds the ~800 guide because it counts the new 347-line module, the ADR (49) and the rewritten test cases; implementation diff alone is ~733.",
+ "notes":"No sibling reds seen. Not verified in a browser: focus hand-back relies on callback refs on each row's take control (a gate's idle button refocuses as it remounts after its exit fade) and a heading effect; worth a by-hand look at cancel/confirm focus. Gate's armed/idle swap still animates opacity only via the existing fade; no motion or first-paint surface (ledgerbox is not apps/desktop). ADR is 0155 (0153/0154 taken by siblings)."}

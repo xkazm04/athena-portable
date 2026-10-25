@@ -1,0 +1,137 @@
+{
+  "host": "proving-adopt-tiers",
+  "cards": [
+    {
+      "context": "proving-adopt-tiers",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Comparable cells: digest-stamped records, paired cells, conditioned speed",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/proving/adopt_tiers/simulate.py",
+        "src/athena/proving/adopt_tiers/pick.py",
+        "src/athena/proving/adopt_tiers/report.py",
+        "src/athena/proving/adopt_tiers/__main__.py",
+        "tests/proving/adopt_tiers/conftest.py",
+        "tests/proving/adopt_tiers/test_pick.py",
+        "tests/proving/adopt_tiers/test_run.py"
+      ],
+      "new_files": [
+        "src/athena/proving/adopt_tiers/cells.py",
+        "tests/proving/adopt_tiers/test_cells.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-tier-bench-compares-paired-cells-of-one-bench-digest.md (refines ADR 0097 item 9's pick population; a reader could question it)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "bench_digest(scenarios) is a stable sha over INTERVIEW_SYSTEM, AUDIT_SYSTEM, BRIEF_SYSTEM, PERSONA_SYSTEM, JUDGE_SYSTEM, MAX_ROUNDS and each scenario file's bytes; changing one prompt string (monkeypatched) -> a different digest; same inputs twice -> the same digest",
+        "run_interview / run_shape records carry 'bench_digest'; make_plan over a run_dir holding a complete record stamped with an OTHER digest -> that cell is a job again and Plan.stale == 1; dry_text prints '1 stale (another bench digest) will run again'",
+        "load_results over a dir with one current-digest record and one legacy record (no bench_digest) -> returns only the current one and reports stale=1; report.md says 'excluded 1 record from another bench digest'",
+        "paired cells: opus-low complete on all 9 scenarios x 2 reps, haiku-low complete only on the 3 easy scenarios (hard ones incomplete) -> haiku-low's accuracy is NOT compared over its easy-only runs: it is disqualified 'covered 6 of 18 cells' and opus-low's quality is read over the cells every surviving config completed; pick.why names 'paired n of N'",
+        "outcome-conditioned speed: two configs pass the floor; sonnet-low has one wall_cap interview whose few legs were fast enough to drag its pooled first-text p50 below opus-low's -> with conditioning (speed over the paired cells where every survivor ended clear or brief) opus-low wins; the report shows both the conditioned p50 (ranked) and the unconditioned p50 (published beside it) with the subset size",
+        "guard: every config complete on every cell, all records current digest, all ended clear -> pick_all returns exactly what today's rule returns (the existing test_pick cases unchanged and green)",
+        "guard: run_interview on the FakeModel clearing script still writes complete=True and tiers.json is not touched by a run (test_tiers_json_is_not_touched_by_a_run stays green)"
+      ],
+      "guard_cases": ["5", "6"],
+      "premise": [
+        "src/athena/proving/adopt_tiers/simulate.py:248 - make_plan skips any record with complete=True; nothing in the record names which prompts, scenario sheet or loop cap produced it",
+        "src/athena/proving/adopt_tiers/simulate.py:534 - the record dict holds scenario, config, model, effort, rep, intro... and no bench/prompt/scenario version",
+        "docs/adr/0134-a-brief-says-where-each-line-came-from-and-carries-the-dates.md:28 - 'The adopt-tier bench's input changed ... so its 2026-10-15 figures are not comparable with a re-run' - the harness itself cannot tell; a same-date resume splices both",
+        "docs/adr/0097-adopting-a-playbook-is-a-conversation-held-outside-the-turn-lock.md:89 - the first full run disqualified every config 'mostly on scorer and studio defects since fixed': studio defects are baked into records that still load as complete",
+        "src/athena/proving/adopt_tiers/pick.py:109 - load_results keeps every complete record of the wanted scenarios, with no per-config coverage check",
+        "src/athena/proving/adopt_tiers/pick.py:158 - first_text_p50 pools the legs of every complete record, wall_cap and stalled ones included (simulate.py:562, :581 mark those complete via simulate.py:635)",
+        "src/athena/proving/adopt_tiers/pick.py:243 - pick_role compares configs whose ConfigStats were built over different scenario sets; a config whose hard interviews failed (incomplete) is ranked on its easy ones",
+        "src/athena/proving/docread/score.py:197 - the sibling bench already scores 'paired' (only units every reader answered); adopt_tiers has no equivalent - a parity gap between two benches over the same scenario sheets"
+      ],
+      "rollback": "Three commits (digest stamp + plan staleness; cells module + paired/conditioned pick; report lines). Each reverts on its own; reverting the last two leaves digests in records, which older code ignores (extra JSON key).",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\" tests/proving/adopt_tiers"
+      ],
+      "runner_up": "Resolution precondition for the pick: with 2 reps, declare a tie (and keep the incumbent) when the speed spread sits inside the within-config p50 spread instead of a fixed 5% TIE_BAND.",
+      "body": "## Summary\nMake every adopt-tier result carry the identity of the bench that produced it, and make the pick compare configs only over cells they all completed, with speed ranked only where every survivor reached an end state.\n\n## Description\nThe tier bench is resumable and date-keyed: a complete JSON per (scenario, config, rep) is skipped forever. Nothing in the record says which studio prompts, persona/judge prompts, loop cap or scenario sheet produced it, so a resume after a studio change (ADR 0134 records exactly that) splices non-comparable records into one table, and `pick --write` rewrites tiers.json from them. Separately, the pick pools each config's complete records without checking coverage: a config whose hard-band interviews failed is ranked on its easy ones, and its p50 latency includes wall_cap/stalled interviews. The sibling docread bench already pairs units; this card gives adopt_tiers the same discipline in one small module (`cells.py`): a bench digest, the paired cell set, and the conditioned speed view (eval-harness: scenario-design identity + version; outcome-conditioned-cost).\n\n## Flow\n- run: each record is stamped `bench_digest`; make_plan re-plans a stale cell and counts it.\n- pick/report: load_results drops other-digest records (counted); cells.paired() returns the (scenario, rep) cells every candidate completed; a config under full coverage is disqualified with 'covered k of N cells'; quality aggregates over the paired cells; speed ranks over paired cells where every survivor ended clear|brief; the unconditioned p50 is published beside it with n.\n- report.md: a 'Comparability' block (digest, stale excluded, paired n of N).\n\n## Expected impact\nA tiers.json write can no longer rest on records from an older studio or on unequal scenario mixes; the operator sees the n behind every pick. Closes the class 'bench resumed across a studio change' and 'config ranked on an easier mix'.\n\n## Evaluation\nClaim: the pick is computed over comparable, paired cells of one bench digest.\nBefore: 0 of 5 new acceptance cases pass (2 guards green by design)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "simulate.py:248 `if record is not None and record.get(\"complete\"):` -> done; record keys at simulate.py:534-549 have no digest. pick.py:158 `s.first_text_p50 = percentile([v for x in scores for v in x[\"first_text_ms\"]], 50)` over all complete records; simulate.py:635 `record[\"complete\"] = not record[\"failure\"] and bool(ended)` with ended in {wall_cap, stalled, round_cap, brief, clear}. docread/score.py:197 `common = set.intersection(*answered.values()) if answered and paired else None`. ADR 0134:28 'its 2026-10-15 figures are not comparable with a re-run'. tiers.json _note: 'interview, audit and shape are the 2026-10-14 bench picks'."
+    },
+    {
+      "context": "proving-adopt-tiers",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "pick shows the tiers.json change against the incumbent and refuses blind writes",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "src/athena/proving/adopt_tiers/pick.py",
+        "src/athena/proving/adopt_tiers/__main__.py",
+        "src/athena/proving/adopt_tiers/report.py",
+        "tests/proving/adopt_tiers/test_pick.py",
+        "tests/proving/adopt_tiers/test_run.py"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "incumbent(tiers) reverse-maps tiers.json's interview/audit/shape to a CONFIGS name: {interview: opus 5.5 low} -> 'opus-low'; a model/effort pair not in CONFIGS -> None with 'hand-set (claude-x, effort high), not benched'",
+        "pick with tiers interview=opus-low and a bench pick haiku-medium -> the printed line reads 'interview: opus-low -> haiku-medium' followed by deltas from the two configs' stats (first-text p50 ms, accuracy points, judge, usage) and their runs n; picks.json carries {incumbent, proposed, delta}",
+        "pick whose proposal equals the incumbent -> 'interview: opus-low (unchanged)'; `pick --write` with every role unchanged -> tiers.json bytes identical and the output says 'tiers.json unchanged'",
+        "a fallback pick (every config disqualified) with `pick --write` -> exit 2, tiers.json bytes identical, the message names the role and '--accept-fallback'; the same with `--accept-fallback` -> written",
+        "the incumbent was itself disqualified in this run -> its line carries the incumbent's disqualification reasons ('opus-low is out: 1 false clear(s)') so the operator sees why it is being replaced",
+        "report.md's pick block for each role names the incumbent and the delta table (incumbent row vs proposed row)",
+        "guard: write_tiers keeps _note and every other kind and still validates with load_tiers (test_write_tiers_keeps_note_and_other_kinds, test_write_tiers_never_touches_research_persona_judge stay green)"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        "src/athena/proving/adopt_tiers/__main__.py:130 - pick prints only 'role: config — why'; the current tiers.json value is never read or shown",
+        "src/athena/proving/adopt_tiers/__main__.py:135 - `--write` writes whenever any interview exists; a fallback pick is not refused",
+        "src/athena/proving/adopt_tiers/pick.py:286 - a Pick with fallback=True still carries a config ('read the report before trusting this pick')",
+        "src/athena/proving/adopt_tiers/pick.py:338 - write_tiers skips only config None, so a fallback config is written into tiers.json",
+        "docs/adr/0097-adopting-a-playbook-is-a-conversation-held-outside-the-turn-lock.md:89 - the first full run disqualified every config; the shipped picks were hand-confirmed because the CLI would have written the fallback blind",
+        "src/athena/adopt/tiers.json:2 - the file's _note says the picks are the 2026-10-14 bench picks and hand edits are overrides that say why: the operator must know what changes and why before writing"
+      ],
+      "rollback": "Two commits (incumbent diff in pick/report; --write refusal + --accept-fallback flag); each reverts cleanly, no data or format migration (picks.json gains keys only).",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\" tests/proving/adopt_tiers"
+      ],
+      "runner_up": "report.md per-band breakdown (easy/typical/hard accuracy and p50 per config) so the operator sees where a fast config loses before accepting it.",
+      "body": "## Summary\nTurn `pick` from a verdict print into a decision preview: what tiers.json holds now, what the bench proposes, by how much, and refuse to write a pick the floor did not clear unless the operator says so.\n\n## Description\nThe operator deciding whether to run `pick --write` today sees one line per role and nothing about the incumbent, though both configs' stats are already in memory and tiers.json is one read away. `--write` then writes any pick, fallback included: ADR 0097's first run disqualified every config, and only a hand-confirmation kept a fallback out of the product. This card reverse-maps tiers.json to the bench configs, prints 'incumbent -> proposed' with deltas and n, marks unchanged roles, shows why an incumbent is out, makes an all-unchanged write a no-op, and refuses a fallback write without `--accept-fallback`. Model-routing: policy-governance (approve a diff to routing policy before it applies); measurement-honesty: count-carries-predicate.\n\n## Flow\n- `pick`: per role 'opus-low -> haiku-medium: first text -620 ms, accuracy -1.5 pt, judge -0.1, usage -$0.004 (n 18/18)' or 'opus-low (unchanged)'.\n- `pick --write`: fallback -> exit 2 naming --accept-fallback; unchanged -> no write.\n- report.md pick block: incumbent row beside the proposed row.\n\n## Expected impact\nThe operator acts on a diff instead of a name; a floor-failing config cannot reach tiers.json by a reflexive --write.\n\n## Evaluation\nClaim: pick shows the change against tiers.json and a fallback is not written blind.\nBefore: 0 of 6 new acceptance cases pass (1 guard green by design)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "__main__.py:128-141: `for p in picks: ... say(f\"{p.role}: {p.config or 'none'}{mark} — {p.why}\")` then `if getattr(args, \"write\", False): if not interviews: ... written = write_tiers(picks)` - no fallback check. pick.py:345-348: `if pick.role not in (...) or pick.config is None: continue` - fallback config passes. No read of TIERS_PATH in pick output path (grep: load_tiers used only inside write_tiers validation)."
+    }
+  ],
+  "rehomed": [
+    "write_tiers writes a fallback pick into tiers.json (pick.py:338) - S on its own; folded into card B rather than standing alone",
+    "docread proof() issues PASS/KILL with no sample floor while wilson() (docread/score.py:276) is dead code - S/M, below effort floor alone; candidate for a docread stabilize finding",
+    "tiers.json _note goes stale after `pick --write` (it names the 2026-10-14 picks) - S, and the file belongs to the adopt context"
+  ],
+  "riders": [
+    {
+      "name": "proving-hosted-server",
+      "checked": "read __init__/__main__/app/runner/runs/seed in full; traced in-memory Runner.current vs restart, day_spend by UTC prefix, seed atomicity; open items (token throttle - owner declined 2026-10-21, no who-started record, cancel not killing claude children, claude_available deviation at runner.py:408) are already in backlog-stabilize-2026-10-16 / registry deviations, so no new card"
+    },
+    {
+      "name": "proving-sandbox",
+      "checked": "read client.py, __main__.py in full, spike.py probes/verdict; a finished spike blocked on beta access (ADR 0033), nothing imports it; pack-gitignored-files already a stabilize finding; no M/L move with impact >= 7"
+    },
+    {
+      "name": "proving-docread",
+      "checked": "read __main__/corpus/dry/run/score/report, skimmed read/templates; it already pairs units (score.py:197) - used as the parity premise for card A; the no-n-floor verdict is S and rehomed"
+    }
+  ],
+  "registry": {
+    "subjects": ["eval-harness", "measurement-honesty", "model-routing"],
+    "techniques": ["scenario-design", "outcome-conditioned-cost", "resolution-precondition", "policy-governance", "minimum-sample-floors"]
+  },
+  "files_read": 31
+}

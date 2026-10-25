@@ -1,0 +1,3 @@
+r5 ledgerbox-app-shell/A shares app/actions.ts with r4 ledgerbox-model-tools/B (r4 builds first; r5 builder re-verifies)
+OWNER CALL: 9e8de7e4 (r1 mind-surface/B) raised apps/desktop first-paint ceiling 165000 -> 165412 B; the ratchet file says raising is the owner's call; brief wrongly allowed it (corrected after).
+PERF: perf:chores red at run base d13abf7a (3/3, longTask 62-67ms, Chrome via ATHENA_BROWSER; msedge not installed). Pre-band dc0287e8^ 5/5 69-92; HEAD after r1w3 5/5 65-126. Pre-existing; no builder penalty. Every other scene passes.

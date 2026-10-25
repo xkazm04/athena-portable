@@ -1,0 +1,146 @@
+{
+ "host": "ledgerbox-lanes-ui",
+ "cards": [
+  {
+   "context": "ledgerbox-lanes-ui",
+   "slot": "A",
+   "lens": "architecture-challenger",
+   "title": "One act machine per card: one armed gate, one write in flight, one door",
+   "size": "M",
+   "effort": 6,
+   "impact": 7,
+   "risk": 5,
+   "write_set": [
+    "examples/ledgerbox/components/lanes/Gate.tsx",
+    "examples/ledgerbox/components/lanes/Card.tsx",
+    "examples/ledgerbox/components/lanes/card/Decide.tsx",
+    "examples/ledgerbox/components/lanes/card/Foot.tsx",
+    "examples/ledgerbox/components/lanes/card/Evidence.tsx",
+    "examples/ledgerbox/components/lanes/useRun.ts",
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts"
+   ],
+   "new_files": [
+    "examples/ledgerbox/components/lanes/card/acts.ts"
+   ],
+   "shared_surfaces": [
+    "CHANGELOG.md"
+   ],
+   "generated": [],
+   "acceptance": [
+    "actSpecs(mark, detail, tone, category) over every open invoice in the scratch books -> a spec's `gated` is true exactly where !isAuto(TOOL_CLASSES[tool]), and each listed act's `blocked` line equals actRefusal(tool, mark, detail)",
+    "reduceActs(armed mark_paid on S1, arm void_invoice on S2) -> armed is {void_invoice, S2} only; mark_paid is no longer armed (today two Gates hold two independent armedOn states)",
+    "reduceActs(issuing draft_reminder, confirm send_reminder) -> state unchanged and the step reports refused 'an act on this invoice is still in flight'; arm(send_reminder) is refused the same way",
+    "the controller's take door called twice synchronously before any render (a double click on a confirm) -> the issue function is invoked exactly once",
+    "reduceActs(armed send_reminder on subject S, observe specs whose send_reminder subject is S') -> armed is null and focus target is 'row:send_reminder'",
+    "settle with a stale ticket after a newer take -> ignored; settle(current ticket, null) (the act threw) -> issuing null, armed null, focus target 'row:<tool>'",
+    "reduceActs(armed void_invoice, observe specs in which void_invoice is blocked) -> armed null, focus target 'heading' (the row is disabled, so focus cannot go back to it)",
+    "stillArmed(armedOn, subject, disabled) truth table and gateSubject('send_reminder') changing with the draft body are unchanged"
+   ],
+   "guard_cases": [
+    7
+   ],
+   "premise": [
+    "examples/ledgerbox/components/lanes/Gate.tsx:42 - each Gate holds its own armedOn, so two gated rows can be armed at once",
+    "examples/ledgerbox/components/lanes/Gate.tsx:47 - each Gate runs its own useRun, so its pending is invisible to the card and to every other row",
+    "examples/ledgerbox/components/lanes/Gate.tsx:89 - an idle gate is disabled only by its own pending; a draft in flight on the card does not disable it",
+    "examples/ledgerbox/components/lanes/card/Decide.tsx:367 - AUTO rows are disabled by the card's pending only; Decide.tsx:373 passes the Gate no pending at all",
+    "examples/ledgerbox/components/lanes/Card.tsx:53 - the card's useRun is a second, separate in-flight state beside every Gate's",
+    "examples/ledgerbox/app/actions.ts:495 - sendReminderAction sends the NEWEST unsent draft and takes no draft identity, so a send confirmed while a redraft is in flight can dispatch a letter the person never saw",
+    "examples/ledgerbox/components/lanes/card/read.ts:66 - the module itself states approval of version N is not approval of N+1; the subject check only runs on re-render, not across an in-flight write",
+    "examples/ledgerbox/components/lanes/useRun.ts:31 - pending comes from useTransition, which a double click lands before",
+    "examples/ledgerbox/test/ledgerbox-lanes-ui.test.ts:4 - the runner cannot load JSX, so the act list's rules are pinned by regex over source (tests at :169 and :224), not by behaviour"
+   ],
+   "rollback": "Revert the commit series. Gate's props are host-internal (only Decide renders it); card/acts.ts is new; no server action, contract or schema changes.",
+   "gate": "none",
+   "gates_to_run": [
+    "pnpm typecheck && pnpm lint && pnpm test"
+   ],
+   "runner_up": "One client-safe refusal module shared by app/actions.ts and the card, deleting the NOT_A_DEBT and actRefusal copies; it needs app-shell and lib/db files, so it ranks below a host-only move.",
+   "body": "## Summary\nThe L2 card's acts run on three in-flight states and up to three armed states that cannot see each other: the card's useRun, one useRun per Gate, and one armedOn per Gate. This card replaces them with one pure act machine per card, `card/acts.ts`, and makes Gate a controlled view of it.\n\n## Description\nToday a person can arm Record and Void at the same time. They can confirm Send while a redraft they just pressed is still in flight, because the idle and armed gates read only their own pending (Gate.tsx:47, :89). sendReminderAction then sends whichever draft is newest at the server (actions.ts:495), which can be a letter the person never saw. That is the gate-state-machines rule 'approval binds to a version', broken across an in-flight write that gateSubject cannot see. A double click on a confirm can land twice before useTransition's pending repaints (action-busy-states: the disarm is synchronous).\n\nThe move has three parts:\n- `card/acts.ts` holds `actSpecs(mark, detail, tone, category)`: the act list Decide now builds inline in JSX (Decide.tsx:217), as plain data with a tool, label, reaches, blocked, gated, question, subject and an issue descriptor.\n- It also holds `reduceActs`, a reducer over {armed, issuing, ticket, focus} with events arm, disarm, take, confirm, observe and settle.\n- A small controller with a synchronous ref is the one door every card write passes through: the five decision-list acts plus match and unmatch from Evidence (single-flight-primitives, refuse-second-caller).\n\nGate loses its useRun and armedOn and takes armed, busy, onArm, onCancel and onConfirm. The machine also names where focus goes on disarm (the row, or the heading when the row is now disabled), so the gate never strands focus on the body.\n\nOut of scope: an agent's draft_reminder that lands between arm and confirm still races at the server. Closing that needs a compare-and-set argument on sendReminderAction in app/actions.ts (ledgerbox-app-shell), which is rehomed there.\n\n## Flow\n- Write the failing cases in test/ledgerbox-lanes-ui.test.ts against card/acts.ts: specs, reducer, door.\n- Add card/acts.ts with actSpecs, reduceActs and createActDoor. Pure, no React import, so the node runner loads it.\n- Decide renders from actSpecs, mapping only the per-tool params (tone, file-under) to JSX.\n- Card owns one useActs. Gate becomes controlled. Evidence match and unmatch call the door.\n- useRun keeps toast, refresh and the throw path, and becomes the door's transport rather than a per-component state.\n- Replace the regex checks at :169 and :224 with behavioural cases on actSpecs.\n\n## Expected impact\nA class of defect closes on the person's path: two confirms armed at once, a confirm issued while another write on the same invoice is in flight (including send over an unsettled redraft), and a double-submit on a confirm. The act list's rules become testable as behaviour instead of source regex.\n\n## Evaluation\nClaim: one armed gate, one write in flight and one door per card, pinned by cases\nBefore: 1 of 8 acceptance cases pass (only the guard case, 7)\nAfter: 8 of 8\nMethod: gate - the acceptance cases, in ledgerbox's node:test runner on the scratch books\nResult: better\nGate: none",
+   "evidence": "Gate.tsx:42 `const [armedOn, setArmedOn] = useState<string | null>(null);` Gate.tsx:47 `const { pending, run } = useRun();` Gate.tsx:89 `disabled={disabled || pending}`. Decide.tsx:367 `disabled={pending || act.blocked}` (the card's pending), and Decide.tsx:373-380 `<Gate ... disabled={act.blocked} />` with no pending passed. Card.tsx:53 `const { pending, run } = useRun();`. actions.ts:494-495 `SELECT id, tone, recipient, subject, body FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1`, and the signature at actions.ts:487 is `sendReminderAction(ref, actor)` with no draft id. test/ledgerbox-lanes-ui.test.ts:4-8: 'The components under components/lanes/ hold JSX, which this runner cannot load ... a source check with the comments stripped first'."
+  },
+  {
+   "context": "ledgerbox-lanes-ui",
+   "slot": "B",
+   "lens": "ux-elevation",
+   "title": "The tick becomes a working set: a tray to refile, draft and walk ticked invoices",
+   "size": "M",
+   "effort": 7,
+   "impact": 8,
+   "risk": 5,
+   "write_set": [
+    "examples/ledgerbox/components/lanes/Lanes.tsx",
+    "examples/ledgerbox/components/lanes/Swarm.tsx",
+    "examples/ledgerbox/components/lanes/swarm/Lane.tsx",
+    "examples/ledgerbox/components/lanes/Spread.tsx",
+    "examples/ledgerbox/components/lanes/Card.tsx",
+    "examples/ledgerbox/components/lanes/card/Head.tsx",
+    "examples/ledgerbox/components/lanes/style/chrome/ticked.css"
+   ],
+   "new_files": [
+    "examples/ledgerbox/components/lanes/shell/tray.ts",
+    "examples/ledgerbox/components/lanes/shell/Tray.tsx",
+    "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts"
+   ],
+   "shared_surfaces": [
+    "CHANGELOG.md",
+    "examples/ledgerbox/components/lanes/style/chrome/ticked.css (owned by ledgerbox-style-design)"
+   ],
+   "generated": [],
+   "acceptance": [
+    "trayFor(sheet, [3 ids incl. one void invoice]) on the scratch books -> count 3, owedCents excludes the void (NOT_A_DEBT), lanes grouped [{laneId, label, n}] summing to 3",
+    "trayFor(sheet, [2 real ids, 'inv_nope']) -> count 2; the unknown id is dropped and the count is re-derived from the sheet, not carried from the tick list",
+    "draftPlan(tray, sheet) over a tick holding a disputed and a draft-state invoice -> eligible excludes both; held is grouped by reason, each reason string equal to actRefusal('draft_reminder', mark, detail), and eligible + held = count",
+    "runBatch(draftPlan) against the real draftReminderAction on the scratch books, with one eligible invoice voided between plan and run -> every other eligible invoice has a new unsent draft, the summary reads 'Drafted N-1 of N', and the returned next tick is exactly the one failed id (partial-failure-reselect)",
+    "a second runBatch while one is in flight -> refused with no call made; across both calls the per-id issue count equals the eligible count (single-pending-batch-invariant)",
+    "refilePlan(tray, 'retainers') -> only the ids not already in retainers; categorizeAction(those, 'retainers') on scratch books, then buildSheet + trayFor -> every ticked invoice reports the retainers lane",
+    "walk(tray, ids[0], +1) -> {id: ids[1], laneId: its category, position '2 of 3'}; walk at the last id with +1 -> null (no wrap); walk from an id not in the tick -> the first ticked id",
+    "toggleTick(list of SELECT_MAX ids, a new id) -> refused with the cap sentence and the list unchanged; toggleTick(list, an id in it) -> that id removed",
+    "trayActs() tools are all AUTO by TOOL_CLASSES, and send_reminder, mark_paid and void_invoice stay GATED (isAuto false), so no gated act is ever offered in bulk"
+   ],
+   "guard_cases": [
+    8
+   ],
+   "premise": [
+    "examples/ledgerbox/components/lanes/Lanes.tsx:76 - the tick (`picked`) is page state, but its setter goes only to BooksTools (Lanes.tsx:216); Swarm and Spread get a read-only Set (Lanes.tsx:266, :286)",
+    "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:433 - the select tool's own description: 'Tick invoices on the sheet so a person can see which ones a run is about'. The person can see the tick and do nothing with it: not untick, not count, not act",
+    "examples/ledgerbox/components/lanes/swarm/Lane.tsx:215 - a ticked mark is lifted to full opacity and ringed, and :242 announces 'Ticked.', so the state is drawn at L0 and L1 (Spread.tsx:234) with no control anywhere",
+    "examples/ledgerbox/app/actions.ts:154 - categorizeAction already takes a list of ids (capped at MAX_IDS), yet the person's only refile path is one invoice at a time from the card (card/Decide.tsx:256 `categorizeAction([mark.id], category)`)",
+    "examples/ledgerbox/components/lanes/card/read.ts:120 - actRefusal already answers, per invoice, why a draft would be refused, which is the data a bulk plan needs to say 'N held, because' before the press",
+    "examples/ledgerbox/components/lanes/Lanes.tsx:330 - the card knows nothing of the tick, so reviewing an agent's 12 ticked invoices means 12 rounds of Escape, find the ringed mark, click"
+   ],
+   "rollback": "Revert the commit series. The tray and its module are new files; Lanes, Swarm, Lane, Spread, Card and Head gain optional props (onTick, walk) whose absence restores today's render; the CSS additions are appended rules in ticked.css.",
+   "gate": "none",
+   "gates_to_run": [
+    "pnpm typecheck && pnpm lint && pnpm test"
+   ],
+   "runner_up": "Undo reachable from the card: AUTO acts hand back an undoId, the toast carries Undo, and a History band appears. This adopts the stabilize backlog item 'Acts are AUTO because they are reversible, and ledgerbox offers no way to reverse them' (ADR 0111's pattern), but it needs app/actions.ts and lib/types.ts.",
+   "body": "## Summary\nAn agent's `select` rings a working set on the sheet, and the person can only look at it. This card turns the tick into a person's tool: a tray that counts the set and offers the AUTO acts over it with their refusals known before the press, a walk mode that steps the L2 card through the ticked invoices, and a person's own tick (Ctrl/Cmd-click, or `x` on a focused mark or node).\n\n## Description\nThe tray mounts in Lanes beside the footer whenever the tick is non-empty. It reads like this: '12 ticked - $214k open across 3 areas'. It offers:\n- Refile all to [category]: one categorizeAction over the ids not already there.\n- Draft [tone] reminders, labelled 'for 9; 3 held: disputed (2), nothing owed (1)'. The held lines come from actRefusal, so the plan matches what the books refuse.\n- Walk: opens the first ticked card.\n- Clear.\n\nBulk drafting runs through runBatch: sequential calls bounded by SELECT_MAX (bounded-fanout-commit), one in-flight batch with a handler-level guard (single-pending-batch-invariant), and one summary toast. Afterwards the failed ids become the new tick, so the next press is already aimed (partial-failure-reselect).\n\nWhile walking, the card head shows 'Ticked 3 of 12' with Prev and Next, which call nav.openItem(lane, id). The person reviews each invoice on its own card, where the GATED acts remain per invoice behind Gate. Send, record and void are never offered in bulk, so no consent check is widened.\n\nThe tick stays the one `picked` state that select moves, so an agent's call and a person's click still end in the same setState (the Lanes.tsx:12 rule). All logic lives in pure `shell/tray.ts`, which the node runner drives against the scratch books.\n\n## Flow\n- Write the failing cases in test/ledgerbox-lanes-tray.test.ts against shell/tray.ts: trayFor, draftPlan, refilePlan, runBatch, walk, toggleTick, trayActs.\n- Add shell/tray.ts, which is pure and imports only model, card/read, lib/constants and lib/tool-classes.\n- Add shell/Tray.tsx, rendered by Lanes when picked is non-empty, with its own transition for the batch.\n- Lanes passes setPicked through as onTick to Swarm, Lane and Spread (Ctrl/Cmd-click and `x`), and passes walk to Card and CardHead.\n- Append tray and walk rules to ticked.css.\n\n## Expected impact\nThe operator notices at once. A set Athena ticked becomes something the person can act on: review the set invoice by invoice, refile it in one press, or draft for the eligible part with the held part explained, instead of a ring they must reproduce by hand one card at a time. It also gives a person their own bulk path, which ledgerbox lacks entirely today.\n\n## Evaluation\nClaim: the tick is actionable (count, plan, bulk AUTO acts, walk), pinned by cases\nBefore: 1 of 9 acceptance cases pass (only the guard case, 8)\nAfter: 9 of 9\nMethod: gate - the acceptance cases, in ledgerbox's node:test runner on the scratch books\nResult: better\nGate: none",
+   "evidence": "Lanes.tsx:76 `const [picked, setPicked] = useState<string[]>([]);`. git grep setPicked over examples/ledgerbox/components: Lanes.tsx:216 (passed to BooksTools) and BooksTools.tsx:181/:454 only, with no other caller. Lanes.tsx:266/:286 `picked={pickedSet}` (a read-only Set). BooksTools.tsx:433-434 'Tick invoices on the sheet so a person can see which ones a run is about. Ticked marks are ringed at every level.' Lane.tsx:215 `const opacity = open || picked.has(mark.id) ? 1 : PRESENCE_OPACITY[presence];`. actions.ts:154-164 `categorizeAction(ids: string[], ...)` with `ids.slice(0, MAX_IDS)`. Decide.tsx:256 `issue: () => categorizeAction([mark.id], category)`. lib/constants.ts:28 `SELECT_MAX = 50`."
+  }
+ ],
+ "rehomed": [
+  "Server compare-and-set for send_reminder (sendReminderAction takes the draft id the person armed on and refuses a newer one), which closes the agent-side race card A leaves open. It lives in app/actions.ts, so it is rehomed to ledgerbox-app-shell.",
+  "Gate confirm double-click fires twice before the useTransition repaint: S on its own, so it is folded into card A's door.",
+  "Tip.tsx queries .ln-root on every render while hovering: S and perf-only, below the impact floor.",
+  "The card's owed/actionable predicate treats an unsent draft as owed: already in the stabilize backlog ('An unsent draft's card says Still owed'), so it is not re-proposed."
+ ],
+ "riders": [],
+ "registry": {
+  "subjects": [
+   "hitl-approval",
+   "concurrency-guards",
+   "async-ui-states",
+   "batch-undo-commit-window"
+  ],
+  "techniques": [
+   "gate-state-machines",
+   "single-flight-primitives",
+   "action-busy-states",
+   "single-pending-batch-invariant",
+   "partial-failure-reselect",
+   "bounded-fanout-commit"
+  ]
+ },
+ "files_read": 42
+}

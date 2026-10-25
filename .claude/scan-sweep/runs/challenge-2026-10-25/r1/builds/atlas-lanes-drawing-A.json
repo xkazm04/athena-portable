@@ -1,0 +1,18 @@
+{"card":"atlas-lanes-drawing/A","status":"landed","shas":["1dc295af"],
+ "tests_added":[
+  "examples/atlas/test/lanes.turn.test.ts::case 1: a manual step while playing restarts the beat, and a tick from before it is dropped",
+  "examples/atlas/test/lanes.turn.test.ts::case 2: the TURN toggle shows or hides the trail and always stops the clock",
+  "examples/atlas/test/lanes.turn.test.ts::case 3: the view bus turns the story on or off, and off stops the clock",
+  "examples/atlas/test/lanes.turn.test.ts::case 4: set_turn is one action",
+  "examples/atlas/test/lanes.turn.test.ts::case 5: under reduced motion play steps instead, and nothing reads as playing",
+  "examples/atlas/test/lanes.turn.test.ts::case 6: steps wrap, a chapter lands on its first stop, a picked stop turns the story on",
+  "examples/atlas/test/lanes.turn.test.ts::case 6b: opening a run with the story on moves the stop to the first stop it carries",
+  "examples/atlas/test/lanes.turn.test.ts::case 8: every action from every seed keeps the invariants",
+  "examples/atlas/test/lanes.drawing.test.ts::case 7 (story reducer): the story's state has one writer, and set_turn is one dispatch"],
+ "guard_cases":[2,3,5],
+ "cases_total":9,"cases_red_before":9,"cases_green_after":9,
+ "gates":{"examples/atlas: pnpm typecheck":0,"examples/atlas: pnpm lint":0,"examples/atlas: pnpm test (124/124)":0,"root: pnpm typecheck":0,"root: pnpm lint":0},
+ "files_changed":7,"lines_changed":442,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Eight doors, not seven: slot B's onRun (setStop) became a 'run' action resolved through inspect.selectRun inside the reducer (case 6b added). Card line anchors in turn.ts/Tools.tsx were stale (turn.ts is 148 lines pre-change; turnAfter at :61, turnRead at :71; set_turn handler at Tools.tsx:77-89); facts held. Case 4's refusal is returned by an exported turnTool(state, stop, tell) (the reducer's tool transition) since a reducer must return state; turnReduce returns the same state reference on refusal. Guard cases 2, 3 and 5's first half describe kept behaviour but were red before only because turnReduce did not exist. Every hand action bumps epoch (not only stop-moving ones), which satisfies the card's invariant. StoryBar's playing prop and data-motion-owner now read playingNow. Existing turnAfter/askStop tests in lanes.poses.test.ts unchanged (not edited).",
+ "notes":"ADR 0160 claimed under the lock; CHANGELOG line appended at end of [Unreleased]. No sibling reds seen. examples/atlas only; no apps/desktop, no perf run needed."}

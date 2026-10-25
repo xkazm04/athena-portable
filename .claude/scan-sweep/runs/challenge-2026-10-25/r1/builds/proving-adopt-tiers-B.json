@@ -1,0 +1,18 @@
+{"card":"proving-adopt-tiers/B","status":"landed","shas":["d7b4b7fb"],
+ "tests_added":[
+  "tests/proving/adopt_tiers/test_pick.py::test_incumbent_reverse_maps_tiers_json_to_a_config",
+  "tests/proving/adopt_tiers/test_pick.py::test_the_pick_line_reads_incumbent_to_proposed_with_deltas_and_n",
+  "tests/proving/adopt_tiers/test_pick.py::test_a_proposal_equal_to_the_incumbent_reads_unchanged",
+  "tests/proving/adopt_tiers/test_pick.py::test_a_disqualified_incumbent_says_why_it_is_replaced",
+  "tests/proving/adopt_tiers/test_pick.py::test_report_pick_block_names_the_incumbent_and_the_delta_table",
+  "tests/proving/adopt_tiers/test_run.py::test_pick_prints_incumbent_to_proposed_and_picks_json_carries_the_delta",
+  "tests/proving/adopt_tiers/test_run.py::test_pick_write_with_every_role_unchanged_leaves_tiers_json_as_it_is",
+  "tests/proving/adopt_tiers/test_run.py::test_pick_write_refuses_a_fallback_unless_accepted"],
+ "guard_cases":[6],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/proving/adopt_tiers -m \"not provider and not eval\"":0},
+ "files_changed":6,"lines_changed":455,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"main() gained a keyword-only tiers path (default TIERS_PATH) so CLI tests write a tmp tiers.json, never the real one. --write writes only the roles that change; a fallback pick equal to the incumbent is an unchanged no-op rather than a refusal (nothing would be written). Deltas are read from the same all-current-records stats the report tables show (not the conditioned subset). Red-before for test_pick cases was an ImportError (against/incumbent/pick_line missing) and for test_run cases a TypeError on the new tiers kwarg. No ADR (card names CHANGELOG as the only shared surface).",
+ "notes":"The scripted FakeModel bench clears no config's floor (sonnet-low 1 repeat, opus-medium accuracy 57.1), so the CLI-level tests exercise the fallback path; the non-fallback incumbent->proposed diff is covered by the unit tests in test_pick.py. No sibling reds seen. Real src/athena/adopt/tiers.json untouched."}

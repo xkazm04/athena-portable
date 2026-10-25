@@ -1,0 +1,23 @@
+{"card":"tidycrm-blocks-ui/A","status":"landed","shas":["2a5569b3"],
+ "tests_added":[
+  "examples/tidycrm/test/acts.test.ts::case 0: every tidy act counts the contacts the planner would change, not every live row",
+  "examples/tidycrm/test/acts.test.ts::case 1: once a table is tidied its tidy act is shut, with the refusal sentence",
+  "examples/tidycrm/test/acts.test.ts::case 2: flagging BLK-05's stale rows leaves the gated delete on offer for them, and the write accepts it",
+  "examples/tidycrm/test/acts.test.ts::case 3: every act on every table is offered exactly when its write accepts it, and prints the count it changes",
+  "examples/tidycrm/test/acts.test.ts::case 4 (guard): on the fresh seed the phone act counts every row whose phone is not +1XXXXXXXXXX",
+  "examples/tidycrm/test/acts.test.ts::case 5 (guard): merge and keep both are offered exactly when the table carries an open pair",
+  "examples/tidycrm/test/acts.test.ts::case 6: the gate decides nothing for itself and reads every control from table.acts"
+ ],
+ "guard_cases":[4,5],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{
+  "pnpm --filter tidycrm typecheck":0,
+  "pnpm --filter tidycrm lint":0,
+  "pnpm --filter tidycrm test (133 tests)":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":7,"lines_changed":439,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"test/blocks-ui.test.ts was not touched (it was not needed). Each act also carries `label` (the offer, or the REFUSAL sentence when shut), so Gate.tsx prints labels from acts as well. The parity sweep's 'changed something' is measured as ok plus a new activity row, and the count as that row's `contacts:N` target (1 for a pair act). Red-before is real, not just a missing field: on the old tree the test reads the gate's inline values (the legacy fallback in actOf). The red runs showed 'BLK-05 tidy: prints 23, write reports 2' and 7 tables where tidy was offered but the write changed nothing. Two copy changes: the phone refusal reads 'No number here can be rewritten as +1XXXXXXXXXX' (the old 'Every number is already...' could be false for an unparseable phone), and the delete confirmation adds 'flagged or not'. Mutations are unchanged (not in the write set), so unlike ADR 0107 decision 2 the server keeps its own refusal wording, and the parity test holds the two together. ADR 0149 says this.",
+ "notes":"The premise was re-checked against 59287f5: the kit door change covers WebMCP tool replies, not the dossier's server actions, so the premise held. The parity matrix takes about 11 s (46 tables x 6 acts, each rolled back by copying contacts, merge_pairs, revisions and activity). Follow-up not done: the agent's sheet read (components/blocks/tools/read) does not carry acts yet. No sibling reds seen."}

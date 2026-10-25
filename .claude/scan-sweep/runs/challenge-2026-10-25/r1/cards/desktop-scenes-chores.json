@@ -1,0 +1,136 @@
+{
+  "host": "desktop-scenes-chores",
+  "cards": [
+    {
+      "context": "desktop-scenes-chores",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One warm-remount read cache for the Chores depth's daemon reads",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/scenes/chores/topic.tsx",
+        "apps/desktop/src/scenes/chores/runs.tsx",
+        "apps/desktop/src/scenes/chores/memory.ts",
+        "apps/desktop/src/scenes/chores/topic.test.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/chores/reads.ts",
+        "apps/desktop/src/scenes/chores/reads.test.ts",
+        "docs/adr/0144-the-chores-depth-keeps-its-daemon-reads-warm-across-a-move.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0144-the-chores-depth-keeps-its-daemon-reads-warm-across-a-move.md (ADR number to be taken at build time)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "reads.ts: two `read(key, fetch)` calls for the same key (same client object, same route key) while the first is in flight -> fetch called once, both callers get the one answer (in-flight dedup)",
+        "reads.ts: an entry answered for client A is never served to client B with the same route key -> B starts cold (`looking`), fetch called for B (client identity is part of the key, as useCases' `answer.client` check does today)",
+        "topic: mount `chores/<id>` with a FakeClient whose cases() answers one case, unmount by moving to `chores/<id>/adopt`, move back -> on the FIRST render after the move (before any promise resolves) the case title and `Open your case` are in the DOM and `Looking for a case you saved` is not; cases() is called a second time (revalidate on every warm paint)",
+        "topic: same round trip for `Your runs` under a case -> the receipt line (`Run closed ...`) is present on the first render back, never `Looking for your runs...`; runs(caseId) revalidates once per warm paint",
+        "topic: warm paint, then the revalidation rejects with ApiError(0,'offline') -> the cached case stays drawn and one line says it could not be refreshed because the daemon is not running (failure keeps stale truth visible); the cold-failure wording of casesLine is unchanged",
+        "topic: revalidation answers a newer approval (approved_rev 3) -> the page shows `draft 3` replacing `draft 2` with no intermediate `Looking` state",
+        "memory: forgetChores() clears the read cache -> the next mount starts cold and says `Looking for a case you saved...` (test isolation stays as today)",
+        "topic: first ever visit with deps -> `Looking for a case you saved...` while the answer is on its way, exactly as the existing test pins"
+      ],
+      "guard_cases": ["4", "6", "7"],
+      "premise": [
+        "apps/desktop/src/scenes/chores/view.tsx:8 - 'The stage mounts a fresh view at every move', so component state dies on every dive and rise",
+        "apps/desktop/src/scenes/chores/memory.ts:4 - the depth already keeps catalogue filters, intro and scroll in module scope because a move remounts, but daemon answers were left in component state",
+        "apps/desktop/src/scenes/chores/topic.tsx:58 - useCases holds the cases answer in useState, so every return from the studio or the replay re-enters `looking`",
+        "apps/desktop/src/scenes/chores/topic.tsx:75 - `if (answer === null ...) return { kind: \"looking\" }`: the remounted page always paints cold",
+        "apps/desktop/src/scenes/chores/runs.tsx:26 - useRuns is a second hand-rolled copy of the same keyed-state fetch (answer.for / answer.client), per case, also cold on every remount",
+        "apps/desktop/src/scenes/chores/topic.tsx:148 - scroll is restored in useLayoutEffect at mount, while 'Your case' (topic.tsx:317) is still a one-line status and every case's Runs is collapsed: the restored offset targets the tall page but is applied to the short one",
+        "apps/desktop/src/scenes/chores/topic.tsx:342 - 'Open your case' / 'Talk it through with her' sit at the bottom of the page, in the very section that collapses, so the return trip from the studio is the one most hurt",
+        "apps/desktop/src/scenes/chores/topic.tsx:328 - one Runs (and one Due) request per case per mount: a page with N cases issues N+1 reads on every return"
+      ],
+      "rollback": "Revert the series: reads.ts and its test are new files; topic.tsx/runs.tsx return to their local useState hooks and memory.ts loses one clear call. No contract, route or stored data changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Collapse the two markdown readers (rich.tsx blocks/inline and turn.tsx Prose/inline/cells) into one tested block parser - under the effort floor on its own.",
+      "body": "## Summary\nThe Chores depth reads three things from the daemon (a chore's saved cases, each case's runs, each case's cadence) and keeps every answer in the component that asked. The stage remounts the view on every move, so each return from the studio or the replay repaints `Your case` and `Your runs` cold, from `Looking...`, and asks again. One module-scoped read cache (`reads.ts`) keyed by (client, route key), stale-while-revalidate with in-flight dedup, replaces both hand-rolled hooks and makes the page paint warm on return.\n\n## Description\n`memory.ts` already exists because a move remounts: the catalogue filters, the intro and the scroll offsets live in module scope. The daemon reads were never given the same treatment. `useCases` (topic.tsx:56) and `useRuns` (runs.tsx:25) are two copies of one pattern: a `useState` answer tagged with what it answered and which client, returning `looking` until the promise settles. On a remount that is always `looking`. The visible cost is the bottom of the topic page: the cases list collapses to one status line and each case's runs to another, while `useLayoutEffect` restores a scroll offset measured on the full page. In a real webview the offset is clamped to the short page and the person lands above where they left, then the content grows under them. jsdom does not clamp, which is why wired.test.tsx:201 passes.\n\nThe move is registry `client-fetch-cache`, technique `warm-remount-caches` (a module-scoped last result that a remount reads synchronously and revalidates behind), with `in-flight-dedup` and `cache-key-discipline` (client identity in the key, as the current hooks already check). Following `swr-design`, a failed revalidation keeps the cached value drawn and says it could not be refreshed. The state the hook returns tells `looking` (nothing yet), `found` (fresh) and `found, refreshing` / `found, refresh failed` apart, so the page never shows a stale answer as fresh.\n\nOut of scope: `due.tsx` (owned by desktop-tasks-and-due) keeps its own load. Its owner can move it onto `reads.ts` in one later commit, and the ADR names that.\n\n## Flow\n- reads.ts: `readKey(client, route)`, `useRead(key, fetch)` -> `{kind:'looking'} | {kind:'found', value, refreshing, refreshFailed?} | {kind:'failed', ...}`, a Map bounded by the depth's working set (cases per chore, runs per case; at most 20 cases by the daemon's own cut), `forgetReads()` for tests\n- topic.tsx: `useCases` becomes a thin adapter over `useRead`; `casesLine` keeps its words, plus one line for a failed refresh over a warm value\n- runs.tsx: `useRuns` likewise; `runsLine` unchanged\n- memory.ts: `forgetChores()` also forgets reads\n- ADR: the depth's daemon reads outlive the move, revalidate on every warm paint, and keep stale truth visible on a failed refresh\n\n## Expected impact\nComing back from the studio or the replay paints `Your case` and `Your runs` as they were, with no layout jump under the restored scroll. The N+1 read burst on every return becomes a background revalidation per key, deduplicated. The depth stops carrying two copies of a keyed fetch, and the next read (catalogue `Yours`, Due) has one place to go.\n\n## Evaluation\nClaim: the topic page paints the daemon's last answers synchronously after a move, revalidates once per key, and keeps a stale answer visible when the refresh fails.\nBefore: 4 of 8 acceptance cases pass (the guard cases 4, 6, 7 and the cold-visit wording; cases 0-3 and 5 fail: no dedup, no warm paint)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, jsdom, FakeClient as in topic.test.tsx)\nResult: better\nGate: none",
+      "evidence": "topic.tsx:56-77 `export function useCases(...) { const [answer, set] = useState<{ for: string; client: unknown; state: CasesState } | null>(null); useEffect(() => { ... deps.client.cases(playbookId).then(...) }, [deps, playbookId]); ... if (answer === null || answer.for !== playbookId || answer.client !== deps.client) return { kind: \"looking\" };` | runs.tsx:25-43 the same shape for `deps.client.runs(caseId)` | view.tsx:8-10 'The stage mounts a fresh view at every move, so the catalogue's filters, order and last pick, the front door's words and each topic's scroll are kept in memory.ts' | topic.tsx:148-151 `useLayoutEffect(() => { const top = scrolls.get(p.id); if (top && root.current) root.current.scrollTop = top; }, [p.id]);` | topic.tsx:317-337 cases list vs `casesLine(saved)` status line | topic.tsx:328-329 `<Due .../>` and `<Runs deps={deps} caseId={c.case_id} />` per case | due.tsx:207-220 a third local load (other context). Registry: client-fetch-cache golden path (revision 15), techniques warm-remount-caches, swr-design, in-flight-dedup, cache-key-discipline."
+    },
+    {
+      "context": "desktop-scenes-chores",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "\"Your chores\" on the catalogue: every saved case, due first, one press in",
+      "size": "M",
+      "effort": 7,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/scenes/chores/catalogue.tsx",
+        "apps/desktop/src/scenes/chores/view.tsx",
+        "apps/desktop/src/scenes/chores/memory.ts",
+        "apps/desktop/src/scenes/chores/chores.css",
+        "apps/desktop/src/scenes/chores/fixtures.ts",
+        "apps/desktop/src/scenes/chores/index.tsx",
+        "apps/desktop/src/scenes/chores/wired.test.tsx"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/chores/yours.ts",
+        "apps/desktop/src/scenes/chores/yours.test.ts",
+        "apps/desktop/src/scenes/chores/yours.test.tsx"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/features/playbooks.md (one paragraph: Your chores on the catalogue)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "yours.ts `yoursOf(model, cases, reviews)`: two CaseSummary rows for two shipped playbooks -> two rows, each carrying the chore's shortTitle, the case title, `Last approved <day>` and `<confirmed> of <slots> confirmed`, latest approval first",
+        "yours.ts: a case whose open review (DueReview.review.answer === '' with due_at) exists -> its row says `Due <local day>` (plus `and N missed` when review.missed > 0) and sorts before every case with no open review",
+        "yours.ts: a case whose playbook_id is not in this build -> not drawn as a link; the band says `1 saved case is for a chore this build does not ship` (never silently dropped)",
+        "catalogue with deps whose client.cases('') answers two cases -> a `Your chores` band above the area tabs lists both; client.cases was called with '' exactly once (the daemon's existing all-cases listing, routes.py:218)",
+        "pressing a band row's `Open your case` -> go(casePath(playbook_id, case_id)); pressing the chore name -> go(chorePath(playbook_id)) and rememberCatalogue({ last: playbook_id })",
+        "the `Yours` job-bar toggle -> the ledger narrows to chores that have a saved case, the shown line says `2 playbooks you have a case for`, and the toggle survives a move to a topic and back (memory.ts)",
+        "cases('') answers footer `(showing 20 of 23)` -> the band prints that footer under its rows (invariant 4)",
+        "catalogue with no deps (preview, no daemon) -> no band, no fetch, the ledger, totals and tabs render exactly as today; with deps whose cases('') rejects offline -> one line `Your chores could not be looked up: the daemon is not running.` and the ledger is unaffected"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "apps/desktop/src/scenes/chores/catalogue.tsx:61 - the catalogue's props are model, state, set, open and create: it is handed nothing about the person's own cases",
+        "apps/desktop/src/scenes/chores/view.tsx:98 - the root place renders Catalogue without `adopt`, so the depth's root cannot know which chores are the person's",
+        "apps/desktop/src/scenes/chores/topic.tsx:56 - a saved case is only discovered on that chore's own topic page, one playbook at a time",
+        "apps/desktop/src/scenes/chores/topic.tsx:328 - what comes due (Due) and what ran (Runs) are drawn only under a case on its topic page",
+        "src/athena/adopt/routes.py:218 - `GET /adopt/cases` with an empty playbook_id already lists every case (cases.py:317 `not playbook_id or ...`), cut at 20 with (showing N of M)",
+        "apps/desktop/src/lib/adopt-client.ts:55 - `cases(playbookId)` exists on the client the depth is already handed; `cases('')` needs no new route",
+        "apps/desktop/src/lib/chores-client.ts:30 - `review(caseId)` answers the open review a due occurrence opened, on the `chores` client already in AdoptDeps (scenes/chores/adopt/deps.ts:30)",
+        "apps/desktop/src/stores/due-poll.ts:31 - the due notice is offered once and stamped seen, so after the dock has shown it nothing on the Chores root says the chore is still waiting"
+      ],
+      "rollback": "Revert the series: yours.ts and its tests are new; catalogue.tsx loses the band and the toggle, view.tsx stops passing deps and go, memory.ts loses one field. No route, contract or stored data changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test",
+        "cd apps/desktop && pnpm perf:all (the catalogue is the depth's first paint; the band must not join the first frame's chunk)"
+      ],
+      "runner_up": "Compare two chores side by side from the catalogue (time by hand vs with her, value kind, fit, gates) - a missing mode, but the ledger already answers most of it.",
+      "body": "## Summary\nThe Chores root is the shipped library: about a hundred playbooks ordered by the author's scores. A person who has adopted three of them, one of which came due yesterday, sees the same page as a first-time visitor. Their own cases, what is due and what is running sit two levels down, on each chore's topic page, and the person has to remember which chores they were. Put a `Your chores` band at the top of the catalogue, listing every saved case joined to its chore, open reviews first, each one press from its case or its page. Add a `Yours` toggle that narrows the ledger to chores that have a case.\n\n## Description\nThe daemon already answers the data: `GET /adopt/cases` with no playbook lists every case (routes.py:218, cases.py:317), and each case's open review is `GET /adopt/cases/<proj>/review` on the chores client the depth already holds. Today the catalogue is never handed those clients (view.tsx:98). A pure `yours.ts` joins cases to the shipped set and orders them: an open review first (`Due <day>`, `and N missed`), then latest approval. It names a case whose chore this build does not ship instead of dropping it, and passes the daemon's `(showing N of M)` through. The catalogue draws the band only when it has deps, so the preview, the perf gate's first fixture and a window with no daemon render exactly as today. Each state is said in words (looking, none saved, offline, refused), following the topic page's `casesLine` vocabulary.\n\nThe due notice in the dock is offered once and stamped seen (due-poll.ts). After that, nothing on the Chores root says the chore is still waiting. The band is the place a person can see what is waiting for them and act on it. Today the surface only reports.\n\nIf card A (warm-remount reads) lands first, the band reads through `reads.ts` and the rise from a topic paints warm. Without it, the band uses the same keyed load as useCases, so the two cards do not depend on each other.\n\n## Flow\n- view.tsx: pass `adopt` and `go` to Catalogue\n- yours.ts (pure): `yoursOf(model, cases, reviews)` -> rows, an unknown-chore count, a footer; `yoursLine(state)` for the no-row states; `hasCase(model, cases)` for the toggle\n- catalogue.tsx: the band above the tabs (a list of rows: chore name as a link to its page, case title, due or last-approved line, `Open your case`); a `Yours` toggle in the job bar\n- memory.ts: `CatalogueState.yours: boolean`\n- fixtures.ts / index.tsx: a `ledger-yours` fixture with a scripted client (two cases, one open review), so the preview and the capture can show the band\n- chores.css: the band, inside the existing pa- family, tokens only\n\n## Expected impact\nA returning person sees their own chores first, and sees which one is waiting, on the screen they land on. Opening the case they mean takes one press instead of a hunt through the ledger plus two levels of navigation. The only answer to \"what is due\" stops being a notice that disappears once shown.\n\n## Evaluation\nClaim: the catalogue lists every saved case joined to its chore, with open reviews first, opens each in one press, narrows the ledger to the person's chores, and is unchanged without a daemon.\nBefore: 1 of 8 acceptance cases pass (case 7, the no-deps guard)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest: pure yours.ts tests plus jsdom catalogue tests with a FakeClient as in topic.test.tsx)\nResult: better\nGate: none",
+      "evidence": "catalogue.tsx:61-74 `export default function Catalogue({ model, state, set, open, create }: {...})`, with no deps | view.tsx:98-110 `<Catalogue model={model} state={state} set={rememberCatalogue} create={...} open={...} />` | routes.py:214-220 `playbook_id = request.query.get(\"playbook_id\", \"\"); found = studio.cases.cases(playbook_id); rows = [... for case in found[:MAX_CASES]]; return 200, announced(rows, len(found), \"cases\")` | cases.py:312-318 `if case is not None and (not playbook_id or case.playbook_id == playbook_id)` | adopt.ts:151-152 `cases: (playbookId) => /adopt/cases?playbook_id=${...}` (empty id -> all) | chores-client.ts:30 `review(caseId): Promise<DueReview | null>` | adopt/deps.ts:28-30 `chores?: ChoresClient` already in AdoptDeps | due-poll.ts:5-8 notices offered until stamped seen. Registry: no governing subject is mapped for this row (registry-map subjects are agent-memory/prompt-assembly/retrieval, a weak fit); nearest is session-resume / async-ui-states for the states said in words."
+    }
+  ],
+  "rehomed": [
+    "live.tsx:30 `origin !== \"null\"` is dead: originOf (modules/browser/model.ts:393-399) already maps an opaque origin to \"\" (S, cleanup).",
+    "Two module-level stores in one depth (memory.ts and replay.tsx's `playing`) with identical subscribe/emit boilerplate; fold into one (S).",
+    "rich.tsx `inline` and turn.tsx `inline` are byte-for-byte twins (S); the full markdown-reader merge is slot A's runner-up.",
+    "modules/types.ts ModuleEntry docblock still describes the module-first contract; only surface/waking/console preview use it (S, docs)."
+  ],
+  "riders": [
+    {
+      "name": "desktop-modules-registry",
+      "checked": "Read types.ts, browser/index.ts, model.ts, fixtures.ts, model.test.ts. Traced callers: useBrowserModel runs three times in scenes/apps/live.tsx and originOf has six importers. The selector is pure, derived and tested (registry: module-design conformant). The only structural move, memoising actions or sharing one browser model across Apps levels, edits scenes/apps (another context's files), and the rest is S."
+    }
+  ],
+  "registry": {
+    "subjects": ["client-fetch-cache", "async-ui-states", "session-resume"],
+    "techniques": ["warm-remount-caches", "swr-design", "in-flight-dedup", "cache-key-discipline"]
+  },
+  "files_read": 41
+}

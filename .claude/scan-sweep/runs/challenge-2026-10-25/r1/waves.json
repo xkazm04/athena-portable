@@ -1,0 +1,147 @@
+[
+  [
+    {
+      "key": "demo-kit-ui-webmcp/A",
+      "host": "demo-kit-ui-webmcp",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-scenes-chores/B",
+      "host": "desktop-scenes-chores",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-lanes-ui/B",
+      "host": "ledgerbox-lanes-ui",
+      "slot": "B",
+      "revise": "Drop case 7 (walk next/edge rules) to bring acceptance within the 3-8 band.",
+      "py": false
+    },
+    {
+      "key": "proving-adopt-tiers/A",
+      "host": "proving-adopt-tiers",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "tidycrm-blocks-ui/A",
+      "host": "tidycrm-blocks-ui",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "adopt-engine/A",
+      "host": "adopt-engine",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "atlas-lanes-drawing/B",
+      "host": "atlas-lanes-drawing",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "daemon-service/A",
+      "host": "daemon-service",
+      "slot": "A",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "demo-kit-ui-webmcp/B",
+      "host": "demo-kit-ui-webmcp",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    }
+  ],
+  [
+    {
+      "key": "desktop-scenes-mind-surface/B",
+      "host": "desktop-scenes-mind-surface",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "journey-stage-src/A",
+      "host": "journey-stage-src",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "ledgerbox-lanes-ui/A",
+      "host": "ledgerbox-lanes-ui",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "adopt-engine/B",
+      "host": "adopt-engine",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "daemon-service/B",
+      "host": "daemon-service",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    },
+    {
+      "key": "desktop-scenes-chores/A",
+      "host": "desktop-scenes-chores",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "journey-stage-src/B",
+      "host": "journey-stage-src",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "proving-adopt-tiers/B",
+      "host": "proving-adopt-tiers",
+      "slot": "B",
+      "revise": null,
+      "py": true
+    }
+  ],
+  [
+    {
+      "key": "tidycrm-blocks-ui/B",
+      "host": "tidycrm-blocks-ui",
+      "slot": "B",
+      "revise": null,
+      "py": false
+    },
+    {
+      "key": "atlas-lanes-drawing/A",
+      "host": "atlas-lanes-drawing",
+      "slot": "A",
+      "revise": null,
+      "py": false
+    }
+  ]
+]

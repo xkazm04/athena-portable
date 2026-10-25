@@ -1,0 +1,33 @@
+{"card":"demo-kit-ui-webmcp/A","status":"landed","shas":["59287f51"],
+ "tests_added":[
+  "examples/demo-kit/test/door-outcome.test.ts::a refused argument rejects a ToolRefusal listing every mismatch by path, and the handler never runs",
+  "examples/demo-kit/test/door-outcome.test.ts::a handler throw rejects 'tool failed: <message>' carrying no reason",
+  "examples/demo-kit/test/door-outcome.test.ts::with no caller signal, a handler that never settles is refused 'timeout' at the door's ceiling",
+  "examples/demo-kit/test/door-outcome.test.ts::the caller's abort mid-run rejects 'cancelled', not resolved 'aborted' text",
+  "examples/demo-kit/test/door-outcome.test.ts::a handler that returns a domain answer {ok:false} resolves it as text: a domain answer stays an answer",
+  "examples/demo-kit/test/door.test.ts::runTool called directly keeps its string API: a refusal and a throw still resolve '{\"ok\":false,...}' text",
+  "packages/athena-bridge/test/inject.test.js::a tool that rejects with a page-mintable reason and errors is replied with both; any other reason is dropped",
+  "packages/athena-bridge/test/inject.test.js::a page cannot mint a gate's reason: a rejection carrying user_denied is replied with no reason",
+  "packages/athena-bridge/test/inject.test.js::a timed-out call whose tool later rejects 'cancelled' (the door answering its abort) is late ok:false with that reason",
+  "packages/athena-bridge/test/inject.test.js::a tool that resolves a domain answer {ok:false} is replied ok:true with that output: a domain answer stays an answer"
+ ],
+ "guard_cases":[4,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{
+  "pnpm --filter @athena/demo-kit typecheck":0,
+  "pnpm --filter @athena/demo-kit test":0,
+  "pnpm --filter @athena/bridge typecheck":0,
+  "pnpm --filter @athena/bridge lint":0,
+  "pnpm --filter @athena/bridge test":0,
+  "pnpm --filter ledgerbox test":0,
+  "pnpm --filter tidycrm test":0,
+  "pnpm --filter atlas test":0,
+  "pnpm --filter hirelane test":0,
+  "pnpm typecheck":0,
+  "pnpm lint":0,
+  "uv run pytest -m \"not provider and not eval\" tests/test_refusal_parity.py":0
+ },
+ "files_changed":10,"lines_changed":550,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Red-before: cases 0,1,2 (door) and 3,5 (inject.js) red; guards 4 and 6 green before; guard 7's bridge half green before, its door half red only because toolDescriptorFor did not exist yet. Case 5 is pinned on both sides: the door rejects 'cancelled' on abort (door-outcome), and inject.js now also forwards a page-mintable reason/errors on the late event (reason:'cancelled'), which is what made the bridge-side test red-before (a bare rejection was already late ok:false). toolDescriptorFor takes (spec, handlerRef, inputSchema?, {ceilingMs}?) so the ceiling is injectable. Door ceiling DOOR_CEILING_MS = 60 s, applied with or without a caller signal (longer than the bridge's 30 s). validateArgs keeps returning the first message (atlas/zoom tests); argumentErrors returns all. A multi-mismatch refusal's message joins all sentences with '; ' (runTool text identical for single mismatches). ADR number is 0146 (0145 was taken by proving-adopt-tiers). One commit instead of three. ui-webmcp.test.ts needed no change.",
+ "notes":"Desktop (imports @athena/bridge gate.js; Rust include_str!s inject.js) was not test-run: not in the prompt's consumer list, gate.js unchanged, root typecheck/lint green. Follow-ups outside write set: apps/desktop/src/lib/bridge.ts CallReply doc comment (says the page mints only timeout) and its type lacks errors?; the desktop late handler will now see late ok:false reason 'cancelled' where it saw ok:true 'aborted' text - for a write it must stay outcome_unknown (ADR 0146 consequences); the Rust relay may not forward the additive errors array (unchecked). Registry deviations mcp-tools door.ts:136 and structured-output door.ts:29 should be re-judged by /conform. No sibling reds seen."}

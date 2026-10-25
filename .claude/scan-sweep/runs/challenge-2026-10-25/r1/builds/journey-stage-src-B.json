@@ -1,0 +1,17 @@
+{"card":"journey-stage-src/B","status":"landed","shas":["48df0b5f"],
+ "tests_added":[
+  "examples/journey/tests/checkpoint.spec.ts::case 1: a ledger of 5 rows snapshots and restores deep-equal, and the next write gets seq 6",
+  "examples/journey/tests/checkpoint.spec.ts::case 2: a checkpoint row with a reason outside REFUSAL_REASONS is refused on restore",
+  "examples/journey/tests/checkpoint.spec.ts::case 3: brain, approvals, mail and notes round-trip, and the restored mail still refuses an unlisted recipient",
+  "examples/journey/tests/checkpoint.spec.ts::case 4: planRun boots only the apps the remaining acts touch and reads the act before them",
+  "examples/journey/tests/checkpoint.spec.ts::case 5: resuming with no checkpoint on disk names the file and the command that writes it",
+  "examples/journey/tests/checkpoint.spec.ts::case 6: a checkpoint written against another seed is refused, naming both fingerprints",
+  "examples/journey/tests/checkpoint.spec.ts::case 7 (guard): a fact citing nothing is refused on a fresh brain and on a restored one",
+  "examples/journey/tests/checkpoint.spec.ts::case 8 (guard): a fresh ledger still refuses a reason outside REFUSAL_REASONS"],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter @athena/journey typecheck":0,"pnpm --filter @athena/journey lint":0,"pnpm --filter @athena/journey exec playwright test tests/checkpoint.spec.ts tests/gate-pipeline.spec.ts":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":11,"lines_changed":609,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Guard case 7 (index 6) was red before: its fresh-brain half passed, but its restored-brain half needs restore(), which did not exist; case 8 (index 7) was green before. Full-run app boot order is now ledgerbox, kestrel-portal, hirelane, tidycrm (act order) instead of ledgerbox, hirelane, tidycrm, kestrel-portal. Added beyond the card: restoreState refuses a fact citing a row the restored ledger lacks; Approvals.restore checks status, describe prefix and spend-only-if-granted; each holder restores only while empty. Fingerprint covers COMPANIES plus format only (stated as a consequence in ADR 0157). Root pnpm test not run: the only workspace test touching this package is the journey e2e, which the brief forbids; no package imports @athena/journey.",
+ "notes":"Acceptance gate run 4 of the card (full journey then JOURNEY_FROM=3 with apps booted) can only run under the e2e harness and was NOT run; the coordinator or owner should run it once. Verified offline that JOURNEY_FROM=3 with no checkpoint refuses at file load (playwright --list) and the bare journey still lists. ADR 0157 claimed under the lock. Sibling uncommitted work seen in the tree (apps/desktop chores, src/athena/adopt, tests/daemon) was left alone; no red gates."}

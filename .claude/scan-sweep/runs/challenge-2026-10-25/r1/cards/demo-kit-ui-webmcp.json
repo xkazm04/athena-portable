@@ -1,0 +1,142 @@
+{
+  "host": "demo-kit-ui-webmcp",
+  "cards": [
+    {
+      "context": "demo-kit-ui-webmcp",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One coded failure channel from the kit door to the bridge reply",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "examples/demo-kit/src/webmcp/door.ts",
+        "examples/demo-kit/src/webmcp/hooks.ts",
+        "examples/demo-kit/src/webmcp/index.ts",
+        "packages/athena-bridge/inject.js",
+        "packages/athena-bridge/protocol.md",
+        "examples/demo-kit/test/door.test.ts",
+        "examples/demo-kit/test/ui-webmcp.test.ts",
+        "packages/athena-bridge/test/inject.test.js"
+      ],
+      "new_files": [
+        "examples/demo-kit/test/door-outcome.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-page-tool-failure-is-a-failed-reply-and-a-domain-answer-is-an-answer.md (amends 0008 and 0101 decision 7)",
+        "apps/desktop/src/lib/bridge.ts:56 doc comment (desktop context; says the page mints only timeout - stale, one-line follow-up, not in this write set)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "door: the descriptor useWebMCPTool registers (extracted as a pure toolDescriptorFor(spec, handlerRef)) is executed with {stage:'gone', extra:1} against an enum+closed schema -> its execute REJECTS with a ToolRefusal {reason:'validator_failed', errors:[{path:'stage', code:'enum', message}, {path:'extra', code:'unknown', message}]} listing EVERY mismatch, path-addressed, and the handler never runs",
+        "door: execute of a handler that throws Error('boom') -> rejects with an Error whose message is 'tool failed: boom' and that carries NO reason (a tool's own fault, not a refusal); it no longer resolves the text '{\"ok\":false,\"error\":\"tool failed: boom\"}'",
+        "door: execute with no caller signal and a handler that never settles, under an injected 50 ms door ceiling -> rejects with reason 'timeout' at the ceiling instead of waiting forever (server-composition: timeouts are door policy)",
+        "inject.js: a registered tool whose execute rejects with {message, reason:'validator_failed', errors:[...]} -> the call reply is {ok:false, reason:'validator_failed', error:<message>, errors:[...]}; a reason outside the page-mintable set {validator_failed, timeout, cancelled} is dropped",
+        "inject.js: execute rejects with an Error carrying reason 'user_denied' -> the reply is {ok:false, error} with NO reason: a page cannot mint a gate's reason",
+        "inject.js: a call the bridge times out (timeout_ms 20) whose tool later rejects with reason 'cancelled' (the door answering its abort) -> the late event is posted with ok:false, not ok:true carrying the text 'aborted: the caller stopped waiting'",
+        "door: runTool(schema, args, handler) called directly (the string API ledgerbox's tool-handlers test uses) -> unchanged: a refused argument and a handler throw still RESOLVE the text '{\"ok\":false,\"error\":...}' (ledgerbox/test/tool-handlers.test.ts:333 stays green)",
+        "door+bridge: a handler that RETURNS a domain answer {ok:false, error:'No area with id x', available:[...]} (useZoomTools open_group miss) -> execute resolves it as text and inject.js replies ok:true with that output: a domain answer stays an answer"
+      ],
+      "guard_cases": ["4", "6", "7"],
+      "premise": [
+        "examples/demo-kit/src/webmcp/door.ts:132 - a refused argument is returned as tool OUTPUT text via toolError, not as a failure",
+        "examples/demo-kit/src/webmcp/door.ts:147 - a handler throw is likewise turned into resolved output text",
+        "examples/demo-kit/src/webmcp/door.ts:137 - the door's only stop is the caller's signal; with no signal the abort promise never resolves (registry-map mcp-tools deviation at door.ts:136)",
+        "examples/demo-kit/src/webmcp/door.ts:70 - validateArgs returns the FIRST mismatch as one prose sentence (registry-map structured-output deviation at door.ts:29)",
+        "examples/demo-kit/src/webmcp/hooks.ts:113 - every registered execute is runTool, so every kit tool's failure travels as success text",
+        "packages/athena-bridge/inject.js:133 - any resolved output becomes {ok:true, output}: a door refusal or handler fault reaches the surface as ok:true",
+        "packages/athena-bridge/inject.js:139 - a REJECTED execute is already {ok:false, error}; the coded path exists, the kit never takes it",
+        "packages/athena-bridge/inject.js:155 - after a bridge timeout the door's 'aborted' text settles as a late ok:true",
+        "examples/demo-kit/src/webmcp/zoomTools.ts:132 - a domain miss returns {ok:false, error} through the same text channel, so protocol and domain errors are indistinguishable",
+        "examples/journey/src/surface.ts:227 - the consumer then ledgers outcome ok for a failed call (open backlog finding 'an in-band tool failure is ledgered as outcome ok', stabilize-2026-10-16, gate contract, lane C)"
+      ],
+      "rollback": "Three commits (door outcome + descriptor extraction, inject.js reason/errors passthrough + protocol.md, ADR/CHANGELOG); git revert in reverse order restores today's text channel. runTool's string API is never changed, so no consumer outside the write set needs reverting.",
+      "gate": "contract",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root: covers examples/demo-kit and packages/athena-bridge)",
+        "uv run pytest -m \"not provider and not eval\" tests/test_refusal_parity.py (the page-mintable reasons must stay members of ERROR_REASONS)"
+      ],
+      "runner_up": "useWebMCPTool hands each handler a door-minted caller identity (actor athena + call id) that logActivity stamps, adopting the tidycrm-domain-lib backlog L 'Every tidycrm write is logged as the user's' - needs every app's write sites, so it is cross-context.",
+      "body": "## Summary\nThe kit's execute door turns every refusal and every handler fault into resolved output text, so the bridge reports them as `ok:true` and every consumer (registry, journey ledger, desktop row) records a failed call as a success. Move the kit onto the coded path the bridge already has: a refusal or fault REJECTS with a typed error, a domain answer RESOLVES.\n\n## Description\n`runTool` (door.ts) was built 'never throws' so an agent always reads a sentence. But inject.js reads only resolution vs rejection: resolved text is `{ok:true, output}` (inject.js:133), a rejection is `{ok:false, error, reason?}` (:139). So the kit's `toolError` text, a domain miss like `open_group`'s `{ok:false}` (zoomTools.ts:132) and a real answer are one channel, and the reason vocabulary (validator_failed, timeout) never reaches the surface from a kit tool. Two recorded deviations sit on the same seam: the door has no clock of its own (mcp-tools/server-composition: timeouts are door policy) and it reports only the first mismatch as prose (structured-output). The move: door.ts gains `runToolOutcome` returning `{kind:'ok',text} | {kind:'refused',reason,errors[]} | {kind:'failed',message}` with all path-addressed errors and an own ceiling; `runTool` stays as the text rendering of that outcome (direct callers unchanged); the descriptor useWebMCPTool registers (extracted pure as `toolDescriptorFor`) rejects with a `ToolRefusal` for refused/failed. inject.js forwards `reason` only when it is page-mintable (validator_failed, timeout, cancelled) and an additive `errors` array; protocol.md documents both. A page still cannot claim a gate's reason, and nothing loosens.\n\n## Flow\n- agent calls a kit tool with a bad argument -> door refuses -> execute rejects ToolRefusal{validator_failed, errors[]} -> inject.js replies {ok:false, reason:'validator_failed', errors} -> the surface feeds a refusal back (ADR 0041) instead of an ok row\n- handler throws -> execute rejects -> {ok:false, error:'tool failed: ...'} -> ledger row is a failure\n- handler hangs with no caller signal -> door ceiling -> reason timeout\n- handler returns {ok:false, ...} as its domain answer -> unchanged ok:true output\n\n## Expected impact\nCloses the class 'a page tool failure is recorded as success' at its source for all four apps' kit tools (every useWebMCPTool registration), carries the refusal vocabulary from the page for the first time, and retires two recorded registry deviations (mcp-tools door.ts:136, structured-output door.ts:29). Could break: a consumer that parsed ok:true output text for '\"ok\":false' - none found in apps/ or src/ by grep; ledgerbox's direct runTool test is pinned as a guard. Coordination: the journey-stage-src scout (same sub-run) may propose a journey-side read of in-band failures; this card fixes it upstream and the journey side then needs nothing.\n\n## Evaluation\nClaim: quality - a kit tool's refusal or fault reaches the surface as ok:false with a closed-set reason and path-addressed errors; a domain answer stays ok:true\nBefore: 3 of 8 acceptance cases pass (the three guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases, in node --test (demo-kit) and node --test with jsdom (athena-bridge), offline\nResult: better\nGate: contract",
+      "evidence": "door.ts:132 `if (bad) return toolError(bad);` | door.ts:137 `stop = () => resolve(toolError(\"aborted: the caller stopped waiting\"));` | door.ts:147 `return toolError(`tool failed: ...`);` | door.ts:151 `return await Promise.race([ran, aborted]);` (aborted never settles without a signal) | hooks.ts:113 `runTool(inputSchema, params, ..., options?.signal)` | inject.js:133 `return { ok: true, output: render(output) };` | inject.js:139 `return { ok: false, error: messageOf(error) };` | inject.js:155 late `ok: true, output: render(output)` | registry-map deviations: mcp-tools 'examples/demo-kit/src/webmcp/door.ts:136 ... has no clock of its own', structured-output 'door.ts:29 ... returns the first mismatch as one prose sentence' | stabilize finding (journey-stage-src, disposition backlog, gate contract): 'door.ts:123 toolError -> inject.js:133 ok:true -> surface.ts:227 outcome ok' | git grep for consumers of the door text outside demo-kit: only ledgerbox/test/tool-handlers.test.ts (direct runTool, kept) and BooksTools.tsx:96 (mimics the shape for its own refusals, unaffected)"
+    },
+    {
+      "context": "demo-kit-ui-webmcp",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Undo says what it put back: refused, partly undone, or 'undo both'",
+      "size": "L",
+      "effort": 7,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/demo-kit/src/activity/index.ts",
+        "examples/demo-kit/src/activity/types.ts",
+        "examples/demo-kit/src/activity/ActivityLog.tsx",
+        "examples/demo-kit/README.md",
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/components/board/history.ts",
+        "examples/hirelane/components/board/useRun.ts",
+        "examples/hirelane/test/actions.test.ts",
+        "examples/hirelane/test/history.test.ts"
+      ],
+      "new_files": [
+        "examples/demo-kit/test/activity-undo.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-an-undo-answers-what-it-put-back.md (amends 0111 decisions 2-3: the toast and the History band report a refused or partial undo truthfully and offer the chain)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "kit undoActivity: applyUndo returns {refused:'a later move (to Interview) was made after it', blockedBy:7} -> result {ok:false, reason, blockedBy:7}; the entry's undone stays 0; no activity row is added; any domain write applyUndo made before refusing is rolled back",
+        "kit undoActivity: applyUndo returns {partial:'released 2 of 3 slots: 1 had already been booked'} -> result {ok:true, partial:<note>}; undone=1; exactly ONE compensating row, summary 'Partly undid #n: released 2 of 3 slots...' (no clean 'Undid #n' line beside it)",
+        "kit undoActivity: applyUndo returns undefined (today's void contract) -> identical to today: {ok:true}, undone=1, one 'Undid #n: <summary>' row",
+        "kit undoActivity(db, id, applyUndo, {through:true}) where id is blocked by reversible, not-undone row 7 -> undoes 7 then id, newest first, in ONE transaction, both undone; if the second refuses, neither is undone and the result names the refusal",
+        "hirelane: move an applicant applied->screening (#a), then screening->interview (#b); undoAction(#a) -> {ok:false, reason naming the later move, blockedBy:#b}; stage is still interview; no 'Undid #a' row; undoToastFor -> 'Not undone: ...' carrying action {label:'Undo both', id:#a, through:true}",
+        "hirelane: undoAction(#a, {through:true}) after case 4 -> stage back to applied, #a and #b both undone, two compensating rows",
+        "hirelane: a decision (offer) recorded after move #a -> undoAction(#a) is {ok:false} refused with NO blockedBy (a decision is irreversible) and undoToastFor offers no action; the applicant stays offered",
+        "hirelane: undo of propose_slots after one slot was booked by a gated send (actions.test.ts:166 scenario) -> {ok:true, partial}; undoToastFor text starts 'Partly undone:'; the booked slot stays booked"
+      ],
+      "guard_cases": ["2"],
+      "premise": [
+        "examples/demo-kit/src/activity/index.ts:117 - applyUndo is typed (db, entry) => void: it cannot say 'nothing to undo' or 'only part'",
+        "examples/demo-kit/src/activity/index.ts:126 - undoActivity marks the entry undone and logs 'Undid #n' (:131) whatever applyUndo did",
+        "examples/hirelane/app/actions.ts:400 - a move undone after a decision changes nothing, logs 'left the stage alone', and still returns ok:true through the kit",
+        "examples/hirelane/app/actions.ts:419 - same for a move undone after a later move: nothing reversed, entry marked undone",
+        "examples/hirelane/app/actions.ts:442 - the slots partial undo hand-logs its own row because the kit's line 'reports a clean one either way' (test comment, hirelane/test/actions.test.ts:190)",
+        "examples/hirelane/components/board/history.ts:82 - undoToastFor shows 'Undone: <summary>' for any ok, so the person is told an act was undone that was not",
+        "examples/hirelane/components/board/history.ts:48 - the History band then labels the row 'undone' and removes its Undo",
+        "examples/ledgerbox/app/actions.ts:667 - the same class in a second app: a sent reminder's undo is a silent no-op reported as undone (open backlog 'Undo of a sent reminder's draft says it undid it', ledgerbox-domain-lib); ledgerbox invented UndoRefused (:612) as its private refusal channel"
+      ],
+      "rollback": "Two commits (kit verdict contract + ActivityLog + kit test; hirelane migration + toast/band wiring + its tests); reverting the hirelane commit alone leaves the kit backward compatible because a void applyUndo keeps today's behaviour (guard case 2).",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace TS from the root: examples/demo-kit and examples/hirelane node --test suites)"
+      ],
+      "runner_up": "The kit Toast holds an agent burst: N acts toasted within a run coalesce into one 'Athena made N changes' toast with Undo all and a hover/focus-paused clock (needs app call sites to tag agent toasts).",
+      "body": "## Summary\nThe kit's undo contract cannot express 'refused' or 'partly', so hirelane tells a person 'Undone' and marks the row undone when nothing changed, and the one action that would work - undo the later move first - is never offered though the app knows which row blocks. Give applyUndo a return value and give the person the chain.\n\n## Description\n`undoActivity(db, id, applyUndo)` treats a returning applyUndo as success: it sets `undone = 1` and logs 'Undid #n'. Apps that need to decline have improvised: hirelane logs 'left the stage alone' and returns, so the kit reports a clean undo over it (the History band shows 'undone', the toast 'Undone: ...'); hirelane hand-logs a second row for a partial slot release; ledgerbox throws a private UndoRefused, and its sent-reminder case is a silent no-op reported as undone. The move (undo-history/execution-emitted-inverse: a reversal returns a value so a composition can short-circuit): applyUndo may return `{refused, blockedBy?}` or `{partial}` (void keeps today's meaning). The kit rolls back a refusal and leaves the row undoable, records a partial as one 'Partly undid' row, and adds `{through:true}`: undo the blocking reversible rows newest-first and then this one in one transaction, all or nothing. ActivityLog renders 'Partly undone' and an 'Undo #7 and this' button from the answer. Hirelane's three branches return verdicts (a later move -> refused with blockedBy; a decision -> refused; booked slots -> partial), its toast offers 'Undo both' through the existing Toast action slot (ADR 0111), and the band stops calling an unchanged act undone.\n\n## Flow\n- the agent moves a candidate twice; the person presses Undo on the first move in the History band\n- before: toast 'Undone: moved X to screening', row says undone, stage still interview\n- after: toast 'Not undone: a later move (to Interview) was made after it' with 'Undo both'; one press puts the candidate back where they started and both rows read undone\n- after a decision: 'Not undone: an offer was recorded after it', no button\n\n## Expected impact\nThe person stops being told an act was reversed when it was not, and a blocked undo becomes one press instead of finding and undoing the later row by hand. The kit contract closes the class for every app on undoActivity; ledgerbox's reminder case becomes a one-line verdict return as a follow-up (its existing backlog item). Could break: an app whose applyUndo returns a value by accident - none do (both return void today).\n\n## Evaluation\nClaim: quality - a refused or partial undo is reported as such, and a blocked undo offers the chain that works\nBefore: 1 of 8 acceptance cases pass (the void guard)\nAfter: 8 of 8\nMethod: gate - the acceptance cases, node --test over node:sqlite scratch databases (demo-kit, hirelane), offline\nResult: better\nGate: none",
+      "evidence": "activity/index.ts:117 `applyUndo: (db: Db, entry: ActivityEntry) => void,` | :126 `tx.run(\"UPDATE activity SET undone = 1 WHERE id = ?\", [id]);` | :131 ``summary: `Undid #${entry.id}: ${entry.summary}`,`` | hirelane/app/actions.ts:400 and :419 'left the stage alone' branches end in `return;` (undoActivity then commits undone=1) | :442 hand-logged 'released N of M slots' | hirelane/test/actions.test.ts:190 'the partial undo says so in the log, since the kit's own line reports a clean one either way' | history.ts:82 `return { text: result.summary ? `Undone: ${result.summary}` : \"Undone.\", tone: \"success\" };` | ledgerbox/app/actions.ts:667 `DELETE FROM reminders WHERE id = ? AND sent_at IS NULL` (no changes check) | stabilize findings list: ledgerbox-domain-lib 'Undo of a sent reminder's draft says it undid it; the letter stays sent' (backlog) | ADR 0111 consequences: 'Undoing an older move after a later one ... The band makes this reachable. It does not change it.'"
+    }
+  ],
+  "rehomed": [
+    "Door owns a clock (registry mcp-tools deviation door.ts:136) on its own - S; folded into card A as acceptance case 2",
+    "WAL journal mode asserted and synchronous set explicitly in db/index.ts:139 (embedded-db deviation) - S",
+    "One schema checker for door.ts validateArgs and inject.js checkInput - inject.js is an import-free page script; the parity fixture is already the open finding 'Pin the page's input check to check_schema'",
+    "ActivityLog bounded footer, per-row busy state, Undo toast clock - existing S backlog findings, not re-proposed",
+    "HostManifest types in webmcp/types.ts mirror manifest.py by hand - existing finding, S"
+  ],
+  "riders": [
+    {
+      "name": "page-bridge",
+      "checked": "Read inject.js, gate.js, bridge.d.ts, eslint.config.js, protocol.md, test/inject.test.js (gate.test.js headings): the registry deviation at inject.js:129 (no input check, uncoded unknown tool) is already fixed (checkInput, unknown_ref); the live gap is that resolved door text is ok:true (:133) and the late path (:155), which card A carries into inject.js and protocol.md, so no separate rider card"
+    }
+  ],
+  "registry": {
+    "subjects": ["mcp-tools", "structured-output", "undo-history"],
+    "techniques": ["tool-schema-design", "server-composition", "execution-emitted-inverse"]
+  },
+  "files_read": 34
+}

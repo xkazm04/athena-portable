@@ -1,0 +1,117 @@
+{
+  "host": "desktop-scenes-mind-surface",
+  "cards": [
+    {
+      "context": "desktop-scenes-mind-surface",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One display authority for setup standings across Mind, engine and surface",
+      "size": "M",
+      "effort": 5,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/scenes/mind/view.tsx",
+        "apps/desktop/src/scenes/mind/view.test.tsx",
+        "apps/desktop/src/scenes/shared/EngineSection.tsx",
+        "apps/desktop/src/scenes/shared/EngineSection.test.tsx",
+        "apps/desktop/src/scenes/surface/model.ts",
+        "apps/desktop/src/scenes/surface/model.test.ts"
+      ],
+      "new_files": [
+        "apps/desktop/src/scenes/shared/standing.ts",
+        "apps/desktop/src/scenes/shared/standing.test.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "Mind field, setup fixture `degraded` (probes null, problem 'daemon_offline', checking false): the Engine instrument's badge reads 'not checked' on a status-dot--warning, never 'checking' on status-dot--pending",
+        "Mind field, fixture `checking` (probes null, checking true): the Engine badge reads 'checking' on status-dot--pending",
+        "Mind field, typical with startFailure and probes null: the Engine badge reads 'needs you' on status-dot--warning",
+        "EngineSection, fixture `degraded`: the engines__fact row's dot is status-dot--warning beside 'Athena could not check the engine (daemon_offline)', matching the cards' 'not checked' warning, not status-dot--pending",
+        "standing.ts unit: displayOf(standing, {checkFailed}) for all 4 standings x checkFailed true/false returns {word, tone, attention}; unknown+checkFailed -> {word:'not checked', tone:'warning', attention:true}; unknown alone -> {word:'checking', tone:'pending', attention:false}; missing -> attention true; done/todo -> attention false",
+        "parity table: for every setup fixture (empty, typical, heavy, degraded, notFound, checking) plus a startFailure variant, the surface's Mind light `attention` equals (the Mind field Engine badge tone === 'warning') and the EngineSection fact tone equals the Mind badge tone",
+        "every existing surface light stat is unchanged for every surface fixture ('Claude Code is ready', 'Claude Code is not ready', 'checking the engine', 'the engine check failed' ...)",
+        "source guard: no file under apps/desktop/src/scenes/mind or scenes/surface or scenes/shared other than standing.ts declares a Record<Standing, Tone> or Record<Standing, string> (readFileSync + regex)"
+      ],
+      "guard_cases": ["1", "2", "6"],
+      "premise": [
+        "apps/desktop/src/scenes/mind/view.tsx:62 - the Mind field's own STANDING_WORD maps unknown -> 'checking', with no notion of a check that failed",
+        "apps/desktop/src/scenes/mind/view.tsx:70 - and its own STANDING_TONE maps unknown -> 'pending'; a second copy of modules/setup/readiness.ts:36",
+        "apps/desktop/src/scenes/shared/EngineSection.tsx:37 - unprobed() already says a failed check is 'not checked' on a warning, a settled fact, not a wait",
+        "apps/desktop/src/scenes/shared/EngineSection.tsx:122 - yet the same section's fact row paints that failure with STANDING_TONE[unknown] = pending",
+        "apps/desktop/src/scenes/surface/model.ts:99 - engineStat re-encodes the four standings in a third vocabulary",
+        "apps/desktop/src/scenes/surface/model.ts:163 - the surface's attention rule (missing, or unknown and checkFailed) exists only here",
+        "apps/desktop/src/scenes/shared/EngineSection.test.tsx - 'a check that failed is not a check in flight' pins the rule in one of the three renderings only"
+      ],
+      "rollback": "Three commits (new standing.ts + tests; Mind and EngineSection read it; surface reads it). Each reverts alone: standing.ts is additive and the consumers fall back to their local tables.",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"],
+      "runner_up": "surface/live.tsx fabricates a whole SetupModel (theme 'system', brainPath '', tabs []) just to call engineFact; give readiness a narrow engine-inputs entry so the surface stops depending on placeholder fields (needs modules/setup, another context).",
+      "body": "## Summary\nThe same fact - Athena could not check the engine - is drawn three ways on two screens: the engine cards say 'not checked' on a warning, the engine section's own summary row and the Mind field's Engine badge say it on a pending dot (the Mind badge's word is 'checking'), and the surface's Mind light calls it 'the engine check failed' and flags it as needing the person. Each rendering keeps its own Standing->word/tone table. Put one display authority in scenes/shared/standing.ts and make all three read it.\n\n## Description\nreadiness.ts owns the facts (Standing), which is right; what has no owner is the crossing from Standing to word, hue and attention, and the one distinction a Standing cannot carry: unknown-because-in-flight vs unknown-because-the-check-failed. EngineSection solved it locally in unprobed(); the Mind field never got it (view.tsx:62/70), the section's own fact row missed it (EngineSection.tsx:122), and the surface invented a third encoding (model.ts:99,163). standing.ts exports displayOf(standing, {checkFailed}) -> {word, tone, attention} and checkFailedOf(model) (probes null, not checking, problem set or startFailure handled by engineFact). The Mind field's lineOf, the EngineSection fact dot and the surface's mind light derive from it; the surface keeps its short stat phrasing but its attention comes from the same function. This is the status-vocabulary subject's one-authority-per-vocabulary law (technique vocabulary-chain-integrity, status-color-mapping) applied to the display layer that the readiness module deliberately leaves to its callers.\n\n## Flow\n- daemon offline -> probes null, problem set, checking false\n- before: Mind field badge 'checking' (pending); engine section cards 'not checked' (warning) while its fact row is pending; surface light 'the engine check failed' (attention)\n- after: every rendering says the check did not go through on a warning, and the surface's attention flag and the Mind badge are the same function\n\n## Expected impact\nA person who sees 'needs you' on the surface and dives finds the same verdict on the Mind field instead of a 'checking' that will never end. The next standing rendering (Waking reuses EngineSection) inherits the rule rather than re-deriving it. Could break: copy on the Mind badge in the failed-check case only; surface stats are pinned unchanged.\n\n## Evaluation\nClaim: one Standing display table; the three renderings agree on every setup fixture\nBefore: 0 of 8 acceptance cases' new behaviour passes (cases 1, 4, 5, 6, 8 fail today; 2, 3, 7 are guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest, renderToStaticMarkup, offline)\nResult: better\nGate: none",
+      "evidence": "scenes/mind/view.tsx:58-71 STANDING_WORD {done:'set',todo:'not yet',missing:'needs you',unknown:'checking'} and STANDING_TONE {..., unknown:'pending'}; modules/setup/readiness.ts:32-37 STANDING_TONE {..., unknown:'pending'} (second copy); scenes/shared/EngineSection.tsx:37-48 unprobed() returns {word:'not checked', tone:'warning'} when !checking && probes===null && problem; EngineSection.tsx:122 <StatusDot tone={STANDING_TONE[fact.standing]} /> (pending for the same case); surface/model.ts:163 attention: standing==='missing' || (standing==='unknown' && checkFailed). modules/setup/fixtures.ts:124 degraded = probes null, problem 'daemon_offline'. grep 'Record<Standing' in scenes/: mind/view.tsx x2, plus readiness.ts."
+    },
+    {
+      "context": "desktop-scenes-mind-surface",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The surface names what needs you and takes you to it in one press",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "apps/desktop/src/scenes/surface/model.ts",
+        "apps/desktop/src/scenes/surface/model.test.ts",
+        "apps/desktop/src/scenes/surface/live.tsx",
+        "apps/desktop/src/scenes/surface/live.test.tsx",
+        "apps/desktop/src/scenes/surface/view.tsx",
+        "apps/desktop/src/scenes/surface/view.test.tsx",
+        "apps/desktop/src/scenes/surface/interact.test.tsx",
+        "apps/desktop/src/scenes/surface/fixtures.ts",
+        "apps/desktop/src/scenes/surface/surface.css",
+        "apps/desktop/src/scenes/surface/surface.css.test.ts"
+      ],
+      "new_files": [],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "selectSurface(typical) where Gmail needs reauth: model.needs equals [{key:'account:gmail', label:'Gmail', word:'needs reconnecting', line:'Gmail let the grant go; connect again to continue.', to:{root:'accounts', item:'gmail'}}]",
+        "selectSurface(degraded) (engine standing missing): needs[0] is {key:'engine', label:'Claude Code', to:{root:'mind', item:'engine'}} with the engine stat as its word, and engine needs sort before account needs",
+        "selectSurface with pendingRestart {label:'Codex', running:'Claude Code'}: a need 'Codex is chosen. Athena is still running on Claude Code.' diving to {root:'mind', item:'engine'}; with pendingRestart null there is none",
+        "a light under attention carries `to` = its first need's path (Accounts light -> {root:'accounts', item:'gmail'}); a light with no attention carries {root} (guard: Apps, Chores, Voice dive to their root exactly as today)",
+        "interact: pressing the 'Gmail' need button calls actions.dive({root:'accounts', item:'gmail'}) once; pressing the Accounts light calls dive with the same path",
+        "view: with no needs (a fixture with every account connected and the engine done) no .surface__needs list renders; with 4+ needs, 3 render and a '+N more' button dives to the first remaining need's root",
+        "cards waiting stay the 'Open her window to answer (N)' summon button and are never a need (guard: asking fixture renders the summon, needs empty)",
+        "live: a connector store row with status needs_reauth yields a need whose line is the connectors module's standingOf sentence verbatim, and whose to.item is the connector id"
+      ],
+      "guard_cases": ["6"],
+      "premise": [
+        "apps/desktop/src/scenes/surface/model.ts:29 - dive takes a Root only, so every light can only drop the person at a depth's field",
+        "apps/desktop/src/scenes/surface/model.ts:151 - the Accounts light knows some account needs attention but keeps only a boolean; stat reads '1 of 3 connected', not which one or why",
+        "apps/desktop/src/scenes/surface/live.tsx:123 - live already computes each connector's standing via standingOf, then throws away its word and sentence",
+        "apps/desktop/src/scenes/surface/live.tsx:109 - live already builds the setup model, so restartNotice/pendingEngine are one call away and the surface says nothing of a pending restart",
+        "apps/desktop/src/scenes/surface/view.tsx:151 - the light's press is dive(l.root)",
+        "apps/desktop/src/scenes/accounts/view.tsx:52 - the Accounts depth opens a connector's level from path.item = connector id, and depth/model.ts:61 GRAMMAR accounts items are 'open', so the deep path is valid",
+        "apps/desktop/src/depth/model.ts:64 - mind items include 'engine', so {root:'mind', item:'engine'} is a valid landing"
+      ],
+      "rollback": "Two commits (model + live: needs and Light.to with dive(Path); view + css: the needs list). Reverting the view commit leaves needs computed and unused; reverting both restores dive(Root). No other file calls SurfaceActions or selectSurface (grep).",
+      "gate": "none",
+      "gates_to_run": ["cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test", "cd apps/desktop && pnpm perf:all"],
+      "runner_up": "The Brain level's path field is typed blind: say before 'Use this' whether the folder exists, is writable and already holds episodes (needs a new Setup action and a Rust probe, outside this context).",
+      "body": "## Summary\nThe surface reports that something needs the person (a dot and 'needs you' in a light's name) but cannot say what, and its press drops them at the depth's field to hunt for it. Give the surface a 'needs you' list built from facts live.tsx already holds - an account to reconnect, an engine that cannot run, a restart that is pending - each a button that lands on the exact item, and let a light under attention dive to its first need.\n\n## Description\nSurfaceModel gains needs: Need[] ({key, label, word, line, to: Path}) and Light gains to: Path. SurfaceActions.dive widens from Root to Path (live: useDepth.go(to)). Sources: accounts carry the connector standing's word and sentence (already computed by standingOf at live.tsx:123), and a pendingRestart read from the setup model live.tsx already builds. Order: engine, restart, accounts; at most three shown, '+N more' dives to the rest's depth. The summon button for waiting cards stays where it is: those are answered in her window (decision D1, ADR 0087), and the list never answers anything itself - every entry is a dive, so the mirror stays a mirror.\n\n## Flow\n- before: surface shows Accounts '1 of 3 connected, needs you' -> press -> Accounts field -> scan rows for the warning -> press Gmail -> its level (2 presses + a search; which account and why are unknown until the second screen)\n- after: surface shows 'Gmail - needs reconnecting: Gmail let the grant go; connect again to continue.' -> press -> Gmail's level (1 press, the reason read before choosing)\n- same for an engine not signed in (lands on Mind > Engine with its remedy) and a pending restart, which the surface does not mention at all today\n\n## Expected impact\nThe first screen becomes a to-do the person can act on rather than a dashboard of hints; the decision of where to go is made with the reason in view. Could break: the light's aria-label and press target for lights under attention (pinned by cases 4-5); first paint adds one small list (perf:all run).\n\n## Evaluation\nClaim: every attention fact the surface holds is named and one press from its item\nBefore: 0 of 8 acceptance cases' new behaviour passes (1, 2, 3, 4, 5, 6, 8 fail; 7 is a guard)\nAfter: 8 of 8\nMethod: gate - the acceptance cases (vitest; jsdom for interact and live, store state set in-process, offline)\nResult: better\nGate: none",
+      "evidence": "surface/model.ts:29 `dive: (root: Root) => void;` model.ts:151 `attention: s.accounts.some((a) => a.attention)`; accounts stat `${connected.length} of ${s.accounts.length} connected`; live.tsx:121-125 `const s = standingOf(c, undefined, notice).standing; return { id, label, connected: s === 'connected', attention: s === 'needs-reauth' || s === 'broken' || s === 'unconfirmed' }` (word/sentence dropped); view.tsx:151 `onClick={() => model.actions.dive(l.root)}`; accounts/view.tsx:52 `model.rows.find((r) => r.id === item)`; depth/model.ts:61 accounts items 'open', :64 mind items include 'engine'. grep for selectSurface|SurfaceActions|useSurfaceModel outside scenes/surface: 0 hits."
+    }
+  ],
+  "rehomed": [
+    "Mind's live.tsx NAMES and view.tsx NAME are two hand-kept copies pinned only by a test (S; and the INSTRUMENTS-vs-GRAMMAR pin is the open stabilize finding under desktop-stage-depth, not re-proposed)",
+    "Mic denied/unsupported reads 'needs you' (warning) on the Mind field though readiness says the microphone is never required (S copy/tone call)",
+    "Surface Mind light could offer 'Check again' in place when the engine check failed (S, and partly covered by the slot B dive to Mind > Engine)"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["status-vocabulary", "client-state", "demo-data-plane"],
+    "techniques": ["vocabulary-chain-integrity", "status-color-mapping"]
+  },
+  "files_read": 27
+}

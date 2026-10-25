@@ -1,0 +1,136 @@
+{
+  "host": "daemon-service",
+  "cards": [
+    {
+      "context": "daemon-service",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A card's answer holds that card's lock, never the daemon's write lock",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 6,
+      "write_set": [
+        "src/athena/daemon/server.py",
+        "src/athena/daemon/decisions.py",
+        "tests/daemon/test_threads.py",
+        "tests/daemon/test_decisions.py"
+      ],
+      "new_files": [
+        "docs/adr/NNNN-an-answer-to-a-card-holds-that-cards-lock.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-an-answer-to-a-card-holds-that-cards-lock.md (amends ADR 0141's 'writing() is the short write lock' clause)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "real socket: a connector card whose fake ConnectorPort sleeps 3 s on its call is approved; while that POST /decisions/<id> is in flight, POST /manifest from another origin answers 200 in under 1 s (today it waits about 3 s behind daemon.writing())",
+        "real socket: while that slow approval runs, a second card (another id) is declined through POST /decisions/<id2> and answers 200 'declined' in under 1 s (today about 3 s)",
+        "in-process: while that slow approval runs, routes.decide called from another thread for a third card (the voice gateway's door) returns in under 1 s",
+        "two threads approve the SAME card at once: exactly one 200 carrying the executor's output, the other a 409 (not pending / approval_spent), and the fake executor ran exactly once",
+        "approve and decline race on one card: exactly one lands, the card has one ledger row, and the executor ran at most once",
+        "after every answer has returned - including one whose executor raised - the daemon's card-lock map holds no entry (len == 0)",
+        "GET /health answers in under 1 s while the slow approval runs",
+        "a POST /manifest refused whole while an approval runs changes neither the catalog, the pin nor the sessions"
+      ],
+      "guard_cases": ["3", "4", "6", "7"],
+      "premise": [
+        "src/athena/daemon/decisions.py:77 - decide takes `with daemon.writing():` around stamp_case_turn and lane.answer_decision (line 80)",
+        "src/athena/lane/browser_lane.py:336 - answer_decision replays the gate with gate.run_tool, which for a core or connector tool runs its executor synchronously",
+        "src/athena/harness/hooks.py:377 - `entry.executor(params, ctx)` is that call: a Gmail/Notion send or an MCP tools/call",
+        "src/athena/connectors/vault.py:76 - REQUEST_TIMEOUT_S = 20.0 per connector request; src/athena/connectors/mcp/client.py:53 - TIMEOUT_S = 20.0",
+        "src/athena/daemon/routes.py:581 - POST /manifest (every tab's hands, ADR 0065) takes the same daemon.writing()",
+        "src/athena/daemon/server.py:541 - writing() promises 'a merge or an answer to a card waits for another write and never for a turn'; it now waits for another card's network call",
+        "docs/adr/0141-a-turn-locks-its-thread-and-athena-delegates.md:39 - the lock is for 'the milliseconds the write takes'",
+        "src/athena/core/approvals.py:494 - resolve is a conditional UPDATE ... WHERE status = 'pending'; :538 consume is conditional on consumed_at IS NULL: the race between two answers is decided in the table, not by the daemon lock",
+        "src/athena/connectors/vault.py:487 - the vault single-flights token refresh per connector, so two cards of one connector running at once do not double-refresh",
+        "tests/daemon/test_threads.py:159 - the only 'answer while busy' test is a decline, which runs no executor"
+      ],
+      "rollback": "One feature commit (keyed card locks in server.py, decide switched to them, tests, ADR, CHANGELOG line); `git revert` restores daemon.writing() around the answer and drops the new tests and ADR together.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Delegated tasks get a lease: a running task whose conversation no turn holds and that no window touched for N minutes is swept to interrupted and its parent told (fleet-orchestration deviation at src/athena/daemon/tasks.py:422) - daemon-only, but the window's orphan sweep already covers most of the gap, so impact is about 5.",
+      "body": "## Summary\nAn answer to a card holds the daemon-wide write lock for as long as the card's action runs. For a connector or MCP card that action is an outbound HTTP call of up to 20 s, so every page's manifest, every other card's answer and every spoken yes or no waits behind one email being sent. The guard is keyed wrong: the entity it protects is one card, not the daemon.\n\n## Description\n`decide` (decisions.py:77) wraps `lane.answer_decision` in `daemon.writing()`. ADR 0141 kept that lock as the short write lock for 'the milliseconds the write takes'. For a host card that is true: the replay only returns an execute instruction. For a core or connector card it is not: `answer_decision` calls `gate.run_tool`, which runs the executor in place (hooks.py:377). A Gmail send or an MCP `tools/call` has a 20 s request timeout (vault.py:76, mcp/client.py:53). For all of that time `POST /manifest` cannot merge, though the shell sends one for every tab with an admitted origin (ADR 0065). A tab opened while she sends an email therefore has no tools, and its next turn is refused with 'Open the app this is about'. A second card cannot be answered either, and the voice gateway's spoken answer goes through the same `decide`.\n\nThe lock is not needed for correctness. Two answers to one card are already settled in the table: `resolve` is a conditional UPDATE on `pending` (approvals.py:494) and `consume` is conditional on `consumed_at IS NULL` (approvals.py:538, ADR 0038). The catalog replaces an origin in one assignment and the pin is a policy-object swap. The vault single-flights token refresh per connector (vault.py:487). Turns already run connector tools from several conversations at once with no daemon lock.\n\nThe move (concurrency-guards / guard-key-design: 'unrelated work queues behind one guard'): the daemon gains a keyed lock map, the shape `ThreadLocks` already has (entries counted and dropped when the last holder leaves). `decide` takes the lock for its card id and leaves `writing()` alone. The critical section stays whole for that card, from resolve through replay to consume, so no check-to-use window opens (critical-section-across-a-suspension). Two answers to one card still run one after the other, and the loser reads the winner's settled row. `writing()` stays for the manifest merge, its one remaining multi-object act. The connector acts in daemon/connectors.py also hold `writing()` across `vault.probe` and `connect_token`. That file belongs to cli-and-wiring; this card names it as the follow-up and does not edit it.\n\n## Flow\n- write the slow-connector fixture (a ConnectorPort whose call sleeps) and acceptance cases 1-3, then watch them fail at about 3 s\n- generalize the counted lock map in server.py (ThreadLocks becomes a keyed lock map used for conversations and for cards; `AthenaDaemon.card(approval_id)` is a context manager)\n- decide takes `daemon.card(approval_id)` in place of `daemon.writing()`; update the docstrings of writing() and decisions.py\n- guard cases 4-8 stay green; ADR amending 0141; CHANGELOG line\n\n## Expected impact\nApproving a send no longer freezes the daemon for up to 20 s. Tabs opened meanwhile get their tools, and other cards and spoken answers return at once. A whole class closes: no route holds the global lock across an executor. Could break: an executor that relied on being alone in the daemon. None of the shipped executors does, because turns already run them concurrently.\n\n## Evaluation\nClaim: performance - an answer to a card never waits on another card's action\nBefore: 0 of 3 timing cases pass (each waits the fake executor's 3 s); guards 4-8 pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases on a real socket\nResult: better\nGate: none",
+      "evidence": "decisions.py:77-83: `with daemon.writing():\\n    stamped = stamp_case_turn(daemon, ctx)\\n    try:\\n        resolution = daemon.lane.answer_decision(approval_id, choice, ctx)`; browser_lane.py:336 `outcome = self.gate.run_tool(entry, grant.params, turn_ctx, approval_id=approval_id)`; hooks.py:377 `return self.enforce_cap(entry, entry.executor(params, ctx))`; vault.py:76 `REQUEST_TIMEOUT_S = 20.0`; mcp/client.py:53 `TIMEOUT_S = 20.0`; routes.py:581 `with daemon.writing():` (manifest); `git grep -n \"daemon.writing()\" src/athena` -> adopt docstrings, daemon/connectors.py:84,100, decisions.py:77, routes.py:581; approvals.py:494-497 `UPDATE companion_approval SET status = ? ... WHERE id = ? AND status = 'pending'`."
+    },
+    {
+      "context": "daemon-service",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The inbox says, before you press, whether a card will run and what fixes it",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 4,
+      "write_set": [
+        "src/athena/daemon/decisions.py",
+        "tests/daemon/test_decisions.py"
+      ],
+      "new_files": [
+        "docs/adr/NNNN-the-inbox-says-whether-a-card-will-run.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-the-inbox-says-whether-a-card-will-run.md",
+        "follow-up only, not in this write set: the desktop card render (apps/desktop/src/lib/api.ts row type and the companion card) reads will_run/blocked"
+      ],
+      "generated": [],
+      "acceptance": [
+        "a pending host card on a live, switched-on app: GET /decisions row carries will_run: true and blocked: null",
+        "GET /decisions?disabled_origins=host:invoices: that card's row has will_run: false, blocked.reason 'foreign_origin', blocked.rule 'origin_enabled', blocked.remedy {act: 'switch_on', origin: 'host:invoices'}; and POST /decisions/<id> approve with disabled_origins ['host:invoices'] is a 409 foreign_origin (the prediction agrees with the replay)",
+        "a card whose app's tools left the catalog (catalog.drop_origin('host:invoices')): will_run: false, blocked.reason 'unknown_ref', blocked.rule 'tools_gone', blocked.remedy {act: 'open_app', origin: <the app's pinned page origin>}; approving it is a 409 unknown_ref",
+        "a connector card whose connector is not live: will_run: false, blocked.rule 'connector_enabled', blocked.remedy {act: 'reconnect', connector: <id>}; approving it is a 409 unknown_ref",
+        "GET /decisions with a blocked card writes nothing: the row stays pending, the ledger row count and the episode count are unchanged, and the same card is approved 200 once its app is switched back on",
+        "?disabled_origins naming 257 origins is a 400 validator_failed, refused whole as POST /run refuses it, never cut",
+        "a 25-card inbox at limit 20 keeps every existing row key (id, action, params, rationale, options, origin, conversation_id, surface, created_at, expires_at, tab_id, tab_nav) and showing/total/footer exactly as before",
+        "every blocked row carries a non-empty plain 'sentence' that contains no rule id (no 'origin_pinning', 'origin_enabled', 'connector_enabled')"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        "src/athena/daemon/decisions.py:190 - GET /decisions lists pending rows and nothing about whether approving them can work",
+        "src/athena/daemon/decisions.py:203 - _decision_row carries the row's fields only, no verdict",
+        "src/athena/daemon/decisions.py:152 - _decision_ctx is the exact context the replay is judged under, buildable without answering",
+        "src/athena/harness/policy.py:166 - Policy.authorize(entry, params, ctx) is pure: every rule, first refusal wins, nothing written",
+        "src/athena/lane/browser_lane.py:321 - a card whose tools are gone is refused unknown_ref only after the person approved it",
+        "src/athena/harness/policy.py:286 - a connector not live is refused at the replay, after the press",
+        "docs/adr/0060-an-approved-card-refused-at-its-replay-can-be-answered-again.md:30 - the panel explains a switched-off refusal only after the approve was refused",
+        "src/athena/daemon/routes.py:175 - MAX_DISABLED_ORIGINS = 256, and a longer list is refused whole, never cut"
+      ],
+      "rollback": "One feature commit (the preflight in decisions.py, its tests, ADR, CHANGELOG line). Reverting it removes two additive keys from each inbox row and the optional query parameter. No stored state is touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "Voice studio refusals typed by outcome: not ready answers 503 with the install act and component, a failed render 502, a timeout 504, and the billed /voice/transcribe?engine=openai is throttled per caller (voice-io deviation, src/athena/daemon/voice.py:95-147).",
+      "body": "## Summary\nEvery card in the inbox looks answerable. Some cannot run: the app is switched off, the page whose tools it names has gone, or the connector is disconnected. The person finds out only after pressing Approve, from a 409 and a sentence written after the fact (ADR 0060). The daemon already has every fact needed to say so first: the gate's own rules, the catalog, the pins and the vault. This card makes the inbox say, per card, whether it will run, why not, and the one act that fixes it.\n\n## Description\n`GET /decisions` (decisions.py:190) returns rows only. The approve path then judges each card under `_decision_ctx` (decisions.py:152) with `Policy.authorize` (policy.py:166), after `catalog.get` (browser_lane.py:321). Each of those is a pure read. The preflight runs those same reads for every listed row, under the same context the replay will build. It never resolves, consumes or writes. Each row gains `will_run` and `blocked: {reason, rule, sentence, remedy}`. `reason` is a member of ERROR_REASONS. `rule` is the policy rule or `tools_gone`. `remedy` is one act the surface can offer as a single press: `switch_on` an origin, `open_app` at the pinned page origin, or `reconnect` a connector. The optional `?disabled_origins=` query carries the shell's switched-off list, parsed and capped as POST /run parses it. The verdict is not a second gate. It is the gate's own rules evaluated early, and the agreement cases pin that the prediction equals the replay's outcome.\n\nhitl-approval / review-queues: 'every pending decision, one surface, enough context to decide in place'. An item that needs a trip elsewhere gets decided blind. Here the trip is the refusal itself.\n\nThe surface work (the card shows 'Won't run: Ledger is switched off - Switch on' and holds Approve until then) is the desktop's follow-up and is not in this write set. The daemon side is complete and testable offline.\n\n## Flow\n- write cases 1-4 and 8 against the conftest daemon (host card, drop_origin, a connector port marked not live) and watch them fail on the missing keys\n- add `_preflight(daemon, row, disabled)` in decisions.py: build the context with `_decision_ctx`, get the entry from the catalog (gone means tools_gone), call `gate.policy.authorize`, and map the rule to a sentence and a remedy\n- decisions() parses `disabled_origins` from the query (comma list, MAX_DISABLED_ORIGINS, refused whole) and adds the two keys to each row\n- guards 5-7; ADR; CHANGELOG line\n\n## Expected impact\nAn approve that cannot work stops costing a press, a refusal and, after a reload, a lost card (ADR 0060 consequences). The person sees the fix in place. The inbox and the gate cannot disagree, because one set of rules answers both. Could break: a slow catalog or policy read on a 200-row inbox. Both are in-memory and O(rows).\n\n## Evaluation\nClaim: quality - a card's inbox row predicts its replay's outcome and names the fix\nBefore: 0 of 5 behaviour cases pass (no will_run or blocked keys); guards 5-7 pass\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "decisions.py:197-200 `limit = bounded(...); page = daemon.approvals.pending(PENDING_CEILING); rows = [_decision_row(row) for row in page.rows[:limit]]; return 200, announced(rows, page.total, \"pending\")`; decisions.py:203-217 row keys id..tab_nav, no verdict; policy.py:166-179 `def authorize(self, entry, params, ctx) -> PolicyDecision: for check in (...): decision = check(entry, params, ctx); if not decision.allow: return decision`; browser_lane.py:321-334 `entry = self.catalog.get(grant.action)` except ValueError -> `_refused(... 'unknown_ref' ..., approved=True)`; policy.py:286-291 connector not live -> forbid('connector_enabled','unknown_ref',...); ADR 0060:30 'The panel says, for a foreign_origin refusal on a card whose origin is in the switched-off list ... switch it back on and approve again.'"
+    }
+  ],
+  "rehomed": [
+    "FaceHelper.submit re-runs probe() (Path.is_file plus ensure) on every sentence (src/athena/channels/voice/face.py:599) - S",
+    "Cache the face helper's motion-probe verdict per machine so a restarted helper has motion at once instead of re-warming and re-timing (face_helper/main.py MotionWorker._run probes on every start) - M, impact 5",
+    "An adaptive motion governor that steps the sampler down from live window timings instead of one probe at start (face_helper/probe.py run_probe) - M, impact 6, and its effect needs torch to see",
+    "A present but malformed disabled/gated list should refuse the turn, not read as empty (src/athena/daemon/routes.py:924-926; agent-runtime-assembly deviation) - S",
+    "Spoken turns carry no tab, tainted_by or open_apps (src/athena/channels/voice/gateway.py:700-714 and the desktop voice start frame) - a policy-tighten across voice-channel and desktop files, not this host's"
+  ],
+  "riders": [
+    {
+      "name": "voice-face-sidecar",
+      "checked": "Read face.py, face_helper/{__init__,main,probe}.py, motion.py head and signatures, visemes.py signatures, and kokoro.py's _faced and synthesize_face callers. Hypotheses traced: a restart re-probes motion every time; a flap of two misses then a kill while the probe saturates the CPU; per-sentence re-probe. No card: each is S, impact under 7, or needs torch or a GPU to show its effect, so it cannot be an offline acceptance case."
+    }
+  ],
+  "registry": {
+    "subjects": ["concurrency-guards", "hitl-approval", "fleet-orchestration", "voice-io", "agent-runtime-assembly"],
+    "techniques": ["guard-key-design", "critical-section-across-a-suspension", "release-guarantees", "review-queues", "resume-after-decision"]
+  },
+  "files_read": 41
+}

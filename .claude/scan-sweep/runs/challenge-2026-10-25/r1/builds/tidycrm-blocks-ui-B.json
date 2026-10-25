@@ -1,0 +1,23 @@
+{"card":"tidycrm-blocks-ui/B","status":"landed","shas":["4af740b2"],
+ "tests_added":[
+  "examples/tidycrm/test/settle.test.ts::case 0 (guard): a table spelled one way offers no chooser and no act",
+  "examples/tidycrm/test/settle.test.ts::case 1: a conflicted table lists every spelling, consensus first, with nothing chosen",
+  "examples/tidycrm/test/settle.test.ts::case 2: choose previews, a plan readies the act with its label, a refusal says why",
+  "examples/tidycrm/test/settle.test.ts::case 3: the act prints the planner's rewrites, which is what the write reports filing",
+  "examples/tidycrm/test/settle.test.ts::case 4: a preview for a spelling the person moved off cannot ready the act",
+  "examples/tidycrm/test/settle.test.ts::case 5: once the act runs and the sheet is rebuilt, the conflict check passes and the chooser goes",
+  "examples/tidycrm/test/settle.test.ts::case 6 (guard): undoing the settle restores the spellings and the conflict deviation"
+ ],
+ "guard_cases":[0,6],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{
+  "pnpm --filter tidycrm typecheck":0,
+  "pnpm --filter tidycrm lint":0,
+  "pnpm --filter tidycrm test (140 tests)":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":8,"lines_changed":486,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"1) Settle.tsx is named SettleChooser.tsx: next to settle.ts it collides on a case-insensitive filesystem (tsc TS1149, and './Settle' resolved to settle.ts on Windows). 2) The act label pluralises ('File 1 contact under ...'); the card's template read 'contacts' always. 3) A plan with rewrites === 0 reduces to refused with the write's own 'already' sentence, so the act is never offered to change nothing. 4) Removing the inert spans made the .bk-spelling rules dead and tidycrm-style.test's 'every class the sheet styles is rendered' went red, so they leave components/blocks/style/level2/body.css (the card's named style surface; done under the lock). The chooser uses the existing .bk-chip button with its aria-pressed state and the redline count tone. 5) No ADR: the card names none and the change adds no house decision (ADR 0022 zones kept; the undo path is unchanged).",
+ "notes":"Undo re-verified against 37f0280: tidycrm's applyUndo still returns void (a clean undo under the additive UndoVerdict) and case 6 passes through undoWrite before and after. Case 3 confirmed the probe: 10 conflicted tables, records - n wrong on exactly 4. The preview sample uses bk-table/bk-truncated with plan.footer. No sibling reds seen. Not verified in a browser."}

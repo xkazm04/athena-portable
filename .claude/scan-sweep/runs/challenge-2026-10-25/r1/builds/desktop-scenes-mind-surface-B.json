@@ -1,0 +1,23 @@
+{"card":"desktop-scenes-mind-surface/B","status":"landed","shas":["9e8de7e4"],
+ "tests_added":[
+  "apps/desktop/src/scenes/surface/model.test.ts::case 1: an account that let its grant go is a need that lands on that account",
+  "apps/desktop/src/scenes/surface/model.test.ts::case 2: an engine that cannot run is a need on Mind > Engine, before any account",
+  "apps/desktop/src/scenes/surface/model.test.ts::case 3: a restart that is pending is a need on Mind > Engine, and none without one",
+  "apps/desktop/src/scenes/surface/model.test.ts::case 4: a light under attention dives to its first need, and the rest to their root as before",
+  "apps/desktop/src/scenes/surface/model.test.ts::case 7 (guard): cards waiting are the summon, never a need",
+  "apps/desktop/src/scenes/surface/interact.test.tsx::case 5: pressing the Gmail need dives to Gmail once, and so does pressing the Accounts light",
+  "apps/desktop/src/scenes/surface/interact.test.tsx::case 6: the '+N more' button dives to the first remaining need's depth",
+  "apps/desktop/src/scenes/surface/view.test.tsx::case 6: draws no list when nothing needs you, and three plus a '+N more' when four or more do",
+  "apps/desktop/src/scenes/surface/view.test.tsx::names each need with its word and its reason, before the press",
+  "apps/desktop/src/scenes/surface/view.test.tsx::case 7 (guard): a card waiting stays the summon and is never a need",
+  "apps/desktop/src/scenes/surface/live.test.tsx::case 8: a connector that needs reauth is a need in the connectors module's own sentence, landing on its id",
+  "apps/desktop/src/scenes/surface/live.test.tsx::a restart that is pending is a need in the Setup module's own words",
+  "apps/desktop/src/scenes/surface/surface.css.test.ts::what needs you is marked in the warning hue, and none of its text is under 12px"
+ ],
+ "guard_cases":[6],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":13,"lines_changed":479,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Guard case 7 (index 6) was red before too: its summon half passes on base, but `needs` did not exist, so the needs-empty half failed. SurfaceSources.engine gained a required `summary` (the engineFact summary, used as the engine need's line) and accounts gained `word`/`line`, so fixtures carry them; two new fixtures ('all well', 'many needs'). The need list's aria-label is 'What needs you now' (not ending in 'needs you', which the existing light-name test counts). Added ADR 0154. Grew the set by one file outside write_set: apps/desktop/scripts/first-paint.mjs ceiling line, as the brief permits.",
+ "notes":"First paint: base tree measured 164,982 B gzipped (18 B under the 165,000 B ceiling); this change measured 165,520 B, trimmed to 165,412 B, and the ceiling was raised to exactly 165,412 B with the measurement in the commit body and a dated comment in first-paint.mjs (the file's own comment says raising is an owner call - coordinator should confirm). perf:all not run (per brief); the surface's first frame gained a list, so the coordinator should run it. No sibling reds seen in the desktop suite."}

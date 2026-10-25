@@ -1,0 +1,18 @@
+{"card":"daemon-service/A","status":"landed","shas":["0a42a3bfca3474c215812ccbd1f4e1931d488422"],
+ "tests_added":[
+  "tests/daemon/test_threads.py::test_a_manifest_merges_while_a_slow_connector_card_is_approved",
+  "tests/daemon/test_threads.py::test_another_card_is_declined_while_a_slow_connector_card_is_approved",
+  "tests/daemon/test_threads.py::test_the_voice_door_answers_a_third_card_while_a_slow_card_is_approved",
+  "tests/daemon/test_threads.py::test_two_approvals_of_one_card_run_its_action_once",
+  "tests/daemon/test_threads.py::test_an_approve_and_a_decline_racing_on_one_card_land_once",
+  "tests/daemon/test_threads.py::test_the_card_lock_map_is_empty_after_every_answer_even_a_failed_one",
+  "tests/daemon/test_threads.py::test_health_answers_while_a_slow_connector_card_is_approved",
+  "tests/daemon/test_threads.py::test_a_refused_manifest_during_a_slow_approval_changes_nothing"],
+ "guard_cases":[3,4,6,7],
+ "cases_total":8,"cases_red_before":4,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/daemon tests/adopt/test_research_documents.py tests/channels/test_voice_gateway.py tests/connectors/test_mcp_config.py tests/connectors/test_routes.py tests/e2e/test_spawn_and_handshake.py tests/harness/test_tokenfactory.py tests/peer tests/proving/test_cards.py tests/proving/test_gauntlet.py -m \"not provider and not eval\"":0},
+ "files_changed":5,"lines_changed":488,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"ThreadLocks renamed KeyedLocks with ThreadLocks kept as an alias (no caller changed). decisions.py and test_decisions.py: only decide's lock and docstring changed in decisions.py; test_decisions.py untouched (all tests in test_threads.py, leaving test_decisions.py free for slot B). Case 5 'one ledger row': the lane ledgers only refusals/declines, so the test asserts exactly one decision episode for the card and a user_denied ledger row only when the decline won (0 when the approve won). Case 6's raising executor is driven in process (routes.decide raises; over HTTP it would be a 500). Red-before cases: 1,2,3 (each waited 3.0 s) and 6 (no card-lock map).",
+ "notes":"ADR 0152 claimed under the lock; CHANGELOG line appended after the 0151 line at the end of the Unreleased list. Follow-up named in the ADR: daemon/connectors.py still holds writing() across vault.probe and connect_token (cli-and-wiring context). No sibling reds seen. Full pytest not run, per brief."}

@@ -1,0 +1,18 @@
+{"card":"atlas-lanes-drawing/B","status":"landed","shas":["fd41c7db","366bc264"],
+ "tests_added":[
+  "examples/atlas/test/lanes.inspect.test.ts::case 1: opening e-class answers its role, ends, note, cite and the stop it carries",
+  "examples/atlas/test/lanes.inspect.test.ts::case 2: e-approval is a main run no stop travels; e-up and e-home carry the last two",
+  "examples/atlas/test/lanes.inspect.test.ts::case 3: every one of the 14 runs reads a note, a cite and its ends' own labels",
+  "examples/atlas/test/lanes.inspect.test.ts::case 4: the runs touching a node, in declaration order, and '[' / ']' cycle them",
+  "examples/atlas/test/lanes.inspect.test.ts::case 5: selecting a run with the story on jumps to its first stop; Escape clears",
+  "examples/atlas/test/lanes.model.test.ts::case 6: a node's accessible name also names the runs it sends and receives",
+  "examples/atlas/test/lanes.poses.test.ts::case 7: read_turn's edges carry each run's note and cite beside its label",
+  "examples/atlas/test/lanes.drawing.test.ts::case 8: every run is a press target, roved to from a node, and read out aloud",
+  "examples/atlas/test/lanes.css.test.ts::case 8: a run's hit stroke takes pointer events and is at least 8 screen px at every zoom"],
+ "guard_cases":[2,5],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter atlas typecheck":0,"pnpm --filter atlas lint":0,"pnpm --filter atlas test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":14,"lines_changed":527,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"No separate clearRun export: Escape-to-clear is the pure runKey(key, node, current) (returns null to close, undefined when the key is not ours), and 'a node open clears' is pinned by the drawing source test (onOpen calls setRun(null)). Guard cases 2 and 5 (0-based: the 14-runs data check and nodeName's lane/phase half) were still red before because inspect.ts did not exist and the new nodeName half failed in the same test. Case 8 is split across lanes.drawing.test.ts (Scene/Drawing/Chrome) and lanes.css.test.ts (hit stroke). The '[' / ']' keys are routed in Drawing.tsx's onNodeKey, not Scene.tsx. read_turn edges are sliced to READ_CAP and stay an array (not a bounded() object) so the shape is unchanged for consumers. Stop moves via setStop, so slot A's reducer must absorb onRun (Drawing.tsx onRun callback: selectRun then setRun/setStop) as one more door.",
+ "notes":"No sibling reds seen. Verified by hand: none (no browser run). Escape on the focused canvas also closes an open run (onCanvasKey). An opened run is never dimmed by the story (Scene Runs: !open). ADR 0150 claimed under the lock. No motion or first-paint change (atlas example, not apps/desktop)."}

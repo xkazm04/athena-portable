@@ -1,0 +1,18 @@
+{"card":"ledgerbox-lanes-ui/B","status":"landed","shas":["c14ae6aa"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 1: trayFor counts the tick, leaves a void out of what is owed, and groups it by lane",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 2: trayFor drops an id the sheet does not hold and re-derives the count from the sheet",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 3: draftPlan holds the disputed and the unsent invoice back, grouped by the reason actRefusal gives",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 4: runBatch drafts for every eligible invoice it still can, says N-1 of N, and ticks the one that failed",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 5: a second runBatch while one is in flight is refused before it calls anything",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 6: refilePlan names only the ids not already in the lane, and the refile lands every one there",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 7: toggleTick adds and removes one id, and refuses past the select cap with the list unchanged",
+  "examples/ledgerbox/test/ledgerbox-lanes-tray.test.ts::case 8 (guard): the tray offers only AUTO acts in bulk, and the gated three stay gated"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter ledgerbox typecheck":0,"pnpm --filter ledgerbox lint":0,"pnpm --filter ledgerbox test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":10,"lines_changed":729,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Per the revision, the walk acceptance case is dropped (8 cases; the guard is now index 7, 0-based). With its case gone, walk mode (Prev/Next on the L2 card head) was not built, so Card.tsx and card/Head.tsx are untouched (which also leaves them clear for slot A); the tray offers 'Review the first' (opens the first ticked card) instead. The pure module is shell/tray-plan.ts, not shell/tray.ts: beside shell/Tray.tsx the two names collide on a case-insensitive file system (tsc TS1149 on Windows). The category is 'retainer' (the CATEGORIES enum), not 'retainers'. The batch is createBatch() returning a runner with busy(), not a free runBatch, so the single-flight flag has an owner. Red-before was measured against a stub tray module whose functions throw, so each case failed on its own; the guard case was red before only because its module did not exist. ADR 0147 added.",
+ "notes":"No sibling reds seen; root pnpm typecheck and pnpm lint were green with the demo-kit webmcp sibling's in-flight changes in the tree. No browser run (verified by hand: none). Tray CSS is appended to style/chrome/ticked.css (shared with ledgerbox-style-design); the style-design tests (44px targets, every styled class drawn) pass."}

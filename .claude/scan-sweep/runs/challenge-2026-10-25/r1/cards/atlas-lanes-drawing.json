@@ -1,0 +1,148 @@
+{
+  "host": "atlas-lanes-drawing",
+  "cards": [
+    {
+      "context": "atlas-lanes-drawing",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The story is one reducer with seven doors, not three booleans set at each",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Tools.tsx",
+        "examples/atlas/test/lanes.poses.test.ts",
+        "examples/atlas/test/lanes.drawing.test.ts"
+      ],
+      "new_files": [
+        "examples/atlas/test/lanes.turn.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "turnReduce({stop:3, story:true, playing:true, epoch:e}, {type:'step', to:5}) -> stop 5, playing true, epoch e+1; then {type:'tick', epoch:e} -> state unchanged (a stale tick is dropped); {type:'tick', epoch:e+1} -> stop 6. Today a manual step while playing keeps the old setInterval, so the next auto-advance fires on that interval's leftover time, not a full beat after the step",
+        "{type:'toggle'} (the TURN button) from {story:false, playing:false} -> story true, playing false; again from {story:true, playing:true} -> story false, playing false",
+        "{type:'view', id:'lanes'} while playing -> story false, playing false; {type:'view', id:'turn'} -> story true, stop unchanged",
+        "{type:'tool', stop:'12', tell:false} while playing -> {stop:11, story:false, playing:false}; {type:'tool', stop:2.5} -> {ok:false, error:'No stop 2.5. The turn has 12 stops, numbered from 1.'} and the state is unchanged",
+        "{type:'play'} with env.reduced true -> stop+1 and playing stays false; and with state.playing true and reduced true, the selector playingNow(state, {reduced:true}) is false, so turnRead's `playing` reads false. Today read_turn reports playing:true while reduced motion has stopped the clock",
+        "{type:'step', to:-1} from stop 0 -> 11; {type:'step', to:12} -> 0; {type:'chapter', index:2} -> stop CHAPTER_VIEWS[2].from and epoch+1; {type:'pick', index:4} from story off -> story true, stop 4",
+        "Drawing.tsx (comments stripped) declares no useState for story, stop or playing and calls no setStop, setStory or setPlaying; Tools.tsx's set_turn handler makes exactly one dispatch and answers turnRead from the reduced state",
+        "every action keeps the invariants: 0 <= stop < 12, playing implies story, and an action that moves stop by hand increments epoch (a property loop over every action type from 8 seed states)"
+      ],
+      "guard_cases": [
+        "1",
+        "2",
+        "3",
+        "5"
+      ],
+      "premise": [
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:170",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:288",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:266",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:526",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:559",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:660",
+        "examples/atlas/components/atlas/variants/archify-lanes/Tools.tsx:713",
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:441",
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:515"
+      ],
+      "rollback": "Two commits (reducer plus tests in turn.ts, then Drawing/Tools wired to it). Reverting the second puts back the useState wiring and leaves an unused pure function; reverting both restores today exactly. No data, contract or kit file is touched.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; atlas runs node --test over examples/atlas/test)"
+      ],
+      "runner_up": "Make the follow camera one flight: poseFor takes the beat's lane, so phase x and lane y land in one fly, not nav.openGroup and then a second timed pan (Drawing.tsx:297-341)",
+      "body": "## Summary\nThe guided story's state (stop, story, playing) is three useStates written from seven places: the TURN toggle, the view bus, set_turn, the story bar's play/step/chapter, the editorial script rail and the interval tick. Each door re-states the rules (wrap the stop, playing implies story, reduced motion steps instead of playing) by hand. Move them into one pure `turnReduce(state, action, env)` in turn.ts, with an `epoch` so a tick from before a manual move is dropped. Drawing then uses useReducer, and Tools sends one dispatch.\n\n## Description\nThis is client-state/status-fsms: flags combine into states nobody listed, so every illegal state has to be blocked at every write site. Two fixes have already landed for this class, one door at a time: b6f01d2b (set_turn tell=false did not stop the clock) and 7ad745d6 (a fractional stop crashed the story bar). Two defects are still live. (1) The tick is `setInterval` keyed on [beatMs, playing, reduced] (Drawing.tsx:288-292), not on the stop. So a manual step, chapter jump or set_turn while playing is followed by an auto-advance on the old interval's leftover time, and the beat the reader picked can flash past. This is client-state/async-race-guards: a stale producer overwrites a fresher choice. (2) Under reduced motion the clock is stopped but `playing` stays true, so read_turn (turn.ts:515) tells an agent the story is playing when nothing moves. The reducer makes `playing implies story` and `stop in range` impossible to break. It keeps every door's existing behaviour (cases 1, 2, 3 and 5 are guards), and turnAfter/askStop become thin calls of it.\n\n## Flow\n- turn.ts: StoryState {stop, story, playing, epoch}, an action union (toggle, view, tool, play, step, chapter, pick, tick), turnReduce, and playingNow(state, env); askStop and turnAfter are kept as wrappers so their tests stay green\n- Drawing.tsx: useReducer replaces lines 170-172. The tick becomes a setTimeout keyed on [epoch, stop, playingNow], so each beat gets a full beatMs. Every handler becomes a dispatch\n- Tools.tsx: set_turn sends one dispatch and answers turnRead(turnReduce(...)), which keeps the 'answer is the state it leaves' rule\n- tests: lanes.turn.test.ts (cases 1-6 and 8), lanes.drawing.test.ts (case 7), lanes.poses.test.ts keeps the turnAfter cases\n\n## Expected impact\nA reader who steps while playing gets a full beat on the stop they picked. An agent's read_turn stops reporting a clock reduced motion has stopped. The next story door (deep link, keyboard shortcut, node-to-stop) is one action, not three more setter calls that can drift.\n\n## Evaluation\nClaim: the story's state has one transition authority, and the stale-tick and reduced-playing defects close\nBefore: 0 of 8 acceptance cases pass (turnReduce does not exist; cases 1 and 5 describe live defects)\nAfter: 8 of 8\nMethod: gate - the acceptance cases under node --test\nResult: better\nGate: none",
+      "evidence": "Drawing.tsx:170-172 `const [story, setStory] = useState(false); const [stop, setStop] = useState(0); const [playing, setPlaying] = useState(false);`. Drawing.tsx:288-292 `useEffect(() => { if (!playing || reduced || beatMs <= 0) return; const id = setInterval(() => setStop((s) => (s + 1) % BEAT_VIEWS.length), beatMs); ... }, [beatMs, playing, reduced]);` - stop is not a dependency. Write sites: Drawing.tsx:266-269 (view onSet: setStory, setPlaying), :526-529 (pickStop: setStory, setStop with its own modulo), :559-562 (onStory: setStory, setPlaying), :660-664 (onPlay: setStop or setPlaying; onStep: its own modulo; onChapter: setStop), Tools.tsx:713-716 (turnAfter, then setStop, setStory, setPlaying). turn.ts:446-447 turnAfter keeps now.playing; turn.ts:515 turnRead returns `playing` as passed, and Tools passes the raw state (Tools.tsx:683). Chrome.tsx:258 shows 'Step' under reduced while `playing` may be true. git log: b6f01d2b 'set_turn tell=false stops the story clock, as the TURN toggle and the view switch do'; 7ad745d6 'set_turn refuses a fractional stop instead of crashing the story bar'."
+    },
+    {
+      "context": "atlas-lanes-drawing",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Open a run: its note, citation and the turn stops it carries, one press away",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/atlas/components/atlas/variants/archify-lanes/Scene.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/lanes.css",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts",
+        "examples/atlas/test/lanes.model.test.ts",
+        "examples/atlas/test/lanes.poses.test.ts",
+        "examples/atlas/test/lanes.drawing.test.ts",
+        "examples/atlas/test/lanes.css.test.ts"
+      ],
+      "new_files": [
+        "examples/atlas/components/atlas/variants/archify-lanes/inspect.ts",
+        "examples/atlas/test/lanes.inspect.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "runReadout('e-class') -> {role:'main', roleLabel:'the turn', from:'The hooks', to:'The catalog', note:'Reversible? External? The ToolClass is decided in one module.', cite:'README §3.3', stops:[7]} (stops are 1-based, read from story.ts HOPS where hop.edge === id)",
+        "runReadout('e-approval') -> stops [] and walked false: the turn's script goes catalog -> contracts -> record (hops 7 and 8 are derived), so no stop travels this main run. runReadout('e-up').stops -> [11] and runReadout('e-home').stops -> [12]",
+        "for every one of the 14 EDGES, runReadout(id) has a non-empty note and cite, and its from/to labels equal NODE_BY_ID's labels (guard: the authored data already holds this)",
+        "runsTouching('hooks') -> ['e-call','e-class','e-manifest','e-ledger'] in declaration order; cycleRun('hooks', 'e-ledger', +1) -> 'e-call'; cycleRun('hooks', null, -1) -> 'e-ledger'",
+        "selectRun({story:true, stop:2}, 'e-class') -> {run:'e-class', stop:6}; selectRun({story:false, stop:2}, 'e-class') -> {run:'e-class', stop:2}; selectRun({story:true, stop:2}, 'e-approval') -> {run:'e-approval', stop:2}; clearRun after Escape or a node open -> run null",
+        "nodeName(hooks) also names its runs: it contains 'to The catalog, The record' and 'from The runner, Connectors' (outgoing and incoming, in edge declaration order), and still meets the existing lane/phase/note test (guard on that half)",
+        "turnRead(0, false, false).edges: every entry carries the edge's note and cite next to its label, and the answer stays bounded by READ_CAP",
+        "Scene.tsx (comments stripped) gives each run a hit path with data-run-id that takes pointer events and is reachable from a node by keyboard ('[' and ']'); the readout region in Chrome.tsx is not aria-hidden and has aria-live='polite'; lanes.css styles .al-run-hit with vector-effect: non-scaling-stroke and a token stroke width of at least 8 screen px"
+      ],
+      "guard_cases": [
+        "2",
+        "5"
+      ],
+      "premise": [
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:418",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:420",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:509",
+        "examples/atlas/components/atlas/variants/archify-lanes/Scene.tsx:161",
+        "examples/atlas/components/atlas/variants/archify-lanes/lanes.css:235",
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:509",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:348",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:408"
+      ],
+      "rollback": "One commit for inspect.ts and its tests (pure, unused until wired), then one for the Scene/Drawing/Chrome/CSS wiring and the nodeName/read_turn additions. Reverting the second removes every visible change; reverting both restores today. No contract, kit or data file changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root)",
+        "pnpm perf:all is not required (no motion or first-paint change in apps/desktop); the atlas token check runs inside pnpm lint (design/check-tokens.mjs)"
+      ],
+      "runner_up": "During the story, pressing a node jumps to the stop(s) that happen there, and a node shows its upstream and downstream path along the runs, not only the one-hop hover",
+      "body": "## Summary\nThe drawing's fourteen runs are its claims, and each one is authored with a sentence (`note`) and a source (`cite`). No surface shows either: the runs are aria-hidden SVG on a plate with pointer-events none, read_turn sends only the label, and a node's spoken name says nothing about what it connects to. Make a run something you can open. Press it (an 8-px non-scaling hit stroke), or rove to it from a node with '[' and ']'. A readout then says its role, from and to, the note, the README section it cites, and which turn stops travel it. With the story on, opening a run jumps the story to the first stop it carries.\n\n## Description\nThis is canvas-graph/edge-management, 'Interacting with edges': hit-test against a fat invisible stroke along the same path, and hang context off the selection. It is also canvas-graph/canvas-accessibility, 'expose the graph, not the geometry'. A reader now has to trust a line they cannot question. The readout also brings out a finding the drawing hides today: `e-approval`, a MAIN run labelled 'GATED · approval', carries no stop of the turn's script, because the script walks catalog -> contracts -> record. A reader who opens it sees 'no stop travels this run'. During the story it stays dimmed with no reason given (Drawing.tsx:409-413 reveals only hop edges). The pure module inspect.ts holds runReadout, runsTouching, cycleRun and selectRun, so node --test reaches every rule. Scene, Drawing and Chrome only render and route keys. nodeName gains its incoming and outgoing runs, so a screen-reader user can hear the graph. read_turn's edges gain note and cite, so an agent gets what a sighted reader now gets. Text stays secondary: one compact readout under the title band, the same slot the story bar uses, not a prose panel.\n\n## Flow\n- inspect.ts: runReadout(id), runsTouching(node), cycleRun(node, current, dir), selectRun(state, id), clearRun, all derived from EDGES, NODE_BY_ID, ROLE_LABEL and story HOPS (nothing re-typed)\n- Scene.tsx: Runs draws a transparent .al-run-hit path per run with data-run-id and data-selected, and onSelect\n- lanes.css: .al-plate keeps pointer-events none and .al-run-hit opts in with pointer-events: stroke; a selected run thickens; readout styles use existing tokens\n- Drawing.tsx: `run` selection state; '[' and ']' on a focused node cycle its runs; Escape or a node open clears; selecting with the story on moves the stop (through the reducer if slot A lands first, through setStop otherwise)\n- Chrome.tsx: RunReadout (role dot, from -> to, note, cite, 'carries stops 7' or 'no stop travels this run')\n- workflow.ts nodeName and turn.ts turnRead gain the graph facts; tests as listed\n\n## Expected impact\nEvery line on the sheet can be questioned where it is drawn. A reader can check a claim against its README section without leaving the canvas. Keyboard and screen-reader users get the edges for the first time. The one main run the turn never walks shows up instead of staying silent.\n\n## Evaluation\nClaim: all 14 runs are addressable by pointer, keyboard, screen reader and agent, and each answers its note, cite and carried stops\nBefore: 0 of 8 acceptance cases pass (no inspect.ts; note and cite are rendered nowhere: grep finds no edge .note or .cite read in the variant)\nAfter: 8 of 8\nMethod: gate - the acceptance cases under node --test\nResult: better\nGate: none",
+      "evidence": "workflow.ts:418-420 `/** The longer reading, for the receipt and read_turn. */ note: string; cite: string;`, authored on all 14 EDGES (workflow.ts:441-612). grep -n '\\.note\\b|\\.cite\\b' over archify-lanes/ finds only lane, phase, chapter and beat note/cite reads (Chrome.tsx:241,251,288,331; turn.ts:83,110,116,122; workflow.ts:356 node note). No edge note or cite is read anywhere. turn.ts:509-514 read_turn edges = {hop, edge, role, label} with no note or cite. lanes.css:230-235 `.al-plate { ... pointer-events: none; }` and Scene.tsx:161-201 render the runs inside that plate with no handler; Scene.tsx:237 Trail is aria-hidden. workflow.ts:348-357 nodeName gives the lane, phase and note but no connections. Probe of story.ts HOPS: index 6 hooks->catalog edge e-class; 7 catalog->contracts null; 8 contracts->record null; 10 record->channels e-up; 11 channels->desktop e-home. So e-approval (catalog->record, role main) is on no hop."
+    }
+  ],
+  "rehomed": [
+    "StoryBar prints a typed '/ 12' (Chrome.tsx:248) instead of BEAT_VIEWS.length - S, and already inside the stabilize-2026-10-16 'counted claims typed as words' finding",
+    "e-approval is a main run the turn's script never walks (catalog -> contracts -> record): whether the script or the edge is wrong is a content/direction call for workflow.ts and script.ts, S once decided",
+    "Hard-coded 'Eight of the ten drawn hops' in CARDS and the read_turn note - void, re-proposes the stabilize copy-auditor finding",
+    "Arrow-key roving extracted to a pure module with a test - void, re-proposes the stabilize test-strategist finding"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": [
+      "client-state",
+      "canvas-graph",
+      "test-harness"
+    ],
+    "techniques": [
+      "status-fsms",
+      "async-race-guards",
+      "edge-management",
+      "canvas-accessibility"
+    ]
+  },
+  "files_read": 31
+}

@@ -1,0 +1,125 @@
+{
+  "host": "journey-stage-src",
+  "cards": [
+    {
+      "context": "journey-stage-src",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One gate pipeline for page and connector tiers, at production's approval rules",
+      "size": "L",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/journey/src/surface.ts",
+        "examples/journey/src/connector-surface.ts",
+        "examples/journey/src/approvals.ts",
+        "examples/journey/src/connectors/port.ts",
+        "examples/journey/README.md"
+      ],
+      "new_files": [
+        "examples/journey/src/gate-pipeline.ts",
+        "examples/journey/tests/gate-pipeline.spec.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "connector: one granted card for send_mail{to,subject,body} (allow-listed) cited twice -> first ok, second refused approval_spent; mail.sent.length === 1; ledger rows [ok, refused/approval_spent] both carrying the card id",
+        "page tier through gate-pipeline with an injected fake transport (no Page, no browser): GATED tool, one granted card cited twice -> transport invoked exactly once, second call refused approval_spent with its row",
+        "granted card for send_mail{to:a} cited with send_mail{to:b} -> refused validator_failed (today unknown_ref) and the card is NOT spent: citing it again with {to:a} then runs ok",
+        "connector send_mail{to, subj, body} (misspelled key) under a granted card -> refused validator_failed before port.call; mail.calls.length === 0; one refused row written (adopts stabilize-2026-10-16 backlog 'ConnectorSurface runs a connector call without checking it against the tool's schema')",
+        "connector read whose output is 5000 chars -> ConnectorResult.fenced is wrapped by fence() with the surface nonce and its body is cut at READ_CAP 1600 with the cut announced inside the fence; ConnectorResult.output unchanged",
+        "approved send_mail to a recipient not on the allow-list -> refused foreign_origin with target recorded, and the card is spent (re-citing it -> approval_spent), matching production order: gate consumes (harness/hooks.py:350) before the service egress check (connectors/service.py:132)",
+        "guard: declineAndRun(send_mail) on ConnectorSurface -> reason user_denied, mail.sent empty, exactly one refused row with the card id",
+        "guard: approveAndRun(send_mail) to an allow-listed recipient -> outcome ok, row.target === recipient, row.approval === card id, approvals.get(id).status === 'granted'"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/journey/src/approvals.ts:82 - prove() checks exists/pending/denied/describe and returns the card; nothing marks it used, so a granted card authorises unlimited replays",
+        "examples/journey/src/approvals.ts:90 - a parameter mismatch is refused unknown_ref; production refuses it validator_failed and does not spend the grant (docs/adr/0038-an-approval-is-spent-when-the-gate-lets-it-through.md)",
+        "src/athena/core/approvals.py:526 - production consume(): one conditional write, consumed_at set once; a second replay is refused approval_spent (gate.js REFUSAL_REASONS includes approval_spent)",
+        "src/athena/harness/hooks.py:350 - the gate consumes before execution; src/athena/connectors/service.py:132 checks egress afterwards inside the service",
+        "examples/journey/src/surface.ts:186 and examples/journey/src/connector-surface.ts:70 - two hand-copied run() pipelines (prove -> check -> call -> row, refuse-writes-row-then-throws) that have already diverged",
+        "examples/journey/src/surface.ts:232 fences page output; examples/journey/src/connector-surface.ts:115 returns connector output unfenced and uncapped, while src/athena/connectors/service.py:14 and :44 fence and cap every read at READ_CAP = 1600",
+        "examples/journey/src/connector-surface.ts:102 hands params straight to port.call; examples/journey/src/connectors/port.ts:37 and :48 publish open schemas",
+        "examples/journey/src/surface.ts:62 - Surface needs a Playwright Page, so the fake gate has zero offline tests: every assertion about it waits on four booted servers (boot.ts:31 READY_TIMEOUT_MS 240_000) and the journey is filtered out of CI (registry-map test-harness deviation, .github/workflows/ci.yml:84)"
+      ],
+      "rollback": "Three commits (approvals consume + validator_failed; gate-pipeline extracted with both surfaces delegating; connector fence/cap + closed schemas). Each reverts with git revert; no data, no contract, no other context touched.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "pnpm --filter @athena/journey typecheck",
+        "pnpm --filter @athena/journey exec playwright test tests/gate-pipeline.spec.ts",
+        "pnpm typecheck && pnpm lint && pnpm test (workspace, from the root)",
+        "pnpm --filter @athena/journey test (the full journey, by hand: apps booted) to confirm no beat relied on a replayed card or an open schema"
+      ],
+      "runner_up": "Extract the four acts into one beat library that journey.spec.ts, the long take and the two-minute cut all play (today the same beats exist three times: journey.spec.ts acts, take.spec.ts 0.x-4.x and O1-R2), so the take cannot assert something softer than the gate run.",
+      "body": "## Summary\nThe journey's gate is a fake that is weaker than the product's: a granted card can be replayed without limit, a changed parameter is refused with the wrong reason, connector calls skip schema validation, and connector reads reach the caller unfenced and uncapped. The same pipeline is also copied by hand in two classes and cannot be tested without booting four servers. Replace both copies with one tier-agnostic `gate-pipeline.ts` that holds production's rules, and pin it with an offline spec.\n\n## Description\n`Surface.run` (surface.ts:186) and `ConnectorSurface.run` (connector-surface.ts:70) each restate prove -> check -> call -> write row, with refuse-writes-row-then-throws, and they have already drifted apart: tier 1 fences its output and tier 3 does not. `Approvals.prove` (approvals.ts:82) never spends a card, so the journey stays green on a replay that ADR 0038 makes production refuse with `approval_spent`. A parameter mismatch is refused `unknown_ref` (approvals.ts:90), where production refuses `validator_failed` and leaves the grant unspent. demo-data-plane/one-interface-many-planes applies: the fake plane must answer with the real plane's shapes and refusals, or every beat written against it is written against a contract production does not honour.\n\nThe move:\n1. `gate-pipeline.ts` takes `{origin, tier, cls, schema, transport, egress?, fenceCap?}` and runs validate -> prove+consume -> egress -> call -> fence -> row, writing one ledger row for every outcome.\n2. `Surface` and `ConnectorSurface` keep their public API (`run`, `read`, `approveAndRun`, `declineAndRun`, `runUnallowed`) and delegate to it.\n3. `Approvals` gains `consumedAt`, `approval_spent` and `validator_failed`.\n4. The fakes' schemas close (required, additionalProperties: false), reusing the kit's `validateArgs` the way contracts.ts already imports the demo-kit seed.\nBecause the transport is injected, the gate is testable with no Page. That gives the journey a fast tier that a later CI wiring can run (test-harness/fixture-economics, suite-partitioning).\n\n## Flow\n- beat calls surface.approveAndRun / mailer.approveAndRun (unchanged API)\n- pipeline: validate args against the published schema -> validator_failed row, card unspent\n- prove card (exists, answered, describes this call) -> consume (single use) -> approval_spent on reuse\n- connector only: egress allow-list -> foreign_origin row (card already spent, as in production)\n- transport (relay call, hand, or port.call) -> fence + cap -> ok row\n\n## Expected impact\nA journey run can no longer pass on behaviour the product refuses: replayed approvals, misspelled connector arguments, unfenced connector text. The record's refusal reasons match the daemon's for the same act. The gate rules get a seconds-long offline spec where today they need a four-server boot. Could break: any take or journey beat that re-cites a card or passes an extra connector key. The full journey is run once by hand to list them.\n\n## Evaluation\nClaim: quality - the journey's gate refuses exactly what production's gate refuses, in one pipeline for every tier\nBefore: 0 of 6 new acceptance cases pass (no consume, unknown_ref on mismatch, no connector validation, no connector fence; the page-tier case cannot run without a Page); guards 2 of 2 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases in tests/gate-pipeline.spec.ts (Playwright runner, no page fixture, offline)\nResult: better\nGate: policy-tighten",
+      "evidence": "approvals.ts:82-93 prove(): `if (card.status === \"denied\") throw ...user_denied; const wanted = describe(...); if (card.describe !== wanted) throw new ApprovalError(..., \"unknown_ref\"); return card;` (no consume)\nsrc/athena/core/approvals.py:538 `UPDATE companion_approval SET consumed_at = ? WHERE id = ? AND status = 'approved' AND consumed_at IS NULL`\nsrc/athena/harness/hooks.py:350 `if not self.approvals.consume(approval_id):`\nsurface.ts:232 `return { output: answer.output, fenced: fence(answer.output, \"untrusted\", this.nonce), row, approval: card };`\nconnector-surface.ts:115 `return { output, row, approval: card, target };`\nconnector-surface.ts:102 `output = String(await this.port.call(name, params));`\nsrc/athena/connectors/service.py:44 `READ_CAP = 1600`\npackages/athena-bridge/gate.js:149-160 REFUSAL_REASONS includes validator_failed and approval_spent\ngrep of tests/*.ts: no beat re-cites a card (every approveAndRun mints its own), so the consume rule should not break a beat; 2 connector reads (search_mail) in journey.spec.ts:444 and take.spec.ts:684"
+    },
+    {
+      "context": "journey-stage-src",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Resume the journey at any act from a checkpoint instead of a full re-run",
+      "size": "L",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/journey/tests/journey.spec.ts",
+        "examples/journey/src/ledger.ts",
+        "examples/journey/src/brain.ts",
+        "examples/journey/src/approvals.ts",
+        "examples/journey/src/connectors/fake-mail.ts",
+        "examples/journey/src/connectors/fake-notes.ts",
+        "examples/journey/README.md"
+      ],
+      "new_files": [
+        "examples/journey/src/checkpoint.ts",
+        "examples/journey/tests/checkpoint.spec.ts"
+      ],
+      "shared_surfaces": ["CHANGELOG.md"],
+      "generated": [],
+      "acceptance": [
+        "snapshot() of a Ledger with 5 rows -> restore() -> rows deep-equal and the next write() gets seq 6",
+        "restore() of a checkpoint whose ledger row carries reason 'made_up' -> throws naming REFUSAL_REASONS (a checkpoint cannot smuggle a row the live Ledger.write would refuse)",
+        "Brain + Approvals + FakeMail + FakeNotes round-trip: recall('pinegrove') returns the fact with its cites, card statuses and describe strings preserved, mail.allowed/inbox/sent and notes pages/blocks/allowed preserved; a ConnectorSurface over the restored FakeMail still refuses an unlisted recipient foreign_origin",
+        "planRun({from: 3}) -> apps [tidycrm], acts ['act 3', 'act 4'], reads checkpoint-act2.json; planRun({from: 4}) -> apps [], acts ['act 4']; planRun({}) -> all four apps, all four acts, reads no checkpoint",
+        "planRun({from: 3}) with no checkpoint-act2.json on disk -> throws naming the file and the command that writes it (a full `pnpm --filter @athena/journey test`)",
+        "a checkpoint whose seed fingerprint (hash of the demo-kit COMPANIES registry plus the checkpoint format version) differs from the current one -> refused, message names both fingerprints",
+        "guard: Brain.writeFact(claim, []) still throws 'cites no episode', on a fresh and on a restored Brain",
+        "guard: Ledger.write with a reason outside REFUSAL_REASONS still throws on a fresh Ledger"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/journey/tests/journey.spec.ts:143 - the four acts are steps of ONE test sharing module-level ledger/approvals/brain/mail/notes (:76-82), so the only way to re-check act 3 after a fix is to boot all four apps and replay acts 1-2 first",
+        "examples/journey/tests/journey.spec.ts:117 - beforeAll boots LEDGERBOX, HIRELANE, TIDYCRM and OUTSIDE unconditionally; examples/journey/src/boot.ts:31 allows each cold next dev compile 240 s",
+        "examples/journey/tests/journey.spec.ts:422 and :547 and :578 - later acts read only in-memory state from earlier ones (ledger.byApp('ledgerbox'), brain.recall('pinegrove')); each act mutates only its own app's scratch database (boot.ts:62 scratchFor per app), so an untouched app is fresh by construction and the cross-act state is plain data",
+        "examples/journey/src/ledger.ts:40 and examples/journey/src/brain.ts:29 - the record's invariants live in write(); restore must pass through the same checks or a checkpoint becomes a bypass",
+        "examples/journey/README.md:174 -'A step that fails is recorded and the run continues': the failure is reported, but there is nothing the operator can do with it short of a full re-run"
+      ],
+      "rollback": "Two commits (snapshot/restore on the five state holders + checkpoint.ts with its spec; journey.spec.ts reads JOURNEY_FROM and writes checkpoints after each passing act). Revert either; checkpoints live in the gitignored shots/ directory, so nothing persists in the tree.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm --filter @athena/journey typecheck",
+        "pnpm --filter @athena/journey exec playwright test tests/checkpoint.spec.ts",
+        "pnpm typecheck && pnpm lint && pnpm test (workspace, from the root)",
+        "pnpm --filter @athena/journey test then JOURNEY_FROM=3 pnpm --filter @athena/journey test (by hand, apps booted) to confirm a resumed act 3 passes on the written checkpoint"
+      ],
+      "runner_up": "Write every journey run's record as shots/record.html: an interactive ledger (filter by app, tier and outcome; click a fact's citation to jump to the row; a refused row expands to its approval's describe line), built from one pure recordModel(ledger, brain, approvals) instead of the console table.",
+      "body": "## Summary\nToday the journey has one mode, all or nothing. A fix to act 3 costs four cold `next dev` boots and a replay of acts 1 and 2 before the line being checked runs. Add a resume mode: after each act passes, the run writes a checkpoint of its cross-act state, and `JOURNEY_FROM=<n>` boots only the apps the remaining acts touch and resumes from it.\n\n## Description\nThe acts share a ledger, an approval table, a brain and two connector fakes, all held in memory (journey.spec.ts:76-82). What a later act needs from an earlier one is exactly that state, e.g. act 3's `brain.recall('pinegrove')`. Each app's database is touched only by its own act, in a per-app scratch directory, so an app no earlier act touched is already fresh. A checkpoint is therefore plain JSON with no database copy: `snapshot()` / `restore()` on Ledger, Brain, Approvals, FakeMail and FakeNotes, plus a seed fingerprint and a format version. `checkpoint.ts` owns `planRun({from})` (which apps to boot, which acts to play, which file to read), writing and reading files, and refusing stale or missing checkpoints. Restore goes through the same invariants as `write()`, so a hand-edited checkpoint cannot put a row in the record that the live ledger would refuse (test-harness/fixture-economics: build once, spend cheaply, keep the capital honest). A resumed run says so: act 4's printed table is headed `resumed from act N (checkpoint written <time>)`, and only a full run writes the act-1 checkpoint, so a chain of resumes never forges a full run.\n\n## Flow\n- full run (unchanged gate): boot all four, play acts 1-4, write shots/checkpoint-act{1,2,3}.json after each passing act\n- act 3 fails; operator edits contracts.ts\n- JOURNEY_FROM=3: planRun -> boot tidycrm only, restore the act-2 checkpoint, play act 3 and act 4\n- JOURNEY_FROM=4: no boot at all, re-assert the record from the act-3 checkpoint in about a second\n\n## Expected impact\nThe operator iterating on one act stops paying for the other three. The resumed path skips three of four cold boots plus every earlier act's calls, and act 4 alone needs no boot. Could break: nothing in a full run, which writes files but plays the same steps. The risk is a resumed run being taken for a gate run, which the header and the full-run-only act-1 checkpoint close.\n\n## Evaluation\nClaim: operator UX - one act is re-checked without replaying the others, on the same invariants\nBefore: 0 of 6 new acceptance cases pass (no snapshot/restore, no planRun); guards 2 of 2 green\nAfter: 8 of 8\nMethod: gate - the acceptance cases in tests/checkpoint.spec.ts (Playwright runner, no page fixture, offline)\nResult: better\nGate: none",
+      "evidence": "journey.spec.ts:76-82 `const ledger = new Ledger(); const approvals = new Approvals(); const brain = new Brain(); const mail = new FakeMail(STUDIO.inbox); const notes = new FakeNotes();`\njourney.spec.ts:117 `for (const app of [LEDGERBOX, HIRELANE, TIDYCRM, OUTSIDE]) { booted.push(await boot(app, ...)); }`\njourney.spec.ts:422 `const kestrelCredit = ledger.byApp(\"ledgerbox\").find((row) => row.tool === \"read_credits\");`\njourney.spec.ts:547 `const alias = brain.recall(\"pinegrove\");`\nboot.ts:30-31 `/** First response from next dev includes a cold compile; four minutes is not generous. */ const READY_TIMEOUT_MS = 240_000;`\nplaywright.config.ts:44 `timeout: 15 * 60 * 1000` (booting three Next dev servers cold, then four acts)\nNote: shares approvals.ts with slot A (adds snapshot/restore only); sequence after slot A so consumedAt is serialised."
+    }
+  ],
+  "rehomed": [
+    "Three hand-copied tree-kill routines (boot.ts:152 shutdown, daemon.ts:133 stop, gravitone.ts:205 killTree) into one - S, effort 2",
+    "Brain.writeFact checks only that cites is non-empty (brain.ts:30); it never checks that the cited rows belong to the live ledger, and journey.spec.ts:425 can pass an undefined row - S, effort 2",
+    "Close the connector fakes' schemas and validate in ConnectorSurface alone (stabilize-2026-10-16 backlog, M effort 4) - under the effort floor on its own, so absorbed into slot A"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["demo-data-plane", "test-harness", "mcp-tools"],
+    "techniques": ["one-interface-many-planes", "fixture-economics", "suite-partitioning", "tool-schema-design", "untrusted-result-handling"]
+  },
+  "files_read": 34
+}

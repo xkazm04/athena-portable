@@ -1,0 +1,485 @@
+{
+ "critic_model": "claude-opus-5-5",
+ "verdicts": [
+  {
+   "context": "adopt-engine",
+   "slot": "A",
+   "title": "An approval pins the draft it saw: case and rehearsal run from one snapshot",
+   "premise": "true",
+   "premise_notes": "cases.py:328-339 reads live session.brief/slots/answers and checks only brief.rev==rev; lanes.py:146-148 apply_findings with no brief check; session.py:293-303 never sets brief_stale (only loop.py:146); showcase.py:664-667 run(session, rev) calls _run(session) dropping rev, :684 brief=session.brief, :696 slots=session.slots; research.py:365-366 on_approve passes rev. All confirmed. Stale only in shared_surfaces: the duplicate-0123 note, and the proposed ADR number 0144 is now the MCP connector ADR (20e62c9) - the ADR takes the next free number.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 8 files, 7 cases. Honest M (Draft type, recorded at two sites, two readers rewired).",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Closes a real draft-preview-apply violation at its root (the approval pins an artifact, not a rev number) - a principal's move.",
+   "grounding": 4,
+   "grounding_why": "Every cited line holds on the tree; only the ADR-number note is stale.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1-3 are red on base and pin the late-finding and late-rev races with fakes; guards 4-7 are genuinely unchanged behaviour.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "adopt-engine",
+   "slot": "B",
+   "title": "A yearly chore's suggested cadence lands before her deadline, not a year out",
+   "premise": "true",
+   "premise_notes": "cadence.py:265-288 suggest(times_per_year, today) -> every_days starting today+every; chores.py:548-551 _cadence_reply calls cad.suggest(times, date) with the loaded case unused; loop.py:602-626 renders 'Dates that matter' as 'what: when' lines; docs/BACKLOG.md:67 B-C8 open (adopted with citation, allowed).",
+   "floors_ok": true,
+   "floor_notes": "M, effort 5, impact 7, risk 4, 3 files, 8 cases. At the M floor: a date parser, anchoring and route wiring; not an S given the parsing and basis wording.",
+   "gate_check": "none -> none (a suggestion only; nothing written until 'Use the suggestion', ADR 0131)",
+   "ambition": 3,
+   "ambition_why": "Adopts an open backlog item with a clear user win; a feature fix rather than a structural move.",
+   "grounding": 4,
+   "grounding_why": "Premises verified; playbook counts carry n=95 and a date.",
+   "falsifiability": 4,
+   "falsifiability_why": "Pure function with a fixed today; cases 1-4, 7 and 8 are red on base, 5-6 pin unchanged suggest().",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "atlas-lanes-drawing",
+   "slot": "A",
+   "title": "The story is one reducer with seven doors, not three booleans set at each",
+   "premise": "true",
+   "premise_notes": "Drawing.tsx:170-172 three useState; :288-292 setInterval keyed on [beatMs, playing, reduced], not stop; write sites :267-268, :527-528, :560-561, :661-664 confirmed. The Tools.tsx handler (actual lines 77-89, not :713) calls turnAfter then three setters; turnAfter keeps now.playing at turn.ts:64-67 (not :441); turnRead returns playing as passed at turn.ts:71/136 (not :515). Facts true; three line cites point past the end of 140- and 93-line files.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 6 files, 8 cases. Honest M.",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "A correct status-FSM consolidation that also removes two live defects (stale tick after a manual step, read_turn saying playing under reduced motion); solid but local.",
+   "grounding": 3,
+   "grounding_why": "Behaviour claims hold, but turn.ts:441/:515 and Tools.tsx:713/:683 do not exist.",
+   "falsifiability": 4,
+   "falsifiability_why": "Reducer cases plus the source guard (no setStop/setStory/setPlaying in Drawing.tsx) catch a wrong build; guards (0-based 1,2,3,5) are existing door behaviour.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "atlas-lanes-drawing",
+   "slot": "B",
+   "title": "Open a run: its note, citation and the turn stops it carries, one press away",
+   "premise": "true",
+   "premise_notes": "workflow.ts:410-420 WEdge note/cite authored; grep finds no edge note/cite reader (only lane/phase/beat reads in Chrome/turn); turn.ts:129 read_turn edges built from HOPS without note/cite; lanes.css:230-235 .al-plate pointer-events:none; Scene.tsx:155-165 Runs render with no handler; workflow.ts:348-357 nodeName names no connections; e-approval at workflow.ts:510.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 12 files, 8 cases (within the 15-file floor).",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Makes the blueprint's edges first-class and inspectable (hit paths, keyboard, screen reader, agent read); fits the 2D-blueprint direction and exposes a real content gap (e-approval).",
+   "grounding": 4,
+   "grounding_why": "All cited facts hold on the tree.",
+   "falsifiability": 4,
+   "falsifiability_why": "Pure inspect.ts cases are concrete and red on base; case 3 is a declared-data guard; the DOM/CSS case is a source check.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "daemon-service",
+   "slot": "A",
+   "title": "A card's answer holds that card's lock, never the daemon's write lock",
+   "premise": "true",
+   "premise_notes": "decisions.py:77-83 `with daemon.writing():` around stamp_case_turn and lane.answer_decision; browser_lane.py:336 gate.run_tool runs the executor in place; server.py:541-547 writing() docstring; routes.py:581 manifest under writing(); approvals.py:494-497 conditional UPDATE on pending and :538-540 consume on consumed_at IS NULL, so correctness lives in the table. No backlog/ADR item restates it (backlog-challenge-2026-10-15:41 is the OAuth re-merge, a different seam).",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 6, 4 files + ADR, 8 cases. Risk 6 is honest for a lock-topology change.",
+   "gate_check": "none -> none (no check removed: the per-card lock keeps resolve->replay->consume whole; table conditions unchanged)",
+   "ambition": 4,
+   "ambition_why": "The right guard-key fix: unrelated work stops queuing behind a network-bound executor, and ADR 0141 is amended rather than bypassed.",
+   "grounding": 4,
+   "grounding_why": "Every cited line verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Real-socket timing cases are red on base with a 3 s fake executor; the same-card and race guards (0-based 3,4,6,7) hold today and must stay green.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "daemon-service",
+   "slot": "B",
+   "title": "The inbox says, before you press, whether a card will run and what fixes it",
+   "premise": "true",
+   "premise_notes": "decisions.py:190-200 GET /decisions returns rows only; :203-217 _decision_row carries no verdict; :150-182 _decision_ctx is buildable without answering; policy.py:166-179 authorize is pure, first refusal wins; policy.py:286-291 connector not live -> forbid at replay; routes.py:175 MAX_DISABLED_ORIGINS.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 4, 2 files + ADR, 8 cases. A small write set, low M; acceptable because the agreement-with-replay cases carry the work.",
+   "gate_check": "none -> none (a read-only preview of the gate's own rules; no write, no widening; the desktop rendering is a follow-up)",
+   "ambition": 3,
+   "ambition_why": "A useful decide-in-place move, but daemon-only: the person sees nothing until a desktop card lands.",
+   "grounding": 4,
+   "grounding_why": "Premises hold.",
+   "falsifiability": 4,
+   "falsifiability_why": "Agreement cases pair each prediction with the replay's 409, which catches a drifted second gate; 0-based guards 4,5,6 are sound.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "demo-kit-ui-webmcp",
+   "slot": "A",
+   "title": "One coded failure channel from the kit door to the bridge reply",
+   "premise": "true",
+   "premise_notes": "door.ts:131-151 a refusal and a handler throw resolve toolError text, and the abort promise never settles without a signal; inject.js:133 resolved -> ok:true, :139 rejected -> ok:false, lateFrom posts ok:true for a resolved 'aborted' text. The core defect is the open stabilize finding 'an in-band tool failure is ledgered as outcome ok' (journey-stage-src, M effort 4, backlog), cited and widened into a coded outcome channel, a door clock and structured errors: adoption, not restatement.",
+   "floors_ok": true,
+   "floor_notes": "L, effort 7, impact 8, risk 6, 9 files, 8 cases. The contract gate names in-tree verifiers (tests/test_refusal_parity.py, packages/athena-bridge/test/inject.test.js).",
+   "gate_check": "contract -> contract (the page-mintable reason allow-list tightens; a page still cannot mint a gate reason)",
+   "ambition": 4,
+   "ambition_why": "Fixes the protocol seam once for every kit app instead of patching surface.ts's ledger row.",
+   "grounding": 4,
+   "grounding_why": "Cited lines hold; the cited registry deviations match.",
+   "falsifiability": 4,
+   "falsifiability_why": "Cases 1-6 are red on base (rejections, reasons, late ok:false); cases 7-8 pin the string runTool and domain answers that must not change.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "demo-kit-ui-webmcp",
+   "slot": "B",
+   "title": "Undo says what it put back: refused, partly undone, or 'undo both'",
+   "premise": "true",
+   "premise_notes": "activity/index.ts:115-135 applyUndo => void, always sets undone=1 and logs 'Undid #n'; hirelane actions.ts:395-420 'left the stage alone' branches return (the kit then marks undone); :430-445 hand-logged partial slot release; history.ts:80-82 'Undone:' for any ok. ADR 0111:41-42 describes older behaviour, not a decision against a refusal channel.",
+   "floors_ok": true,
+   "floor_notes": "L, effort 7, impact 7, risk 5, 10 files, 8 cases.",
+   "gate_check": "none -> none (through:true only undoes reversible rows the person asks for, all or nothing; no gate touched)",
+   "ambition": 4,
+   "ambition_why": "Gives the shared undo contract a return value so three apps stop reporting unreversed acts as undone - a kit-level fix.",
+   "grounding": 4,
+   "grounding_why": "All cited lines verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Kit and hirelane cases are red on base; the void-contract guard (case 3) pins backward compatibility.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-scenes-chores",
+   "slot": "A",
+   "title": "One warm-remount read cache for the Chores depth's daemon reads",
+   "premise": "true",
+   "premise_notes": "view.tsx:8-10 'The stage mounts a fresh view at every move'; topic.tsx:55-77 useCases in useState returns looking on remount; runs.tsx:24-43 useRuns has the same shape; topic.tsx:148-151 scroll restored in useLayoutEffect. Stale: the new ADR is named 0144, now taken by the MCP connector ADR (20e62c9), so it needs the next free number.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 7 files, 8 cases.",
+   "gate_check": "none -> none",
+   "ambition": 3,
+   "ambition_why": "Registry warm-remount/SWR applied to a known remount cost; a good pattern lift of modest scope.",
+   "grounding": 4,
+   "grounding_why": "Cited code holds; the clamp-in-a-real-webview claim is an argument, not a probe.",
+   "falsifiability": 4,
+   "falsifiability_why": "First-render-after-move cases are red on base and catch a cold paint; dedup and client-key cases catch a wrong cache key.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-scenes-chores",
+   "slot": "B",
+   "title": "\"Your chores\" on the catalogue: every saved case, due first, one press in",
+   "premise": "true",
+   "premise_notes": "catalogue.tsx:58-74 props carry no deps; view.tsx:98-110 Catalogue rendered without the adopt deps; adopt-client.ts:54-55 cases(playbookId); the all-cases listing with an empty id is cited at routes.py:218 / cases.py:317. Inside the context description (the user's recurring jobs).",
+   "floors_ok": true,
+   "floor_notes": "M, effort 7, impact 8, risk 5, 10 files, 8 cases.",
+   "gate_check": "none -> none (a read-only band over existing routes)",
+   "ambition": 4,
+   "ambition_why": "Turns the catalogue into the person's home for what is waiting on them - a product move, not a tidy-up.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Pure yoursOf cases and wired catalogue cases are red on base; the no-deps guard pins the preview path.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "desktop-scenes-mind-surface",
+   "slot": "A",
+   "title": "One display authority for setup standings across Mind, engine and surface",
+   "premise": "true",
+   "premise_notes": "mind/view.tsx:58-71 STANDING_WORD/TONE map unknown -> checking/pending; EngineSection.tsx:37-48 unprobed() says 'not checked' on a warning; :122 the fact dot uses STANDING_TONE (pending) for the same case; surface/model.ts:163 attention rule. True.",
+   "floors_ok": false,
+   "floor_notes": "Claimed M effort 5; honestly an S: one Standing -> {word, tone, attention} table extracted to a module, three callers rewired, plus a one-line tone defect.",
+   "gate_check": "none -> none",
+   "ambition": 2,
+   "ambition_why": "A vocabulary consolidation with one real tone defect - a big-sounding tidy-up.",
+   "grounding": 4,
+   "grounding_why": "Facts hold.",
+   "falsifiability": 4,
+   "falsifiability_why": "Fixture cases are red on base for the degraded state; the parity table would catch drift.",
+   "verdict": "void",
+   "revise": null,
+   "void_reason": "Size floor: an honest S (a vocabulary table extraction plus a one-line tone fix); it belongs in a stabilize pass, not a challenge slot."
+  },
+  {
+   "context": "desktop-scenes-mind-surface",
+   "slot": "B",
+   "title": "The surface names what needs you and takes you to it in one press",
+   "premise": "true",
+   "premise_notes": "surface/model.ts:25-30 dive(root: Root); :148-152 accounts attention is a boolean only; live.tsx:120-127 standingOf word and sentence dropped; view.tsx:151 dive(l.root); depth/model.ts:61-64 accounts items 'open', mind items include 'engine', so the deep paths are valid.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 4, 10 files, 8 cases.",
+   "gate_check": "none -> none (every need is a dive; cards stay answered in her window)",
+   "ambition": 4,
+   "ambition_why": "Turns a status mirror into a 'what needs you' surface with deep links - a real UX elevation.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "selectSurface and interact cases are red on base; the summon guard pins D1.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "journey-stage-src",
+   "slot": "A",
+   "title": "One gate pipeline for page and connector tiers, at production's approval rules",
+   "premise": "true",
+   "premise_notes": "approvals.ts:82-93 prove() never spends a card and refuses a parameter mismatch unknown_ref; connector-surface.ts:102 hands params straight to port.call and :115 returns unfenced output; surface.ts:232 fences; core/approvals.py:538 consume is conditional. Absorbs the stabilize backlog item 'ConnectorSurface runs a connector call without checking it against the tool's schema' (M effort 4) with a citation.",
+   "floors_ok": true,
+   "floor_notes": "L, effort 6, impact 7, risk 5, 7 files, 8 cases.",
+   "gate_check": "policy-tighten -> policy-tighten",
+   "ambition": 4,
+   "ambition_why": "Makes the demo plane honour production's approval contract and gives the journey its first offline gate tier.",
+   "grounding": 4,
+   "grounding_why": "All cited lines verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "approval_spent, validator_failed and fence cases are red on base; the decline/approve guards hold.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "journey-stage-src",
+   "slot": "B",
+   "title": "Resume the journey at any act from a checkpoint instead of a full re-run",
+   "premise": "true",
+   "premise_notes": "journey.spec.ts:76-82 module-level shared ledger/approvals/brain/mail/notes; :113-118 beforeAll boots all four apps; no checkpoint or resume exists in src or tests.",
+   "floors_ok": true,
+   "floor_notes": "L, effort 6, impact 7, risk 5, 9 files, 8 cases.",
+   "gate_check": "none -> none (restore passes through the write() invariants)",
+   "ambition": 3,
+   "ambition_why": "Real dev-loop economics for a 15-minute journey, but test tooling rather than product.",
+   "grounding": 4,
+   "grounding_why": "Premises verified; 'each act touches only its own app' is asserted from reading, not probed.",
+   "falsifiability": 4,
+   "falsifiability_why": "Round-trip, plan and stale-fingerprint cases are red on base; the invariant guards would catch a restore bypass.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "ledgerbox-lanes-ui",
+   "slot": "A",
+   "title": "One act machine per card: one armed gate, one write in flight, one door",
+   "premise": "true",
+   "premise_notes": "Gate.tsx:42 per-gate armedOn; :47 its own useRun; :89 disabled={disabled || pending}; Decide.tsx:364-381 AUTO rows use the card's pending and the Gate gets none; Card.tsx:53 a separate useRun; actions.ts:487-497 sendReminderAction takes no draft id and sends the newest unsent draft.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 8 files, 8 cases.",
+   "gate_check": "none -> none (consent tightens: one armed gate, one write in flight)",
+   "ambition": 4,
+   "ambition_why": "Closes an approve-version-N, send-N+1 hole at the UI seam and moves the act rules from regex-over-source tests to behaviour.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "reduceActs and door cases are red on base; the stillArmed guard pins existing semantics.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "ledgerbox-lanes-ui",
+   "slot": "B",
+   "title": "The tick becomes a working set: a tray to refile, draft and walk ticked invoices",
+   "premise": "true",
+   "premise_notes": "Lanes.tsx:76 picked state; setPicked goes only to BooksTools (Lanes.tsx:216, BooksTools.tsx:181/194/454); actions.ts:152-158 categorizeAction takes a list of ids; no bulk/tray item in any backlog.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 7, impact 8, risk 5, 10 files, but 9 acceptance cases (over the 3-8 band).",
+   "gate_check": "none -> none (only AUTO acts in bulk; send, record and void stay per invoice behind Gate)",
+   "ambition": 4,
+   "ambition_why": "Turns an agent-only selection into a person's working set with plan-before-press - a real capability.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Pure tray.ts cases against the scratch books are red on base; the GATED-never-in-bulk guard holds.",
+   "verdict": "revise",
+   "revise": "Drop case 7 (walk next/edge rules) to bring acceptance within the 3-8 band.",
+   "void_reason": null
+  },
+  {
+   "context": "proving-adopt-tiers",
+   "slot": "A",
+   "title": "Comparable cells: digest-stamped records, paired cells, conditioned speed",
+   "premise": "true",
+   "premise_notes": "simulate.py:248 make_plan skips any complete record; records carry no digest (grep: none); simulate.py:635 complete includes wall_cap/stalled endings; pick.py:105-115 load_results keeps every complete record; pick.py:158 first_text_p50 pools every complete record.",
+   "floors_ok": true,
+   "floor_notes": "L, effort 7, impact 8, risk 5, 9 files, 7 cases.",
+   "gate_check": "none -> none",
+   "ambition": 4,
+   "ambition_why": "Makes the tier bench's picks comparable (identity, pairing, outcome-conditioned speed) - the eval-harness move that protects tiers.json.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Digest, stale, paired and conditioned cases are red on base; 0-based guards 5,6 are today's rule and the no-touch test.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "proving-adopt-tiers",
+   "slot": "B",
+   "title": "pick shows the tiers.json change against the incumbent and refuses blind writes",
+   "premise": "true",
+   "premise_notes": "__main__.py:127-141 prints role/config/why only, and --write writes any pick; pick.py:345-348 write_tiers skips only config None, so a fallback is written.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 5, impact 7, risk 4, 5 files, 7 cases. Low M.",
+   "gate_check": "none -> policy-tighten (refusing a fallback write tightens; nothing loosens)",
+   "ambition": 3,
+   "ambition_why": "Diff-before-apply for a routing policy file; sound but small.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Incumbent, delta and refusal cases are red on base; the write_tiers guard holds.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "tidycrm-blocks-ui",
+   "slot": "A",
+   "title": "Dossier acts from the mutation's own planner: offer, count, refusal (ADR 0107)",
+   "premise": "true",
+   "premise_notes": "Gate.tsx:76 tidy disabled on table.ids.length===0 and :81 labelled ids.length rows; :170 delete disabled on staleIds; lib/blocks/index.ts:175-177 staleIds excludes stale_flagged; mutations.ts:265 planCompany; ADR 0107 covers hirelane only. The probe figures are the scout's (scratchpad) and were not re-run.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 8, risk 5, 6 files, 7 cases.",
+   "gate_check": "none -> none (delete stays behind arm+confirm and deleteContacts already accepts flagged rows; offering it there is a UI offer, not a widened check)",
+   "ambition": 4,
+   "ambition_why": "Ports ADR 0107's one-planner rule to tidycrm, fixing an overclaimed count on all 46 tables and a delete that vanishes after a flag.",
+   "grounding": 4,
+   "grounding_why": "Cited code holds.",
+   "falsifiability": 4,
+   "falsifiability_why": "Count-equals-plan and post-flag delete cases are red on base; the parity sweep catches drift.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  },
+  {
+   "context": "tidycrm-blocks-ui",
+   "slot": "B",
+   "title": "The fourth check gets its repair: settle a company spelling in the dossier",
+   "premise": "true",
+   "premise_notes": "Checks.tsx:44-58 spellings are inert spans; Gate.tsx imports no resolveCompany; app/actions.ts:135/143 preview and resolve are exposed; mutations.ts:265 compares untrimmed while the spelling grouping uses TRIM.",
+   "floors_ok": true,
+   "floor_notes": "M, effort 6, impact 7, risk 5, 6 files, 7 cases.",
+   "gate_check": "none -> none (resolve_company is AUTO and reversible)",
+   "ambition": 3,
+   "ambition_why": "Completes the dossier's repair set with oracle-before-gate; a well-bounded feature fill.",
+   "grounding": 4,
+   "grounding_why": "Premises verified.",
+   "falsifiability": 4,
+   "falsifiability_why": "Settle reducer and stale-preview cases are red on base; the undo guard (0-based 6) pins reversibility.",
+   "verdict": "build",
+   "revise": null,
+   "void_reason": null
+  }
+ ],
+ "conflicts": [
+  {
+   "cards": [
+    "atlas-lanes-drawing/A",
+    "atlas-lanes-drawing/B"
+   ],
+   "files": [
+    "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx",
+    "examples/atlas/components/atlas/variants/archify-lanes/turn.ts",
+    "examples/atlas/test/lanes.poses.test.ts",
+    "examples/atlas/test/lanes.drawing.test.ts"
+   ]
+  },
+  {
+   "cards": [
+    "daemon-service/A",
+    "daemon-service/B"
+   ],
+   "files": [
+    "src/athena/daemon/decisions.py",
+    "tests/daemon/test_decisions.py"
+   ]
+  },
+  {
+   "cards": [
+    "desktop-scenes-chores/A",
+    "desktop-scenes-chores/B"
+   ],
+   "files": [
+    "apps/desktop/src/scenes/chores/memory.ts"
+   ]
+  },
+  {
+   "cards": [
+    "desktop-scenes-mind-surface/A",
+    "desktop-scenes-mind-surface/B"
+   ],
+   "files": [
+    "apps/desktop/src/scenes/surface/model.ts",
+    "apps/desktop/src/scenes/surface/model.test.ts"
+   ]
+  },
+  {
+   "cards": [
+    "journey-stage-src/A",
+    "journey-stage-src/B"
+   ],
+   "files": [
+    "examples/journey/src/approvals.ts",
+    "examples/journey/README.md"
+   ]
+  },
+  {
+   "cards": [
+    "ledgerbox-lanes-ui/A",
+    "ledgerbox-lanes-ui/B"
+   ],
+   "files": [
+    "examples/ledgerbox/components/lanes/Card.tsx"
+   ]
+  },
+  {
+   "cards": [
+    "proving-adopt-tiers/A",
+    "proving-adopt-tiers/B"
+   ],
+   "files": [
+    "src/athena/proving/adopt_tiers/pick.py",
+    "src/athena/proving/adopt_tiers/__main__.py",
+    "src/athena/proving/adopt_tiers/report.py",
+    "tests/proving/adopt_tiers/test_pick.py",
+    "tests/proving/adopt_tiers/test_run.py"
+   ]
+  },
+  {
+   "cards": [
+    "tidycrm-blocks-ui/A",
+    "tidycrm-blocks-ui/B"
+   ],
+   "files": [
+    "examples/tidycrm/components/blocks/dossier/Gate.tsx"
+   ]
+  }
+ ],
+ "signature_changes": [
+  {
+   "card": "demo-kit-ui-webmcp/B",
+   "symbol": "undoActivity(db, id, applyUndo, opts?) and applyUndo's return type (void | {refused, blockedBy?} | {partial})",
+   "callers_in_other_cards": [
+    "tidycrm-blocks-ui/B (case 7 undoes resolve_company through the kit's undoActivity)"
+   ]
+  },
+  {
+   "card": "demo-kit-ui-webmcp/A",
+   "symbol": "door.ts validateArgs (today a first-mismatch string; the card adds a path-addressed all-errors outcome)",
+   "callers_in_other_cards": [
+    "journey-stage-src/A (plans to reuse the kit's validateArgs to close the fake connectors' schemas)"
+   ]
+  }
+ ]
+}

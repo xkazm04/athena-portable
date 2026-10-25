@@ -1,0 +1,6 @@
+W1: demo-kit-ui-webmcp/A, desktop-scenes-chores/B, ledgerbox-lanes-ui/B (rev: drop case 7), proving-adopt-tiers/A
+W2: tidycrm-blocks-ui/A, adopt-engine/A, atlas-lanes-drawing/B, daemon-service/A
+W3: demo-kit-ui-webmcp/B, desktop-scenes-mind-surface/B, journey-stage-src/A, ledgerbox-lanes-ui/A
+W4: adopt-engine/B, daemon-service/B, desktop-scenes-chores/A, journey-stage-src/B
+W5: proving-adopt-tiers/B, tidycrm-blocks-ui/B, atlas-lanes-drawing/A
+Coordinator override of deck.mjs waves: the contract card (demo-kit/A) shares W1 with three cards that do not touch the kit or the bridge; its callers (journey/A, tidycrm/B via demo-kit/B) run later.
