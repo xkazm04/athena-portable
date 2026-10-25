@@ -5,7 +5,8 @@ import { isValid } from "@/depth/model";
 import { CORE } from "@/lib/spaces";
 
 import { fixtures, RENOVATION } from "./fixtures";
-import { labelOf, spaceAsked } from "./live";
+import { labelOf } from "./live";
+import { spaceAsked } from "./live-view";
 import {
   briefLine,
   countsLine,

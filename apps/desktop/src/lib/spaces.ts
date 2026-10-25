@@ -6,15 +6,16 @@
  * and carries the brief Athena reads every turn inside it, and the memory written there is filed
  * under it. Outside every space is **core**, and core's absent value is the empty string, never
  * `null`. Like `lib/chores-client.ts`, `fetch` is an argument and the endpoint is asked for at
- * every call; a refusal is an `ApiError`, no daemon is one whose reason is `offline`.
+ * every call; a refusal is an `ApiError`, no daemon is one whose reason is `offline`. The daemon
+ * names the finer cause of a refusal beside `reason` (`{"reason": "validator_failed", "error":
+ * "space_busy"}`), and the error carries it as `word`, as `lib/api.ts` does for a peer's refusal: a
+ * surface says "a turn is running in this project" from the word, never by matching the detail.
  */
 import { ApiError, globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
 
-/** The active space when none is: Athena's core. */
-export const CORE = "";
-
-/** The depth item that names core (`projects/core`); never a space id. */
-export const CORE_ITEM = "core";
+// Core's two words live in a module of their own, so the first frame can name core without this
+// client (`lib/space-core.ts`); they are this module's exports as much as that one's.
+export { CORE, CORE_ITEM } from "@/lib/space-core";
 
 /** The caps the daemon validates, mirrored so a form can count down to them. */
 export const SPACE_CAPS = { name: 60, brief: 1600, apps: 24 } as const;
@@ -225,7 +226,7 @@ export class SpacesApi implements SpacesClient {
       // Not JSON: the status is the answer.
     }
     const r = isRaw(payload) ? payload : {};
-    if (!response.ok) throw new ApiError(response.status, str(r.reason) || "unknown", str(r.detail));
+    if (!response.ok) throw new ApiError(response.status, str(r.reason) || "unknown", str(r.detail), str(r.error));
     return r;
   }
 }

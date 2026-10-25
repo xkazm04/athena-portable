@@ -56,9 +56,11 @@ import { SETUP_ORIGIN, SETUP_TOOLS_ORIGIN, type SetupSession } from "@/lib/setup
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import { useOrigins, type OriginsState } from "@/stores/origins";
-import { CORE } from "@/lib/spaces";
-import { useSpaces } from "@/stores/spaces";
+import { useOrigins } from "@/stores/origins";
+import { CORE } from "@/lib/space-core";
+// The spaces store's first-frame mirror, not the store: this store is first-frame weight in Main
+// (the voice store and the halo read it), the spaces client is not (ADR 0225, `spaces-glance.ts`).
+import { useSpacesGlance } from "@/stores/spaces-glance";
 import { originOf } from "@/modules/browser/model";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
@@ -1047,7 +1049,7 @@ export function scheduleMark(project: ActivePlaybook | null): { trigger?: "sched
 }
 
 /** The `space_id` every `/run` body carries (ADR 0225): the active Project's id, `""` for core. */
-export const spaceOf = (): string => useSpaces.getState().activeId;
+export const spaceOf = (): string => useSpacesGlance.getState().activeId;
 
 export function stampOf(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
@@ -2248,7 +2250,7 @@ export const useRun = create<RunState>((set, get) => {
       // a Project is active would otherwise file its memory into that Project. Entered before the
       // first send (held until the turn ends if one is running). A playbook with no case leaves the
       // person where she is.
-      if (project?.caseId) useSpaces.getState().setActive(project.spaceId ?? CORE);
+      if (project?.caseId) useSpacesGlance.getState().enter(project.spaceId ?? CORE);
       set({ project });
     },
 

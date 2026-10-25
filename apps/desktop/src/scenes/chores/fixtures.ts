@@ -108,6 +108,7 @@ const BAGS_CASE: CaseSummary = {
   created: "2026-10-12T08:00:00+00:00",
   confirmed: 4,
   slots: 6,
+  space_id: "",
 };
 
 /** The scripted session, answering every saved case when asked with no playbook (`cases('')`). */

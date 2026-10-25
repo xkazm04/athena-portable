@@ -9,7 +9,7 @@
  * http://127.0.0.1:1431/preview.html?scene=mind&at=%23/mind/look&picker=1
  * ```
  *
- * `scene` is the surface, the first act or any of the five depths (see `console/preview.tsx`), or
+ * `scene` is the surface, the first act or any of the six depths (see `console/preview.tsx`), or
  * `stage`, `bell` or `console` for the pieces they are built from and the whole thing on the live
  * stores, or `avatar` for her face driven by a scripted signal (`avatar/preview.tsx`, ADR 0120);
  * `?surface=athena` is her own window. No Tauri, no IPC, no daemon — that is the point, not

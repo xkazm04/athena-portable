@@ -6,8 +6,13 @@
  * review is open (unanswered), oldest due first, then the latest approval. A case whose chore this
  * build does not ship is counted and said, never dropped in silence. Each state with no row is said
  * in the words the topic page's "Your case" uses (`casesLine`).
+ *
+ * A case linked to a Project (ADR 0225) names it, so the row can carry its chip; a case in core, or
+ * linked to a Project the list does not hold (erased in the other window, not read yet), names none:
+ * the chip says only what the list proves.
  */
 import type { CaseSummary, ChoreReview, DueReview } from "@/lib/adopt";
+import type { SpaceSummary } from "@/lib/spaces";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
 import { dayOf } from "./adopt/state";
@@ -41,6 +46,8 @@ export interface YourRow {
   /** The open review's due instant, "" when none: the order's first key. */
   dueAt: string;
   approvedAt: string;
+  /** The Project the case is linked to (ADR 0225), or null for core or one the list does not hold. */
+  space: SpaceSummary | null;
 }
 
 export interface Yours {
@@ -69,8 +76,10 @@ export function yoursOf(
   model: PlaybooksModel,
   cases: readonly CaseSummary[],
   reviews: ReadonlyMap<string, DueReview | null>,
+  spaces: readonly SpaceSummary[] = [],
 ): Yours {
   const byId = new Map(model.items.map((v) => [v.id, v]));
+  const spaceById = new Map(spaces.map((s) => [s.id, s]));
   const rows: YourRow[] = [];
   let elsewhere = 0;
   for (const c of cases) {
@@ -91,6 +100,7 @@ export function yoursOf(
       due: open ? `Due ${localDay(open.due_at)}${open.missed > 0 ? ` and ${open.missed} missed` : ""}` : "",
       dueAt: open ? open.due_at : "",
       approvedAt: c.approved_at,
+      space: (c.space_id && spaceById.get(c.space_id)) || null,
     });
   }
   rows.sort((a, b) => {

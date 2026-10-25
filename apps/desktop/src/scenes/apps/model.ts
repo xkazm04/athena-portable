@@ -65,12 +65,6 @@ export interface AppSpaces {
 /** No Projects: the preview's default and a fixture that is not about them. */
 export const NO_SPACES: AppSpaces = { list: [], addApp: () => Promise.resolve() };
 
-/** The Projects that pair `origin`, and the others it could be added to, in the list's order. */
-export function spacesOf(spaces: AppSpaces, origin: string): { in: SpaceSummary[]; others: SpaceSummary[] } {
-  const has = (s: SpaceSummary) => s.apps.includes(origin);
-  return { in: spaces.list.filter(has), others: spaces.list.filter((s) => !has(s)) };
-}
-
 export interface AppsModel {
   browser: BrowserModel;
   /** The Projects (ADR 0225), for an app's "In projects". */

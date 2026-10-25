@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { ROOTS, type Root } from "@/depth/model";
+import { SURFACE_ROOTS, type SurfaceRoot } from "@/depth/model";
 
 import { AccountArt } from "./accounts";
 import Glyph, { type GlyphFacts } from "./glyphs";
@@ -38,7 +38,7 @@ describe("an account's drawing being switched on", () => {
 });
 
 describe("the depth glyphs draw their light's live facts", () => {
-  const draw = (root: Root, facts: GlyphFacts) => renderToStaticMarkup(<Glyph root={root} facts={facts} />);
+  const draw = (root: SurfaceRoot, facts: GlyphFacts) => renderToStaticMarkup(<Glyph root={root} facts={facts} />);
   const STATUS = /var\(--status-/;
 
   it("case 1: the accounts drawing carries no warning when no account needs the person", () => {
@@ -56,18 +56,15 @@ describe("the depth glyphs draw their light's live facts", () => {
     expect(draw("chores", { attention: false, filled: 3, of: 12 })).toContain("var(--status-success)");
   });
 
-  it("case 4: the apps drawing inks one window frame per app switched on, the rest muted outlines", () => {
-    const inked = (h: string) => (h.match(/<rect[^>]*stroke="var\(--accent\)"/g) ?? []).length;
-    expect(inked(draw("apps", { attention: false, filled: 2, of: 5 }))).toBe(2);
-    const none = draw("apps", { attention: false, filled: 0, of: 0 });
-    expect(inked(none)).toBe(0);
-    const frames = none.match(/<rect[^>]*>/g) ?? [];
-    expect(frames).toHaveLength(3);
-    for (const f of frames) expect(f).toContain('stroke="var(--muted-foreground)"');
+  it("case 4: the projects drawing inks its inner orbit once there is a project, and draws no status of its own", () => {
+    const inked = (h: string) => /<ellipse[^>]*rx="32"[^>]*stroke="var\(--accent\)"/.test(h);
+    expect(inked(draw("projects", { attention: false, filled: 2, of: 2 }))).toBe(true);
+    expect(inked(draw("projects", { attention: false, filled: 0, of: 0 }))).toBe(false);
+    expect(draw("projects", { attention: false, filled: 2, of: 2 })).not.toMatch(STATUS);
   });
 
-  it("case 5: a count that is not known (of: null) draws no status at all, for every root", () => {
-    for (const root of ROOTS) {
+  it("case 5: a count that is not known (of: null) draws no status at all, for every light", () => {
+    for (const root of SURFACE_ROOTS) {
       for (const attention of [false, true]) {
         expect(draw(root, { attention, filled: 1, of: null }), `${root} ${attention}`).not.toMatch(STATUS);
       }
@@ -95,7 +92,7 @@ describe("the depth glyphs draw their light's live facts", () => {
     expect(draw("mind", { attention: false, filled: 1, of: 1 })).not.toMatch(STATUS);
   });
 
-  it("case 8 (guard): every root in every state is decorative, floats, and uses tokens only; Mind and Engine draw the same facet", () => {
+  it("case 8 (guard): every light in every state is decorative, floats, and uses tokens only; Mind and Engine draw the same facet", () => {
     const states: Record<string, GlyphFacts> = {
       unknown: { attention: false, filled: 0, of: null },
       empty: { attention: false, filled: 0, of: 0 },
@@ -103,7 +100,7 @@ describe("the depth glyphs draw their light's live facts", () => {
       full: { attention: false, filled: 3, of: 3 },
       attention: { attention: true, filled: 1, of: 3 },
     };
-    for (const root of ROOTS) {
+    for (const root of SURFACE_ROOTS) {
       for (const [name, facts] of Object.entries(states)) {
         const h = draw(root, facts);
         expect(h, `${root} ${name}`).toContain('aria-hidden="true"');

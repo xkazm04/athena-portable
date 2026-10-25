@@ -9,10 +9,14 @@
  * case's open review (kept warm across a move, `reads.ts`), and draws them above the areas, what is due first (`yours.ts`), each one
  * press from its case or its chore's page; `Yours` narrows the ledger to the chores with a case.
  * Without deps (the preview, no daemon) there is no band and the page is as it always was.
+ *
+ * A case linked to a Project (ADR 0225) wears its chip on its row, a press into the Project's level;
+ * a case in core wears none, as on the topic page.
  */
 import { useEffect, useRef } from "react";
 
 import Button from "@/components/Button";
+import { ProjectChip } from "@/components/ProjectPill";
 import Table, { type Column } from "@/components/Table";
 import type { Path } from "@/depth/model";
 import type { DueReview } from "@/lib/adopt";
@@ -34,6 +38,7 @@ import { totalsLine, valueCell } from "./worth";
 import { lead } from "./rich";
 import { JOB_TONE, timeCell } from "./facts";
 import Glyph from "./glyphs";
+import type { ChoreSpaces } from "./topic";
 import { hasCase, yoursLine, yoursOf, type YoursState } from "./yours";
 import { readKey, useRead } from "./reads";
 import { failureOf, staleLine, type Failure } from "./runs";
@@ -102,6 +107,7 @@ export default function Catalogue({
   create,
   deps,
   go,
+  spaces,
 }: {
   model: PlaybooksModel;
   state: CatalogueState;
@@ -113,10 +119,12 @@ export default function Catalogue({
   deps?: AdoptDeps;
   /** Where "Open your case" goes. */
   go?: (to: Path) => void;
+  /** The Projects, to name each case's (ADR 0225); absent, no row shows one. */
+  spaces?: ChoreSpaces;
 }) {
   const saved = useYours(deps);
   const found = saved?.kind === "found" ? saved : null;
-  const yours = found ? yoursOf(model, found.cases, found.reviews) : null;
+  const yours = found ? yoursOf(model, found.cases, found.reviews, spaces?.list) : null;
   const mine = found ? hasCase(model, found.cases) : null;
   // `Yours` narrows only once the cases are known; until then the remembered toggle waits.
   const narrowed = state.yours && mine !== null && mine.size > 0;
@@ -241,6 +249,13 @@ export default function Catalogue({
                     <span className="pa-case__title">{r.title}</span>
                     {r.due ? <span className="pa-yours__due">{r.due}</span> : null}
                     <span className="pa-case__when">{`${r.approved} · ${r.confirmed}`}</span>
+                    {r.space ? (
+                      <ProjectChip
+                        space={r.space}
+                        label={`Open the project ${r.space.name}`}
+                        onClick={go ? () => go({ root: "projects", item: r.space!.id }) : undefined}
+                      />
+                    ) : null}
                     {go ? (
                       <Button
                         variant={r.due ? "primary" : "ghost"}

@@ -3,8 +3,8 @@
  *
  * Summoned by the console (Ctrl+K anywhere, "/" outside a field, or its control in the bar) and
  * fetched only then: this file, its corpus and its ranking are a lazy chunk, so the first frame
- * carries none of it. It reads the names the stores already hold (the apps, the shipped chores,
- * the accounts), builds the places with `places.ts` and ranks them on every keystroke. Enter makes
+ * carries none of it. It reads the names the stores already hold (the projects, the apps, the
+ * shipped chores, the accounts), builds the places with `places.ts` and ranks them on every keystroke. Enter makes
  * one move through the depth's own `go`, so the stage plays its normal dive and a place the
  * grammar refuses is never reached. Escape closes it and is kept from the stage, which would
  * otherwise rise a level as well.
@@ -17,6 +17,7 @@ import { useBrowserModel } from "@/modules/browser";
 import { itemOfTab } from "@/scenes/apps/model";
 import { useConnectors } from "@/stores/connectors";
 import { usePlaybooks } from "@/stores/playbooks";
+import { useSpaces } from "@/stores/spaces";
 
 import { placesOf, rank, type Place, type PlaceSources } from "./places";
 import "./finder.css";
@@ -37,9 +38,12 @@ function useSources(): PlaceSources {
   const browser = useBrowserModel();
   const playbooks = usePlaybooks((s) => s.items);
   const connectors = useConnectors((s) => s.items);
+  // The projects as the spaces store holds them: the window root reads the list (ADR 0225).
+  const spaces = useSpaces((s) => s.spaces);
   useEffect(() => void usePlaybooks.getState().load().catch(() => {}), []);
   return useMemo(
     () => ({
+      projects: spaces.map((s) => ({ id: s.id, name: s.name })),
       apps: [
         ...browser.apps.map((a) => ({ item: a.origin, label: a.host })),
         ...browser.tabs.map((t) => ({ item: itemOfTab(t), label: t.host || t.title })),
@@ -47,7 +51,7 @@ function useSources(): PlaceSources {
       chores: (playbooks ?? []).map((p) => ({ id: p.id, title: p.shortTitle })),
       accounts: connectors.map((c) => ({ id: c.id, label: c.label })),
     }),
-    [browser.apps, browser.tabs, playbooks, connectors],
+    [spaces, browser.apps, browser.tabs, playbooks, connectors],
   );
 }
 

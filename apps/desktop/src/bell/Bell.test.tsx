@@ -109,6 +109,7 @@ describe("the speaking pose", () => {
       windowVisible: true,
       apps: [],
       openTabs: 0,
+      projects: { count: 0, loaded: true, failed: false, active: "" },
       accounts: [],
       chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
       voiceAvailable: true,

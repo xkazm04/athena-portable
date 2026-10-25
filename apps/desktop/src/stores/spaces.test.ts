@@ -9,6 +9,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "@/lib/api";
 import { CORE, SpacesApi } from "@/lib/spaces";
 
 const rows = vi.hoisted(() => new Map<string, unknown>());
@@ -28,6 +29,7 @@ vi.mock("@/lib/ipc", async (actual) => ({
 }));
 
 import { bindTurn, resetSpacesForTests, useSpaces } from "./spaces";
+import { activeName, useSpacesGlance } from "./spaces-glance";
 
 const ROW = "active_space_id";
 
@@ -124,6 +126,40 @@ describe("the list", () => {
   });
 });
 
+describe("the first frame's mirror (spaces-glance)", () => {
+  it("follows the list, the active space and a failed read, and enters through the store", async () => {
+    expect(useSpacesGlance.getState()).toMatchObject({ names: [], loaded: false, failed: false, activeId: CORE });
+    await useSpaces.getState().load();
+    expect(useSpacesGlance.getState().names).toEqual([
+      { id: TAXES.id, name: "Taxes" },
+      { id: GARDEN.id, name: "Garden" },
+    ]);
+    expect(useSpacesGlance.getState().loaded).toBe(true);
+    useSpacesGlance.getState().enter(GARDEN.id);
+    expect(useSpaces.getState().activeId).toBe(GARDEN.id);
+    expect(useSpacesGlance.getState().activeId).toBe(GARDEN.id);
+    expect(activeName(useSpacesGlance.getState())).toBe("Garden");
+    // A switch held for a running turn is mirrored as held, and the list is not rebuilt for it.
+    const names = useSpacesGlance.getState().names;
+    const turn = fakeTurn();
+    turn.start();
+    useSpacesGlance.getState().enter(TAXES.id);
+    expect(useSpacesGlance.getState()).toMatchObject({ activeId: GARDEN.id, pending: TAXES.id });
+    expect(useSpacesGlance.getState().names).toBe(names);
+    turn.end();
+    expect(useSpacesGlance.getState()).toMatchObject({ activeId: TAXES.id, pending: null });
+    resetSpacesForTests(new SpacesApi(() => null));
+    await useSpaces.getState().load();
+    expect(useSpacesGlance.getState()).toMatchObject({ loaded: false, failed: true, activeId: CORE });
+  });
+
+  it("names a project with no name, and core as no name at all", () => {
+    expect(activeName({ names: [{ id: TAXES.id, name: "" }], activeId: TAXES.id })).toBe("Untitled project");
+    expect(activeName({ names: [{ id: TAXES.id, name: "Taxes" }], activeId: CORE })).toBe("");
+    expect(activeName({ names: [], activeId: TAXES.id })).toBe("");
+  });
+});
+
 describe("the acts take the contract's routes", () => {
   it("create, update and erase", async () => {
     await useSpaces.getState().load();
@@ -143,6 +179,22 @@ describe("the acts take the contract's routes", () => {
     expect(daemon.seen.at(-1)).toMatchObject({ method: "DELETE", path: `/spaces/${TAXES.id}` });
     expect(erased).toEqual({ id: TAXES.id, episodes: 3, facts: 1, procedurals: 0, chores_unlinked: 2 });
     expect(useSpaces.getState().spaces.map((s) => s.id)).not.toContain(TAXES.id);
+  });
+
+  it("a refused erase carries the daemon's finer word, and the space stays listed", async () => {
+    const busy = async (url: string, init: RequestInit = {}) =>
+      url.endsWith("/spaces") && (init.method ?? "GET") === "GET"
+        ? daemon.fetchImpl(url, init)
+        : new Response(
+            JSON.stringify({ reason: "validator_failed", detail: "a turn is running in this project", error: "space_busy" }),
+            { status: 409, headers: { "content-type": "application/json" } },
+          );
+    resetSpacesForTests(new SpacesApi(() => ({ url: "http://daemon", token: "t" }), busy));
+    await useSpaces.getState().load();
+    const refused = await useSpaces.getState().erase(TAXES.id).catch((e: unknown) => e);
+    expect(refused).toBeInstanceOf(ApiError);
+    expect(refused).toMatchObject({ status: 409, reason: "validator_failed", word: "space_busy" });
+    expect(useSpaces.getState().spaces.map((s) => s.id)).toContain(TAXES.id);
   });
 
   it("memory, promote and linkCase", async () => {

@@ -72,6 +72,18 @@ export function refusalOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/**
+ * An erase the daemon held back. While a turn runs in the project the daemon refuses with the finer
+ * word `space_busy` (ADR 0225), which is a moment to wait, not a fault, so it is said as a sentence;
+ * any other refusal is said verbatim.
+ */
+export function eraseRefusalOf(error: unknown): string {
+  if (error instanceof ApiError && error.word === "space_busy") {
+    return "a turn is running in this project. Erase it once that turn has ended.";
+  }
+  return refusalOf(error);
+}
+
 const nameOf = (s: SpaceSummary): string => s.name || "Untitled project";
 
 /** Where Athena is filing her turns, in a few words: a project's name, or core. */
@@ -686,7 +698,7 @@ function Erase({ project, erase }: { project: Project; erase: () => Promise<unkn
     setProblem(null);
     erase().catch((error: unknown) => {
       setBusy(false);
-      setProblem(refusalOf(error));
+      setProblem(eraseRefusalOf(error));
     });
   };
   return (

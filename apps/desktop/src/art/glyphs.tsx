@@ -1,15 +1,19 @@
 /**
- * One drawing per depth — README section 3.1, ADR 0087.
+ * One drawing per surface light — README section 3.1, ADR 0087 and 0225.
  *
  * Stylised key art, drawn for this app: an SVG per depth in the brand's strokes and the app's own
  * tokens (never a literal colour), so a light on the seabed reads as a thing before its word is
  * read. They are drawings, not screenshots of anything, and are labelled so wherever one could be
  * mistaken for the product. Each is a 120x90 scene with a slow float that is CSS on `transform`
  * and stops under Calm; none runs script.
+ *
+ * Only the depths the surface lights are drawn (`SURFACE_ROOTS`): Apps lost its light to Projects
+ * (ADR 0225) and no other place draws a depth's glyph, so its drawing went with the light rather
+ * than ride the first frame unseen.
  */
 import type { ReactElement } from "react";
 
-import type { Root } from "@/depth/model";
+import type { SurfaceRoot } from "@/depth/model";
 
 import "./glyphs.css";
 
@@ -18,7 +22,7 @@ const ACCENT = "var(--accent)";
 const WARN = "var(--status-warning)";
 
 /**
- * What a light's drawing shows of its depth: `filled` of `of` are on (apps on, accounts connected,
+ * What a light's drawing shows of its depth: `filled` of `of` are on (projects kept, accounts connected,
  * chores tested, a voice that is ready, an engine that is), and `attention` is a need. `of: null`
  * is a count not known (still counting, could not count): the plain drawing, no status mark,
  * because a mark the data cannot back is a decoration pretending to be a status. No facts at all
@@ -42,7 +46,7 @@ const warn = (x: number, y: number) => (
   </>
 );
 
-const ART: Record<Root, (f: Facts) => ReactElement> = {
+const ART: Record<SurfaceRoot, (f: Facts) => ReactElement> = {
   // Her core as a small sun, two projects as tilted rings around it, their apps as moons (ADR 0225).
   projects: (f) => (
     <g className="glyph__float" fill="none">
@@ -54,17 +58,6 @@ const ART: Record<Root, (f: Facts) => ReactElement> = {
       <rect x="22" y="53" width="12" height="9.5" rx="2.5" fill="var(--card-bg)" stroke="var(--accent)" strokeWidth="1.5" />
       <rect x="99" y="54" width="12" height="9.5" rx="2.5" fill="var(--card-bg)" stroke={STROKE} strokeWidth="1.5" />
       <rect x="14" y="30" width="10" height="8" rx="2" fill="var(--card-bg)" stroke={STROKE} strokeWidth="1.5" />
-    </g>
-  ),
-  apps: (f) => (
-    <g className="glyph__float">
-      <rect x="16" y="14" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 6%, transparent)" stroke={ink(f, 2)} strokeWidth="1.5" />
-      <rect x="32" y="24" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 9%, transparent)" stroke={ink(f, 1)} strokeWidth="1.5" />
-      <rect x="48" y="34" width="56" height="40" rx="6" fill="var(--card-bg)" stroke={ink(f, 0)} strokeWidth="2" />
-      <path d="M48 43h56" stroke={ACCENT} strokeOpacity=".6" />
-      <circle cx="54" cy="38.5" r="1.6" fill={ACCENT} />
-      <circle cx="59" cy="38.5" r="1.6" fill={ACCENT} fillOpacity=".6" />
-      <path d="M56 52h28M56 58h38M56 64h20" stroke="var(--foreground)" strokeWidth="2" strokeLinecap="round" strokeOpacity=".75" />
     </g>
   ),
   chores: (f) => (
@@ -110,7 +103,7 @@ const ART: Record<Root, (f: Facts) => ReactElement> = {
 };
 
 /** The drawing for a depth. Decorative: the label next to it is the accessible name. */
-export default function Glyph({ root, size = 120, facts }: { root: Root; size?: number; facts?: GlyphFacts }) {
+export default function Glyph({ root, size = 120, facts }: { root: SurfaceRoot; size?: number; facts?: GlyphFacts }) {
   return (
     <svg
       className="glyph"

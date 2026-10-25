@@ -107,6 +107,7 @@ export default function ChoresView({ model, path, go, adopt, offer, spaces }: Ch
         create={() => go(newChorePath())}
         deps={adopt}
         go={go}
+        spaces={spaces}
         open={(v) => {
           rememberCatalogue({ last: v.id });
           openChore(v.id);

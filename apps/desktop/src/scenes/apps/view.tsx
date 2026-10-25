@@ -23,12 +23,13 @@ import { ProjectChip } from "@/components/ProjectPill";
 import ProblemNote from "@/components/ProblemNote";
 import StatusDot, { type Tone } from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
+import type { SpaceSummary } from "@/lib/spaces";
 import { whenAgo } from "@/lib/time";
 import { normaliseUrl } from "@/lib/url";
 import { originOf, type AppStanding, type RegisteredApp } from "@/modules/browser/model";
 
 import type { AppSpaces, AppsModel, PageEntry, ToolView } from "./model";
-import { appFor, appPath, pageFor, pagePath, spacesOf, toolPath } from "./model";
+import { appFor, appPath, pageFor, pagePath, toolPath } from "./model";
 import AppOrb from "./orb";
 import "./apps.css";
 
@@ -379,6 +380,15 @@ function AppLevel({ model, item, go }: { model: AppsModel; item: string; go: (to
  * project", a short list of the others. Adding sends the Project's whole new set of origins; the
  * daemon's refusal (24 apps is its cap) is said under the list, verbatim.
  */
+/**
+ * The Projects that pair `origin`, and the others it could be added to, in the list's order. Here
+ * and not in the model, which is first-frame code with the scene's crumbs (`live.tsx`).
+ */
+function spacesOf(spaces: AppSpaces, origin: string): { in: SpaceSummary[]; others: SpaceSummary[] } {
+  const has = (s: SpaceSummary) => s.apps.includes(origin);
+  return { in: spaces.list.filter(has), others: spaces.list.filter((s) => !has(s)) };
+}
+
 function InProjects({ origin, host, spaces, go }: { origin: string; host: string; spaces: AppSpaces; go: (to: Path) => void }) {
   const [adding, setAdding] = useState(false);
   const [said, setSaid] = useState("");

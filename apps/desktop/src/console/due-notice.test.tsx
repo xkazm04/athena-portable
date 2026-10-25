@@ -77,6 +77,8 @@ interface Daemon {
   reviews: Record<string, unknown>;
   /** When set, every review read fails as a refused connection. */
   down: boolean;
+  /** The saved cases `GET /adopt/cases?playbook_id=` lists (ADR 0225: their `space_id`). */
+  cases: { case_id: string; space_id: string }[];
   seen: { method: string; path: string; body: unknown }[];
 }
 
@@ -95,6 +97,7 @@ function serve(): void {
       const json = (body: unknown) =>
         new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
       if (path === "/adopt/chores/due") return json({ ok: true, notices: daemon.notices });
+      if (path.startsWith("/adopt/cases?")) return json({ ok: true, cases: daemon.cases });
       const m = /^\/adopt\/cases\/([^/]+)\/review$/.exec(path);
       if (m && method === "GET") {
         if (daemon.down) throw new TypeError("Failed to fetch");
@@ -146,7 +149,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.resetModules();
   vi.useRealTimers();
-  daemon = { notices: [], reviews: {}, down: false, seen: [] };
+  daemon = { notices: [], reviews: {}, down: false, seen: [], cases: [] };
   serve();
   host = document.createElement("div");
   document.body.appendChild(host);
@@ -189,10 +192,27 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
     const prepares = daemon.seen.filter((s) => s.method === "POST" && (s.body as { answer?: string }).answer === "prepare");
     expect(prepares).toEqual([{ method: "POST", path: "/adopt/cases/a/review", body: { due_at: DUE, answer: "prepare" } }]);
     expect(tabsCreate.mock.calls.map((c) => c[0])).toEqual(["https://ledgerwren.test/", "https://mail.google.com/"]);
-    expect(athenaOffer).toHaveBeenCalledWith("Do a.", { id: "pb-a", title: "Chore a", caseId: "a", scheduled: true });
+    // A case in core (none listed with a space) is handed over to core (ADR 0225).
+    expect(athenaOffer).toHaveBeenCalledWith("Do a.", { id: "pb-a", title: "Chore a", caseId: "a", scheduled: true, spaceId: "" });
     expect(requests().some((r) => r.includes("/run"))).toBe(false);
     expect((await dock()).notice?.case_id).toBe("b");
     expect(go).not.toHaveBeenCalled();
+  });
+
+  it("Open and prepare on a case linked to a Project hands the run over in that Project (ADR 0225)", async () => {
+    daemon.cases = [{ case_id: "a", space_id: "spc_0123456789ab" }];
+    await mount([notice("a")]);
+    await press(line());
+    await waitLong(() => expect(button("Open and prepare")).toBeTruthy());
+    await press(button("Open and prepare"));
+    expect(requests()).toContain("GET /adopt/cases?playbook_id=pb-a");
+    expect(athenaOffer).toHaveBeenCalledWith("Do a.", {
+      id: "pb-a",
+      title: "Chore a",
+      caseId: "a",
+      scheduled: true,
+      spaceId: "spc_0123456789ab",
+    });
   });
 
   it("Skip this one: answers skip, and the next notice takes the dock", async () => {

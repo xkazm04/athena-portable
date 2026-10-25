@@ -23,6 +23,7 @@ import { ADOPT_PLAYBOOK } from "./adopt/fixtures";
 import { fixtures } from "./fixtures";
 import { forgetChores } from "./memory";
 import { casePath, chorePath } from "./model";
+import type { ChoreSpaces } from "./topic";
 import ChoresView from "./view";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -40,6 +41,7 @@ const CREDITS: CaseSummary = {
   created: "2026-10-01T09:00:00+00:00",
   confirmed: 7,
   slots: 9,
+  space_id: "",
 };
 const BAGS: CaseSummary = {
   case_id: "proj_bbbbbbbbbbbb",
@@ -50,6 +52,7 @@ const BAGS: CaseSummary = {
   created: "2026-10-12T08:00:00+00:00",
   confirmed: 4,
   slots: 6,
+  space_id: "",
 };
 
 class FakeClient implements AdoptClient {
@@ -159,9 +162,9 @@ let host: HTMLDivElement;
 let root: Root;
 let go: ReturnType<typeof vi.fn<(to: Path) => void>>;
 
-async function show(path: Path, adopt?: AdoptDeps) {
+async function show(path: Path, adopt?: AdoptDeps, spaces?: ChoreSpaces) {
   await act(async () => {
-    root.render(<ChoresView model={model()} path={path} go={go} adopt={adopt} />);
+    root.render(<ChoresView model={model()} path={path} go={go} adopt={adopt} spaces={spaces} />);
   });
   await act(async () => {
     for (let i = 0; i < 8; i++) await Promise.resolve();
@@ -267,6 +270,29 @@ describe("Your chores, on the catalogue", () => {
     expect(ledgerRows()).toHaveLength(2);
     click(toggle());
     expect(ledgerRows()).toHaveLength(all);
+  });
+
+  it("a case linked to a Project wears its chip, a press into the Project; a case in core wears none (ADR 0225)", async () => {
+    const renovation = {
+      id: "spc_0123456789ab",
+      name: "Renovation",
+      brief: "",
+      apps: [],
+      hue: 30,
+      created: "2026-10-20T09:00:00Z",
+      updated: "2026-10-20T09:00:00Z",
+      counts: { episodes: 0, facts: 0, procedurals: 0, chores: 1 },
+    };
+    const spaces: ChoreSpaces = { list: [renovation], link: () => Promise.resolve() };
+    const linked = { ...CREDITS, space_id: renovation.id };
+    await show({ root: "chores" }, { client: new FakeClient(found([linked, BAGS])), dictation: null }, spaces);
+    const [bags, credits] = bandRows();
+    expect(bags!.querySelector(".project-chip")).toBeNull();
+    const chip = credits!.querySelector<HTMLButtonElement>("button.project-chip");
+    expect(chip?.textContent).toBe("Renovation");
+    expect(chip?.getAttribute("aria-label")).toBe("Open the project Renovation");
+    click(chip);
+    expect(go).toHaveBeenLastCalledWith({ root: "projects", item: renovation.id });
   });
 
   it("case 6: the daemon's cut is printed under the band's rows", async () => {

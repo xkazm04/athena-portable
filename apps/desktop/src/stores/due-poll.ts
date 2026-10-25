@@ -13,7 +13,7 @@
  * then Open and prepare, Skip this one, Pause, or Later. What "Open and prepare" needs (the pure
  * `openAndPrepare` and the review parser) is loaded on the press.
  */
-import { CHORE_ROUTES, type DueNotice, type DueReview } from "@/lib/adopt";
+import { ADOPT_ROUTES, CHORE_ROUTES, type DueNotice, type DueReview } from "@/lib/adopt";
 import type { ChoresClient } from "@/lib/chores-client";
 import { athenaOffer } from "@/lib/companion";
 import { tabsCreate } from "@/lib/ipc";
@@ -168,16 +168,41 @@ async function act(what: string, run: (review: DueReview) => Promise<unknown>): 
   }
 }
 
+/**
+ * The Project the case is linked to (`CaseSummary.space_id`, ADR 0225), so "Open and prepare" from
+ * the dock enters it as the chore's own page does. The review does not carry it, so the playbook's
+ * cases are asked on the press. A read that fails or a case not listed answers core: the run is
+ * still filed in the case's Project, because the daemon lets a saved case's space win over the one
+ * a turn names; only the pill would say core until the next switch.
+ */
+async function spaceOfCase(r: DueReview): Promise<string> {
+  try {
+    const reply = await ask("GET", ADOPT_ROUTES.cases(r.playbook_id));
+    const cases: unknown[] = Array.isArray(reply.cases) ? reply.cases : [];
+    const found = cases.find(
+      (c): c is { case_id: string; space_id?: unknown } =>
+        typeof c === "object" && c !== null && (c as { case_id?: unknown }).case_id === r.case_id,
+    );
+    return typeof found?.space_id === "string" ? found.space_id : "";
+  } catch {
+    return "";
+  }
+}
+
 /** Open and prepare, with the Browser's tabs and her composer; nothing is sent until she presses send. */
 const prepare = () =>
   act("Nothing was prepared", async (r) => {
-    const { openAndPrepare } = await import("@/scenes/chores/due-model");
-    await openAndPrepare(r, {
-      open: (url) => void tabsCreate(url).catch((e: unknown) => console.error(`[due] open: ${String(e)}`)),
-      hand: (text, playbook) =>
-        void athenaOffer(text, playbook).catch((e: unknown) => console.error(`[due] hand: ${String(e)}`)),
-      answer: (caseId, dueAt, answer) => ask("POST", CHORE_ROUTES.review(caseId), { due_at: dueAt, answer }),
-    });
+    const [{ openAndPrepare }, spaceId] = await Promise.all([import("@/scenes/chores/due-model"), spaceOfCase(r)]);
+    await openAndPrepare(
+      r,
+      {
+        open: (url) => void tabsCreate(url).catch((e: unknown) => console.error(`[due] open: ${String(e)}`)),
+        hand: (text, playbook) =>
+          void athenaOffer(text, playbook).catch((e: unknown) => console.error(`[due] hand: ${String(e)}`)),
+        answer: (caseId, dueAt, answer) => ask("POST", CHORE_ROUTES.review(caseId), { due_at: dueAt, answer }),
+      },
+      spaceId,
+    );
   });
 
 const skip = () =>

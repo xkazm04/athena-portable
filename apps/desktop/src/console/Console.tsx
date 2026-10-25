@@ -15,7 +15,7 @@ import { samePath, shapeOf, type Labeller, type Path } from "@/depth/model";
 import { useDepth } from "@/depth/store";
 import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
 import Stage from "@/stage/Stage";
-import { pillText, useAthena } from "@/stores/athena";
+import { isResting, pillText, useAthena } from "@/stores/athena";
 import { useReopened } from "@/scenes/waking/reopen";
 import { readRows, useSettings } from "@/stores/settings";
 
@@ -29,7 +29,6 @@ const Finder = lazy(() => import("./finder"));
 const BarPill = lazy(() => import("./bar-pill"));
 
 const retryRead = () => void readRows();
-
 
 /**
  * Every scene's crumb names, in one labeller. The hooks are called for every scene on every render
@@ -144,7 +143,7 @@ export default function Console() {
       trailing={
         <>
           <Suspense fallback={null}>
-            <BarPill go={go} />
+            <BarPill go={go} working={!isResting(athena.state, athena.line)} />
           </Suspense>
           {/* A page owns the window below the band (ADR 0088), so the finder is summoned over a scene. */}
           {shapeOf(path) === "scene" && <Summon go={go} label={label} here={path} />}

@@ -20,7 +20,7 @@ import type { GlyphFacts } from "@/art/glyphs";
 import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose, type PoseInput } from "@/bell/pose";
-import { ROOT_LABEL, SURFACE_ROOTS, type Path, type Root, type SurfaceRoot } from "@/depth/model";
+import { ROOT_LABEL, SURFACE_ROOTS, type Path, type SurfaceRoot } from "@/depth/model";
 import type { Standing } from "@/modules/setup/readiness";
 import { pillText } from "@/stores/athena";
 
@@ -47,14 +47,14 @@ export interface SurfaceSources {
   apps: readonly { id: string; host: string; enabled: boolean }[];
   openTabs: number;
   /**
-   * `word` and `line` are the connectors module's own standing for the account (`standingOf`):
-   * the surface names why an account needs the person in the words its level uses.
-   */
-  /**
    * The person's projects (ADR 0225): how many, whether the list has answered or failed, and the
    * name of the one she works in, "" for her core.
    */
   projects: { count: number; loaded: boolean; failed: boolean; active: string };
+  /**
+   * `word` and `line` are the connectors module's own standing for the account (`standingOf`):
+   * the surface names why an account needs the person in the words its level uses.
+   */
   accounts: readonly { id: string; label: string; connected: boolean; attention: boolean; word: string; line: string }[];
   /**
    * `loaded` is false while the shipped playbooks are still being fetched (they load lazily);
@@ -93,7 +93,7 @@ export interface SurfaceSources {
 }
 
 export interface Light {
-  root: Root;
+  root: SurfaceRoot;
   /** Where its press goes: its first need when it is under attention, else its depth's field. */
   to: Path;
   label: string;

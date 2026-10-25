@@ -15,11 +15,12 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Path } from "@/depth/model";
+import { ApiError } from "@/lib/api";
 import { CORE } from "@/lib/spaces";
 import { useSpaces } from "@/stores/spaces";
 
 import { FIXTURE_ACTIONS, PATHS, RENOVATION, fixtures } from "./fixtures";
-import { useEnterSpace } from "./live";
+import { useEnterSpace } from "./live-view";
 import type { ProjectsActions, ProjectsModel } from "./model";
 import ProjectsView from "./view";
 
@@ -200,6 +201,21 @@ describe("a project", () => {
     await click(button("Erase Renovation"));
     await click(button("Erase 212 memories and unlink 4 chores — this cannot be undone"));
     expect(host.textContent).toContain("It was not erased: space_busy: a turn is running in this project");
+    expect(go).not.toHaveBeenCalled();
+  });
+
+  it("says a turn running in the project as a sentence when the daemon refuses with space_busy", async () => {
+    const go = vi.fn();
+    const a = await mount("typical", PATHS.project!, go);
+    a.erase.mockRejectedValueOnce(
+      new ApiError(409, "validator_failed", "a turn is running in this project; erase it after", "space_busy"),
+    );
+    await click(button("Erase Renovation"));
+    await click(button("Erase 212 memories and unlink 4 chores — this cannot be undone"));
+    expect(host.textContent).toContain(
+      "It was not erased: a turn is running in this project. Erase it once that turn has ended.",
+    );
+    expect(host.textContent).not.toContain("validator_failed");
     expect(go).not.toHaveBeenCalled();
   });
 

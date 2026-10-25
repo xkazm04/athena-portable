@@ -1,13 +1,14 @@
 /**
  * The Apps depth, as the running app uses it — README section 3.4 and 3.5, ADR 0087, 0088, 0089.
  *
- * The one file here that knows a store exists. The Browser module's own hook supplies the model and
- * the actions; this adds what a depth needs (the tools the open pages registered, the classes the
- * person pinned) and one behaviour of its own: an app opened or registered from the scene moves the
- * depth to its page once the tab exists, so the page shape is never asked for with nothing to show.
- * The view is a lazy chunk, fetched when the depth is first entered. Also the page's band: the tab
- * strip, the address field and the tools pill, the 40px under the bar that a native page webview
- * leaves to the chrome (`layout.rs`).
+ * With `live-view.tsx`, one of the two files here that know a store exists. The Browser module's
+ * own hook supplies the model and the actions; this adds what a depth needs (the tools the open
+ * pages registered, the classes the person pinned) and one behaviour of its own: an app opened or
+ * registered from the scene moves the depth to its page once the tab exists, so the page shape is
+ * never asked for with nothing to show. The view is a lazy chunk, fetched when the depth is first
+ * entered, and it joins the Projects in there (ADR 0225), so the spaces store stays off the first
+ * frame. Also the page's band: the tab strip, the address field and the tools pill, the 40px under
+ * the bar that a native page webview leaves to the chrome (`layout.rs`).
  */
 import { createElement, lazy, Suspense, useMemo } from "react";
 
@@ -16,38 +17,22 @@ import { useDepth } from "@/depth/store";
 import { useBrowserModel } from "@/modules/browser";
 import type { LiveScene, SceneProps } from "@/scenes/types";
 import { useOrigins } from "@/stores/origins";
-import { useSpaces } from "@/stores/spaces";
 import { useTools } from "@/stores/tools";
 
-import { itemLabel, itemOfTab, pagePath, selectApps, type AppSpaces, type AppsModel } from "./model";
+import { itemLabel, itemOfTab, pagePath, selectApps, type AppsModel } from "./model";
 import { StripView } from "./strip";
 
-const AppsView = lazy(() => import("./view"));
+const AppsView = lazy(() => import("./live-view"));
 
 /** The tools and pins the Browser module's model does not carry, joined onto it. */
 function useAppsModel(go: SceneProps["go"]): AppsModel {
   const browser = useBrowserModel({ onShown: (origin) => go(pagePath(origin)) });
   const byTab = useTools((s) => s.byTab);
   const records = useOrigins((s) => s.records);
-  // The Projects an app's layer lists and adds to (ADR 0225): the store's list, and `update` with
-  // the whole new set of origins, as the daemon's patch takes it.
-  const list = useSpaces((s) => s.spaces);
-  const update = useSpaces((s) => s.update);
-  const spaces = useMemo<AppSpaces>(
-    () => ({
-      list,
-      addApp: async (spaceId, origin) => {
-        const space = list.find((s) => s.id === spaceId);
-        if (!space || space.apps.includes(origin)) return;
-        await update(spaceId, { apps: [...space.apps, origin] });
-      },
-    }),
-    [list, update],
-  );
   return useMemo(() => {
     const pins = Object.fromEntries(Object.entries(records).map(([origin, row]) => [origin, row.overrides]));
-    return selectApps(browser, { byTab, pins }, spaces);
-  }, [browser, byTab, records, spaces]);
+    return selectApps(browser, { byTab, pins });
+  }, [browser, byTab, records]);
 }
 
 function Live({ path, go }: SceneProps) {

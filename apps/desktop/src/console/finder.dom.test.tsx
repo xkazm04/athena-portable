@@ -14,6 +14,7 @@ import { SURFACE, type Path } from "@/depth/model";
 import { escapeRises } from "@/stage/Stage";
 import { useConnectors } from "@/stores/connectors";
 import { usePlaybooks } from "@/stores/playbooks";
+import { useSpaces } from "@/stores/spaces";
 
 import { Summon, opensFinder } from "./Console";
 
@@ -25,6 +26,7 @@ let host: HTMLElement | null = null;
 beforeEach(() => {
   usePlaybooks.setState({ items: [{ id: "invoice-chase", shortTitle: "Invoice chase" }] as never });
   useConnectors.setState({ items: [{ id: "gh", label: "GitHub" }] as never });
+  useSpaces.setState({ spaces: [{ id: "spc_0123456789ab", name: "Renovation", hue: 30 }] as never });
 });
 
 afterEach(() => {
@@ -89,6 +91,22 @@ describe("the finder, summoned", () => {
     expect(go).toHaveBeenCalledTimes(1);
     expect(go).toHaveBeenCalledWith({ root: "chores", item: "invoice-chase" });
     expect(document.querySelector(".finder")).toBeNull();
+  });
+
+  it("finds a project by its name, and core as Core (ADR 0225)", async () => {
+    const go = vi.fn();
+    const h = mount(go);
+    act(() => void key(document.body, { key: "k", ctrlKey: true }));
+    const input = await field(h);
+    type(input, "renov");
+    expect(document.querySelector(".finder__list")?.textContent).toContain("Projects / Renovation");
+    act(() => void key(input, { key: "Enter" }));
+    expect(go).toHaveBeenCalledWith({ root: "projects", item: "spc_0123456789ab" });
+    act(() => void key(document.body, { key: "k", ctrlKey: true }));
+    const again = await field(h);
+    type(again, "core");
+    act(() => void key(again, { key: "Enter" }));
+    expect(go).toHaveBeenLastCalledWith({ root: "projects", item: "core" });
   });
 
   it("Escape inside the finder closes it, moves nowhere, and keeps the key from the stage", async () => {

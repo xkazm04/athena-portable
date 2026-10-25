@@ -17,6 +17,10 @@
  * core, and the row is put back to core: a space erased in the other window, or a row from a brain
  * that no longer has it, must never stamp a turn with a space nobody can see. A list that could not
  * be read proves nothing, so it changes nothing but `problem`.
+ *
+ * **Off the first frame.** In Main this module arrives after first paint, with the bar's pill that
+ * starts it (`console/bar-pill.tsx`); what the first frame draws of the projects is the mirror
+ * `stores/spaces-glance.ts`, which this store fills on every change.
  */
 import { create } from "zustand";
 
@@ -34,6 +38,7 @@ import {
 } from "@/lib/spaces";
 import { SETTING_KEYS, settingRead, settingWrite } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
+import { useSpacesGlance, type SpacesGlance } from "@/stores/spaces-glance";
 
 export interface SpacesState {
   spaces: readonly SpaceSummary[];
@@ -210,6 +215,29 @@ export const useSpaces = create<SpacesState>((set, get) => {
 export const spaceById = (spaces: readonly SpaceSummary[], id: string): SpaceSummary | null =>
   spaces.find((s) => s.id === id) ?? null;
 
+/**
+ * What the first frame reads of this store (`stores/spaces-glance.ts`). A list that could not be
+ * read is said as such, even after an earlier one answered. The names are rebuilt only when the
+ * list itself moved, so a held switch does not hand the surface a new list.
+ */
+export function glanceOf(
+  s: Pick<SpacesState, "spaces" | "loaded" | "problem" | "activeId" | "pending">,
+  names: SpacesGlance["names"] = s.spaces.map((x) => ({ id: x.id, name: x.name })),
+): Omit<SpacesGlance, "enter"> {
+  return {
+    names,
+    loaded: s.loaded && s.problem === "",
+    failed: s.problem !== "",
+    activeId: s.activeId,
+    pending: s.pending,
+  };
+}
+
+useSpacesGlance.setState({ ...glanceOf(useSpaces.getState()), enter: (id) => useSpaces.getState().setActive(id) });
+useSpaces.subscribe((s, prev) =>
+  useSpacesGlance.setState(glanceOf(s, s.spaces === prev.spaces ? useSpacesGlance.getState().names : undefined)),
+);
+
 /** Bind the window's turn signal. Replaces any earlier one. */
 export function bindTurn(signal: TurnSignal): void {
   stopTurn();
@@ -221,8 +249,9 @@ let started = false;
 
 /**
  * Bind the turn signal and read the list each time the daemon comes up, and the row again whenever
- * the other window writes it. Called by the two window roots and by nothing else (the day-zero rule
- * of README section 3.5): the pill and the run's `space_id` must be right on every scene.
+ * the other window writes it. Called by her window's root and by Main's bar pill, which is drawn on
+ * every scene (the day-zero rule of README section 3.5), and by nothing else: the pill and the run's
+ * `space_id` must be right on every scene.
  */
 export async function startSpaces(signal: TurnSignal = NO_TURN): Promise<void> {
   if (started) return;

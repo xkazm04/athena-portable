@@ -8,6 +8,7 @@ import { ROOTS, formatHash, isValid, itemsOf, samePath, type Path } from "@/dept
 import { placesOf, rank, type Place } from "./places";
 
 const SOURCES = {
+  projects: [{ id: "spc_0123456789ab", name: "Renovation" }],
   apps: [{ item: "host-1", label: "Ledgerbox" }],
   chores: [{ id: "invoice-chase", title: "Invoice chase" }],
   accounts: [{ id: "gh", label: "GitHub" }],
@@ -45,6 +46,32 @@ describe("placesOf", () => {
   });
 });
 
+describe("placesOf, the projects (ADR 0225)", () => {
+  it("lists each project under Projects by its name, and Athena's core as Core even with no project", () => {
+    const places = placesOf(SOURCES);
+    expect(at(places, { root: "projects", item: "spc_0123456789ab" }).crumb).toBe("Projects > Renovation");
+    expect(at(places, { root: "projects", item: "core" }).crumb).toBe("Projects > Core");
+    expect(rank("renov", places)[0]!.path).toEqual({ root: "projects", item: "spc_0123456789ab" });
+    // Apps stay places of their own: a project does not hide the app root or its apps.
+    expect(has(places, { root: "apps" })).toBe(true);
+    const none = placesOf({ ...SOURCES, projects: [] });
+    expect(at(none, { root: "projects", item: "core" }).crumb).toBe("Projects > Core");
+    expect(none.filter((p) => p.path.root === "projects").map((p) => p.path.item)).toEqual([undefined, "core"]);
+  });
+
+  it("never lets a project take core's item, and names a project with no name", () => {
+    const places = placesOf({
+      ...SOURCES,
+      projects: [
+        { id: "core", name: "Impostor" },
+        { id: "spc_ba9876543210", name: "" },
+      ],
+    });
+    expect(at(places, { root: "projects", item: "core" }).crumb).toBe("Projects > Core");
+    expect(at(places, { root: "projects", item: "spc_ba9876543210" }).crumb).toBe("Projects > Untitled project");
+  });
+});
+
 describe("rank", () => {
   const places = placesOf(SOURCES);
 
@@ -65,6 +92,7 @@ describe("rank", () => {
 
   it("orders equal scores by recency, then by the path's hash, the same on every run", () => {
     const twins = placesOf({
+      projects: [],
       apps: [],
       chores: [
         { id: "b-chase", title: "Chase" },

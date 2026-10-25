@@ -8,6 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CaseSummary, ChoreReview, DueReview } from "@/lib/adopt";
+import type { SpaceSummary } from "@/lib/spaces";
 
 import { ADOPT_PLAYBOOK } from "./adopt/fixtures";
 import { fixtures } from "./fixtures";
@@ -26,6 +27,7 @@ const CREDITS: CaseSummary = {
   created: "2026-10-01T09:00:00+00:00",
   confirmed: 7,
   slots: 9,
+  space_id: "",
 };
 const BAGS: CaseSummary = {
   case_id: "proj_bbbbbbbbbbbb",
@@ -36,6 +38,7 @@ const BAGS: CaseSummary = {
   created: "2026-10-12T08:00:00+00:00",
   confirmed: 4,
   slots: 6,
+  space_id: "",
 };
 
 const reviewOf = (c: CaseSummary, review: Partial<ChoreReview> | null): DueReview => ({
@@ -130,6 +133,30 @@ describe("yoursOf", () => {
     const two = yoursOf(model(), [gone, { ...gone, case_id: "proj_dddddddddddd" }], new Map());
     expect(two.elsewhereLine).toBe("2 saved cases are for chores this build does not ship.");
     expect([...hasCase(model(), [CREDITS, gone])]).toEqual([ADOPT_PLAYBOOK]);
+  });
+});
+
+describe("yoursOf, with the Projects (ADR 0225)", () => {
+  const RENOVATION: SpaceSummary = {
+    id: "spc_0123456789ab",
+    name: "Renovation",
+    brief: "",
+    apps: [],
+    hue: 30,
+    created: "2026-10-20T09:00:00Z",
+    updated: "2026-10-20T09:00:00Z",
+    counts: { episodes: 0, facts: 0, procedurals: 0, chores: 1 },
+  };
+
+  it("names the Project a case is linked to, and none for core or a Project the list does not hold", () => {
+    const linked = { ...CREDITS, space_id: RENOVATION.id };
+    const lost = { ...BAGS, space_id: "spc_ffffffffffff" };
+    const rows = yoursOf(model(), [linked, lost], new Map(), [RENOVATION]).rows;
+    expect(rows.find((r) => r.caseId === CREDITS.case_id)!.space).toBe(RENOVATION);
+    expect(rows.find((r) => r.caseId === BAGS.case_id)!.space).toBeNull();
+    // Core, and a list not handed in: no row names one.
+    expect(yoursOf(model(), [CREDITS, BAGS], new Map(), [RENOVATION]).rows.map((r) => r.space)).toEqual([null, null]);
+    expect(yoursOf(model(), [linked], new Map()).rows[0]!.space).toBeNull();
   });
 });
 

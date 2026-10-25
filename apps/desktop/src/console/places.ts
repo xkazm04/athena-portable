@@ -2,9 +2,11 @@
  * Every place the finder can go, and how a few typed letters rank them — README section 3.5,
  * ADR 0087.
  *
- * The corpus is built from what exists, never kept by hand: the five roots, the fixed items the
+ * The corpus is built from what exists, never kept by hand: every root, the fixed items the
  * depth grammar itself offers (`itemsOf`, so a new Mind item is findable with no edit here), the
- * Chores front door, and the apps, chores and accounts the stores hold. Each place carries its
+ * Chores front door, Athena's core, and the projects, apps, chores and accounts the stores hold
+ * (a project by its name, ADR 0225; core is always there, so it is findable before the list has
+ * answered and when it could not be read). Each place carries its
  * breadcrumb trail from `crumbs`, so the finder speaks the bar's words. A place the grammar refuses
  * is dropped here, and the reducer would ignore it anyway, so no hit can lead somewhere the stage
  * cannot draw.
@@ -25,9 +27,12 @@ import {
   type Labeller,
   type Path,
 } from "@/depth/model";
+import { CORE_ITEM } from "@/lib/spaces";
 import { NEW_ITEM } from "@/scenes/chores/model";
 
 export interface PlaceSources {
+  /** The person's projects (spaces): `id` is the `spc_…` item under `projects`. */
+  projects: readonly { id: string; name: string }[];
   apps: readonly { item: string; label: string }[];
   chores: readonly { id: string; title: string }[];
   accounts: readonly { id: string; label: string }[];
@@ -53,6 +58,10 @@ export function placesOf(sources: PlaceSources, label?: Labeller): Place[] {
   for (const root of ROOTS) add({ root });
   for (const root of ROOTS) for (const item of itemsOf(root)) add({ root, item });
   add({ root: "chores", item: NEW_ITEM }, "New chore");
+  add({ root: "projects", item: CORE_ITEM }, "Core");
+  for (const p of sources.projects) {
+    if (p.id !== CORE_ITEM) add({ root: "projects", item: p.id }, p.name || "Untitled project");
+  }
   for (const a of sources.apps) add({ root: "apps", item: a.item }, a.label);
   for (const c of sources.chores) if (c.id !== NEW_ITEM) add({ root: "chores", item: c.id }, c.title);
   for (const a of sources.accounts) add({ root: "accounts", item: a.id }, a.label);
