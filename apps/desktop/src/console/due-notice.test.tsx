@@ -157,8 +157,10 @@ describe("the dock's due notice opens the staged review in place", () => {
     await press(line());
     const after = daemon.seen.slice(before);
     expect(after.map((s) => `${s.method} ${s.path}`)).toEqual(["GET /adopt/cases/a/review"]);
+    // The review read resolves after the press; under a loaded suite the dock can still be
+    // "reading" on the first look, so wait for it rather than sample it once.
+    await vi.waitFor(async () => expect((await dock()).dock.kind).toBe("reviewing"));
     const state = await dock();
-    expect(state.dock.kind).toBe("reviewing");
     if (state.dock.kind !== "reviewing") return;
     expect(state.dock.review.lines.map((l) => l.kind)).toEqual(["expired", "may_have_completed", "approved", "declined"]);
     await vi.waitFor(() => expect(button("Open and prepare")).toBeTruthy());
