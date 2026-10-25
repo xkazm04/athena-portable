@@ -30,3 +30,5 @@
 @import "./chrome/responsive.css";
 @import "./base/reduced-motion.css";
 @import "./chrome/toast.css";
+/* Forced colours and prefers-contrast: more - last, so both win by order. */
+@import "./base/contrast-modes.css";

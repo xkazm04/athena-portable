@@ -1,0 +1,142 @@
+/* --------------------------------------------------------- contrast modes */
+
+/*
+ * TWO PLATFORM MODES THE DIRECTION DID NOT ANSWER, ANSWERED IN ONE SHEET.
+ *
+ * This direction draws its quantities with BACKGROUND paint: a criterion's weight is one to three
+ * filled rules, its score a filled bar, screening evidence filled pips, the current candidate a
+ * filled dot, the act class a filled swatch, Athena's presence a filled dot, and the armed
+ * irreversible button a filled pill. Several of them are aria-hidden because the paint is meant to
+ * be the carrier. Under forced colours (Windows High Contrast) the platform repaints every
+ * background to the theme's Canvas, and all of it disappears - in the compact L1 card, where the
+ * absolute score is hidden, the bar is the only place the score is drawn at all.
+ *
+ *   1. `forced-colors: active` - every background-borne datum gets a structural carrier in a
+ *      SYSTEM colour: `forced-color-adjust: none` with a system-colour fill, or a system-colour
+ *      border or outline. No token hue and no literal is used here: in this mode the theme owns
+ *      the palette, and a pastel the person turned High Contrast on to escape is not ours to keep.
+ *   2. `prefers-contrast: more` - the quiet ink rungs step up one: --bd-ink-3 takes --bd-ink-2's
+ *      value, --bd-ink-4 takes --bd-ink-3's, and the hairline takes --bd-rule-2. Re-pointed, not
+ *      re-valued, so no colour is typed and the default tier's declarations are untouched.
+ *
+ * Imported LAST in ../index.css so both win by order at equal specificity. ADR 0180 records what
+ * each mark becomes and why the tier re-points rather than adding values.
+ */
+
+@media (forced-colors: active) {
+  /* The L1 card's weight rules and score bar: CanvasText on the repainted Canvas, and the axis
+     gets an edge so a score of one in four reads as a quarter of something. */
+  .bd-led-weight i,
+  .bd-led-fill {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .bd-led-axis {
+    outline: var(--bd-rule-1) solid CanvasText;
+  }
+
+  /* Screening evidence: an off pip is a ring (its border survives the repaint); an on pip fills. */
+  .bd-pips i[data-on="true"] {
+    forced-color-adjust: none;
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+
+  /* The carousel dots were fill-only with no border, so every one vanished. The rest dots become
+     rings; the current one fills with the selection colour. Opting out of the repaint also opts
+     out of the forced focus ring, so the ring is named here in the theme's text colour. */
+  .bd-dot {
+    forced-color-adjust: none;
+    background: Canvas;
+    border: var(--bd-rule-1) solid ButtonText;
+    outline-color: CanvasText;
+  }
+
+  .bd-dot[aria-current="true"] {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  /* The act class: every swatch is ringed; AUTO fills and GATED stays hollow, so the split the
+     two locked hues carried survives as shape (§7.1 already asks it to survive greyscale). */
+  .bd-class::before {
+    forced-color-adjust: none;
+    box-sizing: border-box;
+    border: var(--bd-rule-w2) solid CanvasText;
+  }
+
+  .bd-class[data-class="AUTO"]::before {
+    background: CanvasText;
+  }
+
+  .bd-class[data-class="GATED"]::before,
+  .bd-zone[data-class="GATED"] .bd-class[data-class="GATED"]::before {
+    background: Canvas;
+  }
+
+  /* Athena present: the ring fills. */
+  .bd-presence[data-on="true"]::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+
+  /* The inverted panel keeps its heavy edge in the theme's text colour; its gradient is gone. */
+  .bd-zone[data-class="GATED"] {
+    border-inline-start: var(--bd-rule-w3) solid CanvasText;
+  }
+
+  /* The armed irreversible act: the selection colours, so it is told apart from Cancel (which
+     stays a system button) by more than a fill the platform just erased. Its focus ring is named
+     for the same reason as the dots'. */
+  .bd-zone[data-class="GATED"] .bd-btn[data-fire="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+    outline-color: CanvasText;
+  }
+
+  /* The hover rule outranks the one above, and its coral would survive the opt-out. It changes
+     only what the button already transitions, as every hover in the room does. */
+  .bd-zone[data-class="GATED"] .bd-btn[data-fire="true"]:hover:not(:disabled) {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  .bd-zone[data-class="GATED"] .bd-btn[data-fire="true"]:disabled {
+    background: Canvas;
+    border-color: GrayText;
+    color: GrayText;
+  }
+}
+
+/*
+ * ONE RUNG UP, ON BOTH SCOPES.
+ *
+ * A custom property's var() resolves on the SAME element, so writing `--bd-ink-3: var(--bd-ink-2)`
+ * and `--bd-ink-4: var(--bd-ink-3)` side by side lands ink-4 on ink-2: three rungs collapsed into
+ * one, and the disabled hint reads as loud as the prose. The two scopes break the chain instead:
+ *
+ *   - document root: ink-4 takes the root's ink-3, which is still the default rung there. Root's
+ *     own ink-3 stays put - it already clears AAA, and the only things drawn at root scope (the
+ *     overscroll gutter and the kit's toast) do not set a quiet rung.
+ *   - the wrapper: ink-3 takes ink-2, and ink-4 INHERITS the root's re-pointed value - the default
+ *     ink-3, which this element has just moved.
+ *
+ * Result inside the board: ink, ink-2, ink-2, ink-3 - every rung at or above 7:1 on the worst
+ * room surface, and the quietest tier still a tier.
+ */
+@media (prefers-contrast: more) {
+  :root:has([data-variant="board"]) {
+    --bd-ink-4: var(--bd-ink-3);
+    --bd-rule: var(--bd-rule-2);
+  }
+
+  [data-variant="board"] {
+    --bd-ink-3: var(--bd-ink-2);
+    --bd-ink-4: inherit;
+    --bd-rule: var(--bd-rule-2);
+  }
+}
