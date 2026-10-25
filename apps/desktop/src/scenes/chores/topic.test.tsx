@@ -15,6 +15,7 @@ import type { Path } from "@/depth/model";
 import { ApiError } from "@/lib/api";
 import type { AdoptEvent, CaseSummary, CasesReply, Receipt, RunsReply, StartReply } from "@/lib/adopt";
 import type { AdoptClient } from "@/lib/adopt-client";
+import { fixtures as moduleFixtures } from "@/modules/playbooks/fixtures";
 
 import type { AdoptDeps } from "./adopt/deps";
 import { ADOPT_PLAYBOOK, PREVIEW_RECEIPT } from "./adopt/fixtures";
@@ -368,5 +369,26 @@ describe("the studio, opened on a case", () => {
     await show(adoptPath(ADOPT_PLAYBOOK), deps(client));
     expect(client.starts).toEqual([{ playbookId: ADOPT_PLAYBOOK, caseId: undefined }]);
     expect(text()).not.toContain("Your case, as you approved it");
+  });
+});
+
+describe("the runs behind the verdict (ADR 0128)", () => {
+  it("case 8: the open-short topic page opens the verdict on its counted run and the lines left out, each with why", async () => {
+    await act(async () => {
+      root.render(<ChoresView model={moduleFixtures["open-short"]!} path={chorePath("chargeback-evidence")} go={go} />);
+    });
+    const details = host.querySelector<HTMLDetailsElement>("details.pa-behind");
+    expect(details, "a disclosure under the verdict").not.toBeNull();
+    expect(details!.open).toBe(false);
+    expect(details!.previousElementSibling?.classList.contains("pa-verdict")).toBe(true);
+    expect(details!.querySelector("summary")?.textContent).toContain("The runs behind it");
+    const counted = [...details!.querySelectorAll(".pa-behind__list--counted > li")];
+    const left = [...details!.querySelectorAll(".pa-behind__list--left > li")];
+    expect(counted).toHaveLength(1);
+    expect(counted[0]!.textContent).toContain("Latest");
+    expect(left).toHaveLength(2);
+    for (const li of left) expect(li.textContent).toContain("benched before runs were keyed");
+    // An earlier line that never measured traps says so with a dash, not a zero.
+    expect(left.some((li) => li.textContent?.includes("traps –"))).toBe(true);
   });
 });

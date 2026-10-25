@@ -235,6 +235,12 @@ const CHARGEBACKS = book(
       { action: "submit_evidence", key: "DP-130", outcome: "correct", value_usd: 124, exact: true },
     ],
     missed: [{ action: "submit_evidence", key: "DP-127", value_usd: 157 }],
+    // Two earlier runs, unkeyed like the latest (ADR 0128), so the verdict still stands on one run and
+    // "The runs behind it" lists them as left out. The older one never counted traps.
+    history: [
+      { run_at: "2026-10-06T17:40:00Z", model: "sonnet", verdict: "short", found: 2, eligible: 4, value_found_usd: 331, false_claims: 2, note: "before she read the response deadline" },
+      { run_at: "2026-10-07T12:15:00Z", model: "sonnet", verdict: "meets", found: 3, eligible: 4, value_found_usd: 455, false_claims: 0, traps_filed: 0, wall_s: 1490, note: "the refund log joined the evidence" },
+    ],
   },
   // Filmed from an earlier run, in a build with no dev server: the still, marked stale.
   film("chargeback-evidence", "2026-10-06T18:02:00Z", 64.9, false),

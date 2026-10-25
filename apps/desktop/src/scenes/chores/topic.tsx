@@ -20,6 +20,10 @@
  * labelled as the invented example's; the author's estimate on one secondary line that opens on its
  * basis, sources and caveat (the basis and the caveat are markdown bullets, drawn by `Rich`, refilm-prep); the time saved with the person's review in it; the verdict and the runs
  * it stands on; and "Where it fits" from the playbook's `fit`, absent when it has none.
+ *
+ * "The runs behind it" (ADR 0128): under the verdict, closed, every run the bench.json holds, the
+ * counted ones first with what the worst of them filed, then the ones left out of the count, each
+ * with why (`@/modules/playbooks/runs`).
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -28,7 +32,9 @@ import StatusDot from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
 import type { CaseSummary, CasesReply } from "@/lib/adopt";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
+import type { Bench } from "@/lib/playbooks";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
+import { rowLine, runsBehind, whenOf, worstOf, type RunRow } from "@/modules/playbooks/runs";
 
 import type { AdoptDeps } from "./adopt/deps";
 import { dayOf } from "./adopt/state";
@@ -92,6 +98,54 @@ export function casesLine(state: CasesState): string {
         ? ""
         : "No saved case yet. Approve a brief with her and she keeps it here, so next time nothing is asked twice.";
   }
+}
+
+function RunItem({ r }: { r: RunRow }) {
+  return (
+    <li className="pa-behind__run">
+      <span className="pa-behind__when">
+        {whenOf(r.runAt)}
+        {r.model ? ` · ${r.model}` : ""}
+        {r.latest ? <span className="pa-behind__latest">Latest</span> : null}
+      </span>
+      <span>{rowLine(r)}</span>
+      {r.why ? <span className="pa-behind__why">{`Not counted: ${r.why}.`}</span> : null}
+      {r.note ? <span className="pa-muted">{r.note}</span> : null}
+    </li>
+  );
+}
+
+/** The record a verdict stands on (ADR 0128): the counted runs, then the runs left out with why. */
+function RunsBehind({ bench }: { bench: Bench }) {
+  const rows = runsBehind(bench);
+  const counted = rows.filter((r) => r.counted);
+  const left = rows.filter((r) => !r.counted);
+  const worst = worstOf(counted).words;
+  return (
+    <details className="pa-estimate pa-behind">
+      <summary className="pa-estimate__sum focus-ring">
+        {`The runs behind it: ${counted.length} counted${left.length ? `, ${left.length} left out` : ""}`}
+      </summary>
+      <div className="pa-estimate__body">
+        {worst ? <p>{`${worst}.`}</p> : null}
+        <ol className="pa-behind__list pa-behind__list--counted" aria-label="Counted runs">
+          {counted.map((r) => (
+            <RunItem key={r.runAt} r={r} />
+          ))}
+        </ol>
+        {left.length ? (
+          <>
+            <h3 className="pa-kpi__label">Left out of the count</h3>
+            <ol className="pa-behind__list pa-behind__list--left" aria-label="Runs left out of the count">
+              {left.map((r) => (
+                <RunItem key={r.runAt} r={r} />
+              ))}
+            </ol>
+          </>
+        ) : null}
+      </div>
+    </details>
+  );
 }
 
 export default function Topic({
@@ -237,6 +291,7 @@ export default function Topic({
               <span className="pa-verdict__label">{view.verdict.label}</span>
               <span className="pa-verdict__text">{view.verdict.sentence}</span>
             </p>
+            {p.bench ? <RunsBehind bench={p.bench} /> : null}
 
             <details className="pa-estimate">
               <summary className="pa-estimate__sum focus-ring">{worth.estimate}</summary>

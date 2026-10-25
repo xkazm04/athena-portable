@@ -196,6 +196,10 @@ export interface RunLine {
   eligible: number;
   valueFoundUsd: number;
   falseClaims: number;
+  /** Traps it fell for; `null` for a line written before traps were counted (unmeasured, not none). */
+  trapsFiled: number | null;
+  /** Her time on it, in seconds; `null` when the line does not say. */
+  wallS: number | null;
   note: string;
   /** Its comparability key (ADR 0128); "" when it carries none. */
   comparable: string;
@@ -396,6 +400,8 @@ function parseBench(raw: unknown): Bench | null {
       eligible: num(h.eligible),
       valueFoundUsd: num(h.value_found_usd),
       falseClaims: num(h.false_claims),
+      trapsFiled: numOrNull(h.traps_filed),
+      wallS: numOrNull(h.wall_s),
       note: str(h.note),
       comparable: str(h.comparable),
       supersededAt: isRaw(h.superseded_by) ? str(h.superseded_by.rescored_at) || "unknown" : "",

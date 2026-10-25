@@ -595,6 +595,40 @@
   margin: 0;
   padding-left: 18px;
 }
+/* The runs behind the verdict (ADR 0128): counted first, then the ones left out, each with why. */
+.pa-behind__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pa-behind__run {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border-emphasis);
+}
+.pa-behind__list--left .pa-behind__run {
+  border-left-style: dashed;
+  color: var(--muted-foreground);
+}
+.pa-behind__when {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pa-behind__latest {
+  margin-left: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-emphasis);
+  font-size: 12px;
+}
+.pa-behind__why {
+  color: var(--foreground);
+}
 .pa-link {
   padding: 0;
   border: 0;
