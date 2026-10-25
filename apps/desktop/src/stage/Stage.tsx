@@ -69,10 +69,11 @@ export interface StageProps {
 /**
  * How a leaving layer's still is taken (ADR 0193) and where each place was left (`places.ts`). Not
  * first-frame code: it is fetched once the stage has drawn, long before a person's first move. A
- * move before it lands leaves its layer empty and moves no focus (the window's first frame, a reload
- * at a depth, keeps the focus where the browser put it).
+ * move before it lands leaves its layer empty, and its focus waits for the module (a reload at a
+ * depth is such a move): the layer it arrived on takes focus when the module resolves.
  */
 let stills: typeof import("./places") | null = null;
+const loadStills = () => import("./places").then((m) => (stills = m));
 
 /** A move that never ends (a hidden window plays no animation events) is settled after this. */
 const SAFETY_MS = 900;
@@ -109,7 +110,7 @@ export default function Stage(props: StageProps) {
 
   const settled = isSettled(layers);
   useEffect(() => {
-    void import("./places").then((m) => (stills = m));
+    void loadStills();
   }, []);
   useEffect(() => {
     if (settled && state.from !== null) onSettle(state.seq);
@@ -138,8 +139,13 @@ export default function Stage(props: StageProps) {
 
   // ---- focus follows the move, so a keyboard user is never left on a layer that went away. An up
   // move to a place left before lands where it was left: its scroll and the element you left from.
+  // A move before `places.ts` lands queues its landing; a later move or an unmount drops it.
   useEffect(() => {
-    if (state.seq > 0 && shape === "scene") return stills?.land(top.current, state);
+    if (state.seq < 1 || shape !== "scene") return;
+    if (stills) return stills.land(top.current, state);
+    let off: (() => void) | null = null;
+    void loadStills().then((m) => (off ??= m.land(top.current, state)));
+    return () => (off ??= () => {})(); // landed: stop its restore; still queued: never land
     // Once per move: `state` changes with `seq`, and a settle (move back to "none") must not refocus.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.seq, shape]);
