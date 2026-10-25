@@ -198,14 +198,24 @@ def decisions(daemon: AthenaDaemon, request: Request) -> Reply:
     One list across origins and projects, because a card knows its conversation and not its page.
     Read only — answering still goes through ``POST /decisions/<id>`` and the gate. ``total`` is
     the live pending population up to :data:`PENDING_CEILING`, and the footer says what was shown.
+
+    Each row also says whether approving it would run (ADR 0158): ``will_run``, and ``blocked``
+    with the refusal the replay would give, a plain sentence and the one act that fixes it. The
+    optional ``?disabled_origins=`` (a comma list) is the shell's switched-off table, capped and
+    refused whole as ``POST /run`` refuses it.
     """
     limit = bounded(request.query.get("limit"))
+    names = [name for name in request.query.get("disabled_origins", "").split(",") if name.strip()]
+    try:
+        disabled = disabled_origins_from({"disabled_origins": names})
+    except ListTooLong as exc:  # refused whole, as ``POST /run`` refuses it, never cut
+        return error(400, "validator_failed", str(exc))
     page = daemon.approvals.pending(PENDING_CEILING)
-    rows = [_decision_row(row) for row in page.rows[:limit]]
+    rows = [_decision_row(row, _preflight(daemon, row, disabled)) for row in page.rows[:limit]]
     return 200, announced(rows, page.total, "pending")
 
 
-def _decision_row(row: ApprovalRow) -> dict[str, Any]:
+def _decision_row(row: ApprovalRow, blocked: dict[str, Any] | None) -> dict[str, Any]:
     return {
         "id": row.id,
         "action": row.action,
@@ -219,4 +229,78 @@ def _decision_row(row: ApprovalRow) -> dict[str, Any]:
         "expires_at": row.expires_at,
         "tab_id": row.tab_id,
         "tab_nav": row.tab_nav,
+        "will_run": blocked is None,
+        "blocked": blocked,
     }
+
+
+# --- the inbox's preflight (ADR 0158) ------------------------------------------------------------
+
+
+def _preflight(
+    daemon: AthenaDaemon, row: ApprovalRow, disabled: frozenset[str]
+) -> dict[str, Any] | None:
+    """What the replay would refuse this card with if it were approved now, or ``None``.
+
+    The same two reads :meth:`~athena.lane.browser_lane.BrowserLane.answer_decision` makes before
+    it runs anything, in the same order and under the same context: the catalog entry (gone is
+    ``tools_gone``), then the gate's own :meth:`~athena.harness.policy.Policy.authorize`. Both are
+    pure, so the inbox resolves, consumes and writes nothing. It is the gate's rules asked early,
+    not a second gate: the replay still decides.
+    """
+    try:
+        entry = daemon.catalog.get(row.action)
+    except ValueError:
+        return _gone(daemon, row.origin)
+    ctx = _decision_ctx(daemon, row.origin, row.conversation, disabled)
+    decision = daemon.gate.policy.authorize(entry, row.params, ctx)
+    if decision.allow:
+        return None
+    return _blocked(daemon, decision.rule, decision.reason or "unknown", str(entry.parsed_origin))
+
+
+def _gone(daemon: AthenaDaemon, origin: str) -> dict[str, Any]:
+    """A card whose tools left the catalog: the page closed, or the connector went."""
+    try:
+        parsed = parse_origin(origin)
+    except ValueError:  # pragma: no cover - a row cannot hold an unparseable origin
+        parsed = None
+    if parsed is not None and parsed.kind == "connector":
+        return {
+            "reason": "unknown_ref",
+            "rule": "tools_gone",
+            "sentence": f"{parsed.id} is no longer connected, so this cannot run. Reconnect it "
+            "and approve again.",
+            "remedy": {"act": "reconnect", "connector": parsed.id},
+        }
+    app = parsed.id if parsed is not None else origin
+    page = daemon.gate.policy.pinned_origins.get(app)
+    return {
+        "reason": "unknown_ref",
+        "rule": "tools_gone",
+        "sentence": f"The {app} page this acts on is no longer open, so its tools are gone. Open "
+        "it again and approve.",
+        "remedy": {"act": "open_app", "origin": page},
+    }
+
+
+def _blocked(daemon: AthenaDaemon, rule: str, reason: str, origin: str) -> dict[str, Any]:
+    """A policy refusal as the inbox says it: the rule, a sentence a person reads, one fix."""
+    parsed = parse_origin(origin)
+    name = parsed.id or origin
+    sentence = "This cannot run from the inbox."
+    remedy: dict[str, Any] | None = None
+    if rule == "origin_enabled":
+        sentence = f"{name} is switched off, so this will not run. Switch it on to approve it."
+        remedy = {"act": "switch_on", "origin": origin}
+    elif rule == "origin_pinning":
+        page = daemon.gate.policy.pinned_origins.get(name)
+        sentence = (
+            f"The {name} tab is no longer on the site it was opened from. Open it again to "
+            "approve this."
+        )
+        remedy = {"act": "open_app", "origin": page}
+    elif rule == "connector_enabled":
+        sentence = f"{name} is not connected right now. Reconnect it to approve this."
+        remedy = {"act": "reconnect", "connector": name}
+    return {"reason": reason, "rule": rule, "sentence": sentence, "remedy": remedy}

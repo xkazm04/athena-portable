@@ -8,6 +8,13 @@ approved card from being spent on a neighbouring call.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from dataclasses import dataclass, replace
+from typing import Any
+
+from athena.contracts import ERROR_REASONS
+from athena.contracts.manifest import HostTool
+from athena.contracts.registry import ExecResult
 from athena.daemon.routes import MAX_DISABLED_ORIGINS, tab_from
 from athena.daemon.server import AthenaDaemon
 
@@ -280,3 +287,214 @@ def test_an_answer_naming_too_many_switched_off_origins_is_refused_whole_like_a_
     assert reply.body["reason"] == "validator_failed"
     assert "disabled_origins" in reply.body["detail"]
     assert daemon.approvals.describe(approval_id).status == "pending"
+
+
+# -- the inbox says whether a card will run, and what fixes it (ADR 0158) ------------------------
+
+MAIL = "connector.gmail.send_mail"
+#: The policy rule ids a person never reads: a blocked row's sentence names none of them.
+RULE_IDS = ("per_lane_allow_list", "origin_enabled", "origin_pinning", "connector_enabled")
+
+
+class _Mail:
+    """A connector that sends at once and counts its sends."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def list_tools(self) -> Sequence[HostTool]:
+        return [
+            HostTool(
+                name="send_mail",
+                description="Send a message.",
+                params_schema={"type": "object", "properties": {"to": {"type": "string"}}},
+                reversible=True,
+                side_effects="external",
+            )
+        ]
+
+    def call(self, name: str, params: dict[str, Any]) -> ExecResult:
+        self.calls += 1
+        return ExecResult(ok=True, output=f"sent to {params.get('to', '')}", tier=3)
+
+
+@dataclass
+class _Switch:
+    """The vault as rule 4 asks it, with a switch the test flips."""
+
+    live: bool = True
+
+    def is_live(self, connector_id: str) -> bool:
+        return self.live
+
+
+def _row(live: Live, approval_id: str, query: str = "") -> dict[str, Any]:
+    reply = live.request(f"/decisions{query}")
+    assert reply.status == 200
+    (row,) = [row for row in reply.body["pending"] if row["id"] == approval_id]
+    return dict(row)
+
+
+def _counts(daemon: AthenaDaemon) -> tuple[int, int]:
+    with daemon.brain.read_connection() as con:
+        (episodes,) = con.execute(
+            "SELECT COUNT(*) FROM companion_node WHERE kind = 'episode'"
+        ).fetchone()
+    return daemon.ledger.recent(1).total, int(episodes)
+
+
+def _assert_plain(blocked: dict[str, Any]) -> None:
+    sentence = blocked["sentence"]
+    assert isinstance(sentence, str) and sentence.strip()
+    assert not any(rule in sentence for rule in RULE_IDS), sentence
+    assert blocked["reason"] in ERROR_REASONS
+
+
+def test_a_host_card_on_a_live_switched_on_app_says_it_will_run(live: Live) -> None:
+    approval_id = _card(live)
+
+    row = _row(live, approval_id)
+
+    assert row["will_run"] is True
+    assert row["blocked"] is None
+
+
+def test_a_card_of_a_switched_off_app_says_so_and_the_replay_agrees(live: Live) -> None:
+    approval_id = _card(live)
+
+    row = _row(live, approval_id, f"?disabled_origins=host:{APP_ID}")
+
+    assert row["will_run"] is False
+    blocked = row["blocked"]
+    assert (blocked["reason"], blocked["rule"]) == ("foreign_origin", "origin_enabled")
+    assert blocked["remedy"] == {"act": "switch_on", "origin": f"host:{APP_ID}"}
+    _assert_plain(blocked)
+
+    reply = live.request(
+        f"/decisions/{approval_id}",
+        method="POST",
+        json_body={"choice": "approve", "disabled_origins": [f"host:{APP_ID}"]},
+    )
+    assert reply.status == 409
+    assert reply.body["reason"] == "foreign_origin"
+
+
+def test_a_card_whose_tools_left_the_catalog_says_open_the_app_and_the_replay_agrees(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    approval_id = _card(live)
+    daemon.catalog.drop_origin(f"host:{APP_ID}")
+
+    row = _row(live, approval_id)
+
+    assert row["will_run"] is False
+    blocked = row["blocked"]
+    assert (blocked["reason"], blocked["rule"]) == ("unknown_ref", "tools_gone")
+    assert blocked["remedy"] == {"act": "open_app", "origin": PAGE_ORIGIN}
+    _assert_plain(blocked)
+
+    reply = live.request(
+        f"/decisions/{approval_id}", method="POST", json_body={"choice": "approve"}
+    )
+    assert reply.status == 409
+    assert reply.body["reason"] == "unknown_ref"
+
+
+def test_a_connector_card_whose_connector_is_not_live_says_reconnect_and_the_replay_agrees(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    live.register()
+    mail = _Mail()
+    switch = _Switch()
+    daemon.catalog.merge_connector("gmail", mail)
+    daemon.gate.policy = replace(daemon.gate.policy, connectors=switch)
+    live.script(claude_round("That needs your approval.\n" + op(MAIL, to="ana@example.com")))
+    (card,) = [p for kind, p in live.run("mail ana").frames() if kind == "decision.requested"]
+    approval_id = str(card["id"])
+    switch.live = False
+
+    row = _row(live, approval_id)
+
+    assert row["will_run"] is False
+    blocked = row["blocked"]
+    assert (blocked["reason"], blocked["rule"]) == ("unknown_ref", "connector_enabled")
+    assert blocked["remedy"] == {"act": "reconnect", "connector": "gmail"}
+    _assert_plain(blocked)
+
+    reply = live.request(
+        f"/decisions/{approval_id}", method="POST", json_body={"choice": "approve"}
+    )
+    assert reply.status == 409
+    assert reply.body["reason"] == "unknown_ref"
+    assert mail.calls == 0
+
+
+def test_reading_a_blocked_card_writes_nothing_and_it_runs_once_switched_back_on(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    approval_id = _card(live)
+    before = _counts(daemon)
+
+    _row(live, approval_id, f"?disabled_origins=host:{APP_ID}")
+    _row(live, approval_id, f"?disabled_origins=host:{APP_ID}")
+
+    assert daemon.approvals.describe(approval_id).status == "pending"
+    assert _counts(daemon) == before
+    reply = live.request(
+        f"/decisions/{approval_id}", method="POST", json_body={"choice": "approve"}
+    )
+    assert reply.status == 200
+    assert reply.body["status"] == "approved"
+
+
+def test_an_inbox_naming_too_many_switched_off_origins_is_refused_whole_like_a_run(
+    live: Live,
+) -> None:
+    _card(live)
+    too_many = ",".join(f"host:app{n}" for n in range(MAX_DISABLED_ORIGINS + 1))
+
+    reply = live.request(f"/decisions?disabled_origins={too_many}")
+
+    assert reply.status == 400
+    assert reply.body["reason"] == "validator_failed"
+    assert "disabled_origins" in reply.body["detail"]
+
+
+def test_a_long_inbox_keeps_every_row_key_and_its_footer(live: Live) -> None:
+    for n in range(25):
+        _card(live, invoice=str(n))
+
+    reply = live.request("/decisions?limit=20")
+
+    assert reply.status == 200
+    rows = reply.body["pending"]
+    assert (reply.body["showing"], reply.body["total"]) == (20, 25)
+    assert reply.body["footer"] == "(showing 20 of 25)"
+    keys = {
+        "id",
+        "action",
+        "params",
+        "rationale",
+        "options",
+        "origin",
+        "conversation_id",
+        "surface",
+        "created_at",
+        "expires_at",
+        "tab_id",
+        "tab_nav",
+    }
+    assert all(keys <= set(row) for row in rows)
+    assert [row["params"]["invoice"] for row in rows] == [str(n) for n in range(20)]
+
+
+def test_every_blocked_row_says_why_in_a_plain_sentence(live: Live, daemon: AthenaDaemon) -> None:
+    switched_off = _card(live, invoice="1")
+    row = _row(live, switched_off, f"?disabled_origins=host:{APP_ID}")
+    assert row["blocked"] is not None
+    _assert_plain(row["blocked"])
+
+    daemon.catalog.drop_origin(f"host:{APP_ID}")
+    row = _row(live, switched_off)
+    assert row["blocked"] is not None
+    _assert_plain(row["blocked"])
