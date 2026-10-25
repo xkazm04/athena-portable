@@ -14,7 +14,9 @@
 import {
   DEVIATION_LABEL,
   ROW_SAMPLE,
+  remediesOf,
   type BkDatabase,
+  type RemedyKind,
   type BkSheet,
   type BkTable,
 } from "../model";
@@ -130,5 +132,62 @@ export function dossierRead(table: BkTable) {
       disagreements: p.conflicts.map((c) => ({ field: c.label, keep: c.keep, drop: c.drop })),
     })),
     pairs_hidden: table.pairsHidden,
+    // Every target the dossier's buttons fire on, as the calls that carry them out (ADR 0174). The
+    // sample above is for reading; these are for acting, and they are the buttons' own lists.
+    remedies: remediesOf(table),
+  };
+}
+
+/** The longest answer `plan_repairs` sends: the catalogue's result cap, under the door's own. */
+export const PLAN_PAGE_CHARS = 12_000;
+/** What the envelope around the items costs, reserved before any item is packed. */
+const ENVELOPE_CHARS = 200;
+
+export interface PlanQuery {
+  database?: string;
+  kind?: RemedyKind;
+  page?: number;
+}
+
+/**
+ * Every remedy on the sheet, one page at a time, worst work first only in the sense the sheet
+ * orders it (database, then table). Pages are packed to `PLAN_PAGE_CHARS` rather than counted, so
+ * a page of 500-id batches and a page of pair lists are both one whole JSON answer: a cut answer
+ * no longer parses, and the ids an agent was promised go with the tail. The partition is a pure
+ * function of the sheet, so page n is the same page on every call against the same sheet.
+ */
+export function planRepairs(sheet: BkSheet, q: PlanQuery = {}) {
+  const all = sheet.databases
+    .filter((db) => q.database === undefined || db.id === q.database)
+    .flatMap((db) =>
+      db.tables.flatMap((t) =>
+        remediesOf(t)
+          .filter((r) => q.kind === undefined || r.kind === q.kind)
+          .map((r) => ({ table: t.ident, database: db.id, ...r })),
+      ),
+    );
+  const pages: (typeof all)[] = [];
+  let current: typeof all = [];
+  let used = ENVELOPE_CHARS;
+  for (const item of all) {
+    const cost = JSON.stringify(item).length + 1;
+    if (current.length > 0 && used + cost > PLAN_PAGE_CHARS) {
+      pages.push(current);
+      current = [];
+      used = ENVELOPE_CHARS;
+    }
+    current.push(item);
+    used += cost;
+  }
+  if (current.length > 0) pages.push(current);
+  const at = Math.max(0, Math.floor(q.page ?? 0) || 0);
+  const items = pages[at] ?? [];
+  return {
+    showing: items.length,
+    of: all.length,
+    page: at,
+    pages: pages.length,
+    next_page: at + 1 < pages.length ? at + 1 : null,
+    items,
   };
 }

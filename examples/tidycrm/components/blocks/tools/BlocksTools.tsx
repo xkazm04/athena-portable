@@ -5,9 +5,12 @@
  *
  * Four of the tools are the shared ones every three-level direction gets from
  * `useZoomTools` — read the view, open a database, open a table, come back out.
- * The three below are what only this sheet can answer: a search over the tables,
- * a search over the example rows they carry, and the deviation breakdown the
- * sheet head can be asked to show.
+ * The four below are what only this sheet can answer: a search over the tables,
+ * a search over the example rows they carry, the deviation breakdown the
+ * sheet head can be asked to show, and every repair the dossiers offer, as the
+ * calls that carry it out (`plan_repairs`, ADR 0174). That last one names the
+ * writes but sends none: the agent still proposes each one through the shell's
+ * own tool, and the host classes it there.
  *
  * THE NOUNS MOVED, AND THE TOOL NAMES DID NOT. Round 2 replaced the four
  * lettered zones with nine named databases, so `open_group` now takes `billing`
@@ -34,8 +37,8 @@ import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
 import { ARRIVAL_MS } from "../beats";
-import { BK_LEVELS, DATABASE_IDS, databaseOf, tableOf, type BkSheet } from "../model";
-import { databaseRead, dossierRead, sheetRead, tableRead } from "./read";
+import { BK_LEVELS, DATABASE_IDS, REMEDY_KINDS, databaseOf, tableOf, type BkSheet, type RemedyKind } from "../model";
+import { databaseRead, dossierRead, planRepairs, sheetRead, tableRead } from "./read";
 import { searchBlocks, searchRecords, type BlocksQuery } from "./search";
 
 /*
@@ -149,6 +152,33 @@ export function BlocksTools({
     sideEffects: "none",
     handler: ({ text, database }) =>
       searchRecords(sheet, String(text ?? ""), database === undefined ? undefined : String(database)),
+  });
+
+  useWebMCPTool({
+    name: "plan_repairs",
+    // The dossier's buttons fire on these exact lists (`../model/remedies.ts`); before this read,
+    // an agent saw only the targets that fell in a table's six-row sample.
+    description:
+      "Every repair the dossiers offer, as calls to send: a rule remedy gives preview then act with its exact ids, batched; a duplicate gives pair ids for a person and no call. Paged; follow next_page. Changes nothing.",
+    parameters: [
+      {
+        name: "database",
+        type: "string",
+        required: false,
+        enum: [...DATABASE_IDS],
+        description: "One database, or omit for all nine",
+      },
+      { name: "kind", type: "string", required: false, enum: [...REMEDY_KINDS], description: "One kind of remedy, or omit for all" },
+      { name: "page", type: "number", required: false, description: "Zero-based page; the answer names next_page" },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ database, kind, page }) =>
+      planRepairs(sheet, {
+        ...(database === undefined ? {} : { database: String(database) }),
+        ...(kind === undefined ? {} : { kind: String(kind) as RemedyKind }),
+        ...(num(page) === undefined ? {} : { page: num(page) }),
+      }),
   });
 
   useWebMCPTool({

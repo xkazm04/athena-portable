@@ -62,9 +62,12 @@ one rule design 5.1 states and `annotationsFor` (demo-kit `webmcp`) emits: AUTO 
 | `delete_contacts(ids)` | **G** | false | `data` | Permanent. `ids` capped at 500. |
 | `undo(activity_id)` | **G** | false | `data` | Replays one reversible write backwards. Gated because the undo's own activity row is written `reversible: false`: an undo cannot itself be undone. |
 
-The sheet registers seven more of its own in `components/blocks/tools/` — `read_view`, `open_group`,
-`open_item`, `zoom_out`, `search_blocks`, `search_records`, `show_breakdown`. They look and move;
-none of them writes, and none collides with a name above. There are no readables: WebMCP has no
+The sheet registers eight more of its own in `components/blocks/tools/` — `read_view`, `open_group`,
+`open_item`, `zoom_out`, `search_blocks`, `search_records`, `show_breakdown`, `plan_repairs`. They look
+and move; none of them writes, and none collides with a name above. `plan_repairs` (and `remedies` in
+`read_view` at a table) names every target the dossier's AUTO buttons fire on, as the
+`preview_normalize` / `normalize_fields` / `flag_stale` calls that carry them out, batched at 500; an
+identity pair comes back as pair ids for a person and no call (ADR 0174). There are no readables: WebMCP has no
 separate readable channel, so what would have been ambient context is a read-only tool the agent
 asks for.
 

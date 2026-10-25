@@ -177,6 +177,8 @@ const SESSION: [string, Record<string, unknown>][] = [
   ["search_records", { text: someone.name.split(" ")[0]!, database: "billing" }],
   ["show_breakdown", {}],
   ["show_breakdown", { open: true }],
+  ["plan_repairs", {}],
+  ["plan_repairs", { kind: "stale", database: "billing", page: 0 }],
   ["open_group", { id: "billing" }],
   ["read_view", {}],
   ["open_item", { id: table.ident }],
@@ -194,6 +196,7 @@ const MAY_MOVE: Record<string, string[]> = {
   search_blocks: [],
   search_records: [],
   show_breakdown: ["setShowKinds"],
+  plan_repairs: [],
   open_group: ["openDatabase", "nav.openGroup"],
   open_item: ["nav.openItem"],
   zoom_out: ["nav.up"],
@@ -249,17 +252,27 @@ function disagreements(seen: Seen[], specs: Map<string, WebMCPToolSpec>): string
 
 const seen: Seen[] = [];
 for (const [name, args] of SESSION) {
+  // A tool the page does not register is caught by the registration case below, not here, so the
+  // rest of the session is still driven and the guards still judge what is registered.
   const spec = registered.get(name);
-  assert.ok(spec, `${name} is not registered`);
-  seen.push(await drive(spec, args));
+  if (spec) seen.push(await drive(spec, args));
 }
 
 /* --------------------------------------------------------------------- the checks */
 
-test("the page registers the kit's four verbs and the Blocks' three, and the session calls each", () => {
+test("the page registers the kit's four verbs and the Blocks' four, and the session calls each", () => {
   assert.deepEqual(
     [...registered.keys()].sort(),
-    ["open_group", "open_item", "read_view", "search_blocks", "search_records", "show_breakdown", "zoom_out"],
+    [
+      "open_group",
+      "open_item",
+      "plan_repairs",
+      "read_view",
+      "search_blocks",
+      "search_records",
+      "show_breakdown",
+      "zoom_out",
+    ],
   );
   assert.deepEqual(
     [...registered.keys()].filter((name) => !SESSION.some(([called]) => called === name)),
@@ -380,4 +393,38 @@ test("the check catches a read that writes, a read that moves, and a write weari
     "search_blocks: changed the sheet",
     "search_records: moved nav.up",
   ]);
+});
+
+test("plan_repairs pages every stale target on the sheet, each page one whole JSON answer under 12,000 chars", async () => {
+  // The dossier's flag button fires on `table.acts.flag.ids`; before this tool no read named them,
+  // and an agent saw only the stale rows that fell in a table's six-row sample (68 of 135 on the
+  // seed). Walked page by page, the union is every table's list.
+  const spec = registered.get("plan_repairs");
+  assert.ok(spec, "plan_repairs is registered");
+  const want = new Set(sheet.databases.flatMap((d) => d.tables.flatMap((t) => t.acts.flag.ids)));
+  assert.ok(want.size > 0, "the seed has stale work");
+  const got = new Set<string>();
+  const schema = { ...parametersToJsonSchema(spec.parameters ?? []), type: "object" };
+  let page = 0;
+  for (;;) {
+    const text = await runTool(schema, { kind: "stale", page }, spec.handler);
+    assert.ok(text.length <= 12_000, `page ${page} is ${text.length} chars`);
+    const answer = JSON.parse(text) as {
+      page: number;
+      next_page: number | null;
+      items: { kind: string; table: string; database: string; act: { tool: string; args: { ids: string[] } } }[];
+    };
+    assert.equal(answer.page, page);
+    for (const item of answer.items) {
+      assert.equal(item.kind, "stale");
+      assert.equal(item.act.tool, "flag_stale");
+      for (const id of item.act.args.ids) got.add(id);
+    }
+    if (answer.next_page === null) break;
+    assert.equal(answer.next_page, page + 1);
+    page += 1;
+    assert.ok(page < 100, "the walk ends");
+  }
+  assert.deepEqual([...got].sort(), [...want].sort());
+  assert.equal(got.size, sheet.databases.flatMap((d) => d.tables).reduce((n, t) => n + t.staleIds.length, 0));
 });

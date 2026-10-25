@@ -1,5 +1,5 @@
 /**
- * `blocks` — the view model of The Blocks, in seven parts and one door.
+ * `blocks` — the view model of The Blocks, in eight parts and one door.
  *
  * Client-safe: types and pure functions only, no `lib/db` import. The server
  * builds one `BkSheet` per request in `lib/blocks/index.ts`.
@@ -21,7 +21,7 @@
  * names, are `./model/databases.ts`.
  *
  * This file is the door. Everything importing `./model` keeps working, and the
- * seven parts behind it can each be read in one sitting:
+ * eight parts behind it can each be read in one sitting:
  *
  *   deviations  the four kinds, and the three states a record can be in
  *   rows        one contact, and one unadjudicated identity pair
@@ -30,6 +30,7 @@
  *   lens        the camera the one scene is seen through
  *   keys        where an arrow key moves inside a grid of cells
  *   vocabulary  finding things by id, and what a passing check says
+ *   remedies    the calls that carry out a table's acts, as an agent sends them
  */
 export * from "./model/deviations";
 export * from "./model/rows";
@@ -38,3 +39,4 @@ export * from "./model/databases";
 export * from "./model/lens";
 export * from "./model/keys";
 export * from "./model/vocabulary";
+export * from "./model/remedies";
