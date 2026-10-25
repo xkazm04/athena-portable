@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { DaemonApi, type ConnectorView } from "@/lib/api";
 
 import { STORE_TABLES, type ConnectorsChanged } from "@/lib/ipc";
+import { serversOf } from "@/modules/connectors/depth";
 
 import {
   CONNECTORS_SOURCE,
@@ -582,5 +583,64 @@ describe("her window's mirror (ADR 0116)", () => {
     cards.set([{ id: "apr_mail2", origin: "connector:gmail" }]);
     await settle();
     expect(lists()).toBe(1);
+  });
+});
+
+describe("the MCP servers the list names (ADR 0144)", () => {
+  const GRAVITONE = {
+    id: "gravitone",
+    origin: "connector:gravitone",
+    kind: "mcp",
+    url: "https://gt.example/api/mcp",
+    token_env: "GT_TOKEN",
+    token_set: true,
+    live: true,
+    health: "healthy",
+    health_detail: "",
+    tools: [
+      { name: "connector.gravitone.gt_read", class: "AUTO" },
+      { name: "connector.gravitone.gt_job", class: "GATED" },
+    ],
+  };
+  const page = (servers?: unknown[]) => ({
+    ok: true,
+    connectors: [row("gmail"), row("notion")],
+    ...(servers === undefined ? {} : { mcp_servers: servers }),
+    showing: 2,
+    total: 2,
+    footer: "",
+  });
+
+  it("case 1: GET /connectors' mcp_servers reach the store with every field; an older daemon's list has none", async () => {
+    let servers: unknown[] | undefined = [GRAVITONE];
+    wire(fakeDaemon(() => page(servers)));
+    await useConnectors.getState().load();
+    expect(serversOf(useConnectors.getState().servers)).toEqual([GRAVITONE]);
+    expect(useConnectors.getState().items.map((c) => c.id)).toEqual(["gmail", "notion"]);
+    servers = undefined;
+    await useConnectors.getState().load();
+    expect(serversOf(useConnectors.getState().servers)).toEqual([]);
+  });
+
+  it("case 2: a malformed server is kept with no tools and unknown health, and the list still loads", async () => {
+    const odd = { ...GRAVITONE, id: "odd", tools: "gt_read", health: "fine" };
+    const strays = [
+      null,
+      7,
+      { url: "https://no-id.example" },
+      { ...GRAVITONE, tools: [{ name: "connector.gravitone.x", class: "WHATEVER" }, 3] },
+    ];
+    wire(fakeDaemon(() => page([odd, ...strays])));
+    await useConnectors.getState().load();
+    const state = useConnectors.getState();
+    expect(state.loaded).toBe(true);
+    expect(state.problem).toBeNull();
+    expect(state.items).toHaveLength(2);
+    const read = serversOf(state.servers);
+    expect(read).toHaveLength(2);
+    expect(read[0]).toMatchObject({ id: "odd", tools: [], health: "unknown", token_env: "GT_TOKEN", token_set: true });
+    // An unknown class is never shown as running without a card; a tool that is not one is dropped.
+    expect(read[1]!.tools).toEqual([{ name: "connector.gravitone.x", class: "GATED" }]);
+    expect(serversOf("not a list")).toEqual([]);
   });
 });

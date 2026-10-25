@@ -14,7 +14,9 @@ import {
   fixtures as moduleFixtures,
   connection,
   gmail,
+  gravitone,
   model,
+  NOTION_CONNECTED,
   notion,
 } from "@/modules/connectors/fixtures";
 import type { ConnectorsModel } from "@/modules/connectors/model";
@@ -60,6 +62,21 @@ const refused = model(
   { errors: { gmail: "recipient is not an address: ap@" }, busy: { notion: "connecting" } },
 );
 
+/** The vault's two plus an MCP server from mcp.json (ADR 0144). */
+const mcp = model([gmail(), NOTION_CONNECTED], { servers: [gravitone()] });
+
+/** A `--no-connectors` daemon with an MCP server configured: no vault rows, one server. */
+const mcpOnly = model([], { servers: [gravitone()] });
+
+/** Every way a server stands at once: a broken last call, a token not set, not reached yet. */
+const mcpMoods = model([NOTION_CONNECTED], {
+  servers: [
+    gravitone({ health: "broken", health_detail: "HTTP 502 from https://gt.example/api/mcp" }),
+    gravitone({ id: "ledger_box", origin: "connector:ledger_box", token_env: "LEDGER_TOKEN", token_set: false, live: false, health: "unknown", tools: [] }),
+    gravitone({ id: "atlas", origin: "connector:atlas", token_env: "ATLAS_TOKEN", health: "unknown", tools: [{ name: "connector.atlas.find", class: "READ" }] }),
+  ],
+});
+
 export const fixtures: Record<string, ConnectorsModel> = {
   // `typical` first: it is the fixture the perf gate's bare `?scene=accounts` draws.
   typical: moduleFixtures.typical!,
@@ -75,6 +92,9 @@ export const fixtures: Record<string, ConnectorsModel> = {
   consenting,
   exchanging,
   refused,
+  mcp,
+  "mcp-only": mcpOnly,
+  "mcp-moods": mcpMoods,
 };
 
 export const fixtureIds: readonly string[] = Object.keys(fixtures);
@@ -99,4 +119,7 @@ export const PLACES: Readonly<Record<string, { fixture: string; path: Path }>> =
   "allowlist-gmail-locked": { fixture: "typical", path: at("gmail", "allowlist") },
   "allowlist-empty": { fixture: "typical", path: at("notion", "allowlist") },
   "unknown-account": { fixture: "typical", path: at("slack") },
+  "open-mcp": { fixture: "mcp", path: at("gravitone") },
+  "open-mcp-broken": { fixture: "mcp-moods", path: at("gravitone") },
+  "open-mcp-no-token": { fixture: "mcp-moods", path: at("ledger_box") },
 };

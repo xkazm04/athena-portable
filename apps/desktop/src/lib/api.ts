@@ -188,11 +188,36 @@ export interface ConnectorView {
   records_notice: string;
 }
 
+/** One tool of an MCP server, as the daemon classed it (`connector.<id>.<tool>`). */
+export interface McpToolView {
+  name: string;
+  class: "AUTO" | "READ" | "GATED";
+}
+
+/**
+ * `McpService.view()` in `src/athena/connectors/mcp/service.py` (ADR 0144): the token variable's
+ * name and whether it is set, never its value; the URL without a query.
+ */
+export interface McpServerView {
+  id: string;
+  origin: string;
+  kind: "mcp";
+  url: string;
+  token_env: string;
+  token_set: boolean;
+  live: boolean;
+  health: "healthy" | "broken" | "unknown";
+  health_detail: string;
+  tools: McpToolView[];
+}
+
 export interface ConnectorPage {
   ok: boolean;
   connectors: ConnectorView[];
   /** Plain words when the connections file could not be read, else "". Shown verbatim. */
   records_notice: string;
+  /** The MCP servers in `mcp.json` (ADR 0144). Optional: an older daemon omits it. */
+  mcp_servers?: McpServerView[];
   showing: number;
   total: number;
   footer: string;

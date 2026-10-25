@@ -20,7 +20,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
-import { selectConnectors, INERT_ACTIONS } from "@/modules/connectors/model";
+import { INERT_ACTIONS } from "@/modules/connectors/fixtures";
+import { selectConnectors } from "@/modules/connectors/model";
 import {
   resetConnectorsForTests,
   setConnectorDeps,

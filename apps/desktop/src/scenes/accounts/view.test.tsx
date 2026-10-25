@@ -340,6 +340,47 @@ describe("the allow-list level", () => {
   });
 });
 
+describe("the MCP servers the daemon lists (ADR 0144)", () => {
+  it("case 5: a server is a card in the field with its label, its standing and its tools by class, and is counted", () => {
+    const html = draw("mcp");
+    expect(html.match(/class="card focus-ring"/g)).toHaveLength(3);
+    expect(html).toContain('data-go="gravitone"');
+    expect(html).toContain(">Gravitone<");
+    expect(html).toContain(">1 runs without a card<");
+    expect(html).toContain(">1 gated<");
+    expect(html).toContain("2 of 3 connected");
+    const everyRow = { ...fixtures.mcp!, rows: fixtures.mcp!.rows.map((r) => ({ ...r, standing: "connected" as const })) };
+    expect(renderToStaticMarkup(<AccountsView model={everyRow} path={ROOT} go={noGo} />)).toContain("3 of 3 connected");
+  });
+
+  it("case 6: a daemon with no vault connectors but a server draws the server, not 'lists no connectors'", () => {
+    const html = draw("mcp-only");
+    expect(html).not.toContain("The daemon lists no connectors.");
+    expect(html).toContain('data-go="gravitone"');
+    expect(html).toContain("1 of 1 connected");
+  });
+
+  it("case 7: accounts/gravitone shows the URL, the token's source, health, both lists and how to stop it; no switch", () => {
+    const html = place("open-mcp");
+    expect(html).toContain('data-level="item"');
+    expect(html).toContain("https://gt.example/api/mcp");
+    expect(html).toContain("token from GT_TOKEN: set");
+    expect(html).toContain("Health: answered its last call.");
+    expect(html).toContain(">gt_read<");
+    expect(html).toContain(">gt_job<");
+    expect(html).toContain(">Runs without a card<");
+    expect(html).toContain(
+      esc("No switch here: remove gravitone from mcp.json or unset GT_TOKEN, and its tools stop on the next call."),
+    );
+    expect(html).not.toMatch(/Disconnect|Allow-list|allow-list|role="radiogroup"|Athena may call it/);
+    expect(place("open-mcp-broken")).toContain("Health: broken, HTTP 502 from https://gt.example/api/mcp.");
+    expect(place("open-mcp-no-token")).toContain("token from LEDGER_TOKEN: not set");
+    expect(place("open-mcp-no-token")).toContain("LEDGER_TOKEN is not set, so nothing runs.");
+    // A server has no allow-list to stand in.
+    expect(draw("mcp", { root: "accounts", item: "gravitone", sub: { kind: "allowlist" } })).toContain("No such account");
+  });
+});
+
 describe("the scene's own rules", () => {
   const dir = path.dirname(fileURLToPath(import.meta.url));
   const css = readFileSync(path.join(dir, "accounts.css"), "utf8");

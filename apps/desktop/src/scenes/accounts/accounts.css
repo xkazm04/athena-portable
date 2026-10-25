@@ -332,6 +332,12 @@
   background: color-mix(in srgb, var(--status-warning) 8%, transparent);
 }
 
+/* an MCP server's address: a long URL wraps rather than widening the panel */
+.server__url {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
 /* tools */
 .tools {
   display: grid;

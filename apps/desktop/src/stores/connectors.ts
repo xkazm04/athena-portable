@@ -74,6 +74,13 @@ export interface ConnectorsState {
   problem: ConnectorProblem | null;
   /** The vault's `records_notice`, verbatim: "" unless its connections file could not be read. */
   recordsNotice: string;
+  /**
+   * The list's `mcp_servers` (ADR 0144) as the daemon sent them, read only: no act here reaches
+   * one. Not parsed here, so the first frame carries none of it: `serversOf` in the Connectors
+   * module's `depth.ts` reads it, defensively, in the Accounts depth's own chunk. Absent until a
+   * list answers, and absent from an older daemon's list.
+   */
+  servers?: unknown;
   /** What is in flight per connector: "connecting", "disconnecting", "probing", "saving". */
   busy: Readonly<Record<string, string>>;
   /** The last refusal per connector, in the daemon's words. Cleared by the next act. */
@@ -118,7 +125,7 @@ export function resetConnectorsForTests(): void {
   stamp = 0;
   rowStamps.clear();
   newestList = 0;
-  useConnectors.setState({ ...EMPTY });
+  useConnectors.setState({ ...EMPTY, servers: undefined });
 }
 
 const announce = (id: string) => deps.announce?.({ id, from: CONNECTORS_SOURCE });
@@ -223,6 +230,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
           loaded: true,
           problem: null,
           recordsNotice: typeof page.records_notice === "string" ? page.records_notice : "",
+          servers: page.mcp_servers,
         }));
       } catch (error) {
         if (mine !== newestList) return;

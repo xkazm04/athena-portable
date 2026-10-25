@@ -10,9 +10,22 @@
  * record still calls connected; `reconnected` is a connect as another account, whose own word
  * (the record's `notice`) stands on the layer, a probe after it included.
  */
-import type { ConnectorView } from "@/lib/api";
+import type { ConnectorView, McpServerView } from "@/lib/api";
 
-import { INERT_ACTIONS, selectConnectors, type ConnectorProblem, type ConnectorsModel } from "./model";
+import { selectConnectors, type ConnectorActions, type ConnectorProblem, type ConnectorsModel } from "./model";
+
+/**
+ * Actions that do nothing, for a fixture or a test. Here, not in `model.ts`: the model sits in the
+ * first frame's shared chunk, and only the preview and the tests need these.
+ */
+export const INERT_ACTIONS: ConnectorActions = {
+  connect: () => {},
+  disconnect: () => {},
+  probe: () => {},
+  setEnabled: () => {},
+  setWrites: () => {},
+  setAllowlist: () => {},
+};
 
 const NOW = Date.parse("2026-09-12T12:00:00Z");
 
@@ -109,6 +122,7 @@ export function model(
     ready?: boolean;
     busy?: Record<string, string>;
     errors?: Record<string, string>;
+    servers?: McpServerView[];
   } = {},
 ): ConnectorsModel {
   return selectConnectors(
@@ -121,7 +135,28 @@ export function model(
     INERT_ACTIONS,
     NOW,
     over.recordsNotice ?? "",
+    over.servers,
   );
+}
+
+/** An MCP server as `GET /connectors` lists it (ADR 0144): Gravitone's default projection, live. */
+export function gravitone(over: Partial<McpServerView> = {}): McpServerView {
+  return {
+    id: "gravitone",
+    origin: "connector:gravitone",
+    kind: "mcp",
+    url: "https://gt.example/api/mcp",
+    token_env: "GT_TOKEN",
+    token_set: true,
+    live: true,
+    health: "healthy",
+    health_detail: "",
+    tools: [
+      { name: "connector.gravitone.gt_read", class: "AUTO" },
+      { name: "connector.gravitone.gt_job", class: "GATED" },
+    ],
+    ...over,
+  };
 }
 
 const empty = model([gmail(), notion()]);

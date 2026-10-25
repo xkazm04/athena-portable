@@ -8,17 +8,17 @@ import type { ConnectorView } from "@/lib/api";
 
 import { whenAgo } from "@/lib/time";
 
+import { INERT_ACTIONS, gravitone } from "./fixtures";
 import {
-  INERT_ACTIONS,
   ageOf,
   connectorLineOf,
   isWrite,
-  paragraphsOf,
   sealSentence,
   selectConnectors,
   standingOf,
   type ConnectorRow,
 } from "./model";
+import { paragraphsOf, serverRowOf } from "./depth";
 
 const NOW = Date.parse("2026-09-12T12:00:00Z");
 
@@ -383,4 +383,39 @@ test("case 6: a needs-reauth OAuth row whose client is kept reconnects with one 
   expect(older.reconnect).toBe(false);
   expect(connected.reconnect).toBe(false);
   expect(token.reconnect).toBe(false);
+});
+
+// -- the MCP servers (ADR 0144) --------------------------------------------------------------------------
+
+test("case 3: a server's standing comes from its token and health, and names the variable, never a value", () => {
+  const unset = serverRowOf(gravitone({ token_set: false, live: false }));
+  expect(unset.standing).toBe("not-connected");
+  expect(unset.sentence).toBe("GT_TOKEN is not set, so nothing runs.");
+  const broken = serverRowOf(gravitone({ health: "broken", health_detail: "HTTP 502" }));
+  expect(broken.standing).toBe("broken");
+  expect(broken.sentence).toBe("HTTP 502");
+  expect(broken.detail).toBe("HTTP 502");
+  expect(broken.tone).toBe("error");
+  const healthy = serverRowOf(gravitone());
+  expect(healthy.standing).toBe("connected");
+  expect(healthy.tone).toBe("success");
+  const unknown = serverRowOf(gravitone({ health: "unknown" }));
+  expect(unknown.standing).toBe("connected");
+  expect(unknown.tone).toBe("warning");
+  expect(unknown.sentence).toContain("not reached yet");
+  expect(healthy.label).toBe("Gravitone");
+});
+
+test("case 4: a server's tools split by the daemon's class, never a classify here, under their bare names", () => {
+  const row = serverRowOf(
+    gravitone({
+      tools: [
+        { name: "connector.gravitone.gt_read", class: "AUTO" },
+        { name: "connector.gravitone.gt_find", class: "READ" },
+        { name: "connector.gravitone.gt_job", class: "GATED" },
+      ],
+    }),
+  );
+  expect(row.unattended).toEqual(["gt_read", "gt_find"]);
+  expect(row.gated).toEqual(["gt_job"]);
 });

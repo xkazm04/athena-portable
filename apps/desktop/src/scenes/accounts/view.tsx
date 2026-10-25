@@ -15,7 +15,10 @@
  * draft until Add is pressed, so a half-typed address is never one the gate accepts; a credential
  * is typed here, sent once and never shown back; the seal sentence names its rung, and the
  * owner-only file says it is not encrypted. Standing is read by shape and word, never by colour
- * alone. A pure function of `{ model, path, go }` plus the view's own state (what is hovered, what
+ * alone. The MCP servers the daemon lists (ADR 0144) are accounts too: a card in the field, counted
+ * in the summary, and `accounts/<id>` shows the URL, where the token comes from, the health, which
+ * tools run without a card and which are gated, and how to stop it. No switch, allow-list or
+ * Disconnect is drawn for one, because none applies; the view says so instead. A pure function of `{ model, path, go }` plus the view's own state (what is hovered, what
  * is typed).
  */
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
@@ -27,11 +30,12 @@ import PillGroup from "@/components/PillGroup";
 import ProblemNote from "@/components/ProblemNote";
 import type { Path } from "@/depth/model";
 import {
-  paragraphsOf,
   WAITING_WORD,
   type ConnectorRow,
   type ConnectorsModel,
+  type Standing as StandingWord,
 } from "@/modules/connectors/model";
+import { paragraphsOf, serverRowsOf, type ServerRow } from "@/modules/connectors/depth";
 import type { ConnectorToolView } from "@/lib/api";
 
 import "./accounts.css";
@@ -50,8 +54,13 @@ const nounOf = (row: ConnectorRow) => (row.egress === "recipients" ? "recipients
 export default function AccountsView({ model, path, go }: AccountsViewProps) {
   const item = path.item;
   const row = item === undefined ? null : (model.rows.find((r) => r.id === item) ?? null);
+  const servers = serverRowsOf(model.servers);
+  // ADR 0144 refuses an MCP id equal to a built-in connector's, so a vault row and a server never share one.
+  const server = item === undefined || row !== null ? null : (servers.find((s) => s.id === item) ?? null);
   const level = item === undefined ? "field" : path.sub?.kind === "allowlist" ? "allowlist" : "item";
   const available = model.ready && !model.problem && model.loaded;
+  // A server has no allow-list: `accounts/<server>/allowlist` is a place that does not exist.
+  const missing = row === null && (server === null || level === "allowlist");
 
   return (
     <div className="accounts" data-level={level}>
@@ -86,8 +95,9 @@ export default function AccountsView({ model, path, go }: AccountsViewProps) {
         </p>
       ) : null}
 
-      {available && level === "field" && <Field model={model} go={go} />}
-      {available && level !== "field" && row === null && <NotFound id={item ?? ""} go={go} />}
+      {available && level === "field" && <Field model={model} servers={servers} go={go} />}
+      {available && level !== "field" && missing && <NotFound id={item ?? ""} go={go} />}
+      {available && server !== null && level === "item" && <ServerItem server={server} />}
       {available && row !== null && level === "item" && <Item row={row} model={model} go={go} />}
       {available && row !== null && level === "allowlist" && <Allowlist row={row} model={model} go={go} />}
     </div>
@@ -119,7 +129,7 @@ function RecordsNotice({ notice }: { notice: string }) {
 
 // -- the standing, by shape and word -------------------------------------------------------------------
 
-function Standing({ row }: { row: ConnectorRow }) {
+function Standing({ row }: { row: { standing: StandingWord; word: string; busy?: string } }) {
   return (
     <span className="standing" data-standing={row.standing}>
       <StandingMark standing={row.standing} />
@@ -130,10 +140,29 @@ function Standing({ row }: { row: ConnectorRow }) {
 
 // -- the field -------------------------------------------------------------------------------------------
 
-function Field({ model, go }: { model: ConnectorsModel; go: (to: Path) => void }) {
+function Field({
+  model,
+  servers,
+  go,
+}: {
+  model: ConnectorsModel;
+  servers: readonly ServerRow[];
+  go: (to: Path) => void;
+}) {
   const [focused, setFocused] = useState<string | null>(null);
-  const hovered = model.rows.find((r) => r.id === focused) ?? null;
-  const connected = model.rows.filter((r) => r.standing === "connected").length;
+  // Every account the daemon lists, the vault's and the MCP servers alike, is one of the count.
+  const all = [...model.rows, ...servers];
+  const hovered = all.find((r) => r.id === focused) ?? null;
+  const connected = all.filter((r) => r.standing === "connected").length;
+  /** The hover, focus and press wiring every card shares. */
+  const hover = (id: string) => ({
+    "data-on": focused === id,
+    onMouseEnter: () => setFocused(id),
+    onMouseLeave: () => setFocused((f) => (f === id ? null : f)),
+    onFocus: () => setFocused(id),
+    onBlur: () => setFocused((f) => (f === id ? null : f)),
+    onClick: () => go({ root: "accounts", item: id }),
+  });
 
   return (
     <section className="reach" aria-label="Accounts">
@@ -145,9 +174,9 @@ function Field({ model, go }: { model: ConnectorsModel; go: (to: Path) => void }
             ? hovered.sentence
             : model.recordsNotice
               ? "connections unconfirmed"
-              : model.rows.length === 0
+              : all.length === 0
                 ? "The daemon lists no connectors."
-                : `${connected} of ${model.rows.length} connected. Mail and notes Athena may use from any page, each behind its own switch.`}
+                : `${connected} of ${all.length} connected. Mail and notes Athena may use from any page, each behind its own switch.`}
         </p>
         {hovered ? (
           <p className="accounts__word">
@@ -164,12 +193,7 @@ function Field({ model, go }: { model: ConnectorsModel; go: (to: Path) => void }
               className="card focus-ring"
               data-go={row.id}
               data-standing={row.standing}
-              data-on={focused === row.id}
-              onMouseEnter={() => setFocused(row.id)}
-              onMouseLeave={() => setFocused((f) => (f === row.id ? null : f))}
-              onFocus={() => setFocused(row.id)}
-              onBlur={() => setFocused((f) => (f === row.id ? null : f))}
-              onClick={() => go({ root: "accounts", item: row.id })}
+              {...hover(row.id)}
             >
               <AccountArt id={row.id} lit={row.standing === "connected"} size={236} />
               <span className="card__name">{row.label}</span>
@@ -180,6 +204,26 @@ function Field({ model, go }: { model: ConnectorsModel; go: (to: Path) => void }
                 {row.writes.length && row.standing === "connected" ? (
                   <span className="acc-chip">{row.writesEnabled ? "writes on" : "writes off"}</span>
                 ) : null}
+              </span>
+            </button>
+          </li>
+        ))}
+        {servers.map((server) => (
+          <li key={server.id}>
+            <button
+              type="button"
+              className="card focus-ring"
+              data-go={server.id}
+              data-kind="mcp"
+              data-standing={server.standing}
+              {...hover(server.id)}
+            >
+              <AccountArt id={server.id} lit={server.standing === "connected"} size={236} />
+              <span className="card__name">{server.label}</span>
+              <Standing row={server} />
+              <span className="card__chips">
+                <span className="acc-chip">{`${server.unattended.length} runs without a card`}</span>
+                <span className="acc-chip acc-chip--gated">{`${server.gated.length} gated`}</span>
               </span>
             </button>
           </li>
@@ -202,6 +246,86 @@ function NotFound({ id, go }: { id: string; go: (to: Path) => void }) {
         Back to the accounts
       </Button>
     </section>
+  );
+}
+
+// -- one MCP server ---------------------------------------------------------------------------------------
+
+/** The health line of a server's level: the detail verbatim when its last call broke. */
+function healthOf(server: ServerRow): string {
+  if (!server.tokenSet) return "Health: not asked, since nothing runs without the token.";
+  if (server.standing === "broken") return `Health: broken${server.detail ? `, ${server.detail}` : ""}.`;
+  return server.tone === "success" ? "Health: answered its last call." : "Health: not reached yet.";
+}
+
+/**
+ * An MCP server's own level (ADR 0144), read only. What a person learns here they could otherwise
+ * learn only from `mcp.json` and the ADR: where it is, where its token comes from, whether it
+ * answered, which tools act without asking, and how to stop it. No switch, allow-list or Disconnect.
+ */
+function ServerItem({ server }: { server: ServerRow }) {
+  return (
+    <section className="item" aria-label={server.label} data-kind="mcp">
+      <div className="item__stage">
+        <div className="item__art">
+          <AccountArt id={server.id} lit={server.standing === "connected"} size={300} />
+          <p className="accounts__fine">A stylised drawing, not the service's own mark.</p>
+        </div>
+        <p className="accounts__eyebrow">MCP server</p>
+        <h1 className="accounts__marquee">{server.label}</h1>
+        <p className="item__standing">
+          <Standing row={server} />
+        </p>
+        <p className="item__sentence">{server.sentence}</p>
+      </div>
+
+      <div className="item__act">
+        <Panel title="Where it is" note="Configured in mcp.json, not connected here.">
+          <code className="typo-code server__url">{server.url}</code>
+          <p className="typo-caption">
+            {server.tokenEnv
+              ? `token from ${server.tokenEnv}: ${server.tokenSet ? "set" : "not set"}`
+              : "No token variable is named for it."}
+          </p>
+          <p className="typo-caption" role="note">
+            {healthOf(server)}
+          </p>
+        </Panel>
+
+        <Panel title="What it yields" note="Each tool's class is the daemon's.">
+          <div className="tools">
+            <NameList title="Runs without a card" names={server.unattended} gated={false} />
+            <NameList title="Gated" names={server.gated} gated />
+          </div>
+        </Panel>
+
+        <Panel title="How to stop it">
+          <p className="typo-body">{server.stop}</p>
+        </Panel>
+      </div>
+    </section>
+  );
+}
+
+function NameList({ title, names, gated }: { title: string; names: readonly string[]; gated: boolean }) {
+  return (
+    <div className="tools__col">
+      <span className="typo-label tools__title">{title}</span>
+      {names.length ? (
+        <ul className="tools__list">
+          {names.map((name) => (
+            <li key={name} className="tools__tool">
+              <span className="tools__line">
+                <code className="typo-code">{name}</code>
+                {gated ? <GatedMark /> : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <span className="typo-caption">none</span>
+      )}
+    </div>
   );
 }
 
@@ -334,6 +458,18 @@ function GuideParagraph({ text }: { text: string }) {
 
 // -- the tools ------------------------------------------------------------------------------------------
 
+function GatedMark() {
+  return (
+    <span className="gated">
+      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
+        <rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor" />
+        <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+      GATED
+    </span>
+  );
+}
+
 function ToolList({ title, tools, gated }: { title: string; tools: readonly ConnectorToolView[]; gated: boolean }) {
   return (
     <div className="tools__col">
@@ -344,15 +480,7 @@ function ToolList({ title, tools, gated }: { title: string; tools: readonly Conn
             <li key={tool.name} className="tools__tool">
               <span className="tools__line">
                 <code className="typo-code">{tool.name}</code>
-                {gated ? (
-                  <span className="gated">
-                    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
-                      <rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor" />
-                      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" strokeWidth="1.6" />
-                    </svg>
-                    GATED
-                  </span>
-                ) : null}
+                {gated ? <GatedMark /> : null}
               </span>
               <span className="typo-caption">{tool.description}</span>
             </li>

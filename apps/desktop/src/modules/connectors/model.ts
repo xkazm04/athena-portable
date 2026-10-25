@@ -101,6 +101,11 @@ export interface ConnectorsModel {
   problem: ConnectorProblem | null;
   /** The vault's notice that its connections file could not be read, verbatim, or "". */
   recordsNotice: string;
+  /**
+   * The list's `mcp_servers` (ADR 0144), unparsed: `depth.ts` reads them in the depth's own
+   * chunk, so the first frame carries none of that code. Absent from an older daemon.
+   */
+  servers?: unknown;
   actions: ConnectorActions;
 }
 
@@ -388,6 +393,7 @@ export function selectConnectors(
   actions: ConnectorActions,
   now: number = Date.now(),
   recordsNotice: string = "",
+  servers?: unknown,
 ): ConnectorsModel {
   return {
     rows: items.map((view) => rowOf(view, busy, errors, now, recordsNotice)),
@@ -395,23 +401,7 @@ export function selectConnectors(
     loaded,
     problem,
     recordsNotice,
+    servers,
     actions,
   };
 }
-
-/** The guide as paragraphs: split on blank lines, URLs left as text a person can copy. */
-export function paragraphsOf(guide: string): string[] {
-  return guide
-    .split(/\n\s*\n/)
-    .map((p) => p.replace(/\s*\n\s*/g, " ").trim())
-    .filter(Boolean);
-}
-
-export const INERT_ACTIONS: ConnectorActions = {
-  connect: () => {},
-  disconnect: () => {},
-  probe: () => {},
-  setEnabled: () => {},
-  setWrites: () => {},
-  setAllowlist: () => {},
-};

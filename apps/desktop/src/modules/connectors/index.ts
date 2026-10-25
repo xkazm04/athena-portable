@@ -34,6 +34,7 @@ export function useConnectorsModel(): ConnectorsModel {
   const recordsNotice = useConnectors((s) => s.recordsNotice);
   const busy = useConnectors((s) => s.busy);
   const errors = useConnectors((s) => s.errors);
+  const servers = useConnectors((s) => s.servers);
   const daemon = useDaemon();
   const ready = endpoint(daemon) !== null;
 
@@ -41,5 +42,5 @@ export function useConnectorsModel(): ConnectorsModel {
     if (ready) void useConnectors.getState().load();
   }, [ready]);
 
-  return selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice);
+  return selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice, servers);
 }
