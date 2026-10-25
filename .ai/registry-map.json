@@ -1739,7 +1739,11 @@
           "revision": 4,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/connectors/spec.py:263 The context loads a flat set of independent connector specs (two builtin JSON files, plus up to 16 MCP servers from one mcp.json) and refuses a duplicate id instead of layering it. There is no multi-service topology, no integration fragment that applies only when two connectors are both present, no host-capability probe and no later-wins merge, so the subject's precondition does not hold; a search of src/athena/connectors, src/athena/daemon and tests/connectors for conjunction, topology, accelerator, docker and specificity found nothing.",
+          "evaluatedAt": "2026-10-25",
+          "evaluatedAgainst": "sha256-b2:01b18ee0f6715450",
+          "evaluatedRevision": 5
         }
       ],
       "governance": "governed"

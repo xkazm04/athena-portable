@@ -1,0 +1,66 @@
+{
+ "schema": "conform-run/1",
+ "worker": "000b37f2-a2bb-4b36-a4a7-d7d872a0a1f0",
+ "subject": "conditional-service-composition",
+ "evaluatedAt": "2026-10-25T00:43:29.223474+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "connector-service",
+   "subject": "conditional-service-composition",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/connectors/spec.py:263 The context loads a flat set of independent connector specs (two builtin JSON files, plus up to 16 MCP servers from one mcp.json) and refuses a duplicate id instead of layering it. There is no multi-service topology, no integration fragment that applies only when two connectors are both present, no host-capability probe and no later-wins merge, so the subject's precondition does not hold; a search of src/athena/connectors, src/athena/daemon and tests/connectors for conjunction, topology, accelerator, docker and specificity found nothing.",
+   "techniques": [
+    {
+     "technique": "conjunction-activated-fragments",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/connectors/spec.py:266 Each spec stands alone and is keyed by id; a second document for the same id is refused, not layered. No fragment is selected by a combination of handles."
+    },
+    {
+     "technique": "specificity-ordered-layering",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/connectors/spec.py:259 The set is discovered by glob, but the result is a dict of disjoint specs with no order-dependent merge, so no layering order is needed (the sorted glob keeps loading deterministic anyway)."
+    },
+    {
+     "technique": "intent-and-environment-in-one-namespace",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/connectors/health.py:3 Here 'probe' means checking a credential against the provider, not observing what the host can do. No requested and observed tokens share a namespace, and there is no wildcard."
+    },
+    {
+     "technique": "requirement-closure-before-selection",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/connectors/mcp/config.py:143 MCP servers are an explicit list a person writes; no server declares that it requires another, so there is nothing to close over before selection."
+    }
+   ],
+   "absenceTerms": [
+    "conjunction",
+    "topology",
+    "accelerator",
+    "docker",
+    "specificity"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-25T00:43:29.223474+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "conditional-service-composition"
+   ],
+   "techniques": [
+    "conjunction-activated-fragments",
+    "intent-and-environment-in-one-namespace",
+    "requirement-closure-before-selection",
+    "specificity-ordered-layering"
+   ],
+   "deviations": 0,
+   "context": "connector-service",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

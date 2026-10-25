@@ -7689,6 +7689,37 @@
           "evidence": "src/athena/wiring.py:323 The root builds one concrete store class. No second backend sits behind an interface here, so there is no parity to keep."
         }
       ]
+    },
+    "1aff3b77-8fa5-45ac-93ae-941206f3ed16/conditional-service-composition": {
+      "context": "connector-service",
+      "subject": "conditional-service-composition",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-25",
+      "evaluatedTs": "2026-10-25T00:43:29.223Z",
+      "worker": "000b37f2-a2bb-4b36-a4a7-d7d872a0a1f0",
+      "techniques": [
+        {
+          "technique": "conjunction-activated-fragments",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/spec.py:266 Each spec stands alone and is keyed by id; a second document for the same id is refused, not layered. No fragment is selected by a combination of handles."
+        },
+        {
+          "technique": "specificity-ordered-layering",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/spec.py:259 The set is discovered by glob, but the result is a dict of disjoint specs with no order-dependent merge, so no layering order is needed (the sorted glob keeps loading deterministic anyway)."
+        },
+        {
+          "technique": "intent-and-environment-in-one-namespace",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/health.py:3 Here 'probe' means checking a credential against the provider, not observing what the host can do. No requested and observed tokens share a namespace, and there is no wildcard."
+        },
+        {
+          "technique": "requirement-closure-before-selection",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/mcp/config.py:143 MCP servers are an explicit list a person writes; no server declares that it requires another, so there is nothing to close over before selection."
+        }
+      ]
     }
   }
 }
