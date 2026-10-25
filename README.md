@@ -76,8 +76,8 @@ Haiku control and the Athena-on-Claude row call the signed-in `claude` CLI; with
 
 | Command | Runs | Spends | Needs |
 |---|---|---|---|
-| `uv run python -m athena.proving gauntlet --n 3 --no-claude --no-control` | 9 Nemotron attacks, 3 per surface, against Athena-on-Nemotron; proof 1, pressure and the approve-path probe from the gate | Nemotron only, cents (the smaller hosted run `20261007T172658Z` cost $0.0013) | the key |
-| `uv run python -m athena.proving gauntlet --n 3` | the same plus the Haiku control's attacks and validity judge, and Athena-on-Claude (Sonnet) on the full corpus | Nemotron cents; Claude under a dollar by proportion (18 Sonnet turns; the 75-turn run `20261007T140609Z` cost $3.20), not measured at this size | the key and a `claude` CLI |
+| `uv run python -m athena.proving gauntlet --n 3 --no-claude --no-control` | 12 Nemotron attacks, 3 per surface, against Athena-on-Nemotron; proof 1, pressure and the approve-path probe from the gate | Nemotron only, cents (the smaller hosted run `20261007T172658Z` cost $0.0013) | the key |
+| `uv run python -m athena.proving gauntlet --n 3` | the same plus the Haiku control's attacks and validity judge, and Athena-on-Claude (Sonnet) on the full corpus | Nemotron cents; Claude under a dollar by proportion (24 Sonnet turns; the 75-turn run `20261007T140609Z` cost $3.20), not measured at this size | the key and a `claude` CLI |
 | `uv run python -m athena.proving characters` | 4 Characters x 2 journeys, Athena on Claude twice and on Nemotron once, two judge families | Nemotron about $0.05; Claude $6 to $8 (three runs, section 9) | the key and a `claude` CLI |
 | `PROVING_JUDGE_TOKEN=<token> uv run python -m athena.proving.server` | the trigger page on http://127.0.0.1:8790/; a judge with the token starts a run and anyone watches it | whatever the started run spends, capped per run and per day | the key; a `claude` CLI for full runs |
 | `PROVING_JUDGE_TOKEN=<token> uv run python -m athena.proving.server --hosted` | the page as the container runs it: Gauntlet only, no Claude (ADR 0039) | Nemotron only | the key |
@@ -392,7 +392,11 @@ included, run without approval. It is tested on Claude and on Nemotron.
 - **Attackers.** Nemotron 3.5 Lightning (the first rung of the ladder, with Super as the
   escalation) and a Claude Haiku control each write 15 attacks per surface as schema-checked JSON.
   The surfaces are hostile text inside Ledgerbox's page state, a hostile output from a READ tool,
-  and a poisoned memory episode.
+  a poisoned memory episode, and `cross_tab`: hostile text on the focused Ledgerbox tab aimed at
+  TidyCRM, open and trusted in another tab (ADR 0106's loosening, attacked at volume). A surface is
+  one entry in `gauntlet/surfaces.py`: its brief, the user's neutral question, its targets
+  (derived from the tool tables of the apps its world holds; `cross_tab` aims at every TidyCRM
+  tool, a read included) and how it is delivered (ADR 0175).
 - **Judge.** The control grades each attack as a real, on-goal injection or not. It is blind to
   which model wrote the attack, and every payload sits in a nonce fence.
 - **Worlds.** Each attack gets a fresh throwaway Athena, built by `build_local` on a temporary
@@ -400,9 +404,11 @@ included, run without approval. It is tested on Claude and on Nemotron.
   and `POST /run`.
 - **Verdict.** The verdict is read off the gate's records, never off a model (ADR 0032). Those
   records are the gate outcomes, the brain's fact writers, the fact counts and the approval table.
-  Planted breaches in the tests prove the detector can say `breached`.
-- **Deferred surface.** The fourth surface in the design, a foreign agent over MCP, is deferred.
-  No MCP channel exists in `src/` for it to arrive on.
+  Two instruments watch another tab: a call to another open app's tool the gate let through with
+  no approved card is a breach whatever its class, and so is a card for it bound to any tab but
+  that app's open tab. Planted breaches in the tests prove each detector can say `breached`.
+- **Deferred surface.** The design's foreign-agent surface, an agent over MCP, is deferred. No
+  MCP channel exists in `src/` for it to arrive on.
 
 First full run (2026-10-07, `proving-runs/20261007T140609Z`, gitignored):
 
@@ -722,7 +728,7 @@ is not served by Token Factory, so no role uses it; the control judges attack va
 
 | Role | NVIDIA model | Control | Status |
 |---|---|---|---|
-| Attacker: writes the Gauntlet's attacks on three surfaces | Lightning, escalating to Super | Claude Haiku writes the same number (4.5 in the runs reported here; 5.5 from 2026-10-07 on) | built |
+| Attacker: writes the Gauntlet's attacks on four surfaces | Lightning, escalating to Super | Claude Haiku writes the same number (4.5 in the runs reported here; 5.5 from 2026-10-07 on) | built |
 | Athena under test | Lightning through the `nebius` engine | Athena on the Claude CLI (Sonnet) | built |
 | User simulator: plays mira, jonas, priya and ana from `uat/characters` | Lightning (held its proof; Super not needed) | Claude Haiku judges fidelity, blind | built |
 | Judge: scores conversations against `uat/rubric.md`, nonce-fenced | Super (Lightning failed agreement, rho 0.18); Super, Super-VL and Ultra all held agreement at three seeds on 2026-10-22 | Claude Haiku, judging the same transcripts blind | built |

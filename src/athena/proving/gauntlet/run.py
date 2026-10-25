@@ -36,13 +36,13 @@ import random
 import time
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 from athena.contracts.channel import now_iso
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget
-from athena.proving.gauntlet.approve import probe_approve_path, summarize
+from athena.proving.gauntlet.approve import ProbeResult, probe_approve_path, summarize
 from athena.proving.gauntlet.attacks import (
     BATCH_SCHEMA,
     DEFERRED_SURFACES,
@@ -56,6 +56,7 @@ from athena.proving.gauntlet.attacks import (
     judge_system,
 )
 from athena.proving.gauntlet.delivery import deliver
+from athena.proving.gauntlet.surfaces import surface as surface_entry
 from athena.proving.gauntlet.verdict import BREACHED, ERROR, HELD, verdict_for
 from athena.proving.report import announce, prune, write_report
 from athena.proving.roles import (
@@ -67,7 +68,7 @@ from athena.proving.roles import (
     RoleClient,
 )
 from athena.proving.runlog import RunLog
-from athena.proving.world import TurnRecord, World
+from athena.proving.world import GateRecord, TurnRecord, World
 
 __all__ = [
     "CLAIM",
@@ -439,7 +440,9 @@ def drive(
             }
         try:
             record = deliver(world, attack)
-            verdict = verdict_for(record, attack.target_tool)
+            verdict = verdict_for(
+                record, attack.target_tool, open_tabs=surface_entry(attack.surface).open_tabs
+            )
             budget.charge(row.purse, record.cost_usd)
             for ledger_row in record.ledger or [{}]:
                 log.record(
@@ -464,7 +467,7 @@ def drive(
             probes: list[dict[str, Any]] = []
             if approve_probe and verdict.approvals_filed:
                 try:
-                    probes = [p.to_dict() for p in probe_approve_path(world, record)]
+                    probes = [p.to_dict() for p in _probe_from_each_cards_tab(world, record)]
                 except Exception as exc:  # a probe bug is reported, never a crash of the run
                     probes = [{"approve_path": "inconclusive", "detail": type(exc).__name__}]
         except Exception as exc:  # the driver never crashes a run
@@ -495,6 +498,33 @@ def drive(
 
     with ThreadPoolExecutor(max_workers=max(workers, 1)) as pool:
         return list(pool.map(one, attacks))
+
+
+def _probe_from_each_cards_tab(world: World, record: TurnRecord) -> list[ProbeResult]:
+    """The approve-path probe, each card answered from the page of the app it belongs to.
+
+    A person answers a card on the tab it is bound to, and the decision route refuses an answer
+    from another app's page (``foreign_origin``). A ``cross_tab`` card belongs to TidyCRM while
+    the turn ran on Ledgerbox, so its cards are probed with the world's page set to TidyCRM's,
+    and the focus is put back after.
+    """
+    focused = world.origin
+    pages = {s.app_id: s.origin for s in world.local.daemon.sessions.all()}
+    by_page: dict[str, list[GateRecord]] = {}
+    for trip in record.gate:
+        if not trip.card_id:
+            continue
+        origin = world.local.approvals.describe(trip.card_id).origin
+        app = origin.split(":", 1)[1] if origin.startswith("host:") else ""
+        by_page.setdefault(pages.get(app, focused), []).append(trip)
+    results: list[ProbeResult] = []
+    try:
+        for page, trips in by_page.items():
+            world.origin = page
+            results.extend(probe_approve_path(world, replace(record, gate=trips)))
+    finally:
+        world.origin = focused
+    return results
 
 
 def _capture(world: World, record: TurnRecord, attack: Attack, row: Row, run_dir: Path) -> None:

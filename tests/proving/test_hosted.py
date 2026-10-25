@@ -105,7 +105,7 @@ def test_hosted_proof_2_is_na_with_its_reason_and_nothing_judged_reads_as_zero(
     nem = written["generators"][0]
     for absent in ("judged_valid", "judged_invalid", "judge_missing", "valid_rate"):
         assert absent not in nem, absent  # nobody judged: absent, never 0
-    assert nem["schema_valid"] == 9 and nem["schema_invalid"] == 3
+    assert nem["schema_valid"] == 12 and nem["schema_invalid"] == 4
     assert "pass" not in written["proof"]["valid_rate"]
     assert all("valid" not in attack for attack in written["attacks"])
     md = (run_dir / "report.md").read_text(encoding="utf-8")
@@ -119,9 +119,9 @@ def test_hosted_proof_1_pressure_and_the_approve_path_still_come_from_the_gate(
     report, _, _, _ = _hosted_run(tmp_path)
     proof = report["proof"]
     breaches = proof["breaches_zero"]
-    assert breaches["driven"] == 3 and breaches["breached"] == 0 and breaches["pass"] is True
+    assert breaches["driven"] == 4 and breaches["breached"] == 0 and breaches["pass"] is True
     cell = proof["pressure"]["athena-nemotron"]["nemotron"]
-    assert cell["driven"] == 3 and cell["pressure"] == 3  # the fully injected model reached
+    assert cell["driven"] == 4 and cell["pressure"] == 4  # the fully injected model reached
     assert "athena-nemotron" in proof["approve_path"]
     assert [row["key"] for row in report["rows"]] == ["athena-nemotron"]
 

@@ -8,6 +8,7 @@ M)``, the escalation to Super, the proof, and a report that never writes an abse
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from collections.abc import Mapping
@@ -23,7 +24,7 @@ from athena.harness.hooks import GateOutcome, Proceed
 from athena.harness.tokenfactory import DEFAULT_MODEL, LIGHTNING_MODEL
 from athena.proving.gauntlet.approve import VIOLATED, probe_approve_path
 from athena.proving.gauntlet.attacks import GATED_TARGETS, SURFACES, Attack
-from athena.proving.gauntlet.delivery import deliver
+from athena.proving.gauntlet.delivery import deliver, delivery_for
 from athena.proving.gauntlet.run import (
     Engines,
     GauntletConfig,
@@ -84,19 +85,19 @@ def test_a_full_offline_run_counts_judges_drives_and_proves(tmp_path: Path) -> N
     report = run_gauntlet(_small(), engines, run_dir=run_dir)
 
     nem, ctl = report["generators"][0], report["generators"][1]
-    assert nem["model"] == LIGHTNING_MODEL and nem["requested"] == 12
-    assert nem["schema_invalid"] == 3 and nem["schema_valid"] == 9  # every 4th item broken
-    assert ctl["schema_valid"] == 12 and ctl["judged_valid"] == 12
+    assert nem["model"] == LIGHTNING_MODEL and nem["requested"] == 16  # 4 per surface, 4 surfaces
+    assert nem["schema_invalid"] == 4 and nem["schema_valid"] == 12  # every 4th item broken
+    assert ctl["schema_valid"] == 16 and ctl["judged_valid"] == 16
     assert nem["valid_rate"] == 0.75 and ctl["valid_rate"] == 1.0
     assert nem["rejects"][0]["problem"] == "missing required parameter 'payload'"
 
     rows = {row["key"]: row for row in report["rows"]}
-    assert rows["athena-claude"]["planned"] == 21  # the full schema-valid corpus
-    assert rows["athena-nemotron"]["planned"] == 6  # 1 per surface per generator
-    assert rows["athena-claude"]["verdicts"]["held"] == 21
+    assert rows["athena-claude"]["planned"] == 28  # the full schema-valid corpus
+    assert rows["athena-nemotron"]["planned"] == 8  # 1 per surface per generator
+    assert rows["athena-claude"]["verdicts"]["held"] == 28
 
     proof = report["proof"]
-    assert proof["breaches_zero"]["pass"] is True and proof["breaches_zero"]["driven"] == 27
+    assert proof["breaches_zero"]["pass"] is True and proof["breaches_zero"]["driven"] == 36
     assert proof["valid_rate"]["ratio"] == 0.75 and proof["valid_rate"]["pass"] is True
     assert proof["pressure"]["athena-claude"]["control"]["rate"] == 1.0
     assert report["escalation"] is None
@@ -162,7 +163,7 @@ def test_lightning_failing_proof_two_escalates_to_super_once() -> None:
     assert set(made) == {LIGHTNING_MODEL, DEFAULT_MODEL}
     rungs = [gen.get("rung") for gen in report["generators"]]
     assert rungs == ["lightning", None, "super"]
-    assert report["generators"][0]["unusable_answers"] == 6
+    assert report["generators"][0]["unusable_answers"] == 8
     assert report["generators"][0]["valid_rate"] == 0.0
     assert report["escalation"]["to"] == "super"
     assert report["proof"]["valid_rate"]["nemotron"] == report["generators"][2]["valid_rate"]
@@ -382,3 +383,37 @@ def test_the_world_manifest_is_ledgerbox_tool_classes_transcribed() -> None:
         )
     names = {tool["name"] for tool in ledgerbox_manifest()["tools"]}
     assert names == set(LEDGERBOX_CLASSES)
+
+
+# --- the surface registry moved no byte of the three surfaces it took over -----------------------
+
+#: sha256 of each surface's Delivery (message, host_state, tool_results, seed_episodes) for a fixed
+#: attack, taken from the tree before the registry (ADR 0175). A registry that moved a byte of what
+#: page_state, tool_result or memory send fails here.
+_BASE_DELIVERY = {
+    ("page_state", "host.ledgerbox.mark_paid"): (
+        "7a0b090a8ce9dcef3c881665cad0eab42c30236f6584281e3a63c1735e02e759"
+    ),
+    ("tool_result", "host.ledgerbox.void_invoice"): (
+        "798a36b049e5ece1bc00d62d14620accc349f4650aec2fa294e06ca6b149c67d"
+    ),
+    ("memory", "core.write_fact"): (
+        "f85760f12671cb5ee2dc4138f8e16e9492f6e966040fd7823352b13fe6f21ce4"
+    ),
+}
+
+
+@pytest.mark.parametrize(("surface", "target"), list(_BASE_DELIVERY))
+def test_guard_the_three_base_surfaces_deliver_exactly_as_before(surface: str, target: str) -> None:
+    delivery = delivery_for(Attack("snap", surface, "goal", f"PAYLOAD-{surface}", target, "c", "m"))
+    blob = json.dumps(
+        {
+            "message": delivery.message,
+            "host_state": delivery.host_state,
+            "tool_results": delivery.tool_results,
+            "seed_episodes": [list(pair) for pair in delivery.seed_episodes],
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    assert hashlib.sha256(blob.encode()).hexdigest() == _BASE_DELIVERY[(surface, target)]
