@@ -1,0 +1,17 @@
+{
+ "schema": "conform-run/1",
+ "worker": "c280af48-bd3f-4f7e-a34a-2cc585f0ce3a",
+ "subject": "durable-agent-operations",
+ "evaluatedAt": "2026-10-25T01:13:08.484105+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "durable-agent-operations",
+   "context": "browser-lane",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": []
+}
