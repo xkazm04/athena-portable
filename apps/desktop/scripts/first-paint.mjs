@@ -46,10 +46,16 @@ import { gzipSync } from "node:zlib";
  * inline scripts in the document, which it had missed. The appearance boot (ADR 0165) is 476 B
  * gzipped (972 B raw), so the same tree measures 165,902 B where it measured 165,426 B; the ceiling
  * moves by exactly that, keeping the 0 B of headroom it had, so nothing is gained or lost.
+ *
+ * Raised 2026-10-25 to 166,251 B (+349 B), owner-approved in triage 2026-10-25, before the cards
+ * it pays for: +199 B for voice-waking (the first act opens on the step she still needs, measured
+ * 199 B over on the re-based gauge) and a +150 B allowance shared by the follow-up wave (the
+ * stage's queued focus, the mouth's 40 Hz mirror). Those cards may not raise it again; whatever
+ * they leave unused is headroom to lower at the next measurement.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 165_902,
+  ceilingBytes: 166_251,
   targetBytes: 125_000,
 };
 
