@@ -4,11 +4,12 @@ import { openDb, type Db } from "@athena/demo-kit/db";
 
 import { APP_ID, DETAIL_CANDIDATES, LINE_SUGGESTIONS, TODAY, type Period } from "./constants";
 import { inPeriodClient as inPeriod } from "./filter-period";
-import { candidatesFor, isAmbiguous, scoreCandidate } from "./match";
 import { resolveInvoiceRef, type Resolved } from "./invoice-ref";
+import { reconcile, type Offer, type ReconcileInvoice, type Reconciliation } from "./reconcile";
 import { seed } from "./seed";
 import type {
   BankLine,
+  ClaimedBy,
   Client,
   Invoice,
   InvoiceDetail,
@@ -16,9 +17,11 @@ import type {
   InvoiceRow,
   InvoiceState,
   Match,
+  MatchCandidate,
   Payment,
   PeriodSummary,
   Reminder,
+  Standing,
 } from "./types";
 
 export { APP_ID };
@@ -77,7 +80,10 @@ export const unappliedLines = cache((): BankLine[] =>
   ),
 );
 
-function toRow(raw: RawRow, pool: BankLine[]): InvoiceRow {
+/** A row before the reconciliation has been asked how many credits it is offered. */
+type BaseRow = Omit<InvoiceRow, "candidate_count">;
+
+function toRow(raw: RawRow): BaseRow {
   const balance = raw.status === "void" ? 0 : raw.amount_cents - raw.paid_cents;
   // The AGE OF THE DEBT, not a chase flag. Gating this on `sent` meant a disputed invoice 72 days
   // past due reported 0, so the aging report filed it under "Within terms", the overdue filter
@@ -88,18 +94,11 @@ function toRow(raw: RawRow, pool: BankLine[]): InvoiceRow {
       ? Math.max(0, daysPast(raw.due_at))
       : 0;
   const state = stateOf(raw, balance, overdueDays);
-  const candidates = takesCredit({ state, balance_cents: balance })
-    ? candidatesFor(
-        { invoice: raw, clientName: raw.client_name, balanceCents: balance, alias: raw.client_bank_alias },
-        pool,
-      )
-    : [];
   return {
     ...raw,
     balance_cents: balance,
     state,
     days_overdue: overdueDays,
-    candidate_count: candidates.length,
     has_draft_reminder: raw.drafts > 0,
     // Stated once, here, so the chase beat reads a number rather than dividing two of them. The
     // threshold that turns it into a judgement stays in `isMostlyPaid`; this is the raw signal.
@@ -111,16 +110,44 @@ function daysPast(iso: string): number {
   return Math.floor((Date.parse(TODAY) - Date.parse(iso)) / 86_400_000);
 }
 
+/** Every invoice, enriched except for its credit count - the reconciliation's input. */
+const baseRows = cache((): BaseRow[] =>
+  db()
+    .all<RawRow>(`${ROW_SQL} ORDER BY i.due_at ASC`)
+    .map(toRow),
+);
+
+function scoreInput(row: BaseRow): ReconcileInvoice {
+  return {
+    id: row.id,
+    invoice: row,
+    clientName: row.client_name,
+    balanceCents: row.balance_cents,
+    alias: row.client_bank_alias,
+  };
+}
+
+/**
+ * The one reconciliation table for this request (`lib/reconcile.ts`): every invoice that takes a
+ * credit against every unapplied credit, scored once. The row's `candidate_count`, the card's
+ * candidates, `lineSuggestions` and `unappliedCredits` all read it, so no two of them can judge
+ * the same credit differently. It is built from the rows BEFORE their count, which is what lets
+ * the count read it without a cycle.
+ */
+export const reconciliation = cache((): Reconciliation =>
+  reconcile(baseRows().filter(takesCredit).map(scoreInput), unappliedLines()),
+);
+
+/** How many credits the table offers this invoice: its best fit, or a real contender, for each. */
+function withCount(row: BaseRow): InvoiceRow {
+  return { ...row, candidate_count: takesCredit(row) ? reconciliation().byInvoice(row.id).length : 0 };
+}
+
 /**
  * Every invoice, enriched. 120 rows: cheap enough to score matches for all of them at once - once
  * being the operative word, which is what the request-scoped memo enforces.
  */
-export const listInvoices = cache((): InvoiceRow[] => {
-  const pool = unappliedLines();
-  return db()
-    .all<RawRow>(`${ROW_SQL} ORDER BY i.due_at ASC`)
-    .map((raw) => toRow(raw, pool));
-});
+export const listInvoices = cache((): InvoiceRow[] => baseRows().map(withCount));
 
 /**
  * An invoice reference, id or number, resolved to the id. The one lookup every action goes through;
@@ -137,7 +164,7 @@ export function findInvoiceId(ref: unknown): string | undefined {
 
 export function getInvoice(id: string): InvoiceRow | undefined {
   const raw = db().get<RawRow>(`${ROW_SQL} WHERE i.id = ?`, [id]);
-  return raw ? toRow(raw, unappliedLines()) : undefined;
+  return raw ? withCount(toRow(raw)) : undefined;
 }
 
 export function getInvoiceDetail(id: string): InvoiceDetail | undefined {
@@ -177,18 +204,9 @@ export function getInvoiceDetail(id: string): InvoiceDetail | undefined {
     lines: handle.all<InvoiceLine>("SELECT * FROM invoice_lines WHERE invoice_id = ? ORDER BY id", [id]),
     payments: handle.all<Payment>("SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at", [id]),
     matches,
-    candidates:
-      takesCredit(invoice)
-        ? candidatesFor(
-            {
-              invoice,
-              clientName: invoice.client_name,
-              balanceCents: invoice.balance_cents,
-              alias: invoice.client_bank_alias,
-            },
-            unappliedLines(),
-          ).slice(0, DETAIL_CANDIDATES)
-        : [],
+    candidates: takesCredit(invoice)
+      ? reconciliation().byInvoice(id).slice(0, DETAIL_CANDIDATES).map(toCandidate)
+      : [],
     reminders: handle.all<Reminder>(
       "SELECT * FROM reminders WHERE invoice_id = ? ORDER BY created_at DESC",
       [id],
@@ -211,9 +229,10 @@ export const COUNTED_OUT: InvoiceState[] = ["void", "draft"];
 
 /**
  * Whether a credit may be offered against this invoice: something is owed, and it is a debt at
- * all. One predicate for its three readers - the row's `candidate_count`, `lineSuggestions` and
- * the card's `getInvoiceDetail` - because the card used to ask only about the balance and offered
- * a draft the credit its own row said it had none of.
+ * all. It decides which invoices enter the one reconciliation table, so the row's
+ * `candidate_count`, `lineSuggestions` and the card's `getInvoiceDetail` all inherit it - the card
+ * used to ask only about the balance and offered a draft the credit its own row said it had none
+ * of.
  */
 function takesCredit(row: { state: InvoiceState; balance_cents: number }): boolean {
   return row.balance_cents > 0 && !COUNTED_OUT.includes(row.state);
@@ -273,6 +292,41 @@ export interface LineSuggestion {
   short_by_cents?: number;
   /** The trading name the memo used for that client, when it used one. */
   counterparty_alias?: string;
+  /**
+   * Where this invoice stands for the credit (`lib/reconcile.ts`). A `claimed_elsewhere` entry is
+   * listed so a person can see what else the credit nearly fit; it is never offered on that
+   * invoice's own side, and `claimed_by` names the invoice the credit plainly belongs to.
+   */
+  standing: Standing;
+  claimed_by?: ClaimedBy;
+}
+
+/** A reconciled offer as the invoice's card holds it: the candidate, without the credit's side. */
+function toCandidate(o: Offer): MatchCandidate {
+  return {
+    line: o.line,
+    score: o.score,
+    confidence: o.confidence,
+    evidence: o.evidence,
+    ...(o.short_by_cents !== undefined ? { short_by_cents: o.short_by_cents } : {}),
+    ...(o.counterparty_alias !== undefined ? { counterparty_alias: o.counterparty_alias } : {}),
+    standing: o.standing,
+  };
+}
+
+function toSuggestion(o: Offer): LineSuggestion {
+  return {
+    invoice_id: o.invoice_id,
+    number: o.number,
+    client_name: o.client_name,
+    score: o.score,
+    confidence: o.confidence,
+    evidence: o.evidence,
+    ...(o.short_by_cents !== undefined ? { short_by_cents: o.short_by_cents } : {}),
+    ...(o.counterparty_alias !== undefined ? { counterparty_alias: o.counterparty_alias } : {}),
+    standing: o.standing,
+    ...(o.claimed_by ? { claimed_by: o.claimed_by } : {}),
+  };
 }
 
 /**
@@ -294,42 +348,19 @@ export interface CreditView {
 }
 
 /**
- * The other direction of the same heuristic: for every credit nobody has applied, which invoices
- * could it belong to? `read_credits` needs this to offer a match per credit, and it is where the
+ * The credit's side of the one table: for every credit nobody has applied, which invoices could it
+ * belong to? `read_credits` needs this to offer a match per credit, and it is where the
  * deliberately ambiguous seed rows show up - two open invoices tying for the same credit.
+ *
+ * Cut at LINE_SUGGESTIONS, but never below the invoices the credit is OFFERED to: a cut of 3 here
+ * against 5 on the card meant a credit with four contenders was counted by a row whose
+ * `read_invoice` could not see it.
  */
 export const lineSuggestions = cache((): Record<string, LineSuggestion[]> => {
-  const open = listInvoices().filter(takesCredit);
   const out: Record<string, LineSuggestion[]> = {};
-  for (const line of unappliedLines()) {
-    if (line.direction !== "in") continue;
-    const hits: LineSuggestion[] = [];
-    for (const inv of open) {
-      const scored = scoreCandidate(
-        {
-          invoice: inv,
-          clientName: inv.client_name,
-          balanceCents: inv.balance_cents,
-          alias: inv.client_bank_alias,
-        },
-        line,
-      );
-      if (scored) {
-        hits.push({
-          invoice_id: inv.id,
-          number: inv.number,
-          client_name: inv.client_name,
-          score: scored.score,
-          confidence: scored.confidence,
-          evidence: scored.evidence,
-          ...(scored.short_by_cents !== undefined ? { short_by_cents: scored.short_by_cents } : {}),
-          ...(scored.counterparty_alias !== undefined
-            ? { counterparty_alias: scored.counterparty_alias }
-            : {}),
-        });
-      }
-    }
-    out[line.id] = hits.sort((a, b) => b.score - a.score).slice(0, LINE_SUGGESTIONS);
+  for (const { line, offers } of reconciliation().credits) {
+    const offered = offers.filter((o) => o.standing !== "claimed_elsewhere").length;
+    out[line.id] = offers.slice(0, Math.max(LINE_SUGGESTIONS, offered)).map(toSuggestion);
   }
   return out;
 });
@@ -340,17 +371,15 @@ export const lineSuggestions = cache((): Record<string, LineSuggestion[]> => {
  */
 export const unappliedCredits = cache((): CreditView[] => {
   const suggestions = lineSuggestions();
-  return unappliedLines()
-    .filter((l) => l.direction === "in")
-    .map((line) => {
-      const hits = suggestions[line.id] ?? [];
-      const best = hits[0];
-      return {
-        line,
-        suggestions: hits,
-        ambiguous: isAmbiguous(hits),
-        counterparty_alias: best?.counterparty_alias ?? null,
-        short_by_cents: best?.short_by_cents ?? null,
-      };
-    });
+  return reconciliation().credits.map(({ line, ambiguous }) => {
+    const hits = suggestions[line.id] ?? [];
+    const best = hits[0];
+    return {
+      line,
+      suggestions: hits,
+      ambiguous,
+      counterparty_alias: best?.counterparty_alias ?? null,
+      short_by_cents: best?.short_by_cents ?? null,
+    };
+  });
 });

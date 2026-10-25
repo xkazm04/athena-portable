@@ -202,8 +202,10 @@ test("the sentence under a card's standing glyph leads with the same fact the gl
   // belong here." - and `read_view` handed that sentence to an agent as what the invoice waits on.
   const marks = buildSheet().lanes.flatMap((l) => l.marks);
   const shouting = marks.filter((m) => standingOf(m) === "long-overdue");
+  // Two, not three: the third (LB-2026-0057) only ever counted a credit that is plainly
+  // LB-2026-0115's, which the one reconciliation table no longer offers it (lib/reconcile.ts).
   assert.ok(
-    shouting.filter((m) => m.candidateCount > 0).length >= 3,
+    shouting.filter((m) => m.candidateCount > 0).length >= 2,
     "the seed has long-overdue invoices a credit might settle",
   );
   for (const m of shouting) {
@@ -345,6 +347,6 @@ function unreadExports(): { scanned: string[]; dead: string[] } {
 
 test("every export of the domain lib has a reader besides its own declaration", () => {
   const { scanned, dead } = unreadExports();
-  assert.equal(scanned.length, 18, `the scan reaches the context's 18 files: ${scanned.join(", ")}`);
+  assert.equal(scanned.length, 19, `the scan reaches the context's 19 files: ${scanned.join(", ")}`);
   assert.deepEqual(dead, []);
 });

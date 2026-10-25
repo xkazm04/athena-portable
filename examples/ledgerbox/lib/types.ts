@@ -132,6 +132,29 @@ export interface MatchCandidate {
   short_by_cents?: number;
   /** The trading name the memo used instead of the name on the invoice, when it did. */
   counterparty_alias?: string;
+  /**
+   * Where this invoice stands among every invoice the credit could settle (`lib/reconcile.ts`).
+   * Set on a reconciled offer; a bare `scoreCandidate` result has none. An invoice's own
+   * candidates are never `claimed_elsewhere` - those are only shown on the credit's side.
+   */
+  standing?: Standing;
+  /** The invoice the credit plainly fits instead, when `standing` is `claimed_elsewhere`. */
+  claimed_by?: ClaimedBy;
+}
+
+/**
+ * One (credit, invoice) pair's standing, from the one threshold `isContender` owns:
+ * - `best`: the credit's clear best fit;
+ * - `contested`: the best fit or within AMBIGUOUS_GAP of it, alongside another such invoice;
+ * - `claimed_elsewhere`: scored, but clearly behind another invoice, so never offered here.
+ */
+export type Standing = "best" | "contested" | "claimed_elsewhere";
+
+/** The invoice a credit plainly belongs to, named on a runner-up it is not offered to. */
+export interface ClaimedBy {
+  invoice_id: string;
+  number: string;
+  score: number;
 }
 
 export interface PeriodSummary {

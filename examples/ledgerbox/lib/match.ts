@@ -133,12 +133,14 @@ export function scoreCandidate(input: ScoreInput, line: BankLine): MatchCandidat
   };
 }
 
-/** Every plausible line for one invoice, best first. */
-export function candidatesFor(input: ScoreInput, lines: BankLine[]): MatchCandidate[] {
-  return lines
-    .map((line) => scoreCandidate(input, line))
-    .filter((c): c is MatchCandidate => c !== null)
-    .sort((a, b) => b.score - a.score);
+/**
+ * True when a candidate scoring `score` is a real contender against the best one at `best`: it is
+ * not clearly behind. The one threshold, read two ways - `isAmbiguous` below asks it of the
+ * runner-up, and `lib/reconcile.ts` asks it of every invoice a credit could be offered to, so a
+ * credit is offered where it is the best fit or a contender, and nowhere else.
+ */
+export function isContender(best: number, score: number): boolean {
+  return best - score < AMBIGUOUS_GAP;
 }
 
 /**
@@ -148,5 +150,5 @@ export function candidatesFor(input: ScoreInput, lines: BankLine[]): MatchCandid
 export function isAmbiguous(candidates: readonly { score: number }[]): boolean {
   const [first, second] = candidates;
   if (!first || !second) return false;
-  return first.score - second.score < AMBIGUOUS_GAP;
+  return isContender(first.score, second.score);
 }

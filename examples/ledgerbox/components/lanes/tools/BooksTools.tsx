@@ -319,9 +319,13 @@ export function BooksTools({
       const found = resolveInvoiceRef(id, rows);
       if (!found.ok) return refused(found.error);
       const r = rows.find((x) => x.id === found.id)!;
+      // A credit clearly someone else's is listed on the credit's side, never offered here: the
+      // same reconciliation table the row's `candidates` count reads (`lib/reconcile.ts`).
       const offers = Object.entries(suggestions)
         .flatMap(([line_id, hits]) =>
-          hits.filter((h) => h.invoice_id === r.id).map((h) => ({ line_id, ...offer(h) })),
+          hits
+            .filter((h) => h.invoice_id === r.id && h.standing !== "claimed_elsewhere")
+            .map((h) => ({ line_id, ...offer(h) })),
         )
         .sort((a, b) => b.score - a.score);
       return {
