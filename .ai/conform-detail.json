@@ -2498,22 +2498,37 @@
       "context": "workspace-build-config",
       "subject": "docs-sync",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-25",
+      "evaluatedTs": "2026-10-25T01:04:47.951Z",
+      "worker": "d130abef-f46a-429a-b595-bf8023328c2c",
       "techniques": [
         {
           "technique": "same-change-enforcement",
           "verdict": "deviation",
-          "evidence": "AGENTS.md:25 The requirement is prose; the workflow runs language checks and tests without evaluating documentation obligations from changed paths."
+          "evidence": "scripts/build-sidecar.py:197 The change that added the numpy refusal (078fba5c touched build-sidecar.py and docs/adr/0138 only) did not update SIDECAR.md's Build section. Nothing at the change boundary flagged the missed document."
+        },
+        {
+          "technique": "coupled-surface-inventory",
+          "verdict": "deviation",
+          "evidence": "scripts/build-sidecar.py:3 The change was settled one surface at a time: the script's own docstring and ADR 0138 carry the new command, but the shell's sidecar guide (SIDECAR.md:96) still carries the old one. No inventory names SIDECAR.md as a surface this script owes."
+        },
+        {
+          "technique": "source-doc-mapping",
+          "verdict": "deviation",
+          "evidence": "scripts/build-sidecar.py:1 The coupling lives only in a docstring and points at README §3.1 'Layers', which never mentions the frozen sidecar, PyInstaller or the build. The document that actually describes this script, apps/desktop/SIDECAR.md, is not named. sidecar_entry.py:1 makes the same README §3.1 pointer."
+        },
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "scripts/build-sidecar.py:190 The build command is copied word for word in the docstring (line 3), two printed hints (lines 190 and 198) and SIDECAR.md:96. No copy is named as the authority and nothing compares the copies, so the SIDECAR.md copy went stale. A plain grep could have caught it."
+        },
+        {
+          "technique": "prose-as-an-execution-surface",
+          "verdict": "conformant",
+          "evidence": "scripts/build-sidecar.py:271 The setup and smoke instructions this program prints use safe forms. The credential is passed as a file path, not a positional token, and the install line names only the project's own extras. No prose gate scans these printed lines, but nothing in them is unsafe."
         }
-      ],
-      "withdrawn": {
-        "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
-        "state": "deviation",
-        "at": "2026-10-16T01:42:53.907009+00:00",
-        "reason": "reviewer (sonnet): The claim is about repo-wide CI automation and rests on AGENTS.md and .github/workflows/ci.yml, which are not among the context's files (scripts/build-sidecar.py and scripts/sidecar_entry.py), and nothing in those two scripts shows a documentation-obligation check is absent."
-      }
+      ]
     },
     "d282a392-f7cb-4a89-886a-f7401e0583e6/docs-sync": {
       "context": "uat-characters-journeys",

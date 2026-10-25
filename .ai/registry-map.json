@@ -10135,7 +10135,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "scripts/build-sidecar.py:197 Commit 078fba5c (2026-10-23) made the build refuse to run without the voice-fx extra and updated the script's docstring and ADR 0138, but not apps/desktop/SIDECAR.md. Its Build block (lines 96-97) still says `uv sync --extra build` then `uv run python scripts/build-sidecar.py`, so a reader who pastes the documented steps gets this refusal.",
+          "evaluatedAt": "2026-10-25",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         },
         {
           "subject": "settings",
