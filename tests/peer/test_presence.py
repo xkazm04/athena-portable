@@ -89,14 +89,18 @@ def test_a_peer_moves_from_unprobed_to_online_to_asleep_to_unreachable(
     hello, overlay = FakeHello(ok=True), FakeOverlay(frozenset({"100.64.0.7"}))
     probe = PresenceProbe(host, hello=hello, overlay=overlay, now=clock)
     peer_id = _pc(host)
-    assert probe.view(peer_id) == {"presence": None, "presence_at": None, "vitals": None}
+    first = probe.view(peer_id)
+    assert (first["presence"], first["presence_at"], first["vitals"]) == (None, None, None)
+    assert first["link"]["state"] is None, "keyed but not probed yet"
 
     assert probe.probe_all() == [peer_id]
-    assert probe.view(peer_id) == {
-        "presence": "online",
-        "presence_at": "2026-10-24T12:00:00+00:00",
-        "vitals": None,
-    }
+    view = probe.view(peer_id)
+    assert (view["presence"], view["presence_at"], view["vitals"]) == (
+        "online",
+        "2026-10-24T12:00:00+00:00",
+        None,
+    )
+    assert view["link"]["state"] == "online"
     assert overlay.reads == 0, "the overlay is asked only when a hello failed"
 
     clock.advance(30)
@@ -137,7 +141,11 @@ def test_a_phone_and_an_unkeyed_pc_are_never_dialled_and_stay_null(
     assert probe.probe_all() == []
     assert hello.calls == [] and overlay.reads == 0
     for peer_id in (phone, waiting):
-        assert probe.view(peer_id) == {"presence": None, "presence_at": None, "vitals": None}
+        view = probe.view(peer_id)
+        assert (view["presence"], view["presence_at"], view["vitals"]) == (None, None, None)
+    assert probe.view(phone)["link"]["state"] == "phone", "guard 7: a phone is named, not dialled"
+    assert probe.view(waiting)["link"]["state"] == "awaiting_key"
+    assert probe.view(waiting)["link"]["evidence"]["key"] is False
 
 
 def test_a_change_publishes_peer_changed_and_a_steady_pass_publishes_nothing(
@@ -182,7 +190,7 @@ def test_the_hello_carries_the_token_and_the_three_second_timeout(
         return CallResult(200, {"ok": True})
 
     monkeypatch.setattr(presence, "call", fake_call)
-    assert authorized_hello("http://100.64.0.7:17491", "a-token") == {"ok": True}
+    assert authorized_hello("http://100.64.0.7:17491", "a-token") == (200, {"ok": True})
     assert seen == {
         "base_url": "http://100.64.0.7:17491",
         "method": "GET",
@@ -192,7 +200,9 @@ def test_the_hello_carries_the_token_and_the_three_second_timeout(
     }
     assert HELLO_TIMEOUT_S == 3.0
     monkeypatch.setattr(presence, "call", lambda *a, **k: CallResult(401, {}))
-    assert authorized_hello("http://100.64.0.7:17491", "a-revoked-token") is None
+    assert authorized_hello("http://100.64.0.7:17491", "a-revoked-token") == (401, None)
+    monkeypatch.setattr(presence, "call", lambda *a, **k: CallResult(0, {}, "OSError"))
+    assert authorized_hello("http://100.64.0.7:17491", "a-token") == (0, None)
 
 
 def test_the_probe_runs_with_the_host_lifecycle(host: PeerHost, clock: Clock) -> None:
@@ -237,7 +247,9 @@ def test_devices_shows_presence_from_a_real_hello(device: Device) -> None:
 
     host.keys.keep(peer_id, f"http://127.0.0.1:{device.peer_port}", mint_token())  # now refused
     host.presence.probe_all()
-    assert device.ui("/devices").body["peers"][0]["presence"] == "asleep"
+    row = device.ui("/devices").body["peers"][0]
+    assert row["presence"] is None, "a refusal is not sleep"
+    assert row["link"]["state"] == "removed_there" and row["link"]["evidence"]["hello"] == 401
 
 
 # -- vitals ride the hello (device-vitals WP1, ADR 0143) ----------------------------------------
@@ -369,3 +381,70 @@ def test_a_vitals_service_that_raises_says_null_on_the_hello(device: Device) -> 
     answer = device.peer("/peer/hello", token=token)
     assert answer.status == 200 and answer.body["vitals"] is None
     assert device.ui("/devices").body["self"]["vitals"] is None
+
+
+# -- one link state per peer, from named evidence (ADR 0140 "Link state") -----------------------
+
+
+class StatusHello:
+    """Answers every hello with ``(status, body)``, as :func:`authorized_hello` does."""
+
+    def __init__(self, status: int) -> None:
+        self.status = status
+        self.calls = 0
+
+    def __call__(self, base_url: str, token: str) -> tuple[int, dict[str, Any] | None]:
+        self.calls += 1
+        return self.status, ({"ok": True} if self.status == 200 else None)
+
+
+def test_case2_a_401_hello_is_removed_there_not_asleep(host: PeerHost, clock: Clock) -> None:
+    overlay = FakeOverlay(frozenset({"100.64.0.7"}))
+    probe = PresenceProbe(host, hello=StatusHello(401), overlay=overlay, now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    view = probe.view(peer_id)
+    assert view["presence"] is None and view["presence_at"] is None
+    assert view["link"]["state"] == "removed_there"
+    assert view["link"]["since"] == "2026-10-24T12:00:00+00:00"
+    assert view["link"]["evidence"]["hello"] == 401
+
+
+def test_case4_a_probe_that_stops_leaves_online_to_go_stale(host: PeerHost, clock: Clock) -> None:
+    probe = PresenceProbe(host, hello=FakeHello(ok=True), overlay=FakeOverlay(), now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    clock.advance(30)
+    probe.probe_all()  # confirms: the hello's latest is now 12:00:30
+    clock.advance(3 * 30 + 1)
+    link = probe.view(peer_id)["link"]
+    assert link["state"] == "stale" and link["since"] == "2026-10-24T12:00:30+00:00"
+    assert link["evidence"]["hello_at"] == "2026-10-24T12:00:30+00:00"
+
+
+def test_case6_moving_to_removed_there_publishes_once(host: PeerHost, clock: Clock) -> None:
+    hello = StatusHello(200)
+    probe = PresenceProbe(host, hello=hello, overlay=FakeOverlay(), now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    inbox = host.bus.subscribe()
+
+    clock.advance(30)
+    hello.status = 401
+    assert probe.probe_all() == [peer_id]
+    assert _published(inbox) == [{"kind": "peer.changed", "peer_id": peer_id}]
+
+    clock.advance(30)
+    assert probe.probe_all() == []
+    assert _published(inbox) == [], "the same refusal again is not news"
+    assert probe.view(peer_id)["link"]["since"] == "2026-10-24T12:00:30+00:00"
+
+
+def test_a_peer_removed_here_takes_its_link_with_it(host: PeerHost, clock: Clock) -> None:
+    probe = PresenceProbe(host, hello=StatusHello(401), overlay=FakeOverlay(), now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    assert host.revoke(peer_id)
+    assert probe.view(peer_id)["link"] is None
+    probe.probe_all()
+    assert peer_id not in probe._hellos

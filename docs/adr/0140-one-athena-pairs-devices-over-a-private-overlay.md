@@ -368,6 +368,33 @@ request, and the daemon runs one turn at a time anyway. A message the person typ
 exchange is running is queued and runs as their own, without `via`, once that exchange ends; running
 both in one store would swap page results between them and tee the person's turn to the other device.
 
+### Link state (amended 2026-10-25)
+
+Three parts of the host judged a paired device in their own words - presence
+(`online`/`asleep`/`unreachable`/null), the puller (`ok`/`not_shared`/`unreachable`) and the keys
+(held or not) - and none kept what it saw. A hello was body-or-None, so a computer that had revoked
+this one (a `401`: revoke drops the row and key on one side only, and nothing tells the other) read
+`asleep` forever; a PC whose pair-back never arrived looked the same as one not probed yet; and an
+`online` nobody re-checked never aged.
+
+`athena/peer/link.py` `derive(row, key, hello, overlay, memory, now)` is now the one place a link's
+state is decided, a pure function of the observations it is handed. First match wins: `phone`
+(nothing is dialled), `awaiting_key` (no key held; `since` is the row's `created`),
+`removed_there` (the hello or the memory manifest answered `401`; it does not age, only a new
+pairing mends it), `stale` (the newest hello is older than three probe periods; `since` is when it
+was last confirmed), `online` (`200`), `asleep` (not reached, the overlay lists the address),
+`unreachable`. A keyed PC never probed has `state` null.
+
+- **401 = removed_there.** The probe keeps each hello as `(status, since, at, overlay)`; a `401`
+  makes `presence` null (it is neither sleep nor a broken network) and publishes `peer.changed`
+  once. The puller records a manifest `401` as `removed_there` and only a `403` as `not_shared`.
+- **Evidence vocabulary.** `evidence` always carries `key` (bool, null for a phone), `hello` (the
+  HTTP status, `0` when not reached), `hello_at`, `overlay` (whether the overlay listed the address
+  on that pass, null when not asked) and `memory` (the puller's last state), null for absent.
+- **`GET /devices` gains `link {state, since, evidence}`** on every peer row, additively; `presence`
+  and `memory.state` keep their vocabularies. A revoked row takes its link with it. Link state is
+  held in memory only; nothing on disk changes. The Devices constellation can adopt `link` later.
+
 ## Consequences
 - A tailnet member that is not paired reaches a listener that answers 401 to everything but the two
   pairing steps, and those need a window the person opened in the last five minutes.

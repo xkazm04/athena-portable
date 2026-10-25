@@ -73,6 +73,22 @@ def test_devices_reports_every_field_with_null_for_absent(device: Device) -> Non
     assert body["listener"]["up"] is False and body["listener"]["address"] is None
 
 
+def test_case5_every_peer_row_carries_link_with_every_key_and_revoke_takes_it(
+    device: Device,
+) -> None:
+    _, phone = _phone_token(device)
+    rows = device.ui("/devices").body["peers"]
+    assert [row["peer_id"] for row in rows] == [phone]
+    link = rows[0]["link"]
+    assert set(link) == {"state", "since", "evidence"}
+    assert set(link["evidence"]) == {"key", "hello", "hello_at", "overlay", "memory"}
+    assert link["state"] == "phone" and isinstance(link["since"], str)
+    assert all(value is None for value in link["evidence"].values()), "null for absent"
+
+    assert device.ui(f"/devices/{phone}", method="DELETE").status == 200
+    assert device.ui("/devices").body["peers"] == [], "the link went with its row"
+
+
 def test_the_overlay_state_is_reported_when_absent(device: Device, probe: Probe) -> None:
     probe.overlay = Overlay("absent")
     device.host._overlay = None

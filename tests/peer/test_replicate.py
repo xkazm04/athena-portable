@@ -360,6 +360,24 @@ def test_a_peer_that_did_not_share_memory_back_is_not_shared_and_shows_in_device
     assert a.puller.cursor(b.device_id) is None
 
 
+def test_case3_a_manifest_401_is_removed_there_and_a_403_is_not_shared(
+    pair: tuple[Node, Node],
+) -> None:
+    a, b = pair
+    grant(a, b, ["chat", "memory"])
+    grant(b, a, ["chat"])  # b let a in, but not to its memory: 403 grant_missing
+    assert pull(a, b).state == "not_shared"
+
+    b.host.registry.revoke(a.device_id)  # b removed a: a's token is now a 401 there
+    result = pull(a, b)
+    assert result.state == "removed_there" and result.pulled == 0
+    view = memory_view(a.host, b.device_id)
+    assert view is not None and view["state"] == "removed_there"
+    _, body = devices(a.host)
+    assert body["peers"][0]["link"]["state"] == "removed_there"
+    assert body["peers"][0]["link"]["evidence"]["memory"] == "removed_there"
+
+
 def test_an_unreachable_peer_is_recorded_and_its_cursor_kept(pair: tuple[Node, Node]) -> None:
     a, b = pair
     share(a, b)

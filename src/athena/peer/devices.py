@@ -9,7 +9,9 @@ device's own chrome is the only one who reaches them, which is what makes
     ``{self: {device_id, name, vitals}, peers: [row without its fingerprint, plus ``memory``:
     WP2's replication status or ``null``, ``presence`` (``online`` / ``asleep`` /
     ``unreachable``) with ``presence_at``, both ``null`` before the probe's first verdict, and
-    ``vitals``, the peer's room off its hello or ``null`` (ADR 0143)], pending: [{pairing_id,
+    ``vitals``, the peer's room off its hello or ``null`` (ADR 0143), and ``link`` ``{state,
+    since, evidence}``, the one link state :func:`athena.peer.link.derive` earns from named
+    evidence (ADR 0140 "Link state")], pending: [{pairing_id,
     name, kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
     listener: {up, address, port, error}, joining: [{join_id, address, name, state,
     expires_at}]}``. Absent values are ``null``, never omitted.
@@ -40,7 +42,7 @@ from urllib.parse import unquote
 from athena.daemon.routes import EventStream, Reply, Request, Route, error
 from athena.peer.listener import DEFAULT_PEER_PORT, PeerHost, peer_error
 from athena.peer.pairing import PairingRefused
-from athena.peer.registry import GRANTS, KINDS
+from athena.peer.registry import GRANTS, KINDS, PeerRow
 from athena.peer.replicate import memory_view
 
 if TYPE_CHECKING:
@@ -66,14 +68,8 @@ def devices(host: PeerHost) -> Reply:
         # ``presence`` / ``presence_at``: the presence probe's verdict, ``null`` until its first.
         # ``vitals``: the peer's off its last hello; ``null`` for a phone, before the first hello,
         # and once older than ``VITALS_STALE_S`` (ADR 0143).
-        "peers": [
-            {
-                **row.view(),
-                "memory": memory_view(host, row.peer_id),
-                **host.presence.view(row.peer_id),
-            }
-            for row in host.registry.rows()
-        ],
+        # ``link``: ``{state, since, evidence}`` from the row, the key, the hello and ``memory``.
+        "peers": [_peer(host, row) for row in host.registry.rows()],
         "pending": [record.pending_view() for record in host.pairings.pending()],
         "beacon": {"on": host.beacon, "url": f"{base}/m/" if host.beacon and base else None},
         "overlay": {"state": host.overlay().state},
@@ -85,6 +81,11 @@ def devices(host: PeerHost) -> Reply:
         },
         "joining": host.join_views(),
     }
+
+
+def _peer(host: PeerHost, row: PeerRow) -> dict[str, Any]:
+    memory = memory_view(host, row.peer_id)
+    return {**row.view(), "memory": memory, **host.presence.view(row.peer_id, memory)}
 
 
 def _own_vitals(host: PeerHost) -> Any:

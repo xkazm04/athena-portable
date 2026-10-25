@@ -25,9 +25,10 @@ whole of what replicates here, and it is why this is a pull of files rather than
 
 **Pulling** (:class:`Puller`). A peer is pulled when *this* device granted it ``memory`` and holds
 a sealed key for it (:class:`~athena.peer.client.PeerKeys`); the other half - that the peer
-granted this device ``memory`` - is the peer's answer to decide, and a 401 or 403 there is
-recorded as ``not_shared`` and nothing more. A pass reads the manifest from the cursor, applies
-**episodes first, then facts and procedurals**, and files each through
+granted this device ``memory`` - is the peer's answer to decide: a 403 there is recorded as
+``not_shared`` and nothing more, and a 401 - the peer no longer knows this device's token, so it
+removed this device - as ``removed_there`` (ADR 0140 "Link state"). A pass reads the manifest
+from the cursor, applies **episodes first, then facts and procedurals**, and files each through
 :meth:`Brain.receive_file <athena.core.brain.store.Brain.receive_file>`: the brain's own atomic
 writer (ADR 0080), the same provenance gate every writer passes, the same per-file index function
 the rebuild uses. So:
@@ -55,7 +56,8 @@ is the fleet shape v1 assumes (every PC paired with every PC).
 :meth:`~athena.peer.listener.PeerHost.close`. A pass is bounded (:data:`MAX_PAGES` manifest pages
 per peer) and passes never overlap. :func:`memory_view` is the per-peer status ``GET /devices``
 shows under ``memory``: ``{last_pull_at, pulled, conflicts, deferred, state}`` with ``state`` one
-of ``ok``, ``not_shared``, ``unreachable``, or ``null`` for a peer never pulled.
+of ``ok``, ``not_shared``, ``removed_there``, ``unreachable``, or ``null`` for a peer never
+pulled.
 
 Nothing here logs a token, a body or a URL. The manifest is fetched with
 :func:`~athena.peer.client.call`; the one call that wants bytes rather than JSON, the file, goes
@@ -519,7 +521,9 @@ class Puller:
             if after is not None:
                 query += f"&after={quote(after)}"
             answer = call(url, "GET", f"/peer/brain/manifest{query}", token=token)
-            if answer.status in (401, 403):
+            if answer.status == 401:
+                return "removed_there"
+            if answer.status == 403:
                 return "not_shared"
             if answer.status != 200:
                 return "unreachable"
