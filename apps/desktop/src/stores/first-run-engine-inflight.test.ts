@@ -40,6 +40,7 @@ vi.mock("@/lib/daemon", async (importOriginal) => ({
       error: "",
       source: "sidecar",
       brain: "",
+      attempt: 0,
     };
     return status;
   }),

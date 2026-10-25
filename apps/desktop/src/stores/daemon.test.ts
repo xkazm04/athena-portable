@@ -29,6 +29,7 @@ function event(over: Partial<DaemonStatus> = {}): DaemonStatus {
     error: "",
     source: "uv",
     brain: "/app/brain",
+    attempt: 0,
     ...over,
   };
 }

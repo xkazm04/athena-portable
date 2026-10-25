@@ -66,6 +66,7 @@ function status(engine: string, health: DaemonStatus["health"], error = ""): Dae
     error,
     source: "sidecar",
     brain: "",
+    attempt: 0,
   };
 }
 

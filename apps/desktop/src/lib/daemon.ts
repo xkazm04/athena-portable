@@ -36,6 +36,8 @@ export interface DaemonStatus {
   source: DaemonSource;
   /** The brain directory the daemon opened. */
   brain: string;
+  /** The respawn rung this spawn is (ADR 0206): 0 for a person's start, 1.. for a self-heal. */
+  attempt: number;
 }
 
 /** What the shell knows right now. Called once by the store; after that, listen. */
