@@ -381,3 +381,136 @@ test("undoing an unmatch does not re-apply a credit past what the invoice now ow
   assert.match(undone.reason ?? "", /now owed on/);
   assert.equal(listInvoices().find((r) => r.id === seeded.invoice_id)!.balance_cents, 0, "the balance stays at zero");
 });
+
+/* --------------------------------- an undo reverses only the state its act left (ADR 0203) */
+
+/** Whether activity row `id` is marked undone, and how many "Undid #id" lines name it. */
+function undoTrail(id: number): { undone: number; undidLines: number } {
+  const handle = db();
+  return {
+    undone: handle.get<{ undone: number }>("SELECT undone FROM activity WHERE id = ?", [id])!.undone,
+    undidLines: handle.get<{ n: number }>(
+      "SELECT COUNT(*) AS n FROM activity WHERE action = 'undo' AND summary LIKE ?",
+      [`%undid #${id}:%`],
+    )!.n,
+  };
+}
+
+function categoryOf(invoiceId: string): string {
+  return db().get<{ category: string }>("SELECT category FROM invoices WHERE id = ?", [invoiceId])!.category;
+}
+
+function balanceOf(invoiceId: string): number {
+  return listInvoices().find((r) => r.id === invoiceId)!.balance_cents;
+}
+
+/** Two reminder drafts written in the same millisecond would share an id; the tests space them. */
+const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+
+test("undo case 1: undoing an older refile does not erase a later one, and says which invoice moved", async () => {
+  const x = fresh("overdue");
+  const first = await actions.categorizeAction([x.id], "design");
+  assert.equal(first.ok, true, first.message);
+  assert.equal((await actions.categorizeAction([x.id], "development")).ok, true);
+  const undone = await actions.undoAction(first.undoId!);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", new RegExp(x.number));
+  assert.match(undone.reason ?? "", /development/);
+  assert.equal(categoryOf(x.id), "development", "the later refile stands");
+  assert.deepEqual(undoTrail(first.undoId!), { undone: 0, undidLines: 0 });
+});
+
+test("undo case 2: a batch refile one of whose invoices moved since is reversed for none of them", async () => {
+  const x = fresh("overdue");
+  const y = fresh("overdue");
+  const first = await actions.categorizeAction([x.id, y.id], "design");
+  assert.equal(first.ok, true, first.message);
+  assert.equal((await actions.categorizeAction([x.id], "development")).ok, true);
+  const undone = await actions.undoAction(first.undoId!);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", new RegExp(x.number));
+  assert.equal(categoryOf(x.id), "development");
+  assert.equal(categoryOf(y.id), "design", "Y is not reverted either: all or nothing");
+});
+
+test("undo case 3: undoing a match whose line has moved to another invoice leaves that invoice's money", async () => {
+  const a = fresh("overdue");
+  const b = fresh("overdue");
+  const line = creditUpTo(Math.min(a.balance_cents, b.balance_cents));
+  const first = await actions.matchAction(a.id, line.id);
+  assert.equal(first.ok, true, first.message);
+  assert.equal((await actions.unmatchAction(a.id, line.id)).ok, true);
+  assert.equal((await actions.matchAction(b.id, line.id)).ok, true);
+  const bBalance = balanceOf(b.id);
+
+  const undone = await actions.undoAction(first.undoId!);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", new RegExp(`no longer on ${a.number}`));
+  const handle = db();
+  assert.ok(handle.get("SELECT 1 AS y FROM matches WHERE invoice_id = ? AND line_id = ?", [b.id, line.id]), "B keeps its match");
+  assert.ok(
+    handle.get("SELECT 1 AS y FROM payments WHERE id = ? AND invoice_id = ?", [`pay_match_${line.id}`, b.id]),
+    "B keeps its payment",
+  );
+  assert.equal(balanceOf(b.id), bBalance, "B's balance is unchanged");
+  assert.deepEqual(undoTrail(first.undoId!), { undone: 0, undidLines: 0 });
+});
+
+test("undo case 4: undoing a draft since sent refuses - the letter went and cannot be taken back", async () => {
+  const x = fresh("overdue");
+  const draft = await actions.draftReminderAction(x.id, "gentle");
+  assert.equal(draft.ok, true, draft.message);
+  assert.equal((await actions.sendReminderAction(x.id)).ok, true);
+  const undone = await actions.undoAction(draft.undoId!);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", /sent/);
+  assert.match(undone.reason ?? "", /cannot be taken back/);
+  assert.deepEqual(undoTrail(draft.undoId!), { undone: 0, undidLines: 0 });
+});
+
+test("undo case 5: undoing a draft a later send replaced refuses, and says it was replaced", async () => {
+  const x = fresh("overdue");
+  const gentle = await actions.draftReminderAction(x.id, "gentle");
+  assert.equal(gentle.ok, true, gentle.message);
+  await tick();
+  assert.equal((await actions.draftReminderAction(x.id, "firm")).ok, true);
+  assert.equal((await actions.sendReminderAction(x.id)).ok, true);
+  const undone = await actions.undoAction(gentle.undoId!);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", /replaced/);
+  assert.deepEqual(undoTrail(gentle.undoId!), { undone: 0, undidLines: 0 });
+});
+
+test("undo case 6 (guard): a refile nothing has touched since undoes as before", async () => {
+  const x = fresh("overdue");
+  const prior = categoryOf(x.id);
+  const first = await actions.categorizeAction([x.id], prior === "design" ? "development" : "design");
+  assert.equal(first.ok, true, first.message);
+  const undone = await actions.undoAction(first.undoId!);
+  assert.equal(undone.ok, true, undone.reason);
+  assert.equal(categoryOf(x.id), prior);
+  assert.equal(undoTrail(first.undoId!).undone, 1);
+});
+
+test("undo case 7 (guard): a match nothing has touched since undoes as before, money and all", async () => {
+  const a = fresh("overdue");
+  const before = balanceOf(a.id);
+  const line = creditUpTo(a.balance_cents);
+  const first = await actions.matchAction(a.id, line.id);
+  assert.equal(first.ok, true, first.message);
+  const undone = await actions.undoAction(first.undoId!);
+  assert.equal(undone.ok, true, undone.reason);
+  const handle = db();
+  assert.equal(handle.get("SELECT 1 AS y FROM matches WHERE line_id = ?", [line.id]), undefined, "the match is gone");
+  assert.equal(handle.get("SELECT 1 AS y FROM payments WHERE id = ?", [`pay_match_${line.id}`]), undefined, "its payment is gone");
+  assert.equal(balanceOf(a.id), before);
+});
+
+test("undo case 8 (guard): an export undoes as before", async () => {
+  const exported = await actions.exportSummaryAction("quarter");
+  assert.equal(exported.ok, true, exported.message);
+  const before = db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n;
+  const undone = await actions.undoAction(exported.undoId!);
+  assert.equal(undone.ok, true, undone.reason);
+  assert.equal(db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n, before - 1, "the exports row is gone");
+});

@@ -69,9 +69,15 @@ export interface ExportResult extends ActionResult {
 const ACTORS = ["user", "athena"] as const;
 type Actor = (typeof ACTORS)[number];
 
+/**
+ * What each reversible act needs to take itself back. Each payload also names the AFTER-STATE its
+ * act left - the category applied, the payment inserted, the draft written - and `applyUndo`
+ * reverses only while that state is still there (ADR 0203). Fields marked optional are absent on
+ * rows written before that rule, which keep the reversal they always had.
+ */
 type Undo =
-  | { kind: "categorize"; prior: [string, Category][] }
-  | { kind: "match"; invoice_id: string; line_id: string }
+  | { kind: "categorize"; prior: [string, Category][]; to?: Category }
+  | { kind: "match"; invoice_id: string; line_id: string; payment_id?: string }
   | {
       kind: "unmatch";
       invoice_id: string;
@@ -190,7 +196,7 @@ export async function categorizeAction(
       target: `invoice:${prior.length === 1 ? prior[0]![0] : `${prior.length} invoices`}`,
       summary: `Filed ${prior.length} invoice${prior.length === 1 ? "" : "s"} under ${category}.`,
       reversible: true,
-      undo: { kind: "categorize", prior } satisfies Undo,
+      undo: { kind: "categorize", prior, to: category } satisfies Undo,
     }).id;
   });
 
@@ -284,7 +290,12 @@ export async function matchAction(ref: string, lineId: string, actor: Actor = "u
       target: `invoice:${invoiceId}`,
       summary: `Matched ${formatMoney(line.amount_cents)} from "${line.memo}" to ${invoice.number} (${evidence}).`,
       reversible: true,
-      undo: { kind: "match", invoice_id: invoiceId, line_id: lineId } satisfies Undo,
+      undo: {
+        kind: "match",
+        invoice_id: invoiceId,
+        line_id: lineId,
+        payment_id: paymentIdFor(lineId),
+      } satisfies Undo,
     }).id;
   });
 
@@ -546,7 +557,7 @@ export async function sendReminderAction(ref: string, actor: Actor = "user"): Pr
     tx.run("UPDATE reminders SET sent_at = ? WHERE id = ?", [sentAt, draft.id]);
     // The letter that went is the one drafted last. Any older unsent draft of this invoice was
     // replaced by it; left in place, a second Send would dispatch a letter nobody approved. Undoing
-    // such a draft's activity row only deletes `WHERE sent_at IS NULL`, so it stays a clean no-op.
+    // such a draft's activity row then refuses as replaced (ADR 0203).
     tx.run("DELETE FROM reminders WHERE invoice_id = ? AND sent_at IS NULL AND id <> ?", [invoiceId, draft.id]);
     logActivity(tx, {
       actor,
@@ -643,15 +654,58 @@ export async function exportSummaryAction(period: Period, actor: Actor = "user")
 function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
   const undo = entry.undo as Undo | null;
   switch (undo?.kind) {
-    case "categorize":
+    case "categorize": {
+      // A later refile of any of these invoices is a decision the undo did not see. Writing the
+      // prior category back over it erased that decision silently; reversing only the invoices
+      // that did not move leaves a batch half filed, worse than either end. All or nothing.
+      const to = undo.to;
+      if (to !== undefined) {
+        const moved = undo.prior
+          .map(([id]) => tx.get<{ number: string; category: Category }>(
+            "SELECT number, category FROM invoices WHERE id = ?",
+            [id],
+          ))
+          .filter((row): row is { number: string; category: Category } => row !== undefined && row.category !== to);
+        if (moved.length > 0) {
+          const named = moved.map((r) => `${r.number} is under ${r.category}`).join(", ");
+          return { refused: `${named} now, not ${to} - refiled since, so nothing was put back.` };
+        }
+      }
       for (const [id, category] of undo.prior) {
         tx.run("UPDATE invoices SET category = ? WHERE id = ?", [category, id]);
       }
       return;
-    case "match":
+    }
+    case "match": {
+      // The payment id is named after the bank line, so after an unmatch and a match to another
+      // invoice it is THAT invoice's money: an unscoped delete stripped its payment and left its
+      // match row standing. Reverse only while this match and its payment are both still here.
+      if (undo.payment_id !== undefined) {
+        const matched = tx.get<{ y: number }>("SELECT 1 AS y FROM matches WHERE invoice_id = ? AND line_id = ?", [
+          undo.invoice_id,
+          undo.line_id,
+        ]);
+        const paid = tx.get<{ y: number }>("SELECT 1 AS y FROM payments WHERE id = ? AND invoice_id = ?", [
+          undo.payment_id,
+          undo.invoice_id,
+        ]);
+        if (!matched || !paid) {
+          const number = getInvoice(undo.invoice_id)?.number ?? undo.invoice_id;
+          const now = tx.all<{ number: string }>(
+            "SELECT i.number FROM matches m JOIN invoices i ON i.id = m.invoice_id WHERE m.line_id = ? ORDER BY i.number",
+            [undo.line_id],
+          );
+          const where = now.length > 0 ? ` - it is on ${now.map((r) => r.number).join(", ")} now` : "";
+          return { refused: `That bank line is no longer on ${number}${where}; nothing of this match is left to undo.` };
+        }
+      }
       tx.run("DELETE FROM matches WHERE invoice_id = ? AND line_id = ?", [undo.invoice_id, undo.line_id]);
-      tx.run("DELETE FROM payments WHERE id = ?", [paymentIdFor(undo.line_id)]);
+      tx.run("DELETE FROM payments WHERE id = ? AND invoice_id = ?", [
+        undo.payment_id ?? paymentIdFor(undo.line_id),
+        undo.invoice_id,
+      ]);
       return;
+    }
     case "unmatch": {
       // The world moved after the unmatch. Re-applying a line that is now on another invoice would
       // have one bank credit pay two; re-applying it past what is still owed overshoots the
@@ -694,10 +748,14 @@ function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
     case "reminder": {
       // The draft went out after it was written. Deleting `WHERE sent_at IS NULL` changed nothing,
       // and the kit then logged "Undid #n" over a letter that stayed sent (ADR 0191). Refused, so
-      // nothing is written and the row stays as it is. A draft a later send replaced is already
-      // gone (`sendReminderAction` deletes it), and its undo stays the clean no-op it always was.
-      const sent = tx.get<{ sent_at: string | null }>("SELECT sent_at FROM reminders WHERE id = ?", [undo.id]);
-      if (sent?.sent_at) return { refused: "already sent - a sent reminder cannot be taken back" };
+      // nothing is written and the row stays as it is. A draft a later send replaced is gone
+      // (`sendReminderAction` deletes it): its undo was a no-op the Trail called "Undid #n", so it
+      // refuses too, naming the replacement (ADR 0203).
+      const draft = tx.get<{ sent_at: string | null }>("SELECT sent_at FROM reminders WHERE id = ?", [undo.id]);
+      if (draft?.sent_at) return { refused: "already sent - a sent reminder cannot be taken back" };
+      if (!draft) {
+        return { refused: "that draft was replaced by a later one when it was sent - there is no draft left to take back" };
+      }
       tx.run("DELETE FROM reminders WHERE id = ? AND sent_at IS NULL", [undo.id]);
       return;
     }
