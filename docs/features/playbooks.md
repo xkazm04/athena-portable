@@ -14,7 +14,8 @@ Each one is data, and earns its place on the desktop by a run on the bench.
 | `playbook.json` | the showcase: persona, chore, the command the person gives, portals, gates, traps, memory, economics with sources, edge scores, audience (home or work), its area and its job (`category`, `job`), a `short_title` (at most 48 characters) and a `brief` in simple markdown (a lead line, a bold label with bullets, "Left alone" bullets) that the catalogue and topic page show instead of the long title and promise, the expectation it is held to, lessons, a caveat |
 | `world.json` | the portals as data: apps with origins, views, aliases and tools with honest flags; tables the reads answer from (exact, `contains` or `words` matching, paging, required ids); the phases of a run |
 | `truth.json` | what a perfect run files and what looks eligible but is not, per tool: eligible items with value and expected parameters (an item can be `required`), traps with the reason, fair-either-way items; only the scorer reads it |
-| `bench.json` | the latest measured run, committed: score, cards, the trap ledger, the turn-by-turn trace, closing words and every earlier run's headline |
+| `bench.runs.json` | every run ever benched, append-only: one headline per run and a correction per rescore (newest wins), the pool the ranking and the narration stand on (ADR [0195](../adr/0195-a-playbooks-runs-are-an-append-only-ledger-and-bench-json-is-its-view.md)); a playbook not benched since it existed has none and every reader falls back to `bench.json` |
+| `bench.json` | the ledger's view, committed: the latest run's score, cards, the trap ledger, the turn-by-turn trace and closing words, the last twelve earlier runs' headlines, and a `pool` block (`key`, `n`, `exceeds`) over the whole ledger |
 | `evidence.json`, `thumb.jpg` | the film's index and its still, written by `evidence` (below) |
 | `followthrough.json`, `followthrough.runs.json` | the follow-through overlay (what a signed action does to the tables, session 2's observations and phases) and its append-only results; `freelancer-receivables` only (below) |
 
@@ -31,7 +32,9 @@ uv run python -m athena.proving.playbooks rescore <id> proving-runs/<ts>/playboo
 Every run carries a comparability key (ADR [0128](../adr/0128-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md)):
 a hash of `world.json`, `truth.json`, the command, the expectation, the scorer's `SCORER_VERSION`,
 the engine, the model and the approval mode. A rescore writes `report.rescored-<stamp>.json` beside
-the run's report and appends the original score to `bench.json`'s history as a correction.
+the run's report and appends a correction to `bench.runs.json` that names the run, says what it was
+and what it is now; it never costs a run, and `bench.json` shows it as a `superseded_by` line. The
+follow-through results below are written by the same ledger module, their format unchanged.
 
 ## Follow-through
 

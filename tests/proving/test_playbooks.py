@@ -492,7 +492,10 @@ def test_the_summary_is_what_the_desktop_reads(tmp_path: Path) -> None:
     )
     target = write_bench(book, report, tmp_path / "run")
     summary = json.loads(target.read_text(encoding="utf-8"))
+    # ADR 0195: bench.json is the ledger's view, the run's summary plus the pool block.
+    pool = summary.pop("pool")
     assert summary == summary_of(report)
+    assert pool == {"key": report["comparable"], "n": 1, "exceeds": 1}
     assert "transcript" not in summary
     assert summary["verdict"]["word"] == "exceeds"
     assert summary["closing_words"]

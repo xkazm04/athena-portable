@@ -77,7 +77,8 @@ from athena.channels.voice.home import EXE_SUFFIX, EngineHomes, creation_flags, 
 from athena.channels.voice.kokoro import MAX_CHARS, KokoroTTS, find_voice, split_sentences
 from athena.channels.voice.kokoro import SAMPLE_RATE as KOKORO_RATE
 from athena.channels.voice.kokoro import probe as probe_kokoro
-from athena.proving.playbooks.bench import comparable_runs, headline
+from athena.proving.playbooks import ledger
+from athena.proving.playbooks.ledger import comparable_runs, headline
 from athena.proving.playbooks.spec import DEFAULT_KIND, PLAYBOOKS_DIRNAME, Playbook, kind_of
 
 __all__ = [
@@ -336,7 +337,8 @@ def _times(manual: float, measured: float) -> str:
 
 
 def _runs(bench: Mapping[str, Any]) -> tuple[int, int]:
-    """How many comparable test runs stand behind the verdict, how many beat the bar (ADR 0128)."""
+    """How many comparable test runs stand behind the verdict, how many beat the bar (ADR 0128):
+    every run in the playbook's ledger under the key when ``bench`` carries it (ADR 0195)."""
     pooled = comparable_runs(bench)
     runs = pooled if pooled else [headline(bench)]
     return len(runs), sum(1 for r in runs if r.get("verdict") == "exceeds")
@@ -1097,7 +1099,7 @@ def _bench(book: Playbook) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise EvidenceError(f"{book.id}: bench.json is not an object")
-    return value
+    return ledger.with_ledger(book.root, value)
 
 
 def plan(book: Playbook, repo: Path) -> list[str]:
@@ -1263,6 +1265,7 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
             faults = tuple(f for f in (bench_fault, index_fault) if f)
             out.append(Standing(book.id, "unreadable", faults))
             continue
+        bench = ledger.with_ledger(book.root, bench)
         state = "current" if index.get("bench_run_at") == bench.get("run_at") else "stale"
         notes: list[str] = []
         narrated = media_paths(repo, book.id).narration

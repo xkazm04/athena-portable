@@ -19,12 +19,13 @@
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
-``bench.json``, which the desktop's Playbooks module shows. Exit 0 when the verdict is ``meets``
+``bench.runs.json``, the playbook's append-only run ledger, with ``bench.json`` derived from it as
+the view the desktop's Playbooks module shows (ADR 0195). Exit 0 when the verdict is ``meets``
 or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded. ``--runs k``
-benches ``k`` fresh worlds one after the other, each a line of the history under its comparability
+benches ``k`` fresh worlds one after the other, each a run of the ledger under its comparability
 key (ADR 0128); the exit is 1 when any of them was short. ``rescore`` writes the rescored report
-beside the run's own ``report.json``, never over it, and appends the run's original score to the
-history as a correction.
+beside the run's own ``report.json``, never over it, and appends a correction to the ledger, which
+costs no run.
 
 ``bench --second-run`` (ADR 0126) runs the playbook twice on one world: run 1 approving every card,
 run 2 after a restart with the gate looking back to run 1's start, and reports run 2's cards for
@@ -363,8 +364,8 @@ def bench(
 ) -> int:
     """``runs`` fresh worlds of ``book``, each benched and written in turn (ADR 0128).
 
-    Every run is kept: each writes its own report and, with ``write``, becomes the latest run of
-    ``bench.json`` and pushes the one before into the history, so the ranking pools all of them.
+    Every run is kept: each writes its own report and, with ``write``, is appended to the run
+    ledger and becomes the latest run of ``bench.json``, so the ranking pools all of them.
     Exit 1 when any run was short, else 0.
     """
     short = 0

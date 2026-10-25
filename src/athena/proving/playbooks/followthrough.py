@@ -40,6 +40,7 @@ from typing import Any
 
 from athena.contracts import ids
 from athena.proving.playbooks import bench as bench_module
+from athena.proving.playbooks import ledger
 from athena.proving.playbooks.bench import (
     MAX_CONTINUATIONS,
     BenchConfig,
@@ -720,20 +721,6 @@ def _line(report: Mapping[str, Any], report_path: str = "") -> dict[str, Any]:
     return line
 
 
-def _read_results(root: Path) -> dict[str, Any]:
-    target = root / RESULTS_FILENAME
-    if not target.is_file():
-        return {"runs": [], "corrections": []}
-    try:
-        raw = json.loads(target.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        raw = {}
-    return {
-        "runs": list(raw.get("runs", [])) if isinstance(raw, dict) else [],
-        "corrections": list(raw.get("corrections", [])) if isinstance(raw, dict) else [],
-    }
-
-
 def _mark(line: Mapping[str, Any]) -> tuple[str, str, Any]:
     """Which run a line or a correction is about: when it ran, its branch, its repeat."""
     return str(line.get("run_at")), str(line.get("branch")), line.get("repeat")
@@ -745,9 +732,7 @@ def tally(results: Mapping[str, Any], key: str) -> dict[str, dict[str, int]]:
     A run a correction re-judged counts as its newest correction says, under that correction's
     key; a run under any other key measured something else and is not counted.
     """
-    newest: dict[tuple[str, str, Any], Mapping[str, Any]] = {}
-    for correction in results.get("corrections", []):
-        newest[_mark(correction)] = dict(correction.get("now", {}))
+    newest = ledger.newest(results, _mark)
     out: dict[str, dict[str, int]] = {}
     for run in results.get("runs", []):
         judged = newest.get(_mark(run), run)
@@ -759,33 +744,32 @@ def tally(results: Mapping[str, Any], key: str) -> dict[str, dict[str, int]]:
     return {b: out[b] for b in BRANCHES if b in out}
 
 
-def _write_results(root: Path, results: dict[str, Any], playbook: str) -> Path:
-    runs = results["runs"]
-    latest = None
-    if runs:
-        last = runs[-1]
-        latest = last.get("comparable")
-        for correction in results["corrections"]:
-            if _mark(correction) == _mark(last):
-                latest = dict(correction.get("now", {})).get("comparable", latest)
-    body: dict[str, Any] = {
-        "playbook": playbook,
-        "assertion_version": ASSERTION_VERSION,
-        "comparable": latest,
-        "tally": tally(results, latest) if latest else {},
-        "runs": runs,
-        "corrections": results["corrections"],
-    }
-    target = root / RESULTS_FILENAME
-    target.write_text(json.dumps(body, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return target
+def _head(playbook: str) -> Callable[[ledger.Records], dict[str, Any]]:
+    """The ledger's leading fields: the latest run's key (as its newest correction says) and
+    the k-of-n under it (ADR 0129)."""
+
+    def head(results: ledger.Records) -> dict[str, Any]:
+        runs = results["runs"]
+        latest = None
+        if runs:
+            last = runs[-1]
+            latest = last.get("comparable")
+            for correction in results["corrections"]:
+                if _mark(correction) == _mark(last):
+                    latest = dict(correction.get("now", {})).get("comparable", latest)
+        return {
+            "playbook": playbook,
+            "assertion_version": ASSERTION_VERSION,
+            "comparable": latest,
+            "tally": tally(results, latest) if latest else {},
+        }
+
+    return head
 
 
 def record_run(book: Playbook, report: Mapping[str, Any], report_path: str = "") -> Path:
     """Append the run as a line of ``followthrough.runs.json``; earlier lines stay as they were."""
-    results = _read_results(book.root)
-    results["runs"].append(_line(report, report_path))
-    return _write_results(book.root, results, book.id)
+    return ledger.append(book.root, RESULTS_FILENAME, _line(report, report_path), _head(book.id))
 
 
 def reassess(overlay: Overlay, report: Mapping[str, Any]) -> dict[str, Any]:
@@ -806,8 +790,9 @@ def record_correction(
     book: Playbook, original: Mapping[str, Any], again: Mapping[str, Any], note: str = ""
 ) -> Path:
     """Append a correction for one run: the line it was, the line it is now, when and why."""
-    results = _read_results(book.root)
-    results["corrections"].append(
+    return ledger.correct(
+        book.root,
+        RESULTS_FILENAME,
         prune(
             {
                 "reassessed_at": again.get("reassessed_at"),
@@ -818,6 +803,6 @@ def record_correction(
                 "was": _line(original),
                 "now": _line(again),
             }
-        )
+        ),
+        _head(book.id),
     )
-    return _write_results(book.root, results, book.id)

@@ -4,8 +4,9 @@ Computation over the committed ``playbook.json`` and ``bench.json`` files only: 
 bench. ``playbooks/ranking.json`` carries no timestamp and a stable key order, so the same inputs
 give the same bytes, and ``rank --check`` compares the committed file with what would be written.
 
-A playbook is ranked on every run its ``bench.json`` holds under the key a run benched today would
-carry (ADR 0128), not on its latest draw alone: the score takes the median recall, any comparable
+A playbook is ranked on every run its ledger holds (``bench.runs.json``, ADR 0195; else the window
+its ``bench.json`` holds) under the key a run benched today would carry (ADR 0128), not on its
+latest draw alone: the score takes the median recall, any comparable
 run that filed a trap or a false claim excludes it, and each row says how many runs it stands on.
 
 Only money that comes back to the person earns money points (ADR 0133): a playbook whose estimate is
@@ -23,6 +24,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from athena.proving.playbooks import ledger
 from athena.proving.playbooks.bench import (
     comparability_key,
     comparable_runs,
@@ -263,9 +265,8 @@ def load_entries(base: Path) -> list[tuple[dict[str, Any], dict[str, Any] | None
     entries: list[tuple[dict[str, Any], dict[str, Any] | None]] = []
     for book in sorted(p for p in base.iterdir() if (p / "playbook.json").is_file()):
         playbook = json.loads((book / "playbook.json").read_text(encoding="utf-8"))
-        bench_path = book / "bench.json"
-        bench = json.loads(bench_path.read_text(encoding="utf-8")) if bench_path.is_file() else None
-        entries.append((playbook, bench))
+        # bench.json with its run ledger on it when there is one (ADR 0195).
+        entries.append((playbook, ledger.view(book)))
     return entries
 
 

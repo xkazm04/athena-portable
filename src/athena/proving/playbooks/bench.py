@@ -38,12 +38,15 @@ from typing import Any
 from athena.contracts import ids
 from athena.contracts.channel import now_iso
 from athena.proving.characters.scene import CONTINUE
+from athena.proving.playbooks import ledger
+from athena.proving.playbooks.ledger import HISTORY, comparable_runs, headline
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
 from athena.proving.report import prune
 from athena.proving.world import TurnRecord, World
 
 __all__ = [
+    "HISTORY",
     "MAX_CONTINUATIONS",
     "NUDGE",
     "SCORER_VERSION",
@@ -1066,66 +1069,6 @@ def write_report(run_dir: Path, report: Mapping[str, Any], name: str = "report.j
     return path
 
 
-#: How many earlier runs ``bench.json`` keeps, newest last.
-HISTORY = 12
-
-
-def headline(summary: Mapping[str, Any]) -> dict[str, Any]:
-    """One run, in a line: when, on what, under which key, the verdict, the money and the minutes.
-
-    It holds what the ranking needs to pool the run with the others under its key (ADR 0128).
-    """
-    s = summary.get("score", {})
-    keep: dict[str, Any] = prune(
-        {
-            "run_at": summary.get("run_at"),
-            "rescored_at": summary.get("rescored_at"),
-            "engine": summary.get("engine"),
-            "model": summary.get("model"),
-            "approve": summary.get("approve"),
-            "comparable": summary.get("comparable"),
-            "verdict": summary.get("verdict", {}).get("word"),
-            "found": s.get("found"),
-            "eligible": s.get("eligible"),
-            "value_found_usd": s.get("value_found_usd"),
-            "recall_value": s.get("recall_value"),
-            "false_claims": s.get("false_claims"),
-            "traps_filed": s.get("traps_filed"),
-            "wall_s": summary.get("wall_s"),
-            "your_time_s": summary.get("your_time_s"),
-            "note": summary.get("note"),
-        }
-    )
-    return keep
-
-
-def comparable_runs(
-    bench: Mapping[str, Any], current: str | None = None
-) -> list[dict[str, Any]] | None:
-    """The runs ``bench.json`` holds that pool with its latest, latest first (ADR 0128).
-
-    ``None`` when the latest run carries no key (benched before keys were kept): it is then a set
-    of one, and nothing is pooled with it. ``current`` is the key a run benched now would carry;
-    a latest run under another key was measured against something that has changed since, and the
-    set is empty. A history line a rescore superseded is the same run, and is never counted twice.
-    """
-    key = bench.get("comparable")
-    if not key:
-        return None
-    if current is not None and key != current:
-        return []
-    runs = [headline(bench)]
-    for line in bench.get("history", []):
-        if not isinstance(line, Mapping) or line.get("superseded_by"):
-            continue
-        if line.get("comparable") != key:
-            continue
-        if bench.get("rescored_at") and line.get("run_at") == bench.get("run_at"):
-            continue
-        runs.append(dict(line))
-    return runs
-
-
 def write_bench(
     playbook: Playbook,
     report: Mapping[str, Any],
@@ -1134,47 +1077,64 @@ def write_bench(
     note: str = "",
     report_name: str = "report.json",
 ) -> Path:
-    """The full report into ``run_dir`` and the summary into the playbook's ``bench.json``.
+    """The full report into ``run_dir``, the run into the ledger, and ``bench.json`` as its view.
 
-    The run ``bench.json`` held before becomes a line of its history. A rescore of that same run is
-    appended as a correction (ADR 0128): the line keeps the original score, and its
-    ``superseded_by`` says when it was rescored, why (``note``) and to what; the run's own note
-    stays on the run. Otherwise ``note`` says what changed since the last run, in a sentence.
+    The run is appended to ``bench.runs.json`` (ADR 0195); a playbook benched before the ledger
+    has its window seeded into it first, so no run it held is lost. A rescore of a run the ledger
+    holds is appended as a correction (ADR 0128), never as a run: the run keeps its original
+    line, and the correction says when it was rescored, why (``note``) and to what; the run's own
+    note stays on the run. Otherwise ``note`` says what changed since the last run, in a sentence.
+    ``bench.json`` is then derived: this run's summary, the last :data:`HISTORY` earlier runs as
+    the desktop reads them, and a ``pool`` block over every run in the ledger.
     ``report_name`` lets a rescore write beside the run's report instead of over it.
     """
     write_report(run_dir, report, report_name)
     target = playbook.root / "bench.json"
     summary = summary_of(report)
-    history: list[dict[str, Any]] = []
+    before: dict[str, Any] = {}
     if target.is_file():
         try:
-            before = json.loads(target.read_text(encoding="utf-8"))
+            loaded = json.loads(target.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
-            before = {}
-        history = list(before.get("history", []))
-        same = bool(before.get("run_at")) and before.get("run_at") == summary.get("run_at")
-        if same and summary.get("rescored_at"):
-            s = summary.get("score", {})
-            line = headline(before)
-            line["superseded_by"] = prune(
-                {
-                    "rescored_at": summary.get("rescored_at"),
-                    "note": note or None,
-                    "comparable": summary.get("comparable"),
-                    "verdict": summary.get("verdict", {}).get("word"),
-                    "found": s.get("found"),
-                    "recall_value": s.get("recall_value"),
-                    "false_claims": s.get("false_claims"),
-                    "traps_filed": s.get("traps_filed"),
-                }
-            )
-            history.append(line)
-            note = str(before.get("note") or "")
-        elif before.get("run_at"):
-            history.append(headline(before))
-    if note:
-        summary["note"] = note
+            loaded = {}
+        before = loaded if isinstance(loaded, dict) else {}
+    if (playbook.root / ledger.BENCH_LEDGER).is_file():
+        records = ledger.read(playbook.root, ledger.BENCH_LEDGER)
+    else:
+        records = ledger.seed(before)
+    lines = {str(r.get("run_at")): r for r in ledger.resolved(records, _run_at)}
+    was = lines.get(str(summary.get("run_at"))) if summary.get("run_at") else None
+
+    def head(_: ledger.Records) -> dict[str, Any]:
+        return {"playbook": playbook.id}
+
+    if was is not None and summary.get("rescored_at"):
+        note, why = str(was.get("note") or ""), note
+        if note:
+            summary["note"] = note
+        now = headline(summary)
+        ledger.correct(
+            playbook.root,
+            ledger.BENCH_LEDGER,
+            ledger.bench_correction(was, now, why),
+            head,
+            records,
+        )
+    else:
+        if note:
+            summary["note"] = note
+        ledger.append(playbook.root, ledger.BENCH_LEDGER, headline(summary), head, records)
+    latest = records["runs"][-1] if records["runs"] else {}
+    if _run_at(summary) != _run_at(latest) and _run_at(before) == _run_at(latest):
+        # A rescore of an earlier run corrects that run; the view stays on the latest.
+        summary = {k: v for k, v in before.items() if k not in ("history", "pool")}
+    history = ledger.history_view(records, summary)
     if history:
-        summary["history"] = history[-HISTORY:]
+        summary["history"] = history
+    summary["pool"] = ledger.pool_block(records)
     target.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return target
+
+
+def _run_at(line: Mapping[str, Any]) -> str:
+    return str(line.get("run_at"))
