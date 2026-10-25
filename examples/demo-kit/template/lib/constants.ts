@@ -1,5 +1,12 @@
-/** Client-safe app identity. `lib/db.ts` is server-only, so the ids live here too. */
+/**
+ * Client-safe app identity, and its one authority: `components/Shell.tsx` and `app/layout.tsx`
+ * read the name and tagline from here, and `lib/db.ts` (server-only) names the database from
+ * APP_ID. `examples/demo-kit/adopt.ts` rewrites these four lines and the package name for a copy;
+ * nothing else in the template spells the app's identity.
+ */
 export const APP_ID = "demo-app";
+export const APP_NAME = "Demo app";
+export const TAGLINE = "Template - copy me, rename me, give me a domain";
 export const APP_VERSION = "0.1.0";
 
 /**

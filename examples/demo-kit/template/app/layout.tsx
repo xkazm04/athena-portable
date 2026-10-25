@@ -3,10 +3,10 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Shell } from "@/components/Shell";
 import { HostCapabilities } from "@/components/HostCapabilities";
-import { VARIANT } from "@/lib/constants";
+import { APP_NAME, VARIANT } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Demo app",
+  title: APP_NAME,
   description: "Template host app for the Athena Everywhere examples. Ships without Athena.",
 };
 
