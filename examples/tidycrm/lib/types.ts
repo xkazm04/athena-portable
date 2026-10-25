@@ -54,6 +54,44 @@ export interface PairPreview {
   conflicts: { field: string; label: string; keep: string; drop: string }[];
 }
 
+/** One value the merge's survivor takes from the record folded into it. */
+export interface MergeAdoption {
+  field: "phone" | "last_activity_at";
+  from: string;
+  to: string;
+}
+
+/**
+ * One stored flag the merge moves: on a named row, or on every working row of a domain (a company
+ * spelling count is the domain's, so its flag moves for all of them at once).
+ */
+export type MergeRestamp =
+  | { flag: "phone_ok" | "is_stale" | "in_open_pair"; id: string; from: Flag; to: Flag }
+  | { flag: "conflict"; domain: string; from: Flag; to: Flag };
+
+/**
+ * What `merge_contacts` will write, from the planner the write itself runs (lib/mutations.ts
+ * `planMerge`, ADR 0168). The merge is GATED and irreversible; this is what the person reads
+ * before the yes.
+ */
+export interface MergeOutcome {
+  /** Set when the write would refuse: the exact error string `mergeContacts` returns. */
+  refusal?: string;
+  adopts: MergeAdoption[];
+  /** Other open pairs the dropped record stands in, closed as `skipped`. */
+  closes: string[];
+  restamps: MergeRestamp[];
+  /** The surviving record's stored values after the write; null when the write would refuse. */
+  survivor: { id: string; phone: string; last_activity_at: string; phone_ok: Flag; is_stale: Flag } | null;
+  /** The outcome as one sentence, for an approval card or a reply. */
+  summary: string;
+}
+
+/** `preview_merge`: the side-by-side evidence plus what the merge will write. */
+export interface MergePreview extends PairPreview {
+  outcome: MergeOutcome;
+}
+
 export interface Revision {
   id: number;
   contact_id: string;

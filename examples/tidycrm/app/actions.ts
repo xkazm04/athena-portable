@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import {
   countOpenPairs,
   listOpenPairs,
-  previewPair,
   readConflicts,
   type ConflictPage,
 } from "@/lib/db";
@@ -17,6 +16,7 @@ import {
   normalizeFields,
   planNormalize,
   planCompany,
+  previewMerge,
   resolveCompany,
   resolvePair,
   undoWrite,
@@ -26,7 +26,7 @@ import {
 } from "@/lib/mutations";
 import type { NormalizeRule } from "@/lib/normalize";
 import type { Segment } from "@/lib/constants";
-import type { MergePair, PairPreview, PairStatus } from "@/lib/types";
+import type { MergePair, MergePreview, PairStatus } from "@/lib/types";
 
 /** Default and ceiling for `listPairsAction`. The queue is long; a prompt is not. */
 const PAIR_PAGE = 10;
@@ -112,9 +112,12 @@ export async function resolvePairAction(
   return result;
 }
 
-/** `preview_merge`: the side-by-side evidence, and nothing changes. */
-export async function previewMergeAction(pairId: string): Promise<PairPreview | null> {
-  return previewPair(pairId) ?? null;
+/**
+ * `preview_merge`: the side-by-side evidence and what the irreversible merge will write (adoptions,
+ * pairs it closes, flags it clears), from the planner `merge_contacts` executes. Nothing changes.
+ */
+export async function previewMergeAction(pairId: string): Promise<MergePreview | null> {
+  return previewMerge(pairId) ?? null;
 }
 
 /**

@@ -11,8 +11,9 @@ import {
   getContact,
   getContacts,
   getPair,
+  previewPair,
 } from "./db";
-import { restamp, setField, writeField } from "./flags";
+import { deriveFlags, restamp, setField, WORKING, writeField } from "./flags";
 import {
   fieldLabel,
   NORMALIZABLE_FIELDS,
@@ -22,7 +23,15 @@ import {
   type NormalizableField,
   type NormalizeRule,
 } from "./normalize";
-import type { Contact, PairStatus } from "./types";
+import type {
+  Contact,
+  Flag,
+  MergeAdoption,
+  MergeOutcome,
+  MergePreview,
+  MergeRestamp,
+  PairStatus,
+} from "./types";
 
 export interface NormalizePlan {
   contact_id: string;
@@ -78,6 +87,14 @@ function live(c: Contact): boolean {
  * status names the rows and domains it could have moved to `restamp`.
  */
 
+/** The open pairs that name a contact on either side: what removing it closes, and what `planMerge` lists. */
+function dependentPairs(handle: Db, contactId: string): { id: string; keep_id: string; drop_id: string }[] {
+  return handle.all<{ id: string; keep_id: string; drop_id: string }>(
+    "SELECT id, keep_id, drop_id FROM merge_pairs WHERE status = 'open' AND (keep_id = ? OR drop_id = ?) ORDER BY id",
+    [contactId, contactId],
+  );
+}
+
 /**
  * Removing a contact from the working list closes the open pairs that depend on it.
  *
@@ -86,10 +103,7 @@ function live(c: Contact): boolean {
  * removal means for everything else that pointed at the row.
  */
 function closeDependentPairs(tx: Db, contactId: string): void {
-  const pairs = tx.all<{ id: string; keep_id: string; drop_id: string }>(
-    "SELECT id, keep_id, drop_id FROM merge_pairs WHERE status = 'open' AND (keep_id = ? OR drop_id = ?)",
-    [contactId, contactId],
-  );
+  const pairs = dependentPairs(tx, contactId);
   for (const p of pairs) {
     tx.run("UPDATE merge_pairs SET status = 'skipped' WHERE id = ?", [p.id]);
   }
@@ -313,32 +327,62 @@ export function resolveCompany(domain: string, canonicalName: string): MutationR
  */
 export const MERGE_RULE = "merge_contacts";
 
-function adoptions(keep: Contact, drop: Contact): { field: "phone" | "last_activity_at"; value: string }[] {
-  const out: { field: "phone" | "last_activity_at"; value: string }[] = [];
-  if (keep.phone_ok === 0 && drop.phone_ok === 1) out.push({ field: "phone", value: drop.phone });
+function adoptions(keep: Contact, drop: Contact): MergeAdoption[] {
+  const out: MergeAdoption[] = [];
+  if (keep.phone_ok === 0 && drop.phone_ok === 1) out.push({ field: "phone", from: keep.phone, to: drop.phone });
   if (drop.last_activity_at > keep.last_activity_at) {
-    out.push({ field: "last_activity_at", value: drop.last_activity_at });
+    out.push({ field: "last_activity_at", from: keep.last_activity_at, to: drop.last_activity_at });
   }
   return out;
 }
 
+/** A merge the planner accepted: the outcome, and what the write needs to execute it. */
+interface AcceptedMerge {
+  keep: Contact;
+  drop: Contact;
+  pair: { id: string; confidence: number };
+  outcome: MergeOutcome;
+}
+
+function refused(refusal: string): { refusal: string; outcome: MergeOutcome } {
+  return { refusal, outcome: { refusal, adopts: [], closes: [], restamps: [], survivor: null, summary: refusal } };
+}
+
+/** Distinct company spellings among the working rows on a domain, optionally without one row. */
+function spellingsOn(domain: string, without?: string): number {
+  return (
+    db().get<{ n: number }>(
+      `SELECT COUNT(DISTINCT TRIM(company)) AS n FROM contacts WHERE domain = ? AND ${WORKING} AND id <> ?`,
+      [domain, without ?? ""],
+    )?.n ?? 0
+  );
+}
+
+/** Open pairs naming a contact, without the ones the merge settles or closes. */
+function openPairsLeft(contactId: string, ending: Set<string>): number {
+  return dependentPairs(db(), contactId).filter((p) => !ending.has(p.id)).length;
+}
+
 /**
- * Fold `drop_id` into `keep_id`. GATED, and not reversible: the dropped record stays in the
- * `merged` segment for the audit trail, but the two histories are one from here on.
+ * What `merge_contacts(keepId, dropId)` will write, without writing it (ADR 0168).
+ *
+ * The one planner of the irreversible write: `mergeContacts` refuses with `refusal` and otherwise
+ * executes `adopts` and closes `closes`, so the preview the person approves and the write that runs
+ * cannot drift apart. The refusals are checked in the write's order, with the write's words.
+ * `restamps` is each flag's rule (`deriveFlags`) applied to the inputs the write will leave behind,
+ * over the rows and the domain the write restamps.
  */
-export function mergeContacts(keepId: string, dropId: string): MutationResult {
+export function planMerge(keepId: string, dropId: string): AcceptedMerge | { refusal: string; outcome: MergeOutcome } {
   const keep = getContact(keepId);
   const drop = getContact(dropId);
   if (!keep || !drop || keep.deleted_at !== null || drop.deleted_at !== null) {
-    return { ok: false, summary: "", error: "One of those contacts is gone." };
+    return refused("One of those contacts is gone.");
   }
-  if (keep.id === drop.id) return { ok: false, summary: "", error: "A contact cannot merge into itself." };
-  if (drop.merged_into) return { ok: false, summary: "", error: `${drop.id} is already merged.` };
+  if (keep.id === drop.id) return refused("A contact cannot merge into itself.");
+  if (drop.merged_into) return refused(`${drop.id} is already merged.`);
   // The survivor has to still be a survivor. Without this, merge(A,B) followed by merge(B,A)
   // points the two rows at each other and BOTH leave every working segment, with no undo.
-  if (keep.merged_into) {
-    return { ok: false, summary: "", error: `${keep.id} is already merged into ${keep.merged_into}.` };
-  }
+  if (keep.merged_into) return refused(`${keep.id} is already merged into ${keep.merged_into}.`);
 
   // A merge settles an identity pair the rule set proposed (lib/matching.ts), so an open pair in
   // this exact orientation is the precondition, not decoration. The swapped orientation is a
@@ -348,31 +392,108 @@ export function mergeContacts(keepId: string, dropId: string): MutationResult {
       WHERE status = 'open' AND keep_id = ? AND drop_id = ?`,
     [keepId, dropId],
   );
-  if (!pair) {
-    return {
-      ok: false,
-      summary: "",
-      error: `No open identity pair proposes merging ${dropId} into ${keepId}.`,
-    };
+  if (!pair) return refused(`No open identity pair proposes merging ${dropId} into ${keepId}.`);
+
+  const adopts = adoptions(keep, drop);
+  // The settled pair turns 'merged'; every other open pair the drop stands in closes as skipped.
+  const closing = dependentPairs(db(), drop.id).filter((p) => p.id !== pair.id);
+  const ending = new Set([pair.id, ...closing.map((p) => p.id)]);
+
+  const phone = adopts.find((a) => a.field === "phone")?.to ?? keep.phone;
+  const lastActivity = adopts.find((a) => a.field === "last_activity_at")?.to ?? keep.last_activity_at;
+
+  // The rows the write restamps by id: the survivor, the dropped record, the far side of each
+  // closed pair. `conflict` is the domain's, so it is planned once for the domain below.
+  const restamps: MergeRestamp[] = [];
+  const others = closing.map((p) => (p.keep_id === drop.id ? p.drop_id : p.keep_id));
+  const rows = [keep, drop, ...getContacts([...new Set(others)].filter((id) => id !== keep.id && id !== drop.id))];
+  let survivorFlags: { phone_ok: Flag; is_stale: Flag } = { phone_ok: keep.phone_ok, is_stale: keep.is_stale };
+  for (const row of rows) {
+    const isKeep = row.id === keep.id;
+    const want = deriveFlags({
+      phone: isKeep ? phone : row.phone,
+      last_activity_at: isKeep ? lastActivity : row.last_activity_at,
+      spellings: 0,
+      open_pairs: openPairsLeft(row.id, ending),
+    });
+    if (isKeep) survivorFlags = { phone_ok: want.phone_ok, is_stale: want.is_stale };
+    for (const flag of ["phone_ok", "is_stale", "in_open_pair"] as const) {
+      if (row[flag] !== want[flag]) restamps.push({ flag, id: row.id, from: row[flag], to: want[flag] });
+    }
   }
-  const taken = adoptions(keep, drop);
+  const wasConflict: Flag = spellingsOn(drop.domain) > 1 ? 1 : 0;
+  const isConflict: Flag = spellingsOn(drop.domain, drop.id) > 1 ? 1 : 0;
+  if (wasConflict !== isConflict) {
+    restamps.push({ flag: "conflict", domain: drop.domain, from: wasConflict, to: isConflict });
+  }
+
+  const outcome: MergeOutcome = {
+    adopts,
+    closes: closing.map((p) => p.id),
+    restamps,
+    survivor: { id: keep.id, phone, last_activity_at: lastActivity, ...survivorFlags },
+    summary: "",
+  };
+  outcome.summary = describeMerge(keep, drop, outcome);
+  return { keep, drop, pair, outcome };
+}
+
+/** The outcome in one sentence, in the words the approval card and the agent's reply use. */
+function describeMerge(keep: Contact, drop: Contact, o: MergeOutcome): string {
+  const parts = [`${drop.id} folds into ${keep.id} and leaves the working list`];
+  const labels: Record<MergeAdoption["field"], string> = { phone: "phone", last_activity_at: "last activity" };
+  if (o.adopts.length > 0) {
+    parts.push(`${keep.id} takes ${o.adopts.map((a) => `${labels[a.field]} ${a.to}`).join(" and ")}`);
+  }
+  if (o.closes.length > 0) parts.push(`closes ${o.closes.join(", ")} (skipped)`);
+  for (const r of o.restamps) {
+    if (r.flag === "conflict" && r.to === 0) parts.push(`clears ${r.domain} from Company conflicts`);
+    if (r.flag === "is_stale" && r.id === keep.id && r.to === 0) parts.push(`${keep.id} is no longer stale`);
+    if (r.flag === "phone_ok" && r.id === keep.id && r.to === 1) parts.push(`${keep.id} leaves Phone format`);
+  }
+  return `${parts.join("; ")}. Cannot be undone.`;
+}
+
+/**
+ * `preview_merge`: the two records, where they disagree, and what the merge will write. Nothing
+ * changes. `outcome` is `planMerge`'s, the plan `mergeContacts` executes.
+ */
+export function previewMerge(pairId: string): MergePreview | undefined {
+  const base = previewPair(pairId);
+  if (!base) return undefined;
+  return { ...base, outcome: planMerge(base.pair.keep_id, base.pair.drop_id).outcome };
+}
+
+/**
+ * Fold `drop_id` into `keep_id`. GATED, and not reversible: the dropped record stays in the
+ * `merged` segment for the audit trail, but the two histories are one from here on. It executes
+ * `planMerge`'s plan, so what `preview_merge` showed is what it writes.
+ */
+export function mergeContacts(keepId: string, dropId: string): MutationResult {
+  const plan = planMerge(keepId, dropId);
+  if ("refusal" in plan) return { ok: false, summary: "", error: plan.refusal };
+  const { keep, drop, pair, outcome } = plan;
   const ts = new Date().toISOString();
 
   db().withTx((tx) => {
     // Through the door, so each adoption leaves a revision on the survivor and restamps the flag
     // its field feeds (`phone_ok` for a phone, `is_stale` for a date).
-    for (const a of taken) {
-      writeField(tx, { contact_id: keep.id, field: a.field, from: keep[a.field], to: a.value, rules: MERGE_RULE, ts });
+    for (const a of outcome.adopts) {
+      writeField(tx, { contact_id: keep.id, field: a.field, from: a.from, to: a.to, rules: MERGE_RULE, ts });
     }
     tx.run("UPDATE contacts SET merged_into = ? WHERE id = ?", [keep.id, drop.id]);
     tx.run("UPDATE merge_pairs SET status = 'merged' WHERE id = ?", [pair.id]);
-    // The settled pair is already 'merged', so this closes only the others the drop stood in.
+    // The settled pair is already 'merged', so this closes only the others the drop stood in:
+    // `outcome.closes`, by the same query.
     closeDependentPairs(tx, drop.id);
     // The dropped record leaves the working list, and with it possibly its domain's last odd spelling.
     restamp(tx, { ids: [keep.id, drop.id], domains: [drop.domain] });
   });
 
-  const carried = taken.length === 0 ? "nothing carried over" : `carried over ${taken.map((a) => a.field).join(" and ")}`;
+  const carried =
+    outcome.adopts.length === 0
+      ? "nothing carried over"
+      : `carried over ${outcome.adopts.map((a) => a.field).join(" and ")}`;
   logActivity(db(), {
     actor: "user",
     action: "merge_contacts",
