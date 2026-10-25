@@ -26,6 +26,9 @@ vi.mock("@/lib/companion", async (importOriginal) => ({
 
 const DUE = "2026-10-19T09:00:00+00:00";
 
+/** `vi.waitFor` with room: its 1 s default ran out under the whole workspace suite at once. */
+const waitLong = <T,>(check: () => T | Promise<T>) => vi.waitFor(check, { timeout: 5_000 });
+
 const notice = (id: string, over: Partial<DueNotice> = {}): DueNotice => ({
   case_id: id,
   playbook_id: `pb-${id}`,
@@ -161,18 +164,18 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
     expect(after.map((s) => `${s.method} ${s.path}`)).toEqual(["GET /adopt/cases/a/review"]);
     // The review read resolves after the press; under a loaded suite the dock can still be
     // "reading" on the first look, so wait for it rather than sample it once.
-    await vi.waitFor(async () => expect((await dock()).dock.kind).toBe("reviewing"));
+    await waitLong(async () => expect((await dock()).dock.kind).toBe("reviewing"));
     const state = await dock();
     if (state.dock.kind !== "reviewing") return;
     expect(state.dock.review.lines.map((l) => l.kind)).toEqual(["expired", "may_have_completed", "approved", "declined"]);
-    await vi.waitFor(() => expect(button("Open and prepare")).toBeTruthy());
+    await waitLong(() => expect(button("Open and prepare")).toBeTruthy());
     expect(go).not.toHaveBeenCalled();
   });
 
   it("Open and prepare: answers prepare once, opens each web portal, hands the command over, no /run, next notice takes the dock", async () => {
     await mount([notice("a"), notice("b")]);
     await press(line());
-    await vi.waitFor(() => expect(button("Open and prepare")).toBeTruthy());
+    await waitLong(() => expect(button("Open and prepare")).toBeTruthy());
     await press(button("Open and prepare"));
     const prepares = daemon.seen.filter((s) => s.method === "POST" && (s.body as { answer?: string }).answer === "prepare");
     expect(prepares).toEqual([{ method: "POST", path: "/adopt/cases/a/review", body: { due_at: DUE, answer: "prepare" } }]);
@@ -186,7 +189,7 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
   it("Skip this one: answers skip, and the next notice takes the dock", async () => {
     await mount([notice("a"), notice("b")]);
     await press(line());
-    await vi.waitFor(() => expect(button("Skip this one")).toBeTruthy());
+    await waitLong(() => expect(button("Skip this one")).toBeTruthy());
     await press(button("Skip this one"));
     expect(posts()).toEqual([{ method: "POST", path: "/adopt/cases/a/review", body: { due_at: DUE, answer: "skip" } }]);
     expect((await dock()).notice?.case_id).toBe("b");
@@ -261,7 +264,7 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
     expect(host.textContent).toContain("Chore a is due again: pause or slow it?");
     await press(line());
     const inPlace = async () => {
-      await vi.waitFor(() => expect(button("Pause it")).toBeTruthy());
+      await waitLong(() => expect(button("Pause it")).toBeTruthy());
       expect(button("Slow it")).toBeTruthy();
     };
     if (go.mock.calls.length) expect(go).toHaveBeenCalledWith({ root: "chores", item: "pb-a" });
