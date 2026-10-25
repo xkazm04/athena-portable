@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
 import type { DevicesView, PendingView } from "@/lib/fleet";
+import { wizardStep } from "@/scenes/mind/wizard";
 
 import {
   ARM_MS,
   CONVERSATION_CAP,
+  REREAD_MIN_MS,
   appendLines,
   devicesHandler,
   grantsOf,
@@ -312,5 +314,112 @@ describe("the private network's devices, for the join form", () => {
     wire(() => json({ ok: false, reason: "unknown_ref", detail: "no route" }, 404));
     await useDevices.getState().findPeers();
     expect(useDevices.getState().overlay).toBeNull();
+  });
+});
+
+describe("one read at a time, and never an older answer over a newer one", () => {
+  /** A daemon whose GET /devices answers wait for the test, in any order. */
+  function gated(post: (seen: Seen) => Response | undefined = () => undefined) {
+    const reads: Array<{ answer: (v: DevicesView) => void }> = [];
+    const seen: Seen[] = [];
+    const bus = { onChange: null as (() => void) | null, onConnected: null as (() => void) | null, follows: 0, stops: 0 };
+    const fetchImpl = (url: string, init: RequestInit = {}) => {
+      const entry: Seen = {
+        method: init.method ?? "GET",
+        path: url.replace("http://daemon", ""),
+        body: typeof init.body === "string" ? JSON.parse(init.body) : null,
+      };
+      seen.push(entry);
+      if (entry.method === "GET" && entry.path === "/devices") {
+        return new Promise<Response>((resolve) => reads.push({ answer: (v) => resolve(json(v)) }));
+      }
+      return Promise.resolve(post(entry) ?? json({ ok: false, reason: "unknown_ref", detail: entry.path }, 404));
+    };
+    const api = new DaemonApi({ url: "http://daemon", token: "t" }, fetchImpl);
+    setDevicesDeps({
+      api: () => api,
+      now: () => clock,
+      follow: (onChange, onConnected) => {
+        bus.follows += 1;
+        bus.onChange = onChange;
+        bus.onConnected = onConnected;
+        return () => {
+          bus.stops += 1;
+        };
+      },
+    });
+    return { reads, seen, bus, gets: () => seen.filter((s) => s.method === "GET" && s.path === "/devices").length };
+  }
+
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it("an answered request does not come back from a read issued before the answer and landing after it", async () => {
+    const daemon = gated((s) => (s.path.startsWith("/devices/pending/") ? json({ ok: true, state: "approved", peer: null }) : undefined));
+    const first = useDevices.getState().load();
+    daemon.reads[0]!.answer(view());
+    await first;
+    clock += ARM_MS;
+    // A read that still lists the request is out when the person answers it.
+    const stale = useDevices.getState().load();
+    const answered = useDevices.getState().answer(PENDING.pairing_id, "approve");
+    await settle();
+    await settle();
+    expect(daemon.reads).toHaveLength(3);
+    daemon.reads[2]!.answer(view({ pending: [] }));
+    await settle();
+    daemon.reads[1]!.answer(view());
+    await Promise.all([stale, answered]);
+    const state = useDevices.getState();
+    expect(state.view?.pending).toEqual([]);
+    expect(state.seenAt).toEqual({});
+    const done = { pairingId: PENDING.pairing_id, name: PENDING.name, choice: "approve" as const };
+    expect(wizardStep("phone", null, state, done).step).toBe("done");
+  });
+
+  it("three bus frames while one read is out cost one read after it, not three", async () => {
+    const daemon = gated();
+    const stop = startDevices();
+    await settle();
+    expect(daemon.gets()).toBe(1);
+    const on = devicesHandler(daemon.bus.onChange!);
+    on({ kind: "pair.requested", pending: { ...PENDING, pairing_id: "pair_0000000000b2" } });
+    on({ kind: "peer.changed", peer_id: null });
+    on({ kind: "vitals.changed", room: null, held: null, slots: 2 });
+    daemon.reads[0]!.answer(view());
+    await settle();
+    await settle();
+    expect(daemon.gets()).toBe(2);
+    daemon.reads[1]!.answer(view());
+    await settle();
+    expect(daemon.gets()).toBe(2);
+    stop();
+  });
+
+  it("a bus reconnect reads again only once REREAD_MIN_MS has passed since the last read", async () => {
+    const daemon = gated();
+    const stop = startDevices();
+    await settle();
+    daemon.reads[0]!.answer(view());
+    await settle();
+    expect(daemon.gets()).toBe(1);
+    clock += REREAD_MIN_MS - 1;
+    daemon.bus.onConnected!();
+    await settle();
+    expect(daemon.gets()).toBe(1);
+    clock += 1;
+    daemon.bus.onConnected!();
+    await settle();
+    expect(daemon.gets()).toBe(2);
+    stop();
+  });
+
+  it("follows the bus once for two holders, and stops only with the last", () => {
+    const daemon = gated();
+    const a = startDevices();
+    const b = startDevices();
+    a();
+    expect(daemon.bus).toMatchObject({ follows: 1, stops: 0 });
+    b();
+    expect(daemon.bus).toMatchObject({ follows: 1, stops: 1 });
   });
 });

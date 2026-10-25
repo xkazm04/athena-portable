@@ -11,7 +11,9 @@
  * row, so each one reads the three lists again. One read at a time, a nudge that lands while one is
  * out reads once more after it, and a bus (re)connect reads again at most once per
  * {@link REREAD_MIN_MS} - the daemon ends a quiet stream every 15 s, and a daemon with no bus
- * refuses it at once (the tasks store's rule, `stores/tasks.ts`).
+ * refuses it at once (the tasks store's rule, `stores/tasks.ts`). That discipline is the shared
+ * mirror reader's (`lib/mirror.ts`, which the devices store reads through too); an act's read
+ * supersedes the one out, and an answer older than one already issued is never applied.
  *
  * A cycle's journal is read when a person opens its row and kept by id; a cycle whose status moved
  * since its journal was read (it was running, now it is done) is read again on the next opening.
@@ -23,6 +25,7 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi } from "@/lib/api";
 import { followBus } from "@/lib/fleet";
+import { createMirror } from "@/lib/mirror";
 import type { CycleStatus, CycleView, ProposalView, SleepRunAnswer, SleepView } from "@/lib/sleep";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
@@ -122,18 +125,23 @@ export function keptJournals(journals: Readonly<Record<string, Journal>>, cycles
 
 // -- the reads -----------------------------------------------------------------------------------
 
-let nudgesSinceRead = 0;
-let reading: Promise<void> | null = null;
-let lastRead = Number.NEGATIVE_INFINITY;
+type SleepAnswer = [{ sleep: SleepView }, { cycles: CycleView[] }, { proposals: ProposalView[] }];
 
-async function readOnce(client: DaemonApi): Promise<void> {
-  nudgesSinceRead = 0;
-  try {
-    const [{ sleep }, { cycles }, { proposals }] = await Promise.all([
-      client.sleep(),
-      client.sleepCycles(CYCLES_SHOWN),
-      client.sleepProposals(),
-    ]);
+/**
+ * One read is the three lists together. A cycle moves through its phases in seconds, so nudges can
+ * keep landing; three reads in a row is the most one flight makes, and the bus's reconnect beat
+ * catches anything after it.
+ */
+const reader = createMirror<SleepAnswer>({
+  read: () => {
+    const client = deps.api();
+    if (!client) {
+      useSleep.setState({ problem: "Could not read her sleep: Athena is not running here yet." });
+      return null;
+    }
+    return Promise.all([client.sleep(), client.sleepCycles(CYCLES_SHOWN), client.sleepProposals()]);
+  },
+  apply: ([{ sleep }, { cycles }, { proposals }]) =>
     useSleep.setState((s) => ({
       view: sleep,
       cycles,
@@ -142,68 +150,35 @@ async function readOnce(client: DaemonApi): Promise<void> {
       missing: false,
       problem: null,
       journals: keptJournals(s.journals, cycles),
-    }));
-  } catch (error) {
+    })),
+  onFail: (error) => {
     if (error instanceof ApiError && error.status === 404) useSleep.setState({ ...EMPTY_SLEEP, loaded: true, missing: true });
     else useSleep.setState({ problem: sentenceOf("read her sleep", error) });
-  }
-}
+  },
+  now: () => deps.now(),
+  rereadMinMs: REREAD_MIN_MS,
+  maxReads: 3,
+  follow: () => deps.follow,
+});
 
 /**
  * Read the three lists now. One read at a time: a call while one is out shares it, and a nudge
  * that arrived meanwhile reads again, since it may be newer than the answer.
  */
 export function loadSleep(): Promise<void> {
-  if (reading) return reading;
-  const client = deps.api();
-  if (!client) {
-    useSleep.setState({ problem: "Could not read her sleep: Athena is not running here yet." });
-    return Promise.resolve();
-  }
-  lastRead = deps.now();
-  reading = (async () => {
-    // A cycle moves through its phases in seconds, so nudges can keep landing; three reads in a
-    // row is the most one call makes, and the bus's reconnect beat catches anything after it.
-    for (let n = 0; n === 0 || (nudgesSinceRead > 0 && n < 3); n += 1) await readOnce(client);
-  })().finally(() => {
-    reading = null;
-  });
-  return reading;
+  return reader.load();
 }
 
 /** One `sleep.changed`: read again, or once more after the read that is out. */
 export function nudged(): void {
-  nudgesSinceRead += 1;
-  void loadSleep();
-}
-
-/** A bus (re)connect: read again, at most once per {@link REREAD_MIN_MS}. */
-function reconnected(): void {
-  if (deps.now() - lastRead >= REREAD_MIN_MS) void loadSleep();
+  reader.nudge();
 }
 
 // -- the count of who is showing it --------------------------------------------------------------
 
-let holders = 0;
-let unfollow: (() => void) | null = null;
-
 /** Read her sleep and follow the bus until the returned stop is called. Counted, as the tasks are. */
 export function startSleep(): () => void {
-  holders += 1;
-  if (holders === 1) {
-    void loadSleep();
-    unfollow = deps.follow?.(nudged, reconnected) ?? null;
-  }
-  let stopped = false;
-  return () => {
-    if (stopped) return;
-    stopped = true;
-    holders -= 1;
-    if (holders === 0) {
-      unfollow?.();
-      unfollow = null;
-    }
-  };
+  return reader.hold();
 }
 
 // -- the acts ------------------------------------------------------------------------------------
@@ -264,8 +239,7 @@ export async function sleepNow(): Promise<void> {
   } finally {
     mark("run", false);
   }
-  if (reading) await reading;
-  await loadSleep();
+  await reader.refresh();
 }
 
 /**
@@ -288,18 +262,12 @@ export async function decide(proposalId: string, action: "keep" | "forget", node
   } finally {
     mark(proposalId, false);
   }
-  if (reading) await reading;
-  await loadSleep();
+  await reader.refresh();
   if (refused) say(proposalId, refused);
 }
 
 export function resetSleepForTests(): void {
-  unfollow?.();
-  unfollow = null;
-  holders = 0;
-  reading = null;
-  nudgesSinceRead = 0;
-  lastRead = Number.NEGATIVE_INFINITY;
+  reader.reset();
   deps = LIVE;
   useSleep.setState({ ...EMPTY_SLEEP });
 }

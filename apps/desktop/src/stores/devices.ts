@@ -8,9 +8,13 @@
  * button is armed only {@link ARM_MS} after a person could have read the card - a request that
  * appears under a moving pointer must not be approved by the click that was already on its way.
  *
- * The mirror follows `GET /events` while the Devices level is open (`startDevices`, started by the
- * level's live part and stopped when it goes): every `pair.requested`, `peer.changed` and
- * `pair.opened`, and every reconnect, re-reads the list. The bus is a nudge; the list is the state -
+ * The mirror follows `GET /events` while the Devices level is open (`startDevices`, counted, started
+ * by the level's live part and stopped when it goes): every `pair.requested`, `peer.changed`,
+ * `pair.opened` and `vitals.changed` nudges a read, and a reconnect reads again at most once per
+ * {@link REREAD_MIN_MS}. The reads go through the shared mirror reader (`lib/mirror.ts`): one at a
+ * time, a nudge mid-read reads once more after it, an act's read supersedes the one out, and an
+ * answer is applied only if no newer read was issued after it - so an answered request or a revoked
+ * peer never comes back from a read that was already stale. The bus is a nudge; the list is the state -
  * with one exception: `pair.opened` (a window Athena opened from the setup conversation) carries
  * the code and the phone's address, which `GET /devices` never lists, so the store keeps them in
  * `opened` exactly as when the person pressed the button here.
@@ -24,6 +28,7 @@
 import { create } from "zustand";
 
 import { ApiError, DaemonApi } from "@/lib/api";
+import { createMirror } from "@/lib/mirror";
 import {
   followBus,
   type BusEvent,
@@ -44,12 +49,17 @@ export const ARM_MS = 1500;
 export const RELAY_ATTEMPTS = 40;
 /** How many lines one conversation box keeps; older ones are dropped and counted. */
 export const CONVERSATION_CAP = 200;
+/** The least time between a read and the one a bus (re)connect asks for. */
+export const REREAD_MIN_MS = 5000;
 
 export interface DevicesDeps {
   api: () => DaemonApi | null;
   now: () => number;
-  /** Follow the event bus; returns what stops it. Absent in a test that drives `load` by hand. */
-  follow?: (onChange: () => void) => () => void;
+  /**
+   * Follow the event bus: `onChange` per frame that moves the list, `onConnected` per (re)connect.
+   * Returns what stops it. Absent in a test that drives `load` by hand.
+   */
+  follow?: (onChange: () => void, onConnected: () => void) => () => void;
 }
 
 const LIVE: DevicesDeps = {
@@ -58,8 +68,8 @@ const LIVE: DevicesDeps = {
     return found ? new DaemonApi(found) : null;
   },
   now: () => Date.now(),
-  follow: (onChange) =>
-    followBus(() => LIVE.api(), devicesHandler(onChange), onChange),
+  follow: (onChange, onConnected) =>
+    followBus(() => LIVE.api(), devicesHandler(onChange), onConnected),
 };
 
 /**
@@ -211,11 +221,37 @@ export function linesOf(frame: TurnFrame, deviceName: string): ConversationLine[
   }
 }
 
+/** The one reader of `GET /devices`; `load`, every act and the bus all go through it. */
+const reader = createMirror<DevicesView>({
+  read: () => {
+    const client = deps.api();
+    if (!client) {
+      useDevices.setState({ problem: "Athena is not running here yet.", loaded: false });
+      return null;
+    }
+    return client.devices();
+  },
+  apply: (view) =>
+    useDevices.setState((s) => ({
+      view,
+      loaded: true,
+      problem: null,
+      seenAt: stampSeen(s.seenAt, view.pending, deps.now()),
+    })),
+  onFail: (error) => useDevices.setState({ problem: sentenceOf(error) }),
+  now: () => deps.now(),
+  rereadMinMs: REREAD_MIN_MS,
+  follow: () => deps.follow,
+});
+
 export const useDevices = create<DevicesState>((set, get) => {
   const api = () => deps.api();
   const notReady = () => new ApiError(0, "not_ready", "Athena is not running here yet.");
 
-  /** One act: mark it busy, run it, read the list again, and put a refusal where it belongs. */
+  /**
+   * One act: mark it busy, run it, read the list again, and put a refusal where it belongs. The
+   * read after it supersedes any read that is out, which was issued before the act's change.
+   */
   async function act(key: string, run: (client: DaemonApi) => Promise<unknown>): Promise<boolean> {
     const client = api();
     if (!client) {
@@ -232,7 +268,7 @@ export const useDevices = create<DevicesState>((set, get) => {
     } finally {
       set((s) => ({ busy: without(s.busy, key) }));
     }
-    await get().load();
+    await reader.refresh();
     return ok;
   }
 
@@ -245,24 +281,7 @@ export const useDevices = create<DevicesState>((set, get) => {
   return {
     ...EMPTY_DEVICES,
 
-    async load() {
-      const client = api();
-      if (!client) {
-        set({ problem: "Athena is not running here yet.", loaded: false });
-        return;
-      }
-      try {
-        const view = await client.devices();
-        set((s) => ({
-          view,
-          loaded: true,
-          problem: null,
-          seenAt: stampSeen(s.seenAt, view.pending, deps.now()),
-        }));
-      } catch (error) {
-        set({ problem: sentenceOf(error) });
-      }
-    },
+    load: () => reader.load(),
 
     async rename(name) {
       await act("rename", (client) => client.renameSelf(name));
@@ -379,24 +398,18 @@ export const useDevices = create<DevicesState>((set, get) => {
   };
 });
 
-let stopDevices: (() => void) | null = null;
-
-/** Read the list now and follow the bus until the returned function is called. Idempotent. */
+/**
+ * Read the list now and follow the bus until the returned stop is called. Counted: the bus is
+ * followed once for any number of holders and let go with the last.
+ */
 export function startDevices(): () => void {
-  if (stopDevices) return stopDevices;
-  void useDevices.getState().load();
   // Once per opening, not per nudge: it asks the overlay, and the list of addresses rarely moves.
-  void useDevices.getState().findPeers();
-  const unfollow = deps.follow?.(() => void useDevices.getState().load()) ?? (() => {});
-  stopDevices = () => {
-    unfollow();
-    stopDevices = null;
-  };
-  return stopDevices;
+  if (reader.holders() === 0) void useDevices.getState().findPeers();
+  return reader.hold();
 }
 
 export function resetDevicesForTests(): void {
-  stopDevices?.();
+  reader.reset();
   deps = LIVE;
   useDevices.setState({ ...EMPTY_DEVICES });
 }
