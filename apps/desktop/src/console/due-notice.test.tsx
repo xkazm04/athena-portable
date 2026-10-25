@@ -150,7 +150,9 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-describe("the dock's due notice opens the staged review in place", () => {
+// Each case mounts the dock and reads a review over the fake daemon; under the whole workspace
+// suite at once that ran past the 5 s default, so the block gets the room it needs.
+describe("the dock's due notice opens the staged review in place", { timeout: 15_000 }, () => {
   it("pressed: reads the review once, draws it with its lines in reading order, and posts nothing", async () => {
     await mount([notice("a")]);
     const before = daemon.seen.length;
