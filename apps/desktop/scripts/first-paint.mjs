@@ -34,7 +34,8 @@ import { gzipSync } from "node:zlib";
  *
  * Raised 2026-10-25 to 165,412 B, the measured figure (scan-sweep challenge, surface needs): the
  * tree stood at 164,982 B, and the "what needs you" list and its model on the surface are
- * first-frame code (+430 B after trimming).
+ * first-frame code (+430 B after trimming). Ratified by the owner in triage 2026-10-25: the raise
+ * landed inside the scan-sweep run, and the owner approved it after the fact.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
