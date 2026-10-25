@@ -27,6 +27,7 @@ mod capture;
 mod daemon;
 mod hands;
 mod ladder;
+mod session;
 mod store;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -255,23 +256,22 @@ pub fn run() {
                 companion::show(&handle);
             }
 
-            // A start page, for launching the shell straight at something: the first non-flag
-            // argument, else `ATHENA_START_URL`. Without either, the shell opens with no tab and
-            // the strip's `+` is the way in. This is the dev affordance every later smoke run
-            // points at a host app with, rather than driving the address field.
-            if let Some(url) = start_url() {
-                match tabs::create(&handle, &url) {
-                    Ok(id) => eprintln!("[tabs] opened {url} as tab {id}"),
-                    Err(e) => eprintln!("[tabs] cannot open {url}: {e}"),
-                }
-            }
+            // The last session's tabs come back where the person left them (ADR 0209), then a
+            // start page, for launching the shell straight at something: the first non-flag
+            // argument, else `ATHENA_START_URL`, which opens too and is put in front. Without
+            // either and with nothing saved, the shell opens with no tab and the strip's `+` is
+            // the way in. A smoke run restores nothing and writes nothing.
+            let smoke = session::is_smoke_run(&|k| std::env::var(k).ok());
+            let start_tab = session::launch(&handle, start_url().as_deref(), smoke);
 
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
             // non-fatal — the shell must come up even when they do not.
-            bridge::smoke_if_asked(&handle);
+            // Both smokes ask the tab the start url actually opened as: with a carried-over id
+            // sequence it is not tab 1 (ADR 0209).
+            bridge::smoke_if_asked(&handle, start_tab);
             // c24's own smoke: one page hand and the shell's capture, against a real window.
-            hands::smoke_if_asked(&handle);
+            hands::smoke_if_asked(&handle, start_tab);
             daemon::start_at_launch(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
 

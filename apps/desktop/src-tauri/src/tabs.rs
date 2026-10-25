@@ -17,6 +17,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, Url, WebviewUrl};
 
 use crate::layout;
+use crate::session;
 
 /// A tab, as the chrome webview sees it. `lib/ipc.ts` declares the same shape in TypeScript.
 #[derive(Clone, Debug, Serialize)]
@@ -52,6 +53,16 @@ struct TabsState {
     next_id: u32,
     focused: Option<u32>,
     list: Vec<TabRecord>,
+    /// What the store last heard about this list (ADR 0209). Unarmed until a launch restored the
+    /// last session, so a smoke run, a test, and the restore itself write nothing.
+    mark: SessionMark,
+}
+
+#[derive(Default)]
+struct SessionMark {
+    armed: bool,
+    saved: Option<Vec<session::Entry>>,
+    seq_saved: u32,
 }
 
 pub fn label_for(id: u32) -> String {
@@ -61,18 +72,46 @@ pub fn label_for(id: u32) -> String {
 impl Tabs {
     pub fn list(&self) -> Vec<Tab> {
         let state = self.inner.lock().expect("tabs poisoned");
-        state
-            .list
-            .iter()
-            .map(|t| Tab {
-                id: t.id,
-                label: label_for(t.id),
-                url: t.url.clone(),
-                title: t.title.clone(),
-                focused: state.focused == Some(t.id),
-                nav: t.nav,
-            })
-            .collect()
+        views(&state)
+    }
+
+    /// Carry the id sequence over from the last launch: the next id is above every id ever
+    /// issued, so a tab id is never reissued (ADR 0209).
+    pub fn seed(&self, high_water: u32) {
+        let mut state = self.inner.lock().expect("tabs poisoned");
+        state.next_id = state.next_id.max(high_water);
+        state.mark.seq_saved = state.mark.seq_saved.max(high_water);
+    }
+
+    /// Start writing the session on change. `session::launch` calls it once the restore is done,
+    /// and never in a smoke run.
+    pub fn arm_session(&self) {
+        let mut state = self.inner.lock().expect("tabs poisoned");
+        state.mark.armed = true;
+    }
+
+    /// What the last change asks the store to write, computed and marked under one lock: the
+    /// session row when its restorable part moved, the high-water mark when an id went past it.
+    pub fn pending_writes(&self) -> session::Writes {
+        let mut state = self.inner.lock().expect("tabs poisoned");
+        if !state.mark.armed {
+            return session::Writes::default();
+        }
+        let snap = session::snapshot(&views(&state));
+        let session = if state.mark.saved.as_ref() != Some(&snap) {
+            let row = session::record(&snap);
+            state.mark.saved = Some(snap);
+            Some(row)
+        } else {
+            None
+        };
+        let seq = if state.next_id > state.mark.seq_saved {
+            state.mark.seq_saved = state.next_id;
+            Some(state.next_id)
+        } else {
+            None
+        };
+        session::Writes { session, seq }
     }
 
     /// The focused tab's id, if any. `layout::apply` asks this to decide whether there is a page
@@ -107,7 +146,7 @@ impl Tabs {
 
     /// Register a tab. `focus` false leaves the focused tab where it is: a delegated task's tab,
     /// opened behind the person's page (fleet-surfaces, ADR 0141).
-    fn add(&self, url: &str, focus: bool) -> u32 {
+    pub(crate) fn add(&self, url: &str, focus: bool) -> u32 {
         let mut state = self.inner.lock().expect("tabs poisoned");
         state.next_id += 1;
         let id = state.next_id;
@@ -170,6 +209,21 @@ impl Tabs {
     }
 }
 
+fn views(state: &TabsState) -> Vec<Tab> {
+    state
+        .list
+        .iter()
+        .map(|t| Tab {
+            id: t.id,
+            label: label_for(t.id),
+            url: t.url.clone(),
+            title: t.title.clone(),
+            focused: state.focused == Some(t.id),
+            nav: t.nav,
+        })
+        .collect()
+}
+
 /// `scheme://host[:port]` for a tab's url, or an empty string when it has none yet.
 ///
 /// The one identity the whole build keys trust on: the `origins` table, the bridge's nonce, and
@@ -186,10 +240,12 @@ pub fn origin_of(url: &str) -> String {
     }
 }
 
-/// Announce the whole tab list to the privileged webview.
+/// Announce the whole tab list to the privileged webview, and write the session if the change
+/// moved it (ADR 0209). Every mutation comes through here, so persisting cannot miss one.
 pub fn announce(app: &AppHandle) {
     let list = app.state::<Tabs>().list();
     crate::ui_emit(app, "tabs:changed", list);
+    session::persist(app);
 }
 
 /// Create a page webview for `url`, focus it, and re-lay the window.
@@ -462,5 +518,54 @@ mod tests {
         assert_eq!(tab.title, "A page");
         assert_eq!(tab.url, "https://a.test/elsewhere");
         assert!(tab.focused);
+    }
+
+    #[test]
+    fn a_tab_id_is_never_reissued_across_launches() {
+        // Last launch issued up to 41. This launch's first tab, restored or new, is 42.
+        let tabs = Tabs::default();
+        tabs.seed(41);
+        let restored = tabs.add("https://ledger.test/inv/42", true);
+        assert_eq!(restored, 42, "a restored tab gets a fresh id above the high-water mark");
+        assert!(
+            tabs.list().iter().all(|t| t.id != 3),
+            "a card bound to last launch's tab 3 finds no tab 3"
+        );
+        tabs.seed(7);
+        assert_eq!(tabs.add("https://b.test/", true), 43, "a lower mark never winds the sequence back");
+        tabs.arm_session();
+        assert_eq!(tabs.pending_writes().seq, Some(43), "the new high-water mark is written");
+        assert_eq!(tabs.pending_writes().seq, None, "and only once");
+    }
+
+    #[test]
+    fn the_session_is_written_on_a_change_that_moves_it_and_never_on_a_title() {
+        let tabs = Tabs::default();
+        let first = tabs.add("https://a.test/", true);
+        tabs.arm_session();
+        let session_writes = |tabs: &Tabs| usize::from(tabs.pending_writes().session.is_some());
+        assert_eq!(session_writes(&tabs), 1, "arming writes the session once");
+        assert_eq!(session_writes(&tabs), 0);
+
+        tabs.set_title(first, "Ledgerbox");
+        assert_eq!(session_writes(&tabs), 0, "a title-only change writes nothing");
+
+        tabs.navigated(first, "https://a.test/inv/42");
+        assert_eq!(session_writes(&tabs) + session_writes(&tabs), 1, "a navigation: one write");
+
+        let second = tabs.add("https://b.test/", true);
+        assert_eq!(session_writes(&tabs) + session_writes(&tabs), 1, "a create: one write");
+
+        assert!(tabs.focus(first));
+        assert_eq!(session_writes(&tabs) + session_writes(&tabs), 1, "a focus change: one write");
+
+        tabs.remove(second);
+        let row = tabs.pending_writes().session.expect("a close: one write");
+        assert_eq!(session_writes(&tabs), 0);
+        assert_eq!(
+            row,
+            serde_json::json!({ "tabs": [{ "url": "https://a.test/inv/42", "focused": true }] }),
+            "the closed tab is gone from the row, so a restart cannot reopen it"
+        );
     }
 }

@@ -426,6 +426,9 @@ pub fn build(app: &AppHandle, first_launch: bool) -> tauri::Result<()> {
     let window = window_of(app).ok_or(tauri::Error::WindowNotFound)?;
 
     let work = work_area(&window);
+    // Where the person last put her (ADR 0209), when that place is still on a connected monitor.
+    let restored = if first_launch { None } else { saved_dock(app) };
+    let main = main_rect(app);
     let companion = app.state::<Companion>();
     {
         let mut inner = companion.lock();
@@ -441,7 +444,18 @@ pub fn build(app: &AppHandle, first_launch: bool) -> tauri::Result<()> {
         } else {
             Orient { side: Side::Right, valign: VAlign::Up }
         };
-        let r = window_rect(inner.seal, (w, h), inner.orient);
+        let r = match restored {
+            Some((seal, snap, room)) => {
+                // A `main.*` snap comes back beside Main wherever Main came up this time.
+                let followed = main.as_ref().and_then(|m| follow(snap, seal, m));
+                inner.seal = followed.unwrap_or(seal);
+                inner.snap = snap;
+                let (r, o) = place(inner.seal, (w, h), inner.orient, &room);
+                inner.orient = o;
+                r
+            }
+            None => window_rect(inner.seal, (w, h), inner.orient),
+        };
         put(&mut inner, &window, r);
     }
 
@@ -553,7 +567,9 @@ fn settle_drop(app: &AppHandle, generation: u64) {
         }
     }
     let payload = serde_json::json!({ "to": snap.as_str(), "docked": snap.dock() });
+    let seal = inner.seal;
     drop(inner);
+    save_dock(app, seal, snap);
     emit_athena(app, "athena:snap", payload);
 }
 
@@ -849,6 +865,63 @@ pub fn snap_seal(
     }
 }
 
+/// The `settings` row holding where she was last put: `{ "x", "y", "snap" }` (ADR 0209).
+pub const DOCK_KEY: &str = "shell.dock";
+
+/// The row a seal and its snap are saved as.
+pub fn dock_record(seal: Point, snap: Snap) -> serde_json::Value {
+    serde_json::json!({ "x": seal.x, "y": seal.y, "snap": snap.as_str() })
+}
+
+/// Where a launch puts her seal from a saved row: the saved point and snap when the seal still lies
+/// wholly inside one connected work area, else `None` and today's default stands
+/// (layered-place-restoration: restore what is still valid, fall back silently).
+pub fn restore_seal(saved: &serde_json::Value, works: &[Rect]) -> Option<(Point, Snap)> {
+    let x = saved.get("x")?.as_f64()?;
+    let y = saved.get("y")?.as_f64()?;
+    let snap = snap_from_str(saved.get("snap")?.as_str()?)?;
+    let seal = Rect { x, y, width: SEAL, height: SEAL };
+    works.iter().any(|w| inside(&seal, w)).then_some((Point { x, y }, snap))
+}
+
+/// Every connected monitor's work area, in logical pixels, each at its own scale.
+fn work_areas(app: &AppHandle) -> Vec<Rect> {
+    app.available_monitors()
+        .unwrap_or_default()
+        .iter()
+        .map(|m| {
+            let scale = m.scale_factor();
+            let a = m.work_area();
+            Rect {
+                x: a.position.x as f64 / scale,
+                y: a.position.y as f64 / scale,
+                width: a.size.width as f64 / scale,
+                height: a.size.height as f64 / scale,
+            }
+        })
+        .collect()
+}
+
+/// The saved seal, its snap and the work area it lies in, or `None` for no row, a broken one, or a
+/// place on a monitor that is gone.
+fn saved_dock(app: &AppHandle) -> Option<(Point, Snap, Rect)> {
+    let row = crate::store::opened(app).ok()?.get("settings", DOCK_KEY).ok()?;
+    let works = work_areas(app);
+    let (seal, snap) = restore_seal(&row, &works)?;
+    let square = Rect { x: seal.x, y: seal.y, width: SEAL, height: SEAL };
+    let room = works.into_iter().find(|w| inside(&square, w))?;
+    Some((seal, snap, room))
+}
+
+/// Remember where she was put: on a drop and on a requested snap, never on her own moves.
+fn save_dock(app: &AppHandle, seal: Point, snap: Snap) {
+    if let Ok(store) = crate::store::opened(app) {
+        if let Err(e) = store.set("settings", DOCK_KEY, &dock_record(seal, snap)) {
+            eprintln!("[companion] cannot save her dock: {e}");
+        }
+    }
+}
+
 /// Snap her by name, as the drop detector would have, and tell the page.
 pub fn snap_to(app: &AppHandle, to: &str) -> Result<(), String> {
     let snap = snap_from_str(to).ok_or_else(|| format!("unknown snap target \"{to}\""))?;
@@ -877,7 +950,9 @@ pub fn snap_to(app: &AppHandle, to: &str) -> Result<(), String> {
     };
     put(&mut inner, &window, rect);
     let orient = inner.orient;
+    let seal = inner.seal;
     drop(inner);
+    save_dock(app, seal, snap);
     if orient != previous {
         emit_athena(app, "athena:orient", orient);
     }
@@ -1178,5 +1253,29 @@ mod tests {
         assert!(p.y >= main.y && p.y + SEAL <= main.y + main.height, "she stays alongside Main");
         assert!(follow(Snap::ScreenLeft, seal, &main).is_none());
         assert!(follow(Snap::Free, seal, &main).is_none());
+    }
+
+    #[test]
+    fn a_saved_dock_comes_back_only_on_a_monitor_that_is_still_connected() {
+        let one = [Rect { x: 0.0, y: 0.0, width: 1920.0, height: 1040.0 }];
+        let saved = dock_record(Point { x: 1700.0, y: 900.0 }, Snap::MainRight);
+        assert_eq!(
+            restore_seal(&saved, &one),
+            Some((Point { x: 1700.0, y: 900.0 }, Snap::MainRight)),
+            "her seal and its snap return"
+        );
+
+        let on_a_gone_monitor = dock_record(Point { x: 2500.0, y: 300.0 }, Snap::ScreenRight);
+        assert_eq!(restore_seal(&on_a_gone_monitor, &one), None, "the default stands");
+        let two = [one[0], Rect { x: 1920.0, y: 0.0, width: 1920.0, height: 1040.0 }];
+        assert!(restore_seal(&on_a_gone_monitor, &two).is_some(), "and returns when it is back");
+
+        for broken in [
+            serde_json::Value::Null,
+            serde_json::json!({ "x": 10.0, "y": 10.0, "snap": "sideways" }),
+            serde_json::json!({ "x": "10", "y": 10.0, "snap": "free" }),
+        ] {
+            assert_eq!(restore_seal(&broken, &one), None, "{broken} is not a place");
+        }
     }
 }

@@ -560,9 +560,9 @@ fn random_token() -> String {
 // exit. `scripts/smoke.mjs` is what runs it against `scratch/webmcp-page.html`.
 // ==============================================================================================
 
-/// Arm the smoke, if the environment asked for it. Called from `setup` after the start url's tab
-/// has been created, which is why the tab it asks about is always tab 1.
-pub fn smoke_if_asked(app: &AppHandle) {
+/// Arm the smoke, if the environment asked for it. Called from `setup` with the id the start url's
+/// tab was created as; tab ids carry over between launches (ADR 0209), so it is not always 1.
+pub fn smoke_if_asked(app: &AppHandle, tab: Option<u32>) {
     if std::env::var("ATHENA_SMOKE")
         .ok()
         .filter(|v| !v.is_empty())
@@ -571,7 +571,15 @@ pub fn smoke_if_asked(app: &AppHandle) {
         return;
     }
     let app = app.clone();
-    tauri::async_runtime::spawn(async move { smoke(app, 1).await });
+    tauri::async_runtime::spawn(async move {
+        match tab {
+            Some(tab) => smoke(app, tab).await,
+            None => {
+                println!("[smoke] tab 0: ok=false error=no start url was opened");
+                app.exit(1);
+            }
+        }
+    });
 }
 
 /// One `list` against a freshly opened tab, printed to stdout, and then the process ends.

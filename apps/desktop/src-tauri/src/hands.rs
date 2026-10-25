@@ -779,7 +779,8 @@ fn described(answer: &Value, asked: &[String]) -> Described {
 // The smoke
 // ==============================================================================================
 
-/// `ATHENA_SMOKE_HANDS=1`: run one hand of each kind on the first tab, print both, and exit.
+/// `ATHENA_SMOKE_HANDS=1`: run one hand of each kind on the start url's tab (the id `setup` was
+/// given when it opened, not tab 1: ids carry over between launches, ADR 0209), print both, exit.
 ///
 /// The capture is the one path in this build that cannot be unit-tested: it needs a window, a
 /// composited webview and the OS's own drawing. `cargo test` proves the table, the schema, the
@@ -789,7 +790,7 @@ fn described(answer: &Value, asked: &[String]) -> Described {
 /// Two hands rather than one, because the dispatch has two arms: `page_read` is answered by
 /// `hands.js` through the relay and `page_screenshot` by the shell. A run where the first works
 /// and the second does not is a capture problem; one where neither works is a relay problem.
-pub fn smoke_if_asked(app: &AppHandle) {
+pub fn smoke_if_asked(app: &AppHandle, tab: Option<u32>) {
     if std::env::var("ATHENA_SMOKE_HANDS")
         .ok()
         .filter(|v| !v.is_empty())
@@ -798,7 +799,15 @@ pub fn smoke_if_asked(app: &AppHandle) {
         return;
     }
     let app = app.clone();
-    tauri::async_runtime::spawn(async move { smoke(app, 1).await });
+    tauri::async_runtime::spawn(async move {
+        match tab {
+            Some(tab) => smoke(app, tab).await,
+            None => {
+                println!("[smoke] page_read ok=false: no start url was opened");
+                app.exit(1);
+            }
+        }
+    });
 }
 
 async fn smoke(app: AppHandle, tab: u32) {
