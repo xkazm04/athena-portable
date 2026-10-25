@@ -153,4 +153,9 @@ export type { Category, Filter, Period, Tone };
 export interface ActionResult {
   ok: boolean;
   message: string;
+  /**
+   * On a reversible act that happened: the activity row it logged, which `undoAction` takes back.
+   * The page's toast offers it as an Undo (ADR 0191); the agent's answer never carries it.
+   */
+  undoId?: number;
 }

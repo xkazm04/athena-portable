@@ -64,7 +64,8 @@ import { isMostlyPaid, matchesFilterClient } from "@/lib/filter";
 import { parseDollars } from "@/lib/format";
 import { REF_HINT, resolveInvoiceRef } from "@/lib/invoice-ref";
 import { registration } from "@/lib/manifest";
-import type { InvoiceRow } from "@/lib/types";
+import type { ToolName } from "@/lib/tool-classes";
+import type { ActionResult, InvoiceRow } from "@/lib/types";
 
 import {
   STATE_FILTER_LABEL,
@@ -74,6 +75,7 @@ import {
   type LnSheet,
   type StateFilter,
 } from "../model";
+import { agentCopy, toastFor, undoControl } from "./undo";
 
 /**
  * The four views the books have always offered, as states of the one filter the sheet is lit by.
@@ -209,13 +211,15 @@ export function BooksTools({
   /**
    * Every mutating tool answers the same way: run the server action, toast the sentence it
    * returned, and refresh the tree so the sheet under the open card is rebuilt from the books.
+   * A reversible act's toast carries its Undo (`toastFor`, decided by the class table) wired to
+   * the activity row the act logged; the agent's copy of the result never carries that id.
    *
    * It returns the WHOLE result, not its message. A tool that only needs the sentence takes
    * `.message`; the three that carry structure — the draft, the send and the close — return the
    * object, and the kit serialises it. Flattening everything to a string here is what used to
    * make a complete, addressable draft unreachable from outside the page.
    */
-  const settle = async <T extends { ok: boolean; message: string }>(work: Promise<T>): Promise<T> => {
+  const settle = async <T extends ActionResult>(tool: ToolName, work: Promise<T>): Promise<Omit<T, "undoId">> => {
     let result: T;
     try {
       result = await work;
@@ -227,14 +231,16 @@ export function BooksTools({
       router.refresh();
       throw error;
     }
-    toast(result.message, result.ok ? "success" : "error");
+    const spec = toastFor(tool, result);
+    toast(spec.text, spec.tone, undoControl(spec, { toast, refresh: () => router.refresh() }));
     router.refresh();
-    return result;
+    // The undo is the person's, not the agent's: what the model reads is what it always read.
+    return agentCopy(result);
   };
 
   /** The sentence when the act happened, the refusal shape when it did not. */
-  const say = async (work: Promise<{ ok: boolean; message: string }>) => {
-    const result = await settle(work);
+  const say = async (tool: ToolName, work: Promise<ActionResult>) => {
+    const result = await settle(tool, work);
     return result.ok ? result.message : refused(result.message);
   };
 
@@ -477,7 +483,7 @@ export function BooksTools({
     ...registration("categorize"),
     handler: ({ ids, category }) =>
       isOneOf(CATEGORIES, category)
-        ? say(categorizeAction(asIds(ids), category as Category, "athena"))
+        ? say("categorize", categorizeAction(asIds(ids), category as Category, "athena"))
         : refused(`Unknown category ${String(category)}.`),
   });
 
@@ -487,7 +493,7 @@ export function BooksTools({
       "Apply an unapplied bank credit to an invoice and record the payment. The card's balance and its colour change under the open invoice. Reversible with unmatch.",
     ...registration("match_bank_line"),
     handler: async ({ invoice_id, line_id }) => {
-      const result = await settle(matchAction(String(invoice_id), String(line_id), "athena"));
+      const result = await settle("match_bank_line", matchAction(String(invoice_id), String(line_id), "athena"));
       if (!result.ok) return refused(result.message);
       // The alias travels with the match, so a credit that arrived under a trading name can be
       // remembered as one fact rather than re-derived from the memo next month.
@@ -499,7 +505,7 @@ export function BooksTools({
     name: "unmatch",
     description: "Take a bank credit back off an invoice, restoring the balance.",
     ...registration("unmatch"),
-    handler: ({ invoice_id, line_id }) => say(unmatchAction(String(invoice_id), String(line_id), "athena")),
+    handler: ({ invoice_id, line_id }) => say("unmatch", unmatchAction(String(invoice_id), String(line_id), "athena")),
   });
 
   useWebMCPTool({
@@ -509,7 +515,7 @@ export function BooksTools({
     ...registration("draft_reminder"),
     handler: async ({ id, tone }) => {
       if (!isOneOf(TONES, tone)) return refused(`Unknown tone ${String(tone)}.`);
-      const result = await settle(draftReminderAction(String(id), tone as Tone, "athena"));
+      const result = await settle("draft_reminder", draftReminderAction(String(id), tone as Tone, "athena"));
       if (!result.ok) return refused(result.message);
       // The whole message, not a confirmation that one exists. `send_reminder` is carried by a
       // connector outside the page, and what it carries has to be addressable before the gate.
@@ -527,7 +533,7 @@ export function BooksTools({
       // a non-finite number is refused rather than rounded into a payment.
       const cents = parseDollars(amount as string | number);
       if (cents === null) return refused(`"${String(amount)}" is not an amount.`);
-      return say(markPaidAction(String(id), cents, "athena"));
+      return say("mark_paid", markPaidAction(String(id), cents, "athena"));
     },
   });
 
@@ -537,7 +543,7 @@ export function BooksTools({
       "Send the saved draft reminder to the client's billing contact. The card's draft block clears and its reminder count goes up. Reaches a person; simulated here and recorded against the invoice.",
     ...registration("send_reminder"),
     handler: async ({ id }) => {
-      const result = await settle(sendReminderAction(String(id), "athena"));
+      const result = await settle("send_reminder", sendReminderAction(String(id), "athena"));
       if (!result.ok) return refused(result.message);
       // Who it reached, in the answer as well as in the activity row.
       return result.to
@@ -550,7 +556,7 @@ export function BooksTools({
     name: "void_invoice",
     description: "Void an invoice. Permanent.",
     ...registration("void_invoice"),
-    handler: ({ id }) => say(voidInvoiceAction(String(id), "athena")),
+    handler: ({ id }) => say("void_invoice", voidInvoiceAction(String(id), "athena")),
   });
 
   useWebMCPTool({
@@ -561,7 +567,7 @@ export function BooksTools({
     handler: async ({ period: p }) => {
       if (!isOneOf(PERIODS, p)) return refused(`Unknown period ${String(p)}.`);
       setPeriod(p);
-      const result = await settle(exportSummaryAction(p, "athena"));
+      const result = await settle("export_summary", exportSummaryAction(p, "athena"));
       if (!result.ok) return refused(result.message);
       // A page, ready to become one somewhere else: a title and a Markdown body. `body` is the
       // plain-text form the close readout prints, kept so the two callers read one result.

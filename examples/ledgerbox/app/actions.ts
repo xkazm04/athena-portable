@@ -6,7 +6,7 @@
  * manifest and the behaviour here are the same claim, made twice.
  */
 import { revalidatePath } from "next/cache";
-import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/activity";
+import { logActivity, undoActivity, type ActivityEntry, type UndoAnswer, type UndoVerdict } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
 import { CATEGORIES, MAX_IDS, PERIODS, TONES, type Category, type Period, type Tone } from "@/lib/constants";
@@ -167,7 +167,7 @@ export async function categorizeAction(
   const handle = db();
   const prior: [string, Category][] = [];
 
-  handle.withTx((tx) => {
+  const undoId = handle.withTx((tx): number | undefined => {
     for (const id of targets) {
       const row = tx.get<{ category: Category }>("SELECT category FROM invoices WHERE id = ?", [id]);
       if (!row) continue;
@@ -176,15 +176,15 @@ export async function categorizeAction(
     }
     // No row for a write that did not happen: an activity entry whose undo payload is empty
     // reverses nothing, and the Trail should not carry it.
-    if (prior.length === 0) return;
-    logActivity(tx, {
+    if (prior.length === 0) return undefined;
+    return logActivity(tx, {
       actor,
       action: "categorize",
       target: `invoice:${prior.length === 1 ? prior[0]![0] : `${prior.length} invoices`}`,
       summary: `Filed ${prior.length} invoice${prior.length === 1 ? "" : "s"} under ${category}.`,
       reversible: true,
       undo: { kind: "categorize", prior } satisfies Undo,
-    });
+    }).id;
   });
 
   refresh();
@@ -199,6 +199,7 @@ export async function categorizeAction(
       prior.length === requested
         ? `Filed ${prior.length} under ${category}.`
         : `Filed ${prior.length} of ${requested} under ${category}; ${requested - prior.length} ids were not found.`,
+    ...(undoId !== undefined ? { undoId } : {}),
   };
 }
 
@@ -258,7 +259,7 @@ export async function matchAction(ref: string, lineId: string, actor: Actor = "u
   const evidence = scored ? scored.evidence.join("; ") : "matched by hand";
   const alias = scored?.counterparty_alias;
 
-  db().withTx((tx) => {
+  const undoId = db().withTx((tx) => {
     tx.run("INSERT INTO matches (invoice_id, line_id, matched_at, actor, evidence) VALUES (?, ?, ?, ?, ?)", [
       invoiceId,
       lineId,
@@ -270,14 +271,14 @@ export async function matchAction(ref: string, lineId: string, actor: Actor = "u
       "INSERT INTO payments (id, invoice_id, paid_at, amount_cents, method, note) VALUES (?, ?, ?, ?, 'transfer', ?)",
       [paymentIdFor(lineId), invoiceId, line.posted_at, line.amount_cents, `Reconciled from ${line.source_file}.`],
     );
-    logActivity(tx, {
+    return logActivity(tx, {
       actor,
       action: "match_bank_line",
       target: `invoice:${invoiceId}`,
       summary: `Matched ${formatMoney(line.amount_cents)} from "${line.memo}" to ${invoice.number} (${evidence}).`,
       reversible: true,
       undo: { kind: "match", invoice_id: invoiceId, line_id: lineId } satisfies Undo,
-    });
+    }).id;
   });
 
   refresh();
@@ -288,6 +289,7 @@ export async function matchAction(ref: string, lineId: string, actor: Actor = "u
   return {
     ok: true,
     message: `Applied ${formatMoney(line.amount_cents)} to ${invoice.number}.${under}`,
+    undoId,
     ...(alias ? { counterparty_alias: alias } : {}),
   };
 }
@@ -322,10 +324,10 @@ export async function unmatchAction(ref: string, lineId: string, actor: Actor = 
   }
   const invoice = getInvoice(invoiceId);
 
-  handle.withTx((tx) => {
+  const undoId = handle.withTx((tx) => {
     tx.run("DELETE FROM matches WHERE invoice_id = ? AND line_id = ?", [invoiceId, lineId]);
     tx.run("DELETE FROM payments WHERE id = ?", [payment.id]);
-    logActivity(tx, {
+    return logActivity(tx, {
       actor,
       action: "unmatch",
       target: `invoice:${invoiceId}`,
@@ -341,11 +343,11 @@ export async function unmatchAction(ref: string, lineId: string, actor: Actor = 
         amount_cents: row.amount_cents,
         payment,
       } satisfies Undo,
-    });
+    }).id;
   });
 
   refresh();
-  return { ok: true, message: `Unapplied ${formatMoney(row.amount_cents)}.` };
+  return { ok: true, message: `Unapplied ${formatMoney(row.amount_cents)}.`, undoId };
 }
 
 /** An identical manual payment inside this many seconds is a retry, not a second part-payment. */
@@ -446,19 +448,19 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
   const id = `rem_${invoiceId}_${Date.now()}`;
   const draft = letterFor(invoice, tone);
 
-  db().withTx((tx) => {
+  const undoId = db().withTx((tx) => {
     tx.run(
       "INSERT INTO reminders (id, invoice_id, tone, recipient, subject, body, created_at, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)",
       [id, invoiceId, tone, draft.to, draft.subject, draft.body, new Date().toISOString()],
     );
-    logActivity(tx, {
+    return logActivity(tx, {
       actor,
       action: "draft_reminder",
       target: `invoice:${invoiceId}`,
       summary: `Drafted a ${tone} reminder for ${invoice.number} to ${draft.to_name} <${draft.to}>. Not sent.`,
       reversible: true,
       undo: { kind: "reminder", id } satisfies Undo,
-    });
+    }).id;
   });
 
   refresh();
@@ -471,9 +473,10 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
       ok: true,
       message: `${invoice.client_name} has already paid ${share}% of ${invoice.number} - the draft is saved, read the balance before sending.`,
       draft: whole,
+      undoId,
     };
   }
-  return { ok: true, message: `Drafted a ${tone} reminder for ${draft.to}. Nothing has been sent.`, draft: whole };
+  return { ok: true, message: `Drafted a ${tone} reminder for ${draft.to}. Nothing has been sent.`, draft: whole, undoId };
 }
 
 /**
@@ -578,21 +581,21 @@ export async function exportSummaryAction(period: Period, actor: Actor = "user")
   const markdown = renderSummaryMarkdown({ summary, outstanding });
   const id = `exp_${period}_${Date.now()}`;
 
-  db().withTx((tx) => {
+  const undoId = db().withTx((tx) => {
     tx.run("INSERT INTO exports (id, period, generated_at, body) VALUES (?, ?, ?, ?)", [
       id,
       period,
       new Date().toISOString(),
       body,
     ]);
-    logActivity(tx, {
+    return logActivity(tx, {
       actor,
       action: "export_summary",
       target: `period:${period}`,
       summary: `Exported the ${period} summary: ${formatMoney(summary.outstanding_cents)} outstanding across ${summary.invoice_count} invoices.`,
       reversible: true,
       undo: { kind: "export", id } satisfies Undo,
-    });
+    }).id;
   });
 
   refresh();
@@ -602,17 +605,12 @@ export async function exportSummaryAction(period: Period, actor: Actor = "user")
     title: summaryTitle(period),
     markdown,
     body,
+    undoId,
   };
 }
 
-/**
- * An undo the books can no longer take. Thrown from `applyUndo` so `undoActivity`'s transaction
- * rolls back with nothing written, and answered by `undoAction` as a reason rather than a throw.
- */
-class UndoRefused extends Error {}
-
 /** The app-specific half of `undoActivity`: only this file knows how to reverse these writes. */
-function applyUndo(tx: Db, entry: ActivityEntry): void {
+function applyUndo(tx: Db, entry: ActivityEntry): UndoVerdict {
   const undo = entry.undo as Undo | null;
   switch (undo?.kind) {
     case "categorize":
@@ -633,13 +631,13 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
         [undo.line_id],
       );
       if (now.length > 0) {
-        throw new UndoRefused(`That bank line is applied to ${now.map((r) => r.number).join(", ")} now - unapply it there first.`);
+        return { refused: `That bank line is applied to ${now.map((r) => r.number).join(", ")} now - unapply it there first.` };
       }
       const invoice = getInvoice(undo.invoice_id);
       if (invoice && undo.amount_cents > invoice.balance_cents) {
-        throw new UndoRefused(
-          `${formatMoney(undo.amount_cents)} is more than the ${formatMoney(invoice.balance_cents)} now owed on ${invoice.number}.`,
-        );
+        return {
+          refused: `${formatMoney(undo.amount_cents)} is more than the ${formatMoney(invoice.balance_cents)} now owed on ${invoice.number}.`,
+        };
       }
       tx.run("INSERT INTO matches (invoice_id, line_id, matched_at, actor, evidence) VALUES (?, ?, ?, ?, ?)", [
         undo.invoice_id,
@@ -663,9 +661,16 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
       );
       return;
     }
-    case "reminder":
+    case "reminder": {
+      // The draft went out after it was written. Deleting `WHERE sent_at IS NULL` changed nothing,
+      // and the kit then logged "Undid #n" over a letter that stayed sent (ADR 0191). Refused, so
+      // nothing is written and the row stays as it is. A draft a later send replaced is already
+      // gone (`sendReminderAction` deletes it), and its undo stays the clean no-op it always was.
+      const sent = tx.get<{ sent_at: string | null }>("SELECT sent_at FROM reminders WHERE id = ?", [undo.id]);
+      if (sent?.sent_at) return { refused: "already sent - a sent reminder cannot be taken back" };
       tx.run("DELETE FROM reminders WHERE id = ? AND sent_at IS NULL", [undo.id]);
       return;
+    }
     case "export":
       tx.run("DELETE FROM exports WHERE id = ?", [undo.id]);
       return;
@@ -674,14 +679,18 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
   }
 }
 
-export async function undoAction(id: number): Promise<{ ok: boolean; reason?: string }> {
-  let result: { ok: boolean; reason?: string };
-  try {
-    result = undoActivity(db(), id, applyUndo);
-  } catch (error) {
-    if (!(error instanceof UndoRefused)) throw error;
-    return { ok: false, reason: error.message };
-  }
-  refresh();
-  return { ok: result.ok, ...(result.reason ? { reason: result.reason } : {}) };
+/**
+ * Take back one reversible act by its activity row - the `undoId` its answer carried. A refusal
+ * (`applyUndo`'s `{ refused }`, ADR 0156) leaves the books and the row as they were and answers
+ * the reason; the kit's own refusals ("no activity", "not reversible", "already undone") come back
+ * the same way.
+ */
+export async function undoAction(id: number): Promise<UndoAnswer> {
+  const result = undoActivity(db(), id, applyUndo);
+  if (result.ok) refresh();
+  return {
+    ok: result.ok,
+    ...(result.reason ? { reason: result.reason } : {}),
+    ...(result.partial ? { partial: result.partial } : {}),
+  };
 }
