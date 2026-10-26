@@ -1,8 +1,46 @@
 # Featured chores on Meta's models - the spike program
 
-Status: **spikes staged, none started** (2026-10-24). Six concept folders that `/spark` takes one at a
+Status: **built locally, rehearsed on fixtures** (2026-10-26; staged 2026-10-24) - see
+[Where it stands](#where-it-stands-2026-10-26) and [Tomorrow, with a key](#tomorrow-with-a-key). Six concept folders that `/spark` takes one at a
 time. They come from the solution contest `athena-meta-solutions` (six design reports, one Opus seat
 each, owner review, no judge): the owner descoped one and fused the other five into this program.
+
+## Where it stands (2026-10-26)
+
+All six spikes run end to end on this PC with the Claude Code CLI as Athena's engine and recorded
+fixtures where SAM, Voice Transcribe or Spark reading would be (ADRs 0226-0231).
+
+| Spike | Chore (`playbooks/<id>`) | Sense tables | Proofs on fixtures | Status | Bench (Claude CLI, sonnet, n=1) |
+|---|---|---|---|---|---|
+| 00 | - (`src/athena/senses/`, `src/athena/harness/meta/`) | - | contract, guard, prices, probe tests | - | - |
+| 01 | `paper-flip-through` | `sheets`, `sheet_fields` | F1 F2 F2x F3 R2 R3 pass | rehearsed | exceeds: 9/9 ($3,107), 0 false, $1.96 |
+| 02 | `prior-auth-denial-appeal` | + `call_turns`, `call_log` | F1 F1k F3 F3x F4 R4 pass | rehearsed | short: 2/3, missed LT-1 (the hold letter), 0 false, $1.49 |
+| 03 | `roll-call-inventory` | `inventory`, `inventory_asked` | F1 F1x F3 F4 R2 pass | rehearsed | exceeds: 20/20 ($17,885), 0 false, $2.54 |
+| 04 | `renovation-witness` | `walk_counts`, `walk_promises`, `change_checks` | F2 F2d F3 F4 pass | rehearsed | short: 7/9, 2 false claims, missed CO-02 refusal and 1043-7, $0.82 |
+| 05 | `care-circle` | `counter_meds`, `circle_tasks`, `signer_rules` (+ paper) | F1 F1x F3 F3a F3x F4 pass | rehearsed | exceeds: 6/6, 0 false, $1.42 |
+
+How it works: `python -m athena.senses build <chore>` runs each sense over `senses/media.json`
+and writes `senses/sensed.json`; the loader merges those tables into the world, so the bench's
+Athena reads them through ordinary READ tools and acts on the real gate. `prove` scores the build
+against `senses/key.json` into `senses/proofs.json`; the Chores scene's featured band shows the
+computed status (`proven` needs a role on `meta`). Bench results are in each chore's `bench.json`.
+Not measured anywhere yet: every V* proof (Character onboarding and rehearsal through
+`proving/chores_uat`), R1-style cross-person variance, the sense Gauntlet, and anything on Meta.
+
+## Tomorrow, with a key
+
+1. `set META_API_KEY=...` then `uv run python -m athena.harness.meta probe` - one call per model
+   and endpoint; the report lands in `.spark/Spark/meta/probes/` and lists every shape that
+   differed from what the clients assume (`harness/meta/{sam,voice,reader,engine}.py` isolate the
+   request builders and reply parsers to fix). Post each surprise as a vault finding.
+2. Ask the probe whether SAM takes several prompts per request (finding 20261026-2332: one prompt
+   per call prices roll-call at ~$74 a household, not ~$45).
+3. Per chore: `uv run python -m athena.senses prove <chore> --reader meta` (paper first: needs
+   only the rendered PDFs, `python -m athena.senses render <chore>`), then `--segmenter meta` and
+   `--transcriber meta` once real media exists under `senses/media/` (local only, ADR 0055).
+   A chore turns `proven` only when its proofs pass with a role on `meta`.
+4. Register `MetaModel` as an engine (`engines.py`, `daemon.rs` `KNOWN_ENGINES`, `lib/engines.ts`)
+   and run the Gauntlet on Athena-on-Muse (spike 00 P3) before any featured bench on Muse.
 
 ## The owner's decision
 
