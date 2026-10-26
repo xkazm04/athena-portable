@@ -49,7 +49,7 @@ import { ConnectorSurface } from "../src/connector-surface.ts";
 import { FakeMail } from "../src/connectors/fake-mail.ts";
 import { FakeNotes } from "../src/connectors/fake-notes.ts";
 import { Ledger } from "../src/ledger.ts";
-import { Surface } from "../src/surface.ts";
+import { Surface, parse } from "../src/surface.ts";
 import { STUDIO_NOTES, assertClasses, assertHands, eventually } from "../src/stage.ts";
 import {
   BACKEND_ROLE,
@@ -342,23 +342,33 @@ test("the demo journey: four acts, one studio, one record", async () => {
     // A disputed invoice is not chased either, and that is the app's rule rather than the
     // runner's: asking for one anyway is answered with the reason, which is asserted below.
     const disputed = older.filter((row) => invoice.state(row) === "disputed");
-    const chased = older.filter(
+    const candidates = older.filter(
       (row) => !quiet.has(invoice.client(row)) && invoice.state(row) !== "disputed",
     );
-    expect(chased.map((row) => invoice.client(row))).not.toContain(QUIET_CLIENT);
-    expect(chased.length).toBeGreaterThan(2);
+    expect(candidates.map((row) => invoice.client(row))).not.toContain(QUIET_CLIENT);
     if (disputed.length > 0) {
       const refused = await books.run("draft_reminder", { id: invoice.id(disputed[0]!), tone: "gentle" });
       expect(refused.output.toLowerCase()).toContain("disput");
     }
 
-    const oldest = [...chased].sort((a, b) => invoice.daysOverdue(b) - invoice.daysOverdue(a))[0]!;
+    // An invoice an unapplied credit already covers is not chased either, and that too is the
+    // app's rule (dca80c20): the books refuse the draft and name the bank line to apply. The
+    // runner hears the refusal rather than predicting it.
+    const oldest = [...candidates].sort((a, b) => invoice.daysOverdue(b) - invoice.daysOverdue(a))[0]!;
     const drafts = new Map<string, Row>();
-    for (const row of chased) {
-      const answer = await books.read<Row>("draft_reminder", { id: invoice.id(row), tone: toneFor(row, oldest) });
-      drafts.set(invoice.id(row), draft.of(answer));
+    const covered: string[] = [];
+    for (const row of candidates) {
+      const answer = await books.run("draft_reminder", { id: invoice.id(row), tone: toneFor(row, oldest) });
+      if (/looks paid/i.test(answer.output)) {
+        expect(answer.output, `${invoice.id(row)}'s refusal names its bank line`).toMatch(/bl_\d+/);
+        covered.push(invoice.id(row));
+        continue;
+      }
+      drafts.set(invoice.id(row), draft.of(parse<Row>(answer.output)));
     }
-    expect(drafts.size).toBe(chased.length);
+    const chased = candidates.filter((row) => drafts.has(invoice.id(row)));
+    expect(chased.length).toBeGreaterThan(2);
+    expect(drafts.size + covered.length).toBe(candidates.length);
 
     // The allow-list is exactly the registry contacts of the clients being chased, and the app's own
     // addressing is checked against the same registry.
