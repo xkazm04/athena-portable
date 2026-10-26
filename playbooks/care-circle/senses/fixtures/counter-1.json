@@ -1,0 +1,440 @@
+{
+  "segments": [
+    {
+      "label": "pill bottle",
+      "score": 0.94,
+      "box": [
+        0.06,
+        0.31,
+        0.19,
+        0.72
+      ],
+      "frame": 0,
+      "track_id": "B1"
+    },
+    {
+      "label": "pill bottle",
+      "score": 0.92,
+      "box": [
+        0.22,
+        0.28,
+        0.36,
+        0.74
+      ],
+      "frame": 0,
+      "track_id": "B2"
+    },
+    {
+      "label": "pill bottle",
+      "score": 0.95,
+      "box": [
+        0.4,
+        0.33,
+        0.52,
+        0.71
+      ],
+      "frame": 0,
+      "track_id": "B3"
+    },
+    {
+      "label": "pill bottle",
+      "score": 0.9,
+      "box": [
+        0.56,
+        0.3,
+        0.69,
+        0.73
+      ],
+      "frame": 0,
+      "track_id": "B4"
+    },
+    {
+      "label": "pill bottle",
+      "score": 0.81,
+      "box": [
+        0.73,
+        0.35,
+        0.86,
+        0.7
+      ],
+      "frame": 0,
+      "track_id": "B5"
+    },
+    {
+      "label": "pill organizer",
+      "score": 0.7,
+      "box": [
+        0.1,
+        0.78,
+        0.48,
+        0.95
+      ],
+      "frame": 0
+    },
+    {
+      "label": "coffee mug",
+      "score": 0.7,
+      "box": [
+        0.88,
+        0.4,
+        0.99,
+        0.66
+      ],
+      "frame": 0
+    }
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "B1.name",
+          "value": "Amlodipine",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.392,
+            0.18,
+            0.441
+          ]
+        },
+        {
+          "name": "B1.strength",
+          "value": "5 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.441,
+            0.18,
+            0.49
+          ]
+        },
+        {
+          "name": "B1.directions",
+          "value": "Take 1 tablet by mouth once daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.49,
+            0.18,
+            0.54
+          ]
+        },
+        {
+          "name": "B2.name",
+          "value": "Metoprolol tartrate",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.372,
+            0.35,
+            0.427
+          ]
+        },
+        {
+          "name": "B2.strength",
+          "value": "50 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.427,
+            0.35,
+            0.482
+          ]
+        },
+        {
+          "name": "B2.directions",
+          "value": "Take 1 tablet by mouth twice daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.482,
+            0.35,
+            0.538
+          ]
+        },
+        {
+          "name": "B3.name",
+          "value": "Atorvastatin",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.406,
+            0.51,
+            0.452
+          ]
+        },
+        {
+          "name": "B3.strength",
+          "value": "40 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.452,
+            0.51,
+            0.497
+          ]
+        },
+        {
+          "name": "B3.directions",
+          "value": "Take 1 tablet by mouth at bedtime",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.497,
+            0.51,
+            0.543
+          ]
+        },
+        {
+          "name": "B4.name",
+          "value": "Lisinopril",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.386,
+            0.68,
+            0.438
+          ]
+        },
+        {
+          "name": "B4.strength",
+          "value": "10 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.438,
+            0.68,
+            0.489
+          ]
+        },
+        {
+          "name": "B4.directions",
+          "value": "Take 1 tablet by mouth once daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.489,
+            0.68,
+            0.541
+          ]
+        },
+        {
+          "name": "B5.name",
+          "value": "Furosemide",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.74,
+            0.42,
+            0.85,
+            0.462
+          ]
+        },
+        {
+          "name": "B5.directions",
+          "value": "Take 1 tablet by mouth every morning",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.74,
+            0.504,
+            0.85,
+            0.546
+          ]
+        }
+      ],
+      "unreadable": [
+        "B5.strength"
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "B1.name",
+          "value": "Amlodipine",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.392,
+            0.18,
+            0.441
+          ]
+        },
+        {
+          "name": "B1.strength",
+          "value": "5mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.441,
+            0.18,
+            0.49
+          ]
+        },
+        {
+          "name": "B1.directions",
+          "value": "Take 1 tablet by mouth once daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.07,
+            0.49,
+            0.18,
+            0.54
+          ]
+        },
+        {
+          "name": "B2.name",
+          "value": "METOPROLOL TARTRATE",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.372,
+            0.35,
+            0.427
+          ]
+        },
+        {
+          "name": "B2.strength",
+          "value": "50mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.427,
+            0.35,
+            0.482
+          ]
+        },
+        {
+          "name": "B2.directions",
+          "value": "Take 1 tablet by mouth twice daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.23,
+            0.482,
+            0.35,
+            0.538
+          ]
+        },
+        {
+          "name": "B3.name",
+          "value": "Atorvastatin",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.406,
+            0.51,
+            0.452
+          ]
+        },
+        {
+          "name": "B3.strength",
+          "value": "40 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.452,
+            0.51,
+            0.497
+          ]
+        },
+        {
+          "name": "B3.directions",
+          "value": "Take 1 tablet by mouth at bedtime",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.41,
+            0.497,
+            0.51,
+            0.543
+          ]
+        },
+        {
+          "name": "B4.name",
+          "value": "LISINOPRIL",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.386,
+            0.68,
+            0.438
+          ]
+        },
+        {
+          "name": "B4.strength",
+          "value": "10 mg",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.438,
+            0.68,
+            0.489
+          ]
+        },
+        {
+          "name": "B4.directions",
+          "value": "Take 1 tablet by mouth once daily",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.57,
+            0.489,
+            0.68,
+            0.541
+          ]
+        },
+        {
+          "name": "B5.name",
+          "value": "Furosemide",
+          "confidence": 0.96,
+          "frame": 0,
+          "box": [
+            0.74,
+            0.42,
+            0.85,
+            0.462
+          ]
+        },
+        {
+          "name": "B5.directions",
+          "value": "Take 1 tablet by mouth every morning",
+          "confidence": 0.9,
+          "frame": 0,
+          "box": [
+            0.74,
+            0.504,
+            0.85,
+            0.546
+          ]
+        }
+      ],
+      "unreadable": [
+        "B5.strength"
+      ]
+    }
+  ]
+}

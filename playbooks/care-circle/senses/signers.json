@@ -1,0 +1,15 @@
+{
+  "members": [
+    {"id": "ruth", "name": "Ruth Alder", "role": "parent"},
+    {"id": "maya", "name": "Maya Alder", "role": "primary"},
+    {"id": "jon", "name": "Jon Alder", "role": "sibling"}
+  ],
+  "rules": [
+    {"action": "share_record", "subject": "*", "needs": "role:primary", "parent_veto": true},
+    {"action": "share_record", "subject": "medication", "needs": "parent", "parent_veto": true},
+    {"action": "pay_bill", "subject": "*", "needs": "role:primary", "parent_veto": false},
+    {"action": "pay_bill", "subject": "equipment", "needs": "quorum:2", "parent_veto": false},
+    {"action": "change_appointment", "subject": "*", "needs": "quorum:2", "parent_veto": true},
+    {"action": "export_record", "subject": "medication", "needs": "parent", "parent_veto": true}
+  ]
+}

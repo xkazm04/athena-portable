@@ -1,0 +1,134 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Alder",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.22,
+            0.9,
+            0.26
+          ]
+        },
+        {
+          "name": "diagnosis",
+          "value": "Heart failure with fluid overload; blood pressure medicines adjusted.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.28,
+            0.9,
+            0.32
+          ]
+        },
+        {
+          "name": "follow_up",
+          "value": "Cardiology, Dr. N. Okafor, 2026-10-29 10:30",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.34,
+            0.9,
+            0.38
+          ]
+        },
+        {
+          "name": "avoid",
+          "value": "Do not take ibuprofen (Advil, Motrin) or naproxen (Aleve): they can worsen heart failure.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.4,
+            0.9,
+            0.44
+          ]
+        },
+        {
+          "name": "call_if",
+          "value": "Weight up more than 3 lb in 2 days, new swelling, or short of breath: call the clinic.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.46,
+            0.9,
+            0.5
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Alder",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.22,
+            0.9,
+            0.26
+          ]
+        },
+        {
+          "name": "diagnosis",
+          "value": "Heart failure with fluid overload; blood pressure medicines adjusted.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.28,
+            0.9,
+            0.32
+          ]
+        },
+        {
+          "name": "follow_up",
+          "value": "Cardiology, Dr. N. Okafor, 2026-10-29 10:50",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.34,
+            0.9,
+            0.38
+          ]
+        },
+        {
+          "name": "avoid",
+          "value": "Do not take ibuprofen (Advil, Motrin) or naproxen (Aleve): they can worsen heart failure.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.4,
+            0.9,
+            0.44
+          ]
+        },
+        {
+          "name": "call_if",
+          "value": "Weight up more than 3 lb in 2 days, new swelling, or short of breath: call the clinic.",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1,
+            0.46,
+            0.9,
+            0.5
+          ]
+        }
+      ]
+    }
+  ]
+}

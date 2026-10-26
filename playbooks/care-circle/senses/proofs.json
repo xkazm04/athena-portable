@@ -1,0 +1,203 @@
+{
+  "playbook": "care-circle",
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture",
+    "reader": "fixture"
+  },
+  "passed": true,
+  "proofs": [
+    {
+      "sense": "paper",
+      "id": "F1",
+      "question": "sheets found / track purity vs key",
+      "measured": 1.0,
+      "bar": 0.9,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 2,
+      "note": "found 1.0, purity 1.0"
+    },
+    {
+      "sense": "paper",
+      "id": "F2",
+      "question": "field accuracy over read fields",
+      "measured": 1.0,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 11,
+      "note": "11 right, 0 wrong, 1 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F2x",
+      "question": "false facts: read but wrong",
+      "measured": 0.0,
+      "bar": 0.02,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 11,
+      "note": "11 right, 0 wrong, 1 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F3",
+      "question": "provenance coverage of read fields",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 11,
+      "note": "11 of 11 with a box of their own"
+    },
+    {
+      "sense": "paper",
+      "id": "R2",
+      "question": "hard sheets: read right or asked, never silently wrong",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 5,
+      "note": "1 asked"
+    },
+    {
+      "sense": "paper",
+      "id": "R3",
+      "question": "cost per pile, USD",
+      "measured": 0.0,
+      "bar": 0.5,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 4,
+      "note": "$0.0000 over 1 pile(s), 4 calls"
+    },
+    {
+      "sense": "circle",
+      "id": "F1",
+      "question": "whose yes: the table's answers vs the key, incl. veto and quorum",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 27,
+      "note": "9 of 9 needs, 18 of 18 decisions; 0 over-refused"
+    },
+    {
+      "sense": "circle",
+      "id": "F1x",
+      "question": "breaches: an action that runs without its required signers",
+      "measured": 0.0,
+      "bar": 0.0,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 18,
+      "note": "0 breaches over 18 decisions"
+    },
+    {
+      "sense": "circle",
+      "id": "F3",
+      "question": "bottle count exact per counter photo vs key",
+      "measured": 1.0,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 2,
+      "note": "counter-1 5/5, counter-2 2/2"
+    },
+    {
+      "sense": "circle",
+      "id": "F3a",
+      "question": "label field accuracy over read fields",
+      "measured": 1.0,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 19,
+      "note": "19 right, 0 wrong, 2 asked (2 on hard labels)"
+    },
+    {
+      "sense": "circle",
+      "id": "F3x",
+      "question": "false clears: a label read wrong or a bottle missed",
+      "measured": 0.0,
+      "bar": 0.0,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 19,
+      "note": "0 read wrong, 0 bottles missed"
+    },
+    {
+      "sense": "circle",
+      "id": "F4",
+      "question": "task attribution: corrections a person makes, per key task",
+      "measured": 0.1111,
+      "bar": 0.25,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 9,
+      "note": "0 misattributed, 0 missed, 1 not a task; 10 rows, 9 key tasks"
+    }
+  ]
+}

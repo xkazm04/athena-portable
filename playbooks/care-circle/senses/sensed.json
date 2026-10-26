@@ -1,0 +1,804 @@
+{
+  "playbook": "care-circle",
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture",
+    "reader": "fixture"
+  },
+  "cost_usd": 0.0,
+  "unpriced_calls": 0,
+  "asked": [
+    "dc-instructions.follow_up",
+    "B5.strength",
+    "B6.directions",
+    "T-6.member"
+  ],
+  "calls": [
+    {
+      "sense": "paper",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "sheet-dc-meds",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "paper",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "sheet-dc-meds",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "paper",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "sheet-dc-instructions",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "paper",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "sheet-dc-instructions",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "segment",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-1",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "segment",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-2",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-2",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-2",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-2",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "read",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "counter-2",
+      "units": 1,
+      "unit": "image",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    },
+    {
+      "sense": "circle",
+      "role": "transcribe",
+      "backend": "fixture",
+      "model": "fixture",
+      "mode": "standard",
+      "media_id": "family-call-1",
+      "units": 113.1,
+      "unit": "audio_s",
+      "cost_estimated": false,
+      "latency_ms": 0,
+      "cost_usd": 0.0
+    }
+  ],
+  "tables": {
+    "sheets": [
+      {
+        "sheet_id": "dc-meds",
+        "doc_type": "discharge",
+        "media_id": "sheet-dc-meds",
+        "frame": 0
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "doc_type": "discharge",
+        "media_id": "sheet-dc-instructions",
+        "frame": 0
+      }
+    ],
+    "sheet_fields": [
+      {
+        "sheet_id": "dc-meds",
+        "field": "patient",
+        "status": "read",
+        "value": "Ruth Alder",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.22,
+          0.9,
+          0.26
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "discharge_date",
+        "status": "read",
+        "value": "2026-10-22",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.28,
+          0.9,
+          0.32
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "med_1",
+        "status": "read",
+        "value": "Amlodipine 5 mg: 1 tablet by mouth once daily. Continue.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.34,
+          0.9,
+          0.38
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "med_2",
+        "status": "read",
+        "value": "Metoprolol tartrate 25 mg: 1 tablet by mouth twice daily. CHANGED: dose lowered from 50 mg.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.4,
+          0.9,
+          0.44
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "med_3",
+        "status": "read",
+        "value": "Atorvastatin 40 mg: 1 tablet by mouth at bedtime. Continue.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.46,
+          0.9,
+          0.5
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "med_4",
+        "status": "read",
+        "value": "Furosemide 20 mg: 1 tablet by mouth every morning. NEW.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.52,
+          0.9,
+          0.56
+        ]
+      },
+      {
+        "sheet_id": "dc-meds",
+        "field": "stop_1",
+        "status": "read",
+        "value": "Lisinopril 10 mg: STOP. Do not take.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-meds",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.58,
+          0.9,
+          0.62
+        ]
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "field": "patient",
+        "status": "read",
+        "value": "Ruth Alder",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-instructions",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.22,
+          0.9,
+          0.26
+        ]
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "field": "diagnosis",
+        "status": "read",
+        "value": "Heart failure with fluid overload; blood pressure medicines adjusted.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-instructions",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.28,
+          0.9,
+          0.32
+        ]
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "field": "follow_up",
+        "status": "asked",
+        "media_id": "sheet-dc-instructions"
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "field": "avoid",
+        "status": "read",
+        "value": "Do not take ibuprofen (Advil, Motrin) or naproxen (Aleve): they can worsen heart failure.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-instructions",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.4,
+          0.9,
+          0.44
+        ]
+      },
+      {
+        "sheet_id": "dc-instructions",
+        "field": "call_if",
+        "status": "read",
+        "value": "Weight up more than 3 lb in 2 days, new swelling, or short of breath: call the clinic.",
+        "confidence": 0.93,
+        "media_id": "sheet-dc-instructions",
+        "frame": 0,
+        "box": [
+          0.1,
+          0.46,
+          0.9,
+          0.5
+        ]
+      }
+    ],
+    "counter_meds": [
+      {
+        "med_id": "B1",
+        "name": "Amlodipine",
+        "strength": "5 mg",
+        "directions": "Take 1 tablet by mouth once daily",
+        "status": "read",
+        "media_id": "counter-1",
+        "frame": 0,
+        "box": [
+          0.06,
+          0.31,
+          0.19,
+          0.72
+        ]
+      },
+      {
+        "med_id": "B2",
+        "name": "Metoprolol tartrate",
+        "strength": "50 mg",
+        "directions": "Take 1 tablet by mouth twice daily",
+        "status": "read",
+        "media_id": "counter-1",
+        "frame": 0,
+        "box": [
+          0.22,
+          0.28,
+          0.36,
+          0.74
+        ]
+      },
+      {
+        "med_id": "B3",
+        "name": "Atorvastatin",
+        "strength": "40 mg",
+        "directions": "Take 1 tablet by mouth at bedtime",
+        "status": "read",
+        "media_id": "counter-1",
+        "frame": 0,
+        "box": [
+          0.4,
+          0.33,
+          0.52,
+          0.71
+        ]
+      },
+      {
+        "med_id": "B4",
+        "name": "Lisinopril",
+        "strength": "10 mg",
+        "directions": "Take 1 tablet by mouth once daily",
+        "status": "read",
+        "media_id": "counter-1",
+        "frame": 0,
+        "box": [
+          0.56,
+          0.3,
+          0.69,
+          0.73
+        ]
+      },
+      {
+        "med_id": "B5",
+        "name": "Furosemide",
+        "directions": "Take 1 tablet by mouth every morning",
+        "status": "asked",
+        "media_id": "counter-1",
+        "frame": 0,
+        "box": [
+          0.73,
+          0.35,
+          0.86,
+          0.7
+        ]
+      },
+      {
+        "med_id": "B6",
+        "name": "Vitamin D3",
+        "strength": "1000 IU",
+        "status": "asked",
+        "media_id": "counter-2",
+        "frame": 0,
+        "box": [
+          0.18,
+          0.26,
+          0.34,
+          0.69
+        ]
+      },
+      {
+        "med_id": "B7",
+        "name": "Ibuprofen",
+        "strength": "200 mg",
+        "directions": "Take 1 to 2 tablets every 4 to 6 hours as needed for pain",
+        "status": "read",
+        "media_id": "counter-2",
+        "frame": 0,
+        "box": [
+          0.48,
+          0.22,
+          0.66,
+          0.75
+        ]
+      }
+    ],
+    "circle_tasks": [
+      {
+        "task_id": "T-1",
+        "member": "ruth",
+        "text": "I can hear you all fine now.",
+        "media_id": "family-call-1",
+        "second": 6.2
+      },
+      {
+        "task_id": "T-2",
+        "member": "maya",
+        "text": "I'll call the pharmacy about it this afternoon.",
+        "media_id": "family-call-1",
+        "second": 11.8
+      },
+      {
+        "task_id": "T-3",
+        "member": "jon",
+        "text": "If they move it to Tuesday, I can take her.",
+        "media_id": "family-call-1",
+        "second": 31.0
+      },
+      {
+        "task_id": "T-4",
+        "member": "jon",
+        "text": "I'll call the clinic tomorrow to ask.",
+        "media_id": "family-call-1",
+        "second": 31.0
+      },
+      {
+        "task_id": "T-5",
+        "member": "jon",
+        "text": "I'll order it from the pharmacy counter, it's a hundred and eighty-nine.",
+        "media_id": "family-call-1",
+        "second": 49.0
+      },
+      {
+        "task_id": "T-6",
+        "text": "I'll come Wednesday to set up her pill box.",
+        "media_id": "family-call-1",
+        "second": 66.0
+      },
+      {
+        "task_id": "T-7",
+        "member": "maya",
+        "text": "I'll pay the copay for the new water pill tonight.",
+        "media_id": "family-call-1",
+        "second": 84.0
+      },
+      {
+        "task_id": "T-8",
+        "member": "jon",
+        "text": "Mom, I'll take care of the portal password, just read it to me.",
+        "media_id": "family-call-1",
+        "second": 93.5
+      },
+      {
+        "task_id": "T-9",
+        "member": "ruth",
+        "text": "I'm going to keep my pills in the kitchen where I can see them.",
+        "media_id": "family-call-1",
+        "second": 101.2
+      },
+      {
+        "task_id": "T-10",
+        "member": "maya",
+        "text": "I'll write it all up in Circle.",
+        "media_id": "family-call-1",
+        "second": 110.0
+      }
+    ],
+    "signer_rules": [
+      {
+        "rule_id": "share_record/*",
+        "action": "share_record",
+        "subject": "*",
+        "needs": "role:primary",
+        "parent_veto": true,
+        "signers": [
+          "maya"
+        ],
+        "yeses_needed": 1,
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "share_record/equipment",
+        "action": "share_record",
+        "subject": "equipment",
+        "needs": "role:primary",
+        "parent_veto": true,
+        "signers": [
+          "maya"
+        ],
+        "yeses_needed": 1,
+        "decided_by": "share_record/*",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "share_record/medication",
+        "action": "share_record",
+        "subject": "medication",
+        "needs": "parent",
+        "parent_veto": true,
+        "signers": [
+          "ruth"
+        ],
+        "yeses_needed": 1,
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "pay_bill/*",
+        "action": "pay_bill",
+        "subject": "*",
+        "needs": "role:primary",
+        "parent_veto": false,
+        "signers": [
+          "maya"
+        ],
+        "yeses_needed": 1,
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "pay_bill/equipment",
+        "action": "pay_bill",
+        "subject": "equipment",
+        "needs": "quorum:2",
+        "parent_veto": false,
+        "signers": [
+          "ruth",
+          "maya",
+          "jon"
+        ],
+        "yeses_needed": 2,
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "pay_bill/medication",
+        "action": "pay_bill",
+        "subject": "medication",
+        "needs": "role:primary",
+        "parent_veto": false,
+        "signers": [
+          "maya"
+        ],
+        "yeses_needed": 1,
+        "decided_by": "pay_bill/*",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "change_appointment/*",
+        "action": "change_appointment",
+        "subject": "*",
+        "needs": "quorum:2",
+        "parent_veto": true,
+        "signers": [
+          "ruth",
+          "maya",
+          "jon"
+        ],
+        "yeses_needed": 2,
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "change_appointment/equipment",
+        "action": "change_appointment",
+        "subject": "equipment",
+        "needs": "quorum:2",
+        "parent_veto": true,
+        "signers": [
+          "ruth",
+          "maya",
+          "jon"
+        ],
+        "yeses_needed": 2,
+        "decided_by": "change_appointment/*",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "change_appointment/medication",
+        "action": "change_appointment",
+        "subject": "medication",
+        "needs": "quorum:2",
+        "parent_veto": true,
+        "signers": [
+          "ruth",
+          "maya",
+          "jon"
+        ],
+        "yeses_needed": 2,
+        "decided_by": "change_appointment/*",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "export_record/*",
+        "action": "export_record",
+        "subject": "*",
+        "needs": "refuse",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "export_record/equipment",
+        "action": "export_record",
+        "subject": "equipment",
+        "needs": "refuse",
+        "media_id": "signers.json"
+      },
+      {
+        "rule_id": "export_record/medication",
+        "action": "export_record",
+        "subject": "medication",
+        "needs": "parent",
+        "parent_veto": true,
+        "signers": [
+          "ruth"
+        ],
+        "yeses_needed": 1,
+        "media_id": "signers.json"
+      }
+    ]
+  }
+}

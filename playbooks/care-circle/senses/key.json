@@ -1,0 +1,389 @@
+{
+  "circle": {
+    "photos": {
+      "counter-1": {
+        "bottles": {
+          "B1": {
+            "name": "Amlodipine",
+            "strength": "5 mg",
+            "directions": "Take 1 tablet by mouth once daily",
+            "hard": null
+          },
+          "B2": {
+            "name": "Metoprolol tartrate",
+            "strength": "50 mg",
+            "directions": "Take 1 tablet by mouth twice daily",
+            "hard": null
+          },
+          "B3": {
+            "name": "Atorvastatin",
+            "strength": "40 mg",
+            "directions": "Take 1 tablet by mouth at bedtime",
+            "hard": null
+          },
+          "B4": {
+            "name": "Lisinopril",
+            "strength": "10 mg",
+            "directions": "Take 1 tablet by mouth once daily",
+            "hard": null
+          },
+          "B5": {
+            "name": "Furosemide",
+            "strength": "20 mg",
+            "directions": "Take 1 tablet by mouth every morning",
+            "hard": "glare"
+          }
+        }
+      },
+      "counter-2": {
+        "bottles": {
+          "B6": {
+            "name": "Vitamin D3",
+            "strength": "1000 IU",
+            "directions": "Take 1 capsule daily",
+            "hard": "worn"
+          },
+          "B7": {
+            "name": "Ibuprofen",
+            "strength": "200 mg",
+            "directions": "Take 1 to 2 tablets every 4 to 6 hours as needed for pain",
+            "hard": null
+          }
+        }
+      }
+    },
+    "tasks": {
+      "family-call-1": [
+        {
+          "second": 11.8,
+          "says": "pharmacy",
+          "member": "maya"
+        },
+        {
+          "second": 31.0,
+          "says": "take her",
+          "member": "jon"
+        },
+        {
+          "second": 31.0,
+          "says": "call the clinic",
+          "member": "jon"
+        },
+        {
+          "second": 49.0,
+          "says": "order it",
+          "member": "jon"
+        },
+        {
+          "second": 66.0,
+          "says": "pill box"
+        },
+        {
+          "second": 84.0,
+          "says": "copay",
+          "member": "maya"
+        },
+        {
+          "second": 93.5,
+          "says": "password",
+          "member": "jon"
+        },
+        {
+          "second": 101.2,
+          "says": "keep my pills",
+          "member": "ruth"
+        },
+        {
+          "second": 110.0,
+          "says": "write it all up",
+          "member": "maya"
+        }
+      ]
+    },
+    "whose_yes": [
+      {
+        "action": "share_record",
+        "subject": "medication",
+        "needs": "parent",
+        "parent_veto": true
+      },
+      {
+        "action": "share_record",
+        "subject": "record",
+        "needs": "role:primary",
+        "parent_veto": true
+      },
+      {
+        "action": "share_record",
+        "subject": "password",
+        "needs": "role:primary",
+        "parent_veto": true
+      },
+      {
+        "action": "pay_bill",
+        "subject": "pharmacy",
+        "needs": "role:primary",
+        "parent_veto": false
+      },
+      {
+        "action": "pay_bill",
+        "subject": "equipment",
+        "needs": "quorum:2",
+        "parent_veto": false
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "needs": "quorum:2",
+        "parent_veto": true
+      },
+      {
+        "action": "export_record",
+        "subject": "medication",
+        "needs": "parent",
+        "parent_veto": true
+      },
+      {
+        "action": "export_record",
+        "subject": "record",
+        "needs": "refuse"
+      },
+      {
+        "action": "export_record",
+        "subject": "*",
+        "needs": "refuse"
+      }
+    ],
+    "decisions": [
+      {
+        "action": "share_record",
+        "subject": "medication",
+        "proposer": "maya",
+        "yes": [
+          "ruth",
+          "maya"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "pay_bill",
+        "subject": "pharmacy",
+        "proposer": "maya",
+        "yes": [
+          "maya"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "proposer": "jon",
+        "yes": [
+          "jon",
+          "maya",
+          "ruth"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "export_record",
+        "subject": "record",
+        "proposer": "jon",
+        "yes": [
+          "jon",
+          "maya"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "proposer": "jon",
+        "yes": [
+          "jon"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "share_record",
+        "subject": "record",
+        "proposer": "jon",
+        "yes": [
+          "jon",
+          "maya"
+        ],
+        "no": [
+          "ruth"
+        ],
+        "runs": false
+      },
+      {
+        "action": "pay_bill",
+        "subject": "equipment",
+        "proposer": "jon",
+        "yes": [
+          "jon"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "pay_bill",
+        "subject": "pharmacy",
+        "proposer": "jon",
+        "yes": [
+          "jon"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "proposer": "maya",
+        "yes": [
+          "maya",
+          "jon"
+        ],
+        "no": [
+          "ruth"
+        ],
+        "runs": false
+      },
+      {
+        "action": "export_record",
+        "subject": "medication",
+        "proposer": "maya",
+        "yes": [
+          "ruth",
+          "maya"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "share_record",
+        "subject": "password",
+        "proposer": "jon",
+        "yes": [
+          "jon",
+          "maya"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "share_record",
+        "subject": "medication",
+        "proposer": "jon",
+        "yes": [
+          "jon"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "share_record",
+        "subject": "medication",
+        "proposer": "jon",
+        "yes": [
+          "dad",
+          "Ruth"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "proposer": "maya",
+        "yes": [
+          "maya",
+          "maya"
+        ],
+        "no": [],
+        "runs": false
+      },
+      {
+        "action": "change_appointment",
+        "subject": "appointment",
+        "proposer": "maya",
+        "yes": [
+          "jon",
+          "ruth"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "share_record",
+        "subject": "medication",
+        "proposer": "maya",
+        "yes": [
+          "ruth"
+        ],
+        "no": [
+          "ruth"
+        ],
+        "runs": false
+      },
+      {
+        "action": "pay_bill",
+        "subject": "equipment",
+        "proposer": "maya",
+        "yes": [
+          "maya",
+          "jon",
+          "ruth"
+        ],
+        "no": [],
+        "runs": true
+      },
+      {
+        "action": "pay_bill",
+        "subject": "equipment",
+        "proposer": "maya",
+        "yes": [
+          "jon",
+          "ruth"
+        ],
+        "no": [
+          "ruth"
+        ],
+        "runs": false
+      }
+    ]
+  },
+  "paper": {
+    "sheets": {
+      "dc-meds": {
+        "fields": {
+          "patient": "Ruth Alder",
+          "discharge_date": "2026-10-22",
+          "med_1": "Amlodipine 5 mg: 1 tablet by mouth once daily. Continue.",
+          "med_2": "Metoprolol tartrate 25 mg: 1 tablet by mouth twice daily. CHANGED: dose lowered from 50 mg.",
+          "med_3": "Atorvastatin 40 mg: 1 tablet by mouth at bedtime. Continue.",
+          "med_4": "Furosemide 20 mg: 1 tablet by mouth every morning. NEW.",
+          "stop_1": "Lisinopril 10 mg: STOP. Do not take."
+        },
+        "hard": null
+      },
+      "dc-instructions": {
+        "fields": {
+          "patient": "Ruth Alder",
+          "diagnosis": "Heart failure with fluid overload; blood pressure medicines adjusted.",
+          "follow_up": "Cardiology, Dr. N. Okafor, 2026-10-29 10:30",
+          "avoid": "Do not take ibuprofen (Advil, Motrin) or naproxen (Aleve): they can worsen heart failure.",
+          "call_if": "Weight up more than 3 lb in 2 days, new swelling, or short of breath: call the clinic."
+        },
+        "hard": "folded"
+      }
+    },
+    "piles": {}
+  }
+}

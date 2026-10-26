@@ -1,0 +1,93 @@
+{
+  "media": [
+    {
+      "id": "counter-1",
+      "kind": "photo",
+      "sense": "circle",
+      "path": "media/counter-1.jpg",
+      "params": {
+        "prompt": "pill bottle",
+        "where": "kitchen counter"
+      }
+    },
+    {
+      "id": "counter-2",
+      "kind": "photo",
+      "sense": "circle",
+      "path": "media/counter-2.jpg",
+      "params": {
+        "prompt": "pill bottle",
+        "where": "bedside table"
+      }
+    },
+    {
+      "id": "family-call-1",
+      "kind": "audio",
+      "sense": "circle",
+      "path": "media/family-call-1.m4a",
+      "params": {
+        "members": {
+          "A": "maya (primary carer)",
+          "B": "jon (sibling)",
+          "C": "ruth (parent)"
+        }
+      }
+    },
+    {
+      "id": "sheet-dc-meds",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-dc-meds.pdf",
+      "params": {
+        "sheet_id": "dc-meds",
+        "doc_type": "discharge",
+        "letterhead": "Riverside General Hospital - Discharge medication list",
+        "to": "Ruth Alder",
+        "fields": [
+          "patient",
+          "discharge_date",
+          "med_1",
+          "med_2",
+          "med_3",
+          "med_4",
+          "stop_1"
+        ],
+        "values": {
+          "patient": "Ruth Alder",
+          "discharge_date": "2026-10-22",
+          "med_1": "Amlodipine 5 mg: 1 tablet by mouth once daily. Continue.",
+          "med_2": "Metoprolol tartrate 25 mg: 1 tablet by mouth twice daily. CHANGED: dose lowered from 50 mg.",
+          "med_3": "Atorvastatin 40 mg: 1 tablet by mouth at bedtime. Continue.",
+          "med_4": "Furosemide 20 mg: 1 tablet by mouth every morning. NEW.",
+          "stop_1": "Lisinopril 10 mg: STOP. Do not take."
+        }
+      }
+    },
+    {
+      "id": "sheet-dc-instructions",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-dc-instructions.pdf",
+      "params": {
+        "sheet_id": "dc-instructions",
+        "doc_type": "discharge",
+        "letterhead": "Riverside General Hospital - Going home instructions",
+        "to": "Ruth Alder",
+        "fields": [
+          "patient",
+          "diagnosis",
+          "follow_up",
+          "avoid",
+          "call_if"
+        ],
+        "values": {
+          "patient": "Ruth Alder",
+          "diagnosis": "Heart failure with fluid overload; blood pressure medicines adjusted.",
+          "follow_up": "Cardiology, Dr. N. Okafor, 2026-10-29 10:30",
+          "avoid": "Do not take ibuprofen (Advil, Motrin) or naproxen (Aleve): they can worsen heart failure.",
+          "call_if": "Weight up more than 3 lb in 2 days, new swelling, or short of breath: call the clinic."
+        }
+      }
+    }
+  ]
+}
