@@ -615,12 +615,13 @@ details.item > summary::-webkit-details-marker { display: none; }
   const FEED_MAX = 400;
   const tally = { calls: 0, errors: 0, cost: { nemotron: 0, claude: 0 }, shown: 0 };
   function renderTally(running) {
+    // Native append() writes a null as the text "null"; only h() skips it, so the tail is spread.
     clear($("tally")).append(
       h("span", {}, h("b", { text: tally.calls }), " calls"),
       h("span", {}, h("b", { text: tally.errors }), " errors"),
       h("span", {}, "nemotron ", h("b", { text: usd(tally.cost.nemotron) })),
       h("span", {}, "reference ", h("b", { text: usd(tally.cost.claude) })),
-      running ? h("span", { class: "pend", text: "running" }) : null);
+      ...(running ? [h("span", { class: "pend", text: "running" })] : []));
   }
   function feedLine(cls, text) {
     const feed = $("feed");
