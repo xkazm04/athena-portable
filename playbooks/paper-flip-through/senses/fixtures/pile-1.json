@@ -1,0 +1,1192 @@
+{
+  "segments": [
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 2,
+      "track_id": "S01"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 3,
+      "track_id": "S01"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 4,
+      "track_id": "S01"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 2,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 14,
+      "track_id": "S02"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 15,
+      "track_id": "S02"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 16,
+      "track_id": "S02"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 17,
+      "track_id": "S02"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 14,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 26,
+      "track_id": "S03"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 27,
+      "track_id": "S03"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 28,
+      "track_id": "S03"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 29,
+      "track_id": "S03"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 30,
+      "track_id": "S03"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 26,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 38,
+      "track_id": "S04"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 39,
+      "track_id": "S04"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 40,
+      "track_id": "S04"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 38,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 50,
+      "track_id": "S05"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 51,
+      "track_id": "S05"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 52,
+      "track_id": "S05"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 53,
+      "track_id": "S05"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 50,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 62,
+      "track_id": "S06"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 63,
+      "track_id": "S06"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 64,
+      "track_id": "S06"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 65,
+      "track_id": "S06"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 66,
+      "track_id": "S06"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 62,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 74,
+      "track_id": "S07"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 75,
+      "track_id": "S07"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 76,
+      "track_id": "S07"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 74,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 86,
+      "track_id": "S08"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 87,
+      "track_id": "S08"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 88,
+      "track_id": "S08"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 89,
+      "track_id": "S08"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 86,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 98,
+      "track_id": "S09"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 99,
+      "track_id": "S09"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 100,
+      "track_id": "S09"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 101,
+      "track_id": "S09"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 102,
+      "track_id": "S09"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 98,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 110,
+      "track_id": "S10"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 111,
+      "track_id": "S10"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 112,
+      "track_id": "S10"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 110,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 122,
+      "track_id": "S11"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 123,
+      "track_id": "S11"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 124,
+      "track_id": "S11"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 125,
+      "track_id": "S11"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 122,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 134,
+      "track_id": "S12"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 135,
+      "track_id": "S12"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 136,
+      "track_id": "S12"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 137,
+      "track_id": "S12"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 138,
+      "track_id": "S12"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 134,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 146,
+      "track_id": "S13"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 147,
+      "track_id": "S13"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 148,
+      "track_id": "S13"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 146,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 158,
+      "track_id": "S14"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 159,
+      "track_id": "S14"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 160,
+      "track_id": "S14"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 161,
+      "track_id": "S14"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 158,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 170,
+      "track_id": "S15"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 171,
+      "track_id": "S15"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 172,
+      "track_id": "S15"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 173,
+      "track_id": "S15"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 174,
+      "track_id": "S15"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 170,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 182,
+      "track_id": "S16"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 183,
+      "track_id": "S16"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 184,
+      "track_id": "S16"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 182,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 194,
+      "track_id": "S17"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 195,
+      "track_id": "S17"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 196,
+      "track_id": "S17"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 197,
+      "track_id": "S17"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 194,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 206,
+      "track_id": "S18"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 207,
+      "track_id": "S18"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 208,
+      "track_id": "S18"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 209,
+      "track_id": "S18"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 210,
+      "track_id": "S18"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 206,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 218,
+      "track_id": "S19"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 219,
+      "track_id": "S19"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.88,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 220,
+      "track_id": "S19"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 218,
+      "track_id": "hand-1"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.94,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 230,
+      "track_id": "S20"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.85,
+      "box": [
+        0.2,
+        0.12,
+        0.84,
+        0.93
+      ],
+      "frame": 231,
+      "track_id": "S20"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.91,
+      "box": [
+        0.18,
+        0.12,
+        0.82,
+        0.93
+      ],
+      "frame": 232,
+      "track_id": "S20"
+    },
+    {
+      "label": "sheet of paper",
+      "score": 0.82,
+      "box": [
+        0.19,
+        0.12,
+        0.83,
+        0.93
+      ],
+      "frame": 233,
+      "track_id": "S20"
+    },
+    {
+      "label": "hand",
+      "score": 0.91,
+      "box": [
+        0.62,
+        0.7,
+        0.95,
+        0.99
+      ],
+      "frame": 230,
+      "track_id": "hand-1"
+    }
+  ]
+}

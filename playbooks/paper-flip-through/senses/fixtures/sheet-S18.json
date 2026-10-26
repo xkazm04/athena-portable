@@ -1,0 +1,86 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "plan_year",
+          "value": "2027",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "new_deductible_usd",
+          "value": "$1,750.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "plan_year",
+          "value": "2027",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "new_deductible_usd",
+          "value": "1750.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        }
+      ]
+    }
+  ]
+}

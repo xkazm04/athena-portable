@@ -98,6 +98,22 @@
    "reuse_note": null
   },
   {
+   "id": "care-circle--denise",
+   "playbook_id": "care-circle",
+   "character": "denise",
+   "audience": "home",
+   "category": "family",
+   "reuse_note": "Benefits Character, the daughter who carries her mother's admin; a care circle is the family sharing that load."
+  },
+  {
+   "id": "care-circle--grace",
+   "playbook_id": "care-circle",
+   "character": "grace",
+   "audience": "home",
+   "category": "family",
+   "reuse_note": null
+  },
+  {
    "id": "carrier-accessorials--dario",
    "playbook_id": "carrier-accessorials",
    "character": "dario",
@@ -1074,6 +1090,22 @@
    "reuse_note": null
   },
   {
+   "id": "paper-flip-through--denise",
+   "playbook_id": "paper-flip-through",
+   "character": "denise",
+   "audience": "home",
+   "category": "health",
+   "reuse_note": "Benefits Character who already handles her widowed mother's paper mail; the flip-through is that same pile, medical as well as benefits."
+  },
+  {
+   "id": "paper-flip-through--joel",
+   "playbook_id": "paper-flip-through",
+   "character": "joel",
+   "audience": "home",
+   "category": "health",
+   "reuse_note": null
+  },
+  {
    "id": "parcel-guarantee-refunds--dario",
    "playbook_id": "parcel-guarantee-refunds",
    "character": "dario",
@@ -1135,6 +1167,22 @@
    "character": "rosa",
    "audience": "home",
    "category": "housing",
+   "reuse_note": null
+  },
+  {
+   "id": "prior-auth-denial-appeal--denise",
+   "playbook_id": "prior-auth-denial-appeal",
+   "character": "denise",
+   "audience": "home",
+   "category": "health",
+   "reuse_note": "Benefits Character who speaks to her mother's plans on the phone; an MA prior-auth denial is the next letter in that pile."
+  },
+  {
+   "id": "prior-auth-denial-appeal--nadia",
+   "playbook_id": "prior-auth-denial-appeal",
+   "character": "nadia",
+   "audience": "home",
+   "category": "health",
    "reuse_note": null
   },
   {
@@ -1250,6 +1298,22 @@
    "reuse_note": null
   },
   {
+   "id": "renovation-witness--marcus",
+   "playbook_id": "renovation-witness",
+   "character": "marcus",
+   "audience": "home",
+   "category": "construction",
+   "reuse_note": "Housing Character and homeowner; the remodel is seen from the owner's side, not the trade's."
+  },
+  {
+   "id": "renovation-witness--rosa",
+   "playbook_id": "renovation-witness",
+   "character": "rosa",
+   "audience": "home",
+   "category": "construction",
+   "reuse_note": "Housing Character who owns a home and a rental duplex; a contractor-led remodel is a homeowner's chore."
+  },
+  {
    "id": "rep-payee-accounting--denise",
    "playbook_id": "rep-payee-accounting",
    "character": "denise",
@@ -1295,6 +1359,22 @@
    "character": "lan",
    "audience": "home",
    "category": "benefits",
+   "reuse_note": null
+  },
+  {
+   "id": "roll-call-inventory--marcus",
+   "playbook_id": "roll-call-inventory",
+   "character": "marcus",
+   "audience": "home",
+   "category": "housing",
+   "reuse_note": null
+  },
+  {
+   "id": "roll-call-inventory--rosa",
+   "playbook_id": "roll-call-inventory",
+   "character": "rosa",
+   "audience": "home",
+   "category": "housing",
    "reuse_note": null
   },
   {

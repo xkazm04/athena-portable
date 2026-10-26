@@ -1,0 +1,107 @@
+{
+  "playbook": "paper-flip-through",
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture",
+    "reader": "fixture"
+  },
+  "passed": true,
+  "proofs": [
+    {
+      "sense": "paper",
+      "id": "F1",
+      "question": "sheets found / track purity vs key",
+      "measured": 1.0,
+      "bar": 0.9,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 23,
+      "note": "found 1.0, purity 1.0"
+    },
+    {
+      "sense": "paper",
+      "id": "F2",
+      "question": "field accuracy over read fields",
+      "measured": 0.9898,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 98,
+      "note": "97 right, 1 wrong, 5 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F2x",
+      "question": "false facts: read but wrong",
+      "measured": 0.0102,
+      "bar": 0.02,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 98,
+      "note": "97 right, 1 wrong, 5 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F3",
+      "question": "provenance coverage of read fields",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 98,
+      "note": "98 of 98 with a box of their own"
+    },
+    {
+      "sense": "paper",
+      "id": "R2",
+      "question": "hard sheets: read right or asked, never silently wrong",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 19,
+      "note": "5 asked"
+    },
+    {
+      "sense": "paper",
+      "id": "R3",
+      "question": "cost per pile, USD",
+      "measured": 0.0,
+      "bar": 0.5,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 47,
+      "note": "$0.0000 over 1 pile(s), 47 calls"
+    }
+  ]
+}

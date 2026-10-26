@@ -1,0 +1,92 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "written_by",
+          "value": "Walter Okafor",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.149,
+            0.9,
+            0.1679
+          ]
+        },
+        {
+          "name": "paid_to",
+          "value": "Lakeshore Dermatology",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1705,
+            0.9,
+            0.1894
+          ]
+        },
+        {
+          "name": "amount_paid_usd",
+          "value": "$160.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1919,
+            0.9,
+            0.2109
+          ]
+        }
+      ],
+      "unreadable": [
+        "paid_on"
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "written_by",
+          "value": "Walter Okafor",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.149,
+            0.9,
+            0.1679
+          ]
+        },
+        {
+          "name": "paid_to",
+          "value": "Lakeshore Dermatology",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1705,
+            0.9,
+            0.1894
+          ]
+        },
+        {
+          "name": "amount_paid_usd",
+          "value": "$100",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1919,
+            0.9,
+            0.2109
+          ]
+        }
+      ],
+      "unreadable": [
+        "paid_on"
+      ]
+    }
+  ]
+}

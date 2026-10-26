@@ -1,0 +1,110 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "claim_id",
+          "value": "H-201",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "provider",
+          "value": "Riverside General Hospital",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "August 3, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "patient_owes_usd",
+          "value": "$95.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "claim_id",
+          "value": "H-201",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "provider",
+          "value": "Riverside General Hospital",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "08/03/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "patient_owes_usd",
+          "value": "95.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        }
+      ]
+    }
+  ]
+}

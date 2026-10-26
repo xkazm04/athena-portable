@@ -1,5 +1,7 @@
-"""``python -m athena.senses build|prove|status [<playbook> ...] [--segmenter B] [--transcriber B]
-[--reader B]`` - build a featured chore's sensed tables, prove them, or list featured status.
+"""``python -m athena.senses build|prove|status|render [<playbook> ...] [--segmenter B]
+[--transcriber B] [--reader B]`` - build a featured chore's sensed tables, prove them, list
+featured status, or render its paper sheets to PDF (``render``: the paper sense's sheets, at each
+item's ``path`` under ``senses/``; regenerable, never committed).
 
 With no playbook ids, ``status`` lists every playbook carrying a ``featured`` block.
 """
@@ -28,7 +30,7 @@ def featured_ids(library: Path) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m athena.senses")
-    parser.add_argument("command", choices=("build", "prove", "status"))
+    parser.add_argument("command", choices=("build", "prove", "status", "render"))
     parser.add_argument("playbooks", nargs="*")
     parser.add_argument("--library", type=Path, default=LIBRARY)
     for role in ("segmenter", "transcriber", "reader"):
@@ -55,6 +57,10 @@ def main(argv: list[str] | None = None) -> int:
                     shown: Any = "-" if r.measured is None else round(r.measured, 4)
                     print(f"{pid} {r.id:<3} {mark} {shown} {r.op} {r.bar} (n={r.n}) {r.question}")
                 code = code or (0 if results and all(r.passed for r in results) else 1)
+            elif args.command == "render":
+                from athena.senses.paper.render import render_all
+
+                print(f"{pid}: rendered {len(render_all(root))} sheets")
             else:
                 print(f"{pid}: {featured_status(root)}")
         except (SenseError, NotImplementedError, OSError) as exc:

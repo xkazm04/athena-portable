@@ -1,0 +1,134 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "biller",
+          "value": "Lakeshore Dermatology",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "bill_id",
+          "value": "LD-4001",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "May 20, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "payments_received_usd",
+          "value": "$160.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "$0.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "biller",
+          "value": "Lakeshore Dermatology",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "bill_id",
+          "value": "LD-4001",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "05/20/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "payments_received_usd",
+          "value": "160.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "0.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -281,7 +281,7 @@ def committed() -> list[Path]:
 def test_every_playbook_of_these_areas_carries_kinds_fit_and_a_derived_example() -> None:
     taxonomy = load_taxonomy(REPO / "playbooks")
     roots = committed()
-    assert len(roots) == 56
+    assert len(roots) == 58
     for root in roots:
         book = load_playbook(root, taxonomy)
         economics = book.showcase["economics"]

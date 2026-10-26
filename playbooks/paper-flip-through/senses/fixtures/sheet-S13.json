@@ -1,0 +1,134 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO Utilization Management",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "auth_number",
+          "value": "PA-77120",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "service",
+          "value": "MRI lumbar spine at Northgate Imaging",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "approved_date",
+          "value": "September 1, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "valid_through",
+          "value": "November 30, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO Utilization Management",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "auth_number",
+          "value": "PA-77120",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "service",
+          "value": "MRI lumbar spine at Northgate Imaging",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "approved_date",
+          "value": "09/01/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "valid_through",
+          "value": "11/30/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    }
+  ]
+}

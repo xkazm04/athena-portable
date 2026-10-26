@@ -1,0 +1,134 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "claim_id",
+          "value": "H-203",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "decision",
+          "value": "Denied: not medically necessary",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "March 30, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "appeal_deadline",
+          "value": "September 26, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Harbor Health PPO",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "claim_id",
+          "value": "H-203",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "decision",
+          "value": "Denied: not medically necessary",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "03/30/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "appeal_deadline",
+          "value": "09/26/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,694 @@
+{
+  "today": "2026-10-26",
+  "apps": [
+    {
+      "app_id": "camera",
+      "name": "Phone camera",
+      "origin": "https://camera.athena.example",
+      "path": "/piles/pile-1",
+      "view": {
+        "view": "Dad's mail, filmed",
+        "pile": "pile-1: one flip-through of the kitchen-table pile, plus three photos",
+        "note": "Every value was read twice off the paper. A field marked asked was not read with certainty: ask, never guess."
+      },
+      "tools": [
+        {
+          "name": "list_sheets",
+          "kind": "READ",
+          "description": "The sheets the camera found in the pile and the photos: sheet id, what kind of paper it is, and the frame it was seen best in. Paged. Open one with read_sheet.",
+          "params": {
+            "doc_type": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "sheets",
+            "match": {
+              "doc_type": "doc_type"
+            },
+            "page_size": 8,
+            "fields": [
+              "sheet_id",
+              "doc_type",
+              "media_id",
+              "frame"
+            ]
+          }
+        },
+        {
+          "name": "read_sheet",
+          "kind": "READ",
+          "description": "Everything read off one sheet, by sheet id: each field with its value and where on the paper it was read, or status asked when the two reads did not agree.",
+          "params": {
+            "sheet_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "sheet_fields",
+            "match": {
+              "sheet_id": "sheet_id"
+            },
+            "require": [
+              "sheet_id"
+            ],
+            "fields": [
+              "field",
+              "status",
+              "value",
+              "confidence",
+              "media_id",
+              "frame"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "camera",
+        "the pile",
+        "the mail",
+        "the paper"
+      ]
+    },
+    {
+      "app_id": "plan",
+      "name": "Harbor Health member portal",
+      "origin": "https://member.harborhealth.example",
+      "path": "/claims",
+      "view": {
+        "view": "Claims and EOBs",
+        "member": "Walter Okafor",
+        "authorized_representative": "Ruth Okafor (daughter)",
+        "plan": "Harbor Health PPO, plan year 2026"
+      },
+      "tools": [
+        {
+          "name": "read_plan",
+          "kind": "READ",
+          "description": "The plan's rules by topic: deductible, network, surprise_billing, eob, appeals, prior_auth. Omit the topic for all of them.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "plan",
+            "match": {
+              "topic": "topic"
+            }
+          }
+        },
+        {
+          "name": "list_claims",
+          "kind": "READ",
+          "description": "This year's claims: date of service, provider, service, status and what the member owes. Paged. Open one with read_claim for the full EOB.",
+          "params": {
+            "status": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "status": "status"
+            },
+            "page_size": 5,
+            "fields": [
+              "claim_id",
+              "dos",
+              "provider",
+              "service",
+              "status",
+              "patient_owes_usd"
+            ]
+          }
+        },
+        {
+          "name": "read_claim",
+          "kind": "READ",
+          "description": "One claim's EOB in full, by claim id.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "file_appeal",
+          "kind": "REACHES_A_PERSON",
+          "description": "File an internal appeal of a denied claim, with the reason and the evidence.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "says": "Appeal filed for {claim_id}. Harbor Health decides within 30 days."
+        }
+      ],
+      "aliases": [
+        "insurance portal",
+        "insurer",
+        "Harbor Health",
+        "member portal"
+      ]
+    },
+    {
+      "app_id": "riverside",
+      "name": "Riverside Health guest pay",
+      "origin": "https://pay.riversidehealth.example",
+      "path": "/guest",
+      "view": {
+        "view": "Pay or ask about a statement",
+        "note": "Enter the statement number printed on the paper bill. Riverside General Hospital and Riverside Physicians Group bill here."
+      },
+      "tools": [
+        {
+          "name": "lookup_statement",
+          "kind": "READ",
+          "description": "One statement by the statement number printed on the bill: biller, date of service, service, amount due, payments and notes.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "riverside_statements",
+            "match": {
+              "bill_id": "bill_id"
+            },
+            "require": [
+              "bill_id"
+            ]
+          }
+        },
+        {
+          "name": "dispute_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send the billing office a dispute on one statement: the amount you say is wrong and why.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute sent on {bill_id}. The statement is on hold while billing reviews it."
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the billing office to refund an overpayment to the card it came from.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {amount_usd} requested on {bill_id}."
+        },
+        {
+          "name": "pay_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay a statement from the card on file.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Paid {amount_usd} on {bill_id}."
+        }
+      ],
+      "aliases": [
+        "Riverside",
+        "the hospital",
+        "guest pay"
+      ]
+    },
+    {
+      "app_id": "cedar",
+      "name": "Cedar",
+      "origin": "https://pay.cedar.example",
+      "path": "/statements",
+      "view": {
+        "view": "Find a statement",
+        "billers": [
+          "Keystone Anesthesia Partners",
+          "Northgate Imaging",
+          "Lakeshore Dermatology",
+          "Brightwater Home Health"
+        ],
+        "note": "Enter the statement number printed on the paper bill."
+      },
+      "tools": [
+        {
+          "name": "lookup_statement",
+          "kind": "READ",
+          "description": "One statement by its printed statement number: charges, insurance paid, adjustments, payments received and the balance.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cedar_statements",
+            "match": {
+              "bill_id": "bill_id"
+            },
+            "require": [
+              "bill_id"
+            ]
+          }
+        },
+        {
+          "name": "dispute_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute a statement with its biller: the amount you say is wrong and why.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute sent on {bill_id}."
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask a biller to refund an overpayment to the card it came from.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {amount_usd} requested on {bill_id}."
+        },
+        {
+          "name": "pay_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay a statement from the card on file.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Paid {amount_usd} on {bill_id}."
+        }
+      ],
+      "aliases": [
+        "Cedar"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "camera",
+      "message": "I filmed Dad's whole pile of mail on the kitchen table and took a few photos. Go through every sheet and tell me what each one is and what it asks of us. Anything you couldn't read, ask me.",
+      "nudges": 2
+    },
+    {
+      "app": "plan",
+      "message": "This is his insurance portal. Match the bills from the paper to the EOBs and work out what he actually owes each provider, and anything that looks wrong.",
+      "nudges": 2
+    },
+    {
+      "app": "riverside",
+      "message": "Now the hospital's guest-pay page; it wants the statement numbers from the paper. Dispute what's wrong and pay what he genuinely owes.",
+      "nudges": 2
+    },
+    {
+      "app": "cedar",
+      "message": "Cedar is where the anesthesia group, the imaging center, the dermatologist and the home health agency bill. Same thing here.",
+      "nudges": 1
+    },
+    {
+      "app": "plan",
+      "message": "Back in the insurance portal. Appeal any denial that's worth appealing and still in time, with whatever the paper proves.",
+      "nudges": 1
+    }
+  ],
+  "tables": {
+    "plan": [
+      {
+        "topic": "deductible",
+        "text": "In-network deductible $1,500 per plan year (January 1 to December 31). 2026: met on 2026-04-02. After the deductible the plan pays 75% of the allowed amount; the member pays 25%."
+      },
+      {
+        "topic": "network",
+        "text": "In network: Riverside General Hospital, Riverside Physicians Group (Riverside's physician billing), Northgate Imaging, Lakeshore Dermatology, Brightwater Home Health. Out of network: Keystone Anesthesia Partners."
+      },
+      {
+        "topic": "surprise_billing",
+        "text": "No Surprises Act: an out-of-network clinician who treats you at an in-network facility may not bill you more than your in-network cost sharing, the patient responsibility on the EOB. A balance bill above it can be disputed with the clinician."
+      },
+      {
+        "topic": "eob",
+        "text": "On a Final EOB, patient responsibility is the most an in-network provider may bill for that claim. A claim In process is not decided: do not pay or dispute its bill yet. A Reprocessed EOB replaces the earlier one; if you paid more than the new patient responsibility, ask the provider for a refund."
+      },
+      {
+        "topic": "appeals",
+        "text": "Internal appeal: file within 180 days of the date of the denial notice, with the reason and supporting records (a prior authorization number, a clinician's letter). One internal appeal per denial."
+      },
+      {
+        "topic": "prior_auth",
+        "text": "Advanced imaging (MRI, CT) needs prior authorization. An approval letter carries its authorization number; a claim denied for no authorization while one was approved is a plan error the member may appeal with that number."
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "H-201",
+        "dos": "2026-08-03",
+        "provider": "Riverside General Hospital",
+        "network": "in",
+        "service": "Emergency department visit",
+        "billed_usd": 2140.0,
+        "allowed_usd": 780.0,
+        "plan_paid_usd": 685.0,
+        "patient_owes_usd": 95.0,
+        "status": "Final",
+        "remark": ""
+      },
+      {
+        "claim_id": "H-202",
+        "dos": "2026-08-10",
+        "provider": "Riverside General Hospital",
+        "network": "in",
+        "service": "Comprehensive metabolic panel (80053), one unit",
+        "billed_usd": 390.0,
+        "allowed_usd": 284.0,
+        "plan_paid_usd": 213.0,
+        "patient_owes_usd": 71.0,
+        "status": "Final",
+        "remark": "One unit billed and allowed."
+      },
+      {
+        "claim_id": "H-203",
+        "dos": "2026-03-18",
+        "provider": "Northgate Imaging",
+        "network": "in",
+        "service": "CT abdomen",
+        "billed_usd": 1310.0,
+        "allowed_usd": 0.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 640.0,
+        "status": "Denied",
+        "denial_date": "2026-03-30",
+        "remark": "Not medically necessary."
+      },
+      {
+        "claim_id": "H-204",
+        "dos": "2026-06-11",
+        "provider": "Keystone Anesthesia Partners",
+        "network": "out",
+        "facility": "Riverside General Hospital (in network)",
+        "service": "Anesthesia for knee replacement",
+        "billed_usd": 2280.0,
+        "allowed_usd": 760.0,
+        "plan_paid_usd": 640.0,
+        "patient_owes_usd": 120.0,
+        "status": "Final",
+        "remark": "No Surprises Act applies: patient responsibility is limited to in-network cost sharing."
+      },
+      {
+        "claim_id": "H-205",
+        "dos": "2026-09-15",
+        "provider": "Northgate Imaging",
+        "network": "in",
+        "service": "MRI lumbar spine",
+        "billed_usd": 1180.0,
+        "allowed_usd": 0.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 1180.0,
+        "status": "Denied",
+        "denial_date": "2026-09-22",
+        "remark": "No prior authorization on file."
+      },
+      {
+        "claim_id": "H-206",
+        "dos": "2026-01-08",
+        "provider": "Riverside General Hospital",
+        "network": "in",
+        "service": "Office visit, established patient",
+        "billed_usd": 260.0,
+        "allowed_usd": 210.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 210.0,
+        "status": "Final",
+        "remark": "Applied to the 2026 deductible."
+      },
+      {
+        "claim_id": "H-207",
+        "dos": "2026-10-05",
+        "provider": "Riverside General Hospital",
+        "network": "in",
+        "service": "Urgent care visit",
+        "billed_usd": 330.0,
+        "status": "In process",
+        "remark": "We are reviewing this claim."
+      },
+      {
+        "claim_id": "H-208",
+        "dos": "2026-05-20",
+        "provider": "Lakeshore Dermatology",
+        "network": "in",
+        "service": "Excision, benign lesion",
+        "billed_usd": 480.0,
+        "allowed_usd": 370.0,
+        "plan_paid_usd": 255.0,
+        "patient_owes_usd": 115.0,
+        "status": "Reprocessed",
+        "remark": "Reprocessed 2026-08-04: corrected coinsurance; patient responsibility was $160.00, now $115.00."
+      },
+      {
+        "claim_id": "H-209",
+        "dos": "2026-09-02",
+        "provider": "Lakeshore Dermatology",
+        "network": "in",
+        "service": "Follow-up visit",
+        "billed_usd": 190.0,
+        "allowed_usd": 140.0,
+        "plan_paid_usd": 55.0,
+        "patient_owes_usd": 85.0,
+        "status": "Final",
+        "remark": ""
+      },
+      {
+        "claim_id": "H-210",
+        "dos": "2026-07-14",
+        "provider": "Riverside General Hospital",
+        "network": "in",
+        "service": "Physical therapy",
+        "billed_usd": 210.0,
+        "allowed_usd": 160.0,
+        "plan_paid_usd": 120.0,
+        "patient_owes_usd": 40.0,
+        "status": "Final",
+        "remark": ""
+      },
+      {
+        "claim_id": "H-211",
+        "dos": "2026-09-25",
+        "provider": "Brightwater Home Health",
+        "network": "in",
+        "service": "Home health nursing visit",
+        "billed_usd": 240.0,
+        "allowed_usd": 180.0,
+        "plan_paid_usd": 105.0,
+        "patient_owes_usd": 75.0,
+        "status": "Final",
+        "remark": ""
+      }
+    ],
+    "riverside_statements": [
+      {
+        "bill_id": "RG-1001",
+        "biller": "Riverside General Hospital",
+        "account": "R-55810",
+        "statement_date": "2026-10-02",
+        "dos": "2026-08-03",
+        "service": "Emergency department visit",
+        "amount_due_usd": 386.0,
+        "due_date": "2026-11-05",
+        "note": ""
+      },
+      {
+        "bill_id": "RG-1002",
+        "biller": "Riverside General Hospital",
+        "account": "R-55810",
+        "statement_date": "2026-10-06",
+        "dos": "2026-08-10",
+        "service": "Comprehensive metabolic panel 80053, two lines of $71.00",
+        "amount_due_usd": 142.0,
+        "due_date": "2026-11-10",
+        "note": ""
+      },
+      {
+        "bill_id": "RP-1003",
+        "biller": "Riverside Physicians Group",
+        "account": "R-55810",
+        "statement_date": "2026-10-12",
+        "dos": "2026-08-03",
+        "service": "Reminder: balance of statement RG-1001",
+        "amount_due_usd": 386.0,
+        "due_date": "2026-11-05",
+        "note": "Reminder."
+      },
+      {
+        "bill_id": "RG-1004",
+        "biller": "Riverside General Hospital",
+        "account": "R-55810",
+        "statement_date": "2026-09-28",
+        "dos": "2026-01-08",
+        "service": "Office visit, established patient",
+        "amount_due_usd": 210.0,
+        "due_date": "2026-11-01",
+        "note": "Second notice."
+      },
+      {
+        "bill_id": "RG-1005",
+        "biller": "Riverside General Hospital",
+        "account": "R-55810",
+        "statement_date": "2026-10-14",
+        "dos": "2026-10-05",
+        "service": "Urgent care visit",
+        "amount_due_usd": 330.0,
+        "due_date": "2026-11-20",
+        "note": "Insurance pending."
+      },
+      {
+        "bill_id": "RG-1006",
+        "biller": "Riverside General Hospital",
+        "account": "R-55810",
+        "statement_date": "2026-09-30",
+        "dos": "2026-07-14",
+        "service": "Physical therapy",
+        "amount_due_usd": 40.0,
+        "due_date": "2026-11-01",
+        "note": ""
+      }
+    ],
+    "cedar_statements": [
+      {
+        "bill_id": "KA-2001",
+        "biller": "Keystone Anesthesia Partners",
+        "dos": "2026-06-11",
+        "service": "Anesthesia, knee replacement at Riverside General Hospital",
+        "charges_usd": 2280.0,
+        "insurance_paid_usd": 640.0,
+        "payments_received_usd": 0.0,
+        "amount_due_usd": 1640.0,
+        "due_date": "2026-11-08",
+        "note": "Balance due after insurance."
+      },
+      {
+        "bill_id": "KA-2002",
+        "biller": "Keystone Anesthesia Partners",
+        "dos": "2026-06-11",
+        "service": "Final notice for statement KA-2001",
+        "charges_usd": 2280.0,
+        "insurance_paid_usd": 640.0,
+        "payments_received_usd": 0.0,
+        "amount_due_usd": 1640.0,
+        "due_date": "2026-10-31",
+        "note": "Final notice for statement KA-2001."
+      },
+      {
+        "bill_id": "NI-3001",
+        "biller": "Northgate Imaging",
+        "dos": "2026-09-15",
+        "service": "MRI lumbar spine",
+        "charges_usd": 1180.0,
+        "insurance_paid_usd": 0.0,
+        "payments_received_usd": 0.0,
+        "amount_due_usd": 1180.0,
+        "due_date": "2026-11-15",
+        "note": "Insurance denied this claim."
+      },
+      {
+        "bill_id": "LD-4001",
+        "biller": "Lakeshore Dermatology",
+        "dos": "2026-05-20",
+        "service": "Excision, benign lesion",
+        "charges_usd": 480.0,
+        "insurance_paid_usd": 255.0,
+        "adjustments_usd": 110.0,
+        "payments_received_usd": 160.0,
+        "payment_note": "Paid 2026-06-02 by card",
+        "amount_due_usd": 0.0,
+        "note": "Paid in full."
+      },
+      {
+        "bill_id": "LD-4002",
+        "biller": "Lakeshore Dermatology",
+        "dos": "2026-09-02",
+        "service": "Follow-up visit",
+        "charges_usd": 190.0,
+        "insurance_paid_usd": 55.0,
+        "adjustments_usd": 50.0,
+        "payments_received_usd": 0.0,
+        "amount_due_usd": 85.0,
+        "due_date": "2026-11-12",
+        "note": ""
+      },
+      {
+        "bill_id": "BH-5001",
+        "biller": "Brightwater Home Health",
+        "dos": "2026-09-25",
+        "service": "Home health nursing visit",
+        "charges_usd": 240.0,
+        "insurance_paid_usd": 105.0,
+        "adjustments_usd": 60.0,
+        "payments_received_usd": 0.0,
+        "amount_due_usd": 75.0,
+        "due_date": "2026-11-25",
+        "note": ""
+      }
+    ]
+  }
+}

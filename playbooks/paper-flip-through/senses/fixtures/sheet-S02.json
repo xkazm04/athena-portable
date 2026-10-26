@@ -1,0 +1,125 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "biller",
+          "value": "Riverside General Hospital",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "bill_id",
+          "value": "RG-1002",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "August 10, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "$142.00",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        },
+        {
+          "name": "due_date",
+          "value": "November 10, 2026",
+          "confidence": 0.97,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2652,
+            0.9,
+            0.2841
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "biller",
+          "value": "Riverside General Hospital",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.1793,
+            0.9,
+            0.1982
+          ]
+        },
+        {
+          "name": "bill_id",
+          "value": "RG-1002",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2008,
+            0.9,
+            0.2197
+          ]
+        },
+        {
+          "name": "dos",
+          "value": "08/10/2026",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2222,
+            0.9,
+            0.2412
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "142.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.1046,
+            0.2437,
+            0.9,
+            0.2626
+          ]
+        }
+      ],
+      "unreadable": [
+        "due_date"
+      ]
+    }
+  ]
+}
