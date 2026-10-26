@@ -1,0 +1,309 @@
+{
+  "segments": [
+    {
+      "label": "outlet",
+      "score": 0.84,
+      "box": [
+        0.778,
+        0.484,
+        0.851,
+        0.62
+      ],
+      "frame": 25,
+      "track_id": "outlet-5"
+    },
+    {
+      "label": "outlet",
+      "score": 0.84,
+      "box": [
+        0.193,
+        0.072,
+        0.244,
+        0.206
+      ],
+      "frame": 32,
+      "track_id": "outlet-3"
+    },
+    {
+      "label": "outlet",
+      "score": 0.85,
+      "box": [
+        0.469,
+        0.234,
+        0.523,
+        0.327
+      ],
+      "frame": 40,
+      "track_id": "outlet-4"
+    },
+    {
+      "label": "outlet",
+      "score": 0.91,
+      "box": [
+        0.461,
+        0.234,
+        0.515,
+        0.327
+      ],
+      "frame": 49,
+      "track_id": "outlet-4"
+    },
+    {
+      "label": "outlet",
+      "score": 0.71,
+      "box": [
+        0.062,
+        0.733,
+        0.161,
+        0.831
+      ],
+      "frame": 84,
+      "track_id": "outlet-6"
+    },
+    {
+      "label": "outlet",
+      "score": 0.82,
+      "box": [
+        0.039,
+        0.733,
+        0.138,
+        0.831
+      ],
+      "frame": 93,
+      "track_id": "outlet-6"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.94,
+      "box": [
+        0.353,
+        0.095,
+        0.399,
+        0.192
+      ],
+      "frame": 158,
+      "track_id": "recessed-light-3"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.73,
+      "box": [
+        0.45,
+        0.336,
+        0.543,
+        0.425
+      ],
+      "frame": 164,
+      "track_id": "recessed-light-2"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.8,
+      "box": [
+        0.319,
+        0.095,
+        0.365,
+        0.192
+      ],
+      "frame": 167,
+      "track_id": "recessed-light-3"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.66,
+      "box": [
+        0.427,
+        0.336,
+        0.52,
+        0.425
+      ],
+      "frame": 173,
+      "track_id": "recessed-light-2"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.88,
+      "box": [
+        0.35,
+        0.095,
+        0.396,
+        0.192
+      ],
+      "frame": 176,
+      "track_id": "recessed-light-3"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.89,
+      "box": [
+        0.371,
+        0.181,
+        0.473,
+        0.26
+      ],
+      "frame": 176,
+      "track_id": "recessed-light-6"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.62,
+      "box": [
+        0.365,
+        0.263,
+        0.463,
+        0.387
+      ],
+      "frame": 184,
+      "track_id": "recessed-light-1"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.76,
+      "box": [
+        0.359,
+        0.263,
+        0.457,
+        0.387
+      ],
+      "frame": 193,
+      "track_id": "recessed-light-1"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.82,
+      "box": [
+        0.412,
+        0.099,
+        0.481,
+        0.223
+      ],
+      "frame": 206,
+      "track_id": "recessed-light-4"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.94,
+      "box": [
+        0.403,
+        0.246,
+        0.457,
+        0.343
+      ],
+      "frame": 206,
+      "track_id": "recessed-light-5"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.77,
+      "box": [
+        0.342,
+        0.579,
+        0.386,
+        0.692
+      ],
+      "frame": 208,
+      "track_id": "recessed-light-7"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.79,
+      "box": [
+        0.445,
+        0.246,
+        0.499,
+        0.343
+      ],
+      "frame": 215,
+      "track_id": "recessed-light-5"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.9,
+      "box": [
+        0.364,
+        0.579,
+        0.408,
+        0.692
+      ],
+      "frame": 217,
+      "track_id": "recessed-light-7"
+    },
+    {
+      "label": "outlet",
+      "score": 0.65,
+      "box": [
+        0.514,
+        0.711,
+        0.621,
+        0.763
+      ],
+      "frame": 245,
+      "track_id": "outlet-2"
+    },
+    {
+      "label": "outlet",
+      "score": 0.89,
+      "box": [
+        0.484,
+        0.711,
+        0.591,
+        0.763
+      ],
+      "frame": 254,
+      "track_id": "outlet-2"
+    },
+    {
+      "label": "outlet",
+      "score": 0.96,
+      "box": [
+        0.547,
+        0.293,
+        0.621,
+        0.415
+      ],
+      "frame": 278,
+      "track_id": "outlet-1"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.94,
+      "box": [
+        0.309,
+        0.403,
+        0.35,
+        0.485
+      ],
+      "frame": 293,
+      "track_id": "recessed-light-8"
+    },
+    {
+      "label": "recessed light",
+      "score": 0.67,
+      "box": [
+        0.283,
+        0.403,
+        0.324,
+        0.485
+      ],
+      "frame": 302,
+      "track_id": "recessed-light-8"
+    }
+  ],
+  "transcript": {
+    "language": "en",
+    "turns": [
+      {
+        "speaker": "B",
+        "start_s": 40.0,
+        "end_s": 47.0,
+        "text": "Sorry about the cabinet delay, I'll knock $250 off the next invoice."
+      },
+      {
+        "speaker": "A",
+        "start_s": 48.0,
+        "end_s": 50.0,
+        "text": "Thanks."
+      }
+    ]
+  }
+}

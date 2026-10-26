@@ -1,0 +1,84 @@
+{
+  "media": [
+    {
+      "id": "walk-w1",
+      "kind": "video",
+      "sense": "walk",
+      "path": "media/walk-w1.mp4",
+      "params": {
+        "week": 1,
+        "consent_recorded": true,
+        "speakers": {
+          "A": "homeowner",
+          "B": "contractor"
+        },
+        "count": {
+          "recessed light": "Q-08"
+        }
+      }
+    },
+    {
+      "id": "walk-w2",
+      "kind": "video",
+      "sense": "walk",
+      "path": "media/walk-w2.mp4",
+      "params": {
+        "week": 2,
+        "consent_recorded": false,
+        "speakers": {
+          "A": "homeowner",
+          "B": "contractor"
+        },
+        "count": {
+          "recessed light": "Q-08",
+          "outlet": "Q-07"
+        }
+      }
+    },
+    {
+      "id": "walk-w3",
+      "kind": "video",
+      "sense": "walk",
+      "path": "media/walk-w3.mp4",
+      "params": {
+        "week": 3,
+        "consent_recorded": true,
+        "speakers": {
+          "A": "homeowner",
+          "B": "contractor"
+        },
+        "count": {
+          "outlet": "Q-07",
+          "recessed light": "Q-08",
+          "cabinet door": "Q-12",
+          "pendant light": "Q-09"
+        }
+      }
+    },
+    {
+      "id": "walk-w4",
+      "kind": "video",
+      "sense": "walk",
+      "path": "media/walk-w4.mp4",
+      "params": {
+        "week": 4,
+        "consent_recorded": true,
+        "speakers": {
+          "A": "homeowner",
+          "B": "contractor"
+        },
+        "count": {
+          "outlet": "Q-07",
+          "recessed light": "Q-08",
+          "cabinet door": "Q-12",
+          "pendant light": "Q-09",
+          "under-cabinet light": "Q-10"
+        }
+      }
+    }
+  ],
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture"
+  }
+}

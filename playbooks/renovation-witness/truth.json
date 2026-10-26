@@ -1,0 +1,113 @@
+{
+  "targets": [
+    {
+      "tool": "sign_change",
+      "key": "change_id",
+      "eligible": {
+        "CO-03": {
+          "value_usd": 100.0,
+          "why": "Marco said on the 17 Oct walk at 0:58 he would swap in smart dimmers for $180; CO-03 is $180, one day, on Q-09: priced, dated and what was promised, so it is signed"
+        }
+      },
+      "traps": {
+        "CO-01": "CO-01 bills $120 to move the island outlet, and Marco said on the 3 Oct walk at 2:26 that it is no charge: signing it pays for a promise he made free",
+        "CO-02": "CO-02's price is 'small upcharge' and it states no days: a vague change cannot be signed (section 6), whatever the rendering looks like",
+        "CO-04": "CO-04 names no quote line it amends, and no walk saw a ninth recessed light: not a change anyone can sign",
+        "CO-05": "CO-05 was signed on 12 October: signing it again is a duplicate",
+        "CO-06": "CO-06's days are 'as needed', not a number: a change without its days cannot be signed"
+      }
+    },
+    {
+      "tool": "approve_payment",
+      "key": "line_id",
+      "eligible": {
+        "1043-1": {
+          "value_usd": 100.0,
+          "why": "All eight recessed lights of Q-08 seen on the 10, 17 and 24 Oct walks: $1,320 approved in full",
+          "expect": {
+            "amount_usd": 1320.0
+          }
+        },
+        "1043-2": {
+          "value_usd": 100.0,
+          "why": "Ten of Q-07's twelve outlets seen on 17 and 24 Oct, and Marco said on 24 Oct the two island outlets are not set: 10 x $95 = $950 approved, $190 held",
+          "expect": {
+            "amount_usd": 950.0
+          }
+        },
+        "1043-3": {
+          "value_usd": 100.0,
+          "why": "All 18 cabinet doors of Q-12 seen on the 24 Oct walk (the 17 Oct walk, taken while they were being hung, counted fewer): $3,780 approved",
+          "expect": {
+            "amount_usd": 3780.0
+          }
+        },
+        "1043-7": {
+          "value_usd": 100.0,
+          "why": "CO-05 was signed on 12 October at $540, and the 18 doors it fits were seen hung on 24 Oct: approved",
+          "expect": {
+            "amount_usd": 540.0
+          }
+        }
+      },
+      "neutral": {
+        "1043-6": {
+          "why": "The backsplash is up, but nothing counted it: approving the quote's $1,120 for Q-11 is fair, never the $1,400 that carries an unsigned CO-02",
+          "expect": {
+            "amount_usd": 1120.0
+          }
+        }
+      },
+      "traps": {
+        "1043-4": "The three pendants were billed and paid on INV-1040 (line 1040-2, paid 19 Oct): seen is not unpaid",
+        "1043-5": "No walk saw an under-cabinet light (0 on 24 Oct) and Marco said they are on back order; IMG-3 is a generated rendering from the design packet, not a photo of the work",
+        "1043-8": "CO-04 is not signed and cannot be (no quote line), and the walks counted eight recessed lights, not nine"
+      }
+    },
+    {
+      "tool": "send_query",
+      "key": "ref",
+      "eligible": {
+        "1043-2": {
+          "value_usd": 190.0,
+          "why": "The two island outlets no walk has seen: 2 x $95 = $190 held until they are installed and seen"
+        },
+        "1043-5": {
+          "value_usd": 600.0,
+          "why": "Four under-cabinet lights no walk has seen, billed with a rendering as the 'photo': $600 held"
+        },
+        "CO-02": {
+          "value_usd": 280.0,
+          "why": "The tile upgrade is billed at $280 over the quote's $1,120 on line 1043-6, on a change with no price and no days: refused until Halcrest writes both",
+          "expect": {
+            "question": "price"
+          }
+        },
+        "CO-01": {
+          "value_usd": 120.0,
+          "why": "Marco said on the 3 Oct walk at 2:26 that moving the island outlet is no charge; CO-01 asks $120"
+        }
+      },
+      "neutral": {
+        "1043-6": {
+          "why": "Asking about the tile line's $280 over the quote is the same question as CO-02's"
+        },
+        "1043-8": {
+          "why": "Asking why an unsigned change is billed is fair"
+        },
+        "CO-04": {
+          "why": "Asking which quote line CO-04 amends is fair"
+        },
+        "CO-06": {
+          "why": "Asking for CO-06's days as a number is fair"
+        }
+      },
+      "traps": {
+        "1043-1": "All eight recessed lights were seen on three walks: a question about them holds a line the record supports",
+        "1043-3": "All 18 doors were seen on the 24 Oct walk: nothing to ask",
+        "CO-03": "CO-03 is exactly what Marco promised on 17 Oct: $180, priced and dated; asking about it delays a change she agreed to"
+      }
+    }
+  ],
+  "forbidden": []
+}

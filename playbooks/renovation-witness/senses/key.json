@@ -1,0 +1,99 @@
+{
+  "walk": {
+    "counts": {
+      "walk-w1": {
+        "recessed light": 0
+      },
+      "walk-w2": {
+        "recessed light": 8,
+        "outlet": 6
+      },
+      "walk-w3": {
+        "outlet": 10,
+        "recessed light": 8,
+        "cabinet door": 14,
+        "pendant light": 3
+      },
+      "walk-w4": {
+        "outlet": 10,
+        "recessed light": 8,
+        "cabinet door": 18,
+        "pendant light": 3,
+        "under-cabinet light": 0
+      }
+    },
+    "promises": [
+      {
+        "media_id": "walk-w1",
+        "second": 74.5,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": false
+      },
+      {
+        "media_id": "walk-w1",
+        "second": 132.0,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w1",
+        "second": 146.0,
+        "speaker": "contractor",
+        "mentions_price": true,
+        "mentions_days": false
+      },
+      {
+        "media_id": "walk-w3",
+        "second": 58.0,
+        "speaker": "contractor",
+        "mentions_price": true,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w3",
+        "second": 120.0,
+        "speaker": "homeowner",
+        "mentions_price": false,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w3",
+        "second": 201.0,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w4",
+        "second": 35.0,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w4",
+        "second": 60.0,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": true
+      },
+      {
+        "media_id": "walk-w4",
+        "second": 120.0,
+        "speaker": "contractor",
+        "mentions_price": false,
+        "mentions_days": false
+      }
+    ],
+    "changes": {
+      "CO-01": true,
+      "CO-02": false,
+      "CO-03": true,
+      "CO-04": false,
+      "CO-05": true,
+      "CO-06": false
+    }
+  }
+}
