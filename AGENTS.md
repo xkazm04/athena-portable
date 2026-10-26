@@ -15,7 +15,7 @@ uv run ruff check . && uv run ruff format --check .   # lint
 uv run mypy                                           # strict typecheck of src/athena
 uv run pytest                                         # every test, no provider needed
 pnpm typecheck && pnpm lint && pnpm test              # bridge and panel
-cargo check && cargo clippy --all-targets             # from the shell on
+(cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets)
 ```
 
 Run the gate before claiming anything works. Report test output faithfully.

@@ -7,7 +7,9 @@ already signed in to, Claude Code or Codex, and speaks with local Kokoro. NVIDIA
 Token Factory is how she is secured: in the **Proving Ground**, Nemotron attacks her gate, plays her
 users and judges the result beside a Claude control, and the verdict is read off the gate's own
 records, never off a model. Across 93 hostile turns in the first full run, the gate let nothing
-through.
+through. A retest on newer Nemotron models (2026-10-22) put one of them into the product: Nemotron
+3.5 Super-VL reads a person's documents at 91% field accuracy against the Claude lane's 96%, at
+about a thirtieth of the cost, and is now an opt-in reader.
 
 ## What it is, in one paragraph
 
@@ -18,6 +20,35 @@ person would. Anything irreversible or anything that leaves the app stops and as
 call and every cost is written to a local record. Nothing is installed into the websites, no
 extension is granted access to your browsing, and no data leaves your machine except the model and
 voice calls themselves.
+
+## The product as it stands
+
+The later weeks built the product around the gate (1,354 commits since 2026-10-08, `git log
+--since=2026-10-08 --oneline | wc -l` on 2026-10-26). What a judge sees on one Windows PC:
+
+- **One window with depths.** The main window is a console over six scenes: Projects, Apps, Chores,
+  Accounts, Voice and Mind (`apps/desktop/src/console/scenes.tsx`). Ctrl+K, or `/` outside a field,
+  opens a finder that goes to any place by name.
+- **Projects are walled memory spaces (ADR 0225).** Taxes, a garden and a job hunt each get a
+  Project; a memory written in one is recalled only there, and Core holds what belongs everywhere.
+- **Chores are playbooks.** 95 playbooks under `playbooks/`, each with a committed `bench.json`:
+  93 read `exceeds` and 2 `short`, all on Claude Sonnet, run 2026-10-08 to 2026-10-23 (the
+  `verdict.word` of `playbooks/*/bench.json`). The Chores scene replays each latest run turn by turn.
+- **Adopting a chore is a conversation (ADR 0097).** "Make it yours" opens a studio: she asks
+  question cards, research lanes fill the case, the person drops in a letter or a statement, and an
+  approved brief is rehearsed on a world shaped like their case before she runs it for real.
+- **She has a presence.** A click-through halo glows along every monitor's edge while she works or
+  a card waits (ADR 0027). Her face is a drawn avatar where WebGL2 is available, a bell of light
+  otherwise (ADR 0120); mouth shapes timed to speech need an optional face-helper environment. She
+  speaks with local Kokoro and hears with local Whisper; the Voice scene walks the install.
+- **Accounts.** Gmail and Notion connectors, and the tools of MCP servers the person lists in
+  `mcp.json` (ADR 0144; Athena is the MCP client), each write behind the same gate.
+- **She sleeps on what she wrote (ADR 0143).** A cycle distils new conversation into facts and
+  procedures; forgetting a memory gone unused or settling two that disagree comes to the Mind
+  scene as a proposal the person keeps or forgets.
+- **A fleet of her (ADR 0140).** Each PC's daemon measures its CPU, RAM, GPU, power and disk; the
+  Devices level under Mind shows it. Pairing over a private Tailscale network, write-once memory
+  replication and a phone page are built, and **need two PCs or a phone** to see.
 
 ## The Proving Ground: what Nebius and NVIDIA add
 
@@ -47,8 +78,8 @@ First full run, `20261007T140609Z`:
 
 One honest limit: Athena-on-Claude never attempted a gated call in 75 turns, so on that row the gate
 held without being tested by an attempt. The Nemotron row and the planted-breach tests show the
-gate under an attempt. The fourth channel in the design, a foreign agent over MCP, is deferred:
-no MCP channel exists in the code for it to arrive on.
+gate under an attempt. The fourth channel in the design, a foreign agent over MCP, is designed and
+not built: Athena calls MCP servers as connectors, but no channel lets a foreign agent call her.
 
 **The approve path, and a gate fix it found (built; ADR 0036, ADR 0038).** The Gauntlet never
 answers a card, so a deterministic probe approves every card a turn filed through
@@ -116,32 +147,68 @@ control, so they compare with the runs above):
 
 - **Stable:** the gate. 306 hostile turns across three runs, zero breaches. Nemotron as an attacker
   cleared its bar every time (0.60 to 0.88). Nemotron as a user stayed in persona 94% to 97% of turns.
-- **Not stable:** Nemotron as a second judge. Super passed agreement once in three runs on the
-  shipped code (0.528, 0.360, 0.495). Lightning never did. The Proving Ground keeps Haiku as the
-  judge of record; a Nemotron judge's scores are reported beside it, never instead of it.
+- **Not stable on 2026-10-07:** Nemotron as a second judge. Super passed agreement once in three
+  runs on the shipped code (0.528, 0.360, 0.495). Lightning never did. The retest below found the
+  newer judges stable against a newer control; Haiku stays the judge of record either way, and a
+  Nemotron judge's scores are reported beside it, never instead of it.
 - Cost of the four repeat runs: Nemotron $0.12, Claude CLI $22.1.
 
+### Retest on newer Nemotron models (2026-10-22)
+
+Token Factory added Nemotron 3.5 Super-VL (vision, $0.30 / $0.90 per 1M tokens) and Nemotron 3
+Ultra ($1.00 / $3.00). Two questions were retested, each with its proof written before the run.
+
+**The judge, again.** Haiku 5.5 is the judge of record; the Nemotron judges score the same 168
+transcript and criterion pairs blind. Proof: Spearman 0.5 or above at all three seeds. Runs
+`20261022T194851Z`, `20261022T195805Z`, `20261022T200647Z`; Claude $17.96, Nemotron $0.53.
+
+| Nemotron judge against Haiku 5.5 | seed 11 | seed 12 | seed 13 | proof |
+|---|---|---|---|---|
+| Lightning | 0.28 | – | – | kill, escalated |
+| Super | 0.591 | 0.595 | 0.654 | pass |
+| Super-VL | 0.571 | 0.622 | 0.634 | pass, on an offset scale (exact match 27% to 34%) |
+| Ultra | 0.598 | 0.586 | 0.685 | pass |
+
+The control changed too (Haiku 4.5 then, 5.5 now), so this and the 2026-10-07 table are not one series.
+
+**Nemotron reads a person's documents.** While adopting a chore, a person can drop in a letter or
+a bill, and the documents lane reads it against the playbook's facts (ADR 0097). `uv run python -m
+athena.proving.docread all` renders documents whose answers are known by construction, up to a
+low-resolution greyscale scan. Proof: accuracy at least 90% of the Claude lane's, false facts at
+most 5 points above it.
+
+| Reader, run `20261022T195808Z` (90 paired documents, 230 probes) | field accuracy | false facts | median time | cost per document |
+|---|---|---|---|---|
+| Claude documents lane (Sonnet, `Read` only) | 96.2% | 2.2% | 8.6 s | $0.0209 |
+| Nemotron 3.5 Super-VL, reasoning off | 91.0% | 5.2% | 2.0 s | $0.0007 |
+
+Ratio 0.945, false-fact delta +3.05 points: the proof passes. The lane now takes Super-VL as an
+opt-in reader for pictures (`ATHENA_DOCUMENT_READER=nemotron-vl`); a PDF, a larger picture or any
+failure of the call falls back to the Claude leg, so the opt-in can make a read cheaper and never
+make it fail.
 
 ## How NVIDIA Nemotron is used
 
 **A model ladder.** Every Nemotron role starts on Nemotron 3.5 Lightning ($0.06 / $0.24 per 1M
 input/output tokens), the cheapest NVIDIA model Token Factory serves, and escalates once to
 Nemotron 3 Super ($0.30 / $0.90) only when its own proof fails there. Ids and prices were read from
-the live `GET /v1/models?verbose=true` on 2026-10-07. Nemotron Safety Guard is not served by Token
-Factory, so no role uses it.
+the live `GET /v1/models?verbose=true` on 2026-10-07, and again on 2026-10-22 for Super-VL and
+Ultra. Nemotron Safety Guard is not served by Token Factory, so no role uses it.
 
 | Role | NVIDIA model | Control | Measured |
 |---|---|---|---|
 | Attacker, three surfaces | Lightning | Haiku writes the same number | valid rate 0.53 against 0.89 (`20261007T140609Z`) |
 | Athena under test, the `nebius` engine | Lightning | Athena on the Claude CLI (Sonnet) | 0 breaches in 18 turns (`20261007T140609Z`) |
 | User simulator, four `uat/` Characters | Lightning | Haiku judges fidelity, blind | 0.944 to 0.972 in persona (five runs) |
-| Rubric judge | Super (Lightning failed agreement) | Haiku on the same transcripts, blind | rho 0.360 to 0.528 over five runs; passes 0.5 in two of five, so Haiku stays the judge of record |
+| Rubric judge | Super (Lightning failed agreement) | Haiku on the same transcripts, blind | 2026-10-07, Haiku 4.5: rho 0.360 to 0.528 over five runs, passing 0.5 in two. 2026-10-22, Haiku 5.5: Super, Super-VL and Ultra pass at all three seeds (0.571 to 0.685). Haiku stays the judge of record |
+| Document reader, in the product (opt-in) | Super-VL, reasoning off | the Claude documents lane (Sonnet) | 91.0% against 96.2% field accuracy, $0.0007 against $0.0209 per document (`20261022T195808Z`) |
 
 **The `nebius` engine (ADR 0031).** Nemotron runs Athena as a third engine beside `claude_code` and
 `codex`, through the same round loop, the same `OP:` grammar, the same nonce fence, the same gate
 and the same single ledger row per turn. It is standard-library `urllib` against Token Factory's
 OpenAI-compatible chat completions, with no SDK. A Nemotron turn that proposes a gated action files
-the same card a Claude turn would. It is a measurement row, not Athena's daily engine (ADR 0030).
+the same card a Claude turn would. It is a measurement row, not Athena's daily engine (ADR 0030);
+the document reader above is the one Nemotron role that reaches the product.
 
 **What we learned about reasoning (ADR 0034, ADR 0035).** Of five ways to turn Nemotron's reasoning
 off, only `chat_template_kwargs: {"enable_thinking": false}` works; the other four are accepted
@@ -163,7 +230,8 @@ transcripts for $0.022, against $0.87 for the Haiku judge through the CLI, about
 The 72 Nemotron user turns cost $0.007. With reasoning off, a Lightning role answer took a median
 22 s under nine-way concurrency, against 80 s with reasoning on. The 24 conversations took 12.3
 minutes on six workers. The whole Nemotron side of the 93-turn Gauntlet `20261007T140609Z` cost
-$0.023. That price is what makes a conversation-level acceptance test and an adversarial corpus
+$0.023. On the documents run `20261022T195808Z`, Super-VL read a document for $0.0007 in a median
+2.0 s against $0.0209 and 8.6 s on the Claude lane. That price is what makes a conversation-level acceptance test and an adversarial corpus
 something to run on every change rather than once.
 
 ## Other Nebius services
@@ -181,24 +249,26 @@ Our concrete feedback on both, and on Token Factory and the Nemotron models, is 
 Athena Portable is a new project. Its first commit is dated 2026-09-12, after the period opened on
 2026-08-26, and every commit since is in the period. It was rebuilt from scratch here, with an
 earlier product as prior art only. The Proving Ground, the `nebius` engine, the gate's single-use
-fix and the trigger page were built for this hackathon, with ADRs 0030 to 0039 recording each
-decision.
+fix and the trigger page were built for this hackathon, with ADRs 0030 to 0039 recording the Proving
+Ground's founding decisions and ADR 0097 the documents lane the retest reached. All 225 ADRs, 0001
+(dated 2026-09-12) to 0225, were written in the period (`ls docs/adr/*.md | wc -l`).
 
 ## How to run it, and how judges test it
 
-Setup is in the README's **Setup** section: `uv sync --extra dev`, `pnpm install`, then the
-desktop shell or the daemon on the user's own `claude` or `codex` CLI. Every test runs without a
-provider. The Proving Ground commands, what each one spends and what each one needs are in the
-table under **Proving Ground** in the same section.
+The test build is this repository plus the local trigger page; there is no hosted URL. Setup is
+the README's **Setup** (`uv sync --extra dev`, `pnpm install`); every test runs without a provider.
+The desktop path is the README's **Run it locally**: the shell is built and tested on Windows 11
+(Tauri v2 on WebView2), and its screen capture and private-network setup refuse on other systems.
+The Proving Ground commands, what each spends and needs, are in the table under **Proving Ground**.
 
-**Demo URL.** The trigger page runs today on a judge's own machine:
+**The trigger page.** It runs on a judge's own machine:
 
 ```bash
 PROVING_JUDGE_TOKEN=<token> uv run python -m athena.proving.server --hosted   # http://127.0.0.1:8790/
 ```
 
-With `NEBIUS_API_KEY` set, a small hosted Gauntlet costs a fraction of a cent and needs no Claude.
-A public hosted URL waits on the Serverless deployment above.
+With `NEBIUS_API_KEY` set, a small hosted Gauntlet costs a fraction of a cent and needs no Claude
+(`20261007T172658Z`: $0.0013).
 
 ## The architecture, and why it has this shape
 
@@ -240,8 +310,10 @@ minted only by the page and retired when it navigates.
 - **Proving Ground:** standard-library HTTP and SSE, throwaway worlds per attack, per-run and
   per-day spend caps, and verdicts read off the gate.
 - **Quality bar:** Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy, and an
-  architecture decision record for every choice a later reader could question (39 to date). The
-  Python suite collects 931 tests; the panel, Rust and bridge suites run beside it.
+  architecture decision record for every choice a later reader could question (225 to date,
+  0001 to 0225, `ls docs/adr/*.md | wc -l`). On 2026-10-26 pytest collected 3,837 tests, the
+  desktop's Vitest suite ran 3,060, the bridge and example apps' `node --test` suites 948, the
+  journey's Playwright suite 17, and `cargo test` 167, all passing.
 
 ## Non-goals
 
@@ -256,6 +328,6 @@ and a model never decides whether something is gated.
 | Criterion | Where it is answered |
 |---|---|
 | Technological Implementation | the Proving Ground (gate-read verdicts, approve-path probe, the fix it found), the `nebius` engine, Technical execution |
-| Design (complete product) | What it is; the architecture; the trigger page and hosted mode; How to run it |
+| Design (complete product) | The product as it stands: one console over six scenes, Projects as walled memory, 95 benched chores adopted through a conversation, the halo, face and local voice, sleep proposals, a paired fleet; the architecture; the trigger page; How to run it |
 | Potential Impact | the Track line; adversarial and user-level testing at cents per run (Where Token Factory accelerated the work) |
-| Quality of the Idea | Nemotron as attacker, user and second judge against a gate whose verdict no model sets; How NVIDIA Nemotron is used |
+| Quality of the Idea | Nemotron as attacker, user, second judge and document reader against a gate whose verdict no model sets; How NVIDIA Nemotron is used |

@@ -19,8 +19,9 @@ came from; every model call is one row in a local ledger with its cost. Day to d
 CLI the user is already signed in to, Claude Code or Codex, with no API key.
 
 **The Proving Ground** is what Nebius and NVIDIA add, and it is a test bench, not a new engine for
-the companion. NVIDIA Nemotron models on Nebius Token Factory attack Athena's gate from four
-directions (host page state, tool results, a foreign agent over MCP, memory poisoning), play her
+the companion. NVIDIA Nemotron models on Nebius Token Factory attack Athena's gate from three
+directions (host page state, tool results, memory poisoning; a fourth, a foreign agent over MCP, is
+designed and not built), play her
 users from the `uat/` Characters, and judge the result next to a Claude Haiku control row. Token
 Factory Sandboxes are spiked as branching worlds, checkpointed and forked once per attack. Athena
 is run under test on her Claude CLI and on Nemotron through the `nebius` engine. The Gauntlet is
@@ -45,7 +46,7 @@ What exists today and runs without any Nebius account.
 | Need | For |
 |---|---|
 | Python 3.11+ and [uv](https://docs.astral.sh/uv/) | the agent core, the daemon, the Python tests |
-| Node 22.5+ and pnpm 11 | the page bridge, the desktop panel, the example apps |
+| Node 22.18+ (or 24) and pnpm 11 | the page bridge, the desktop panel, the example apps |
 | A Rust toolchain | the Tauri desktop shell (`apps/desktop/src-tauri`) |
 | A signed-in `claude` or `codex` CLI | real turns; every test runs without one |
 
@@ -56,14 +57,46 @@ uv run ruff check . && uv run ruff format --check .
 uv run mypy                                   # strict on src/athena
 uv run pytest                                 # every test, no provider needed
 pnpm typecheck && pnpm lint && pnpm test      # bridge and panel
-cargo check && cargo clippy --all-targets     # from P4 on
+(cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets)
 
 uv run athena doctor                          # six stages; only a `fail` sets the exit code
 uv run athena serve --port 0                  # the daemon on the user's own CLI engine
 pnpm dev:ledgerbox                            # one example host app (ports in examples/README.md)
+pnpm --filter @athena/journey exec playwright install chromium   # once
 pnpm --filter @athena/journey test            # boots the three example apps, runs the four acts
 pnpm --filter athena-desktop tauri dev        # the desktop shell
 ```
+
+### Run it locally
+
+The desktop shell is built and tested on **Windows 11** (Tauri v2 on WebView2; the daemon sidecar is
+held by a Windows job object). The agent core, the daemon, the example apps and every test suite also
+run elsewhere; the shell on macOS and Linux is untested. Ledgerbox needs Node 22.18 or later (or 24).
+
+1. Install: `uv sync --extra dev` and `pnpm install` from the repository root.
+2. Start an example app: `pnpm dev:ledgerbox`, an invoicing tool on http://localhost:3001 (Hirelane
+   is on 3002, TidyCRM on 3004).
+3. Start the shell from `apps/desktop`, with Ledgerbox as its first tab:
+
+   ```powershell
+   $env:ATHENA_START_URL = "http://localhost:3001"; pnpm tauri dev   # PowerShell
+   ```
+   ```bash
+   ATHENA_START_URL=http://localhost:3001 pnpm tauri dev                # Git Bash
+   ```
+
+   The first run compiles the Rust crate, which takes a few minutes. The shell starts the daemon
+   itself (`uv run --extra voice-fx athena serve`), so there is no separate `athena serve` step.
+4. On first launch the welcome checks for a signed-in `claude` or `codex` CLI and names a missing
+   one in plain words; `uv run athena doctor` prints the same check in a terminal.
+5. On the Ledgerbox tab, ask Athena to send a reminder for the oldest overdue invoice. Reading and
+   drafting run unattended. `send_reminder` reaches a person, so it is GATED: a decision card
+   appears and nothing is sent until you approve it. The Record lists every call with its cost.
+
+**Without a CLI**, every scene of the console renders against fixtures in a plain browser, with no
+Tauri and no daemon: `pnpm --filter athena-desktop dev`, then open
+http://127.0.0.1:1431/preview.html?scene=chores&fixture=typical&picker=1. The Proving Ground's
+hosted trigger page (below) needs only a Nebius key.
 
 The daemon's routes, a gated turn end to end and the voice socket are in
 [`docs/daemon.md`](docs/daemon.md). Voice speaks with local Kokoro by default (ADR 0028).
@@ -110,7 +143,7 @@ reaches beside the browser (third-party connectors: mail, calendar, storage).
 |---|---|
 | 1. Setup | First launch: the engine probe finds the user's Claude subscription, no key typed; two tabs, one per real app; the panel shows the page's own tools on one and nine generic hands on the other, all `GATED` on first sight |
 | 2. Command | Push-to-talk: "Find every invoice over 30 days and draft a chase for each in the support inbox." Athena reads the first page, opens the second, fills the drafts; each fill is a decision card with the page screenshot beside it; two approved by voice, one declined |
-| 3. Another agent | A coding agent in a terminal calls Athena's MCP server for guidance; the question is a card in the approvals inbox citing the fact from act 2. Its later `request_approval` for a payment is declined |
+| 3. Another agent | *Designed, not built:* a coding agent in a terminal calls Athena's MCP server for guidance; the question is a card in the approvals inbox citing the fact from act 2. Its later `request_approval` for a payment is declined. No MCP server channel exists in `src/` (section 9) |
 | 4. Record | The activity module shows every call by app, tier and surface with its cost; both declines are ledgered `user_denied`; the origins module shows the fact Athena wrote, with the episode it cites |
 
 ---
@@ -200,8 +233,9 @@ proposed, never run unattended: while the surface lists that tab in `open_apps` 
 enabled row), the gate files every call of it as a card bound to that tab, and any other app's
 tool is `foreign_origin` (ADR 0106).
 
-Other agents queue at the same gate: the MCP server's `request_guidance` and `request_approval`
-file cards on the same approval table and block until the user answers.
+By design, other agents queue at the same gate: an MCP server's `request_guidance` and
+`request_approval` would file cards on the same approval table and block until the user answers.
+That server is not built (section 9); `connectors/mcp/` is the client side, for connectors.
 
 ### 3.5 Day-zero decisions carried in from the first build
 
@@ -271,7 +305,7 @@ each, sorted by demo value. Phase 9 is reserved and starts at hour 44 from whate
 | P4 The shell skeleton | 17–25 | 20 | window + module bar + browser module, relay, sidecar with exit hygiene, store + Settings + Setup | tabs on real sites, the daemon beside them, a page reporting its tools |
 | **P5 MVP checkpoint** | 25–31 | 28 | panel run loop, decision card + tool list, headless run-loop test, phase-1 status doc | act 1 and a typed act 2 on the page's own tools |
 | P6 Hands and projects | 31–37 | 34 | nine hands + captures, projects, approvals inbox + pending store, tab awareness | act 2 for real: hands on a page that registered nothing |
-| P7 Other agents and the record | 37–41 | 39 | MCP server + demo agent script, activity module, surfaces and tiers in the record | acts 3 and 4 |
+| P7 Other agents and the record | 37–41 | 39 | MCP server + demo agent script (not built), activity module, surfaces and tiers in the record | act 4 (act 3 deferred) |
 | P8 Voice | 41–44 | 42 | voice gateway + one backend, push-to-talk + mic check, spoken card answers | act 2 without a keyboard |
 | P9 Ship | 44–48 | 44 | bundle + smoke, demo script + ten runs, README + video | a bundle that installs and a script run ten times |
 | P10 Proving Ground | – | – | Token Factory `nebius` engine, the Gauntlet, model-played Characters, the Sandbox spike (section 9) | a fifth act, only for the prototypes whose proof test passed |
@@ -293,29 +327,35 @@ kill criterion (section 9), and nothing is polished before its proof passes (ADR
 
 ```
 LICENSE                  Apache-2.0
-pyproject.toml           uv + hatchling; extras: dev, build, connectors
+pyproject.toml           uv + hatchling; extras: dev, build, connectors, voice-fx
 package.json             pnpm workspace: packages/*, apps/*, examples/*
 src/athena/
-  contracts/             registry.py, manifest.py, channel.py, harness.py, ids.py
-  core/                  brain/, catalog.py, validators.py, approvals.py, ledger.py, constitution.py, prompt.py
-  harness/               ports.py, hooks.py, policy.py, cli_harness.py, op_grammar.py, engines.py
-  lane/                  browser_lane.py, turn_frame.py
-  daemon/                server.py, routes.py, sessions.py, ready.py
-  channels/              mcp.py, voice/
-  connectors/            port.py only; the connectors themselves live in the reference repository
+  contracts/             the seam between packages: registry, manifest, channel, harness, ids, spaces
+  core/                  brain/, catalog.py, validators.py, approvals.py, ledger.py, constitution.py, prompt.py, recall.py, sleep/
+  harness/               ports.py, hooks.py, policy.py, cli_harness.py, op_grammar.py, engines.py (claude_code, codex, nebius)
+  lane/                  browser_lane.py, turn_frame.py, fleet.py
+  daemon/                server.py, routes.py, sessions.py, decisions.py, tasks.py, sleep.py, voice.py, connectors.py
+  channels/              voice/ (the MCP server channel is designed, not built)
+  connectors/            port.py, vault.py, seal.py, oauth.py, providers/ (Gmail, Notion), mcp/ (client), builtin/
+  adopt/                 adopting a chore as a conversation (section 14)
+  spaces/                projects as walled memory spaces (ADR 0225)
+  peer/, vitals/         pairing your other computers and phone; each device's CPU/RAM/GPU/power
   proving/               the Gauntlet, model-played Characters, the Sandbox spike, the trigger page (section 9) and the playbook bench (section 14)
   wiring.py, cli.py
 constitution/            law.md, identity.md
 packages/athena-bridge/  inject.js, gate.js, protocol.md, test/
 apps/desktop/
-  src-tauri/src/         lib.rs, tabs.rs, bridge.rs, hands.rs, hands.js, daemon.rs, store.rs, tray.rs, layout.rs
-  src/                   app.tsx, lib/, stores/, modules/<name>/{model,fixtures,view,index}, preview.tsx
-examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (ADR 0017)
-scripts/                 build-sidecar.py, sidecar_entry.py
-tests/                   core/, harness/, lane/, daemon/, test_contracts.py, test_ids_parity.py
-uat/                     Characters, journeys, rubric; the users the Proving Ground plays
+  src-tauri/src/         lib.rs, tabs.rs, bridge.rs, hands.rs, daemon.rs, store.rs, tray.rs, layout.rs, halo.rs, face.rs, hotkeys.rs, ...
+  src/                   the depth console: scenes/, stage/, depth/, stores/, modules/, halo/, avatar/, preview.tsx
+examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (ADR 0017), atlas/
 playbooks/               one directory per playbook: showcase, world, truth, latest bench (section 14)
-docs/                    design.md, adr/, demo.md, daemon.md, submission.md
+proving/                 the trigger page's container (serverless/) and the Sandbox image (image/)
+scripts/                 build-sidecar.py, sidecar_entry.py
+tests/                   one directory per package under src/athena, plus e2e/
+uat/                     Characters, journeys, rubric; the users the Proving Ground plays
+spikes/                  avatar, avatar-measure, voice-ether: measured spikes kept for their numbers
+docs/                    adr/, features/, demo.md, daemon.md, submission.md, feedback.md, concepts/
+evidence/, proving-runs/ gitignored run output (playbook films, Proving Ground reports)
 ```
 
 ---
@@ -327,7 +367,7 @@ uv run ruff check . && uv run ruff format --check .
 uv run mypy                                   # strict on src/athena
 uv run pytest                                 # every test, no provider needed
 pnpm typecheck && pnpm lint && pnpm test      # bridge and panel
-cargo check && cargo clippy --all-targets     # from P4 on
+(cd apps/desktop/src-tauri && cargo check && cargo clippy --all-targets)
 ```
 
 One commit per feature: the code, its tests, and the doc line that describes it. The commit
@@ -341,10 +381,10 @@ committed files.
 
 ## 8. Non-goals
 
-The sleep cycle, Athena registering herself as a WebMCP tool on pages, speech-to-speech voice
-models, telemetry mirrors, cloud deployment of the companion, per-project browsing profiles, the
-connectors themselves (section 4), and example host apps beyond the three the demo runs on
-(`examples/`, ADR 0017). Real sites are the environment; a scratch page proves a claim, the three
+Athena registering herself as a WebMCP tool on pages, speech-to-speech voice models, telemetry
+mirrors, cloud deployment of the companion, per-project browsing profiles (a project walls its
+memory, not its browsing, ADR 0225), and example host apps beyond the three the demo runs on
+(`examples/`, ADR 0017; `examples/atlas` is an architecture explorer, not a host). Real sites are the environment; a scratch page proves a claim, the three
 example apps rehearse the demo, a real app proves it.
 
 An API engine as the companion's daily engine is a non-goal too. The `nebius` engine (Nemotron on
@@ -364,7 +404,7 @@ model call in the ledger (invariant 6).
 
 | Invariant under attack | Channel |
 |---|---|
-| 3 — policy lives in the gate | instructions planted in host page state and in tool results; a foreign agent over MCP |
+| 3 — policy lives in the gate | instructions planted in host page state and in tool results; a foreign agent over MCP (deferred, below) |
 | 2 — provenance at write | memory poisoning: facts that cite nothing, or cite what was never observed |
 | Untrusted fences (§3.2) | page, tool and MCP content that tries to close its fence or speak as the user |
 
