@@ -88,7 +88,7 @@
     "The therapy visits that make the MRI medically necessary, for the appeal."
   ],
   "economics": {
-    "value_usd": 3423,
+    "value_usd": 3424,
     "example_usd": 3423.5,
     "value_kind": "money_back",
     "kinds": {
@@ -98,7 +98,7 @@
       "pay_bill": "count"
     },
     "per": "episode",
-    "basis": "- An estimate, and not an independent one: no published average that fits was found, so the figure is the bench world's own total.\n- One year with an ER visit and a surgery: $2,138.50 in billing errors and surprise bills, a $1,240 denial, a $45 refund.\n- $2,138.50 + $1,240 + $45 = $3,423.50, the roster's $3,423.\n- Not an average; a typical shape.",
+    "basis": "- An estimate, and not an independent one: no published average that fits was found, so the figure is the bench world's own total.\n- One year with an ER visit and a surgery: $2,138.50 in billing errors and surprise bills, a $1,240 denial, a $45 refund.\n- $2,138.50 + $1,240 + $45 = $3,423.50, shown as $3,424 wherever a whole-dollar figure is drawn.\n- Not an average; a typical shape.",
     "manual_minutes": 480,
     "incumbent": "Patient advocates charge 25–30% of what they save you, or $50–250 an hour. AI letter tools draft one appeal for about $40 and reconcile nothing across portals.",
     "incumbent_fee_pct": 25,

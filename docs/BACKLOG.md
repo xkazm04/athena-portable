@@ -68,8 +68,8 @@ done only after `recertify` re-runs the touched pairs.
 
 | B-C9 | high | Re-film or crop the topic stills so no picture shows a figure the page does not (R-1) | recertify R-1 | no still contradicts the tiles | evidence films predate ADR 0136 |
 | B-C10 | high | The interviewer asks for the person's own anchor dates so "Dates that matter" carries dates (R-3) | recertify R-3, lien-desk--gina | re-run: >= 80% of dated rules carry a calendar date when the person has the document | WP-B follow-up |
-| B-C11 | high | wotc-screening: the example says its hires predate the lapse, or the example is re-dated with a re-bench (R-5) | recertify R-5 | Carmen's number criterion passes | truth/world change re-keys the bench |
-| B-C12 | medium | One rounding rule for co-published figures; restricted-funds disclosure reconciled (R-2, R-6) | recertify R-2, R-6 | no two renderings of one quantity differ | - |
+| B-C11 | high | wotc-screening: the example says its hires predate the lapse, or the example is re-dated with a re-bench (R-5) | recertify R-5 | Carmen's number criterion passes | closed 2026-10-26: wotc-screening was cut from the roster (932ace93), so no page shows the contradiction |
+| B-C12 | medium | One rounding rule for co-published figures; restricted-funds disclosure reconciled (R-2, R-6) | recertify R-2, R-6 | no two renderings of one quantity differ | shipped 2026-10-26: medical-bills' estimate is $3,424 like its headline (the one rule: whole dollars round half up, as `usd()` does); restricted-funds' basis says $59,600 throughout and names the reports as acts. Done after recertify |
 
 ### Concept-docs
 - **C-C1 Answer keys a walker doubts** (parental-leave NY PFL weeks, estate RMD-disclaimer trap, stormwater thresholds): verify against a source; a truth.json fix re-keys the bench (ADR 0128), so re-bench in the same change.

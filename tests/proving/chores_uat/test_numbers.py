@@ -181,7 +181,7 @@ PAGES = {
         "Mistakes avoided: 12/12 in the test run",
         "Falls short: Fell short: 7 of 8 found, $2,184 back of $3,424, no false claims, latest "
         "of 3 test runs. found 64% of the value, expected 75%",
-        "Typical value: about $3,423 an episode, author's estimate",
+        "Typical value: about $3,424 an episode, author's estimate",
     ],
     "clinic-denials": [
         "In the example case: $2,120 back, in the invented example",
