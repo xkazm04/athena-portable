@@ -645,7 +645,8 @@ test("forced colors: every state the sheet draws by colour alone has a structura
   // to give that same selector a carrier - an edge's width or style, an outline, a line under the
   // text, a weight - or take the element out of the repaint (`forced-color-adjust: none`). A hover
   // is pointer feedback over a state already drawn at rest, so a part with :hover is not counted.
-  const state = /\[(aria-pressed="true"|data-fill="[^"]*"|data-differs="true"|data-fire="true"|data-on="true")\]/;
+  const state =
+    /\[(aria-pressed="true"|data-fill="[^"]*"|data-differs="true"|data-fire="true"|data-on="true"|data-tone="[^"]*"|data-mark="[^"]*")\]/;
   const colourOnly = /^(color|fill|background(-[a-z]+)*|border(-[a-z]+)*-color)$/;
   const bare: string[] = [];
   for (const rule of RULES) {
@@ -653,7 +654,9 @@ test("forced colors: every state the sheet draws by colour alone has a structura
     if (props.length === 0 || !props.every((p) => colourOnly.test(p))) continue;
     for (const part of partsOf(rule)) {
       if (!state.test(part) || /:hover/.test(part)) continue;
-      const carried = forcedFor(part).some((f) => [...f.decls].some(([p, v]) => carries(p, v)));
+      // The carrier may sit on the state's own element or on a child it owns (a legend key's swatch).
+      const owned = FORCED.filter((r) => partsOf(r).some((p) => p.startsWith(`${part} `)));
+      const carried = [...forcedFor(part), ...owned].some((f) => [...f.decls].some(([p, v]) => carries(p, v)));
       if (!carried) bare.push(part);
     }
   }
@@ -687,6 +690,26 @@ test("forced colors: a key in fault and a quiet key are told apart by their edge
   assert.ok(fault.style && quiet.style, "the forced block draws no inline-start edge style for fault and quiet");
   assert.ok(fault.width && quiet.width, "the forced block draws no inline-start edge width for fault and quiet");
   assert.notDeepEqual(fault, quiet, `fault ${JSON.stringify(fault)} and quiet ${JSON.stringify(quiet)} draw the same edge`);
+});
+
+/** Every declaration the forced block gives `key`, later rules winning, as one "prop:value" list. */
+function forcedLook(key: string): string {
+  const look = new Map<string, string>();
+  for (const rule of forcedFor(key)) for (const [p, v] of rule.decls) look.set(p, v);
+  return [...look].map(([p, v]) => `${p}:${v}`).sort().join(";");
+}
+
+test("forced colors: the volume legend's keys and the dots they name are told apart by shape (UAT-CL-1)", () => {
+  // Under a contrast theme every key computed to one white fill and one black border. Each of the
+  // three record states now has its own look, on the legend swatch and on the dot alike.
+  const keys = ["ink", "redline", "goldline"].map((t) => forcedLook(`.bk-legend span[data-tone="${t}"] i`));
+  const dots = ["0", "1", "2"].map((m) => forcedLook(`.bk-cluster-dot[data-mark="${m}"]`));
+  for (const set of [keys, dots]) {
+    assert.ok(set.every((look) => look.includes("forced-color-adjust:none")), set.join("\n"));
+    assert.equal(new Set(set).size, 3, `three states, ${new Set(set).size} distinct looks:\n${set.join("\n")}`);
+  }
+  // The legend's fourth entry, the cell's edge, is a bar: its shape is already its own.
+  assert.ok(forcedLook(".bk-legend span.bk-legend-edge i").includes("background:CanvasText"));
 });
 
 test("forced colors: the differing field and the deviant spelling carry the bad cell's wavy underline", () => {

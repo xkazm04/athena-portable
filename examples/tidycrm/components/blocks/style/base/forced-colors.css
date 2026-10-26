@@ -119,4 +119,78 @@
     border-style: double;
     border-width: var(--bk-rule-3);
   }
+
+  /*
+   * The three tones a figure is set in. Each takes the line the sheet already gives its meaning:
+   * redline is the bad cell's wavy line, goldline - a pair no rule may resolve - a doubled line,
+   * greenline - repaired - the heavier weight.
+   */
+  .bk-stat[data-tone="redline"] > b,
+  .bk-chip > b[data-tone="redline"] {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .bk-stat[data-tone="goldline"] > b,
+  .bk-chip > b[data-tone="goldline"] {
+    text-decoration-line: underline;
+    text-decoration-style: double;
+    text-underline-offset: 3px;
+  }
+
+  .bk-stat[data-tone="greenline"] > b,
+  .bk-chip > b[data-tone="greenline"] {
+    font-weight: 700;
+  }
+
+  /*
+   * A record's dot, and the legend key that names it, are told apart by shape: nothing
+   * outstanding is a hollow ring, a deviation a filled disc, an identity pair a dashed ring.
+   * The dots leave the repaint so the ring can be drawn in Canvas inside a CanvasText edge.
+   */
+  .bk-cluster-dot[data-mark="0"],
+  .bk-cluster-dot[data-mark="1"],
+  .bk-cluster-dot[data-mark="2"] {
+    forced-color-adjust: none;
+    stroke: CanvasText;
+    stroke-width: 3;
+  }
+
+  .bk-cluster-dot[data-mark="0"] {
+    fill: Canvas;
+  }
+
+  .bk-cluster-dot[data-mark="1"] {
+    fill: CanvasText;
+  }
+
+  .bk-cluster-dot[data-mark="2"] {
+    fill: Canvas;
+    stroke-width: 6;
+    stroke-dasharray: 6 4;
+  }
+
+  .bk-legend span[data-tone="ink"] i,
+  .bk-legend span[data-tone="redline"] i,
+  .bk-legend span[data-tone="goldline"] i {
+    forced-color-adjust: none;
+    box-sizing: border-box;
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .bk-legend span[data-tone="redline"] i {
+    background: CanvasText;
+  }
+
+  .bk-legend span[data-tone="goldline"] i {
+    border: 2px dashed CanvasText;
+  }
+
+  /* The edge entry is a bar, not a dot, which is already its shape; it keeps the ink. */
+  .bk-legend span.bk-legend-edge i {
+    background: CanvasText;
+  }
 }
