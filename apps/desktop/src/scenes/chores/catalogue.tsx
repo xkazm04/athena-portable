@@ -10,6 +10,9 @@
  * press from its case or its chore's page; `Yours` narrows the ledger to the chores with a case.
  * Without deps (the preview, no daemon) there is no band and the page is as it always was.
  *
+ * The featured chores (ADR 0300, `featured.tsx`) sit under it, above the areas: drawn only when a
+ * playbook carries a `featured` block, each a press from its topic page like a ledger row.
+ *
  * A case linked to a Project (ADR 0225) wears its chip on its row, a press into the Project's level;
  * a case in core wears none, as on the topic page.
  */
@@ -37,6 +40,7 @@ import { EDGE_ORDER, casePath, emptyLine } from "./model";
 import { totalsLine, valueCell } from "./worth";
 import { lead } from "./rich";
 import { JOB_TONE, timeCell } from "./facts";
+import FeaturedBand from "./featured";
 import Glyph from "./glyphs";
 import type { ChoreSpaces } from "./topic";
 import { hasCase, yoursLine, yoursOf, type YoursState } from "./yours";
@@ -283,6 +287,14 @@ export default function Catalogue({
             {found?.footer ? <p className="pa-muted">{found.footer}</p> : null}
           </section>
         ) : null}
+
+        <FeaturedBand
+          model={model}
+          open={(v) => {
+            set({ last: v.id });
+            open(v);
+          }}
+        />
 
         <nav className="pa-tabs" aria-label="Areas">
           {tabs.map((t) => (

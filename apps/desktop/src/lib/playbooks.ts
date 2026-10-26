@@ -275,6 +275,33 @@ export interface Playbook {
   /** Where the bench's committed ranking puts it (ADR 0056); `null` when the ranking does not name
    *  it, or ranks a run other than the one `bench` holds (ADR 0213). */
   rank: Rank | null;
+  /** The featured block (ADR 0300): the Meta senses it uses and its spike, with the status its
+   *  `senses/proofs.json` earns; `null` when `playbook.json` carries none. */
+  featured: Featured | null;
+}
+
+/** A sense a featured chore reads its world through (ADR 0300; `athena.senses.contract.SENSES`). */
+export type Sense = "paper" | "call" | "object" | "walk" | "circle";
+
+export const SENSES: readonly Sense[] = ["paper", "call", "object", "walk", "circle"];
+
+/**
+ * What a featured chore's proofs earn (ADR 0300), computed, never authored: `proven` only when every
+ * proof passed on a build where a role ran on `meta`, `rehearsed` when they passed on fixtures or
+ * Claude, `failing` when one did not, `unproven` with no proofs at all.
+ */
+export type FeaturedStatus = "proven" | "rehearsed" | "failing" | "unproven";
+
+export interface Featured {
+  /** The senses it uses, in the file's order; a name the contract lacks is dropped. */
+  senses: readonly Sense[];
+  /** The spike it came from, e.g. "01-paper-flip". */
+  spike: string;
+  /** When it was flagged, as the file says it ("2026-10-26"). */
+  since: string;
+  status: FeaturedStatus;
+  /** How many of `senses/proofs.json`'s proofs passed, of how many; both 0 without the file. */
+  proofs: { passed: number; total: number };
 }
 
 /**
@@ -557,6 +584,36 @@ export function parseEvidence(
   };
 }
 
+/** Python's truthiness, so the status rule reads a file exactly as the bench's `featured_status`. */
+const truthy = (v: unknown): boolean =>
+  Array.isArray(v) ? v.length > 0 : isRaw(v) ? Object.keys(v).length > 0 : Boolean(v);
+
+/**
+ * The status `senses/proofs.json` earns — the same rule as the bench's
+ * `athena.senses.build.featured_status`, on the same truthiness: no file or no proofs is
+ * `unproven`, a file that did not pass is `failing`, and a pass is `proven` only when a backend
+ * ran on `meta`, `rehearsed` otherwise. Pure.
+ */
+export function featuredStatus(proofs: unknown): FeaturedStatus {
+  if (!isRaw(proofs) || !truthy(proofs.proofs)) return "unproven";
+  if (!truthy(proofs.passed)) return "failing";
+  const backends = isRaw(proofs.backends) ? Object.values(proofs.backends) : [];
+  return backends.includes("meta") ? "proven" : "rehearsed";
+}
+
+/** `featured`, or `null` when it is absent; its status and count are read from `proofs`. */
+function parseFeatured(raw: unknown, proofs: unknown): Featured | null {
+  if (!isRaw(raw)) return null;
+  const rows = isRaw(proofs) ? list(proofs.proofs).filter(isRaw) : [];
+  return {
+    senses: strings(raw.senses).filter((s): s is Sense => (SENSES as readonly string[]).includes(s)),
+    spike: str(raw.spike),
+    since: str(raw.since),
+    status: featuredStatus(proofs),
+    proofs: { passed: rows.filter((r) => r.passed === true).length, total: rows.length },
+  };
+}
+
 const isKind = (v: unknown): v is ValueKind => (VALUE_KINDS as readonly unknown[]).includes(v);
 
 /** `economics.kinds`, keeping only entries whose kind is one the contract names. */
@@ -582,11 +639,13 @@ export function kindOf(p: Pick<Playbook, "economics">, tool: string): ValueKind 
   return p.economics.kinds[tool] ?? "money_back";
 }
 
-/** One `playbook.json` (and its `bench.json`, if any) into a `Playbook`, or `null` without an id. */
+/** One `playbook.json` (and its `bench.json` and `senses/proofs.json`, if any) into a `Playbook`, or
+ *  `null` without an id. */
 export function parsePlaybook(
   raw: unknown,
   bench: unknown = null,
   evidence: Evidence | null = null,
+  proofs: unknown = null,
 ): Playbook | null {
   if (!isRaw(raw) || !str(raw.id)) return null;
   const econ = isRaw(raw.economics) ? raw.economics : {};
@@ -653,6 +712,7 @@ export function parsePlaybook(
     bench: parseBench(bench),
     evidence,
     rank: null,
+    featured: parseFeatured(raw.featured, proofs),
   };
 }
 
@@ -669,6 +729,7 @@ export function loadPlaybooks(
   serve = false,
   stories: Record<string, unknown> = {},
   ranking: unknown = null,
+  proofs: Record<string, unknown> = {},
 ): Playbook[] {
   const ranks = parseRanking(unwrap(ranking));
   // A row ranks one run: a bench.json that has moved on since is not that run, so it borrows nothing.
@@ -679,6 +740,7 @@ export function loadPlaybooks(
   };
   const beside = (path: string, name: string) => path.replace(/playbook\.json$/, name);
   const benchFor = (path: string) => benches[beside(path, "bench.json")] ?? null;
+  const proofsFor = (path: string) => proofs[beside(path, "senses/proofs.json")] ?? null;
   const urlOf = (value: unknown) => {
     const url = unwrap(value);
     return typeof url === "string" ? url : "";
@@ -692,7 +754,9 @@ export function loadPlaybooks(
       (still) => urlOf(stories[beside(path, still.replace(/^playbooks\/[^/]+\//, ""))]),
     );
   return Object.entries(showcases)
-    .map(([path, raw]) => parsePlaybook(unwrap(raw), unwrap(benchFor(path)), evidenceFor(path)))
+    .map(([path, raw]) =>
+      parsePlaybook(unwrap(raw), unwrap(benchFor(path)), evidenceFor(path), unwrap(proofsFor(path))),
+    )
     .filter((p): p is Playbook => p !== null)
     .map((p) => ({ ...p, rank: rankOf(p) }))
     .sort((a, b) => edgeRank(b) - edgeRank(a) || a.title.localeCompare(b.title));
@@ -742,6 +806,8 @@ export function speedup(manual: number, measured: number): string {
 const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json");
 const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json");
 const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json");
+// A featured chore's proofs (ADR 0300), generated by `athena.senses prove`; most playbooks have none.
+const PROOFS = import.meta.glob("../../../../playbooks/*/senses/proofs.json");
 // The bench's ranking (ADR 0056, 0213): one file, fetched with the rest.
 const RANKING = import.meta.glob("../../../../playbooks/ranking.json");
 // The storyboard stills (ADR 0096, 0137): five small WebPs a playbook, as URLs. Eager on purpose
@@ -763,13 +829,22 @@ async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<R
 
 /** What this build ships, fetched on demand. The film plays only where the dev server serves `evidence/`. */
 export async function loadShipped(): Promise<readonly Playbook[]> {
-  const [showcases, benches, evidences, ranking] = await Promise.all([
+  const [showcases, benches, evidences, ranking, proofs] = await Promise.all([
     resolved(SHOWCASES),
     resolved(BENCHES),
     resolved(EVIDENCES),
     resolved(RANKING),
+    resolved(PROOFS),
   ]);
-  return loadPlaybooks(showcases, benches, evidences, import.meta.env.DEV, STORIES, Object.values(ranking)[0]);
+  return loadPlaybooks(
+    showcases,
+    benches,
+    evidences,
+    import.meta.env.DEV,
+    STORIES,
+    Object.values(ranking)[0],
+    proofs,
+  );
 }
 
 /** Whether the evidence films the bench run it is filed against, or an earlier one. */
