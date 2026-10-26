@@ -309,6 +309,7 @@ warning; `--max-s` changes the limit for one run. ffmpeg and ffprobe come from `
 | Need | For | Cost |
 |---|---|---|
 | `ELEVENLABS_API_KEY` (env or a gitignored `.env`) | narration | 2,171 characters a full take, re-runs only for changed lines |
+| the cast, chosen 2026-10-26 | narrator George (`JBFqnCBsd6RMkjVDRZzb`), Mira Jessica (`cgSgspJ2msm6clMCkdW9`), pinned as `ELEVENLABS_VOICE_NARRATOR` / `ELEVENLABS_VOICE_MIRA` in `examples/journey/.env` so a re-run cannot recast | none |
 | ffmpeg with libx264, libass and ddagrab or gdigrab | capture and compose | none |
 | `NEBIUS_API_KEY` in the repository root `.env` | the proving segment | one small hosted Gauntlet: $0.0016 and $0.0021 in the two rehearsal runs, under the server's own $3 a day cap; no Claude |
 | the desktop app as a bundled debug build, with CDP, and an engine signed in | the desktop segment | one engine turn (D1), on the engine the app is set to |
