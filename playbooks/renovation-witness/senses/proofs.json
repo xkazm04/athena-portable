@@ -8,6 +8,7 @@
   "passed": true,
   "proofs": [
     {
+      "sense": "walk",
       "id": "F2",
       "question": "SAM counts installed items on a walk: per-line count exact",
       "measured": 0.9166666666666666,
@@ -23,6 +24,7 @@
       "note": "off: walk-w3/cabinet door 15 vs 14"
     },
     {
+      "sense": "walk",
       "id": "F2d",
       "question": "one object seen in many frames is counted once: instances over the hand count",
       "measured": 0.011363636363636364,
@@ -38,6 +40,7 @@
       "note": "1 counted above 88 hand-counted instances (distinct track ids)"
     },
     {
+      "sense": "walk",
       "id": "F3",
       "question": "promises come out of a walk's audio with speaker and second",
       "measured": 0.8888888888888888,
@@ -53,6 +56,7 @@
       "note": "8 of 9 captured; missed walk-w3@201.0; 0 rows the key does not hold"
     },
     {
+      "sense": "walk",
       "id": "F4",
       "question": "a vague change cannot be signed: the validator's verdict on every change order",
       "measured": 1.0,

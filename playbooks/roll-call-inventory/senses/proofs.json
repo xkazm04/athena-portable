@@ -8,6 +8,7 @@
   "passed": true,
   "proofs": [
     {
+      "sense": "object",
       "id": "F1",
       "question": "recall of the key's possessions (a photo archive contains the home)",
       "measured": 0.9642857142857143,
@@ -23,6 +24,7 @@
       "note": "27 of 28 found, 27 with the right count; 1 asked, not guessed"
     },
     {
+      "sense": "object",
       "id": "F1x",
       "question": "unsupported lines: no possession in the key behind it, or no photo cited",
       "measured": 0.0,
@@ -38,6 +40,7 @@
       "note": ""
     },
     {
+      "sense": "object",
       "id": "F3",
       "question": "duplicates after the merge (one possession stays one line across years)",
       "measured": 0.0,
@@ -53,6 +56,7 @@
       "note": "0 duplicate lines of 27"
     },
     {
+      "sense": "object",
       "id": "F4",
       "question": "people excluded: every photo with people found, no person box in any table",
       "measured": 1.0,
@@ -68,6 +72,7 @@
       "note": "interior-shot sorting not measured"
     },
     {
+      "sense": "object",
       "id": "R2",
       "question": "cost per household of 5,000 photos (resume not measured)",
       "measured": 0.0,
