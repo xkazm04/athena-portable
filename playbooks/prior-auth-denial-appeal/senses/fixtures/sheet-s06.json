@@ -1,0 +1,125 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "discharged",
+          "value": "2026-09-30",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "diagnosis",
+          "value": "Left hip fracture, repaired 2026-09-25",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "discharge_to",
+          "value": "Brookhollow Rehabilitation (skilled nursing)",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "therapy_note",
+          "value": "PT daily, weight-bearing as tolerated",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "discharged",
+          "value": "2026-09-30",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "diagnosis",
+          "value": "Left hip fracture, repaired 2026-09-25",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "discharge_to",
+          "value": "Brookhollow Rehabilitation (skilled nursing)",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        }
+      ],
+      "unreadable": [
+        "therapy_note"
+      ]
+    }
+  ]
+}

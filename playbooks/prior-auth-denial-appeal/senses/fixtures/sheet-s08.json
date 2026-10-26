@@ -1,0 +1,62 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Claimsure Advocates",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "fee",
+          "value": "25% of anything your plan pays after an appeal",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "sender",
+          "value": "Claimsure Advocates",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "fee",
+          "value": "25% of anything your plan pays after an appeal",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        }
+      ]
+    }
+  ]
+}

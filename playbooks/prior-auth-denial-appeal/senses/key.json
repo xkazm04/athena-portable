@@ -1,0 +1,206 @@
+{
+  "call": {
+    "calls": {
+      "call-1": {
+        "consent": true,
+        "turns": [
+          {
+            "second": 0.0,
+            "speaker": "C"
+          },
+          {
+            "second": 7.0,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 12.8,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 19.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 31.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 44.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 55.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 72.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 86.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 101.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 110.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 126.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 132.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 146.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 160.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 170.5,
+            "speaker": "insurer_rep"
+          },
+          {
+            "second": 180.5,
+            "speaker": "caregiver"
+          },
+          {
+            "second": 192.5,
+            "speaker": "insurer_rep"
+          }
+        ],
+        "exact": [
+          {
+            "second": 19.5,
+            "text": "FW-208-3341"
+          },
+          {
+            "second": 31.5,
+            "text": "October 8"
+          },
+          {
+            "second": 44.5,
+            "text": "DN-6104"
+          },
+          {
+            "second": 72.5,
+            "text": "September 29"
+          },
+          {
+            "second": 110.5,
+            "text": "December 6, 2026"
+          },
+          {
+            "second": 170.5,
+            "text": "FW-4471-B"
+          }
+        ]
+      },
+      "call-2": {
+        "consent": false
+      }
+    },
+    "packets": {
+      "table": "drafts",
+      "fileable": [
+        "AW-1"
+      ],
+      "unsupported": [
+        "AW-2",
+        "AW-3",
+        "AW-6"
+      ]
+    }
+  },
+  "paper": {
+    "sheets": {
+      "s01": {
+        "fields": {
+          "member": "Ruth Calloway",
+          "member_id": "FW-208-3341",
+          "denial_id": "DN-6104",
+          "service": "Skilled nursing facility stay, Brookhollow Rehabilitation, from 2026-09-30",
+          "notice_date": "2026-10-02",
+          "reason": "Not medically necessary: no physician documentation of a daily skilled need",
+          "appeal_window_days": "65"
+        },
+        "hard": null
+      },
+      "s02": {
+        "fields": {
+          "patient": "Ruth Calloway",
+          "author": "Dr. Emeka Okonkwo, orthopaedic surgery, Saint Hollis",
+          "date": "2026-09-29",
+          "finding": "Needs daily skilled physical therapy after hip fracture repair; cannot walk 50 feet without hands-on help"
+        },
+        "hard": null
+      },
+      "s03": {
+        "fields": {
+          "provider": "Brookhollow Rehabilitation",
+          "statement_id": "BH-1020",
+          "period": "2026-10-01 to 2026-10-20",
+          "amount_due_usd": "$10,400.00",
+          "due_date": "2026-11-05",
+          "appeal_hold": "Held on written request while a plan appeal of these days is pending"
+        },
+        "hard": "glare"
+      },
+      "s04": {
+        "fields": {
+          "member": "Walter Calloway",
+          "member_id": "FW-208-3342",
+          "denial_id": "DN-6188",
+          "service": "Power wheelchair",
+          "notice_date": "2026-10-09",
+          "reason": "Not medically necessary: a manual wheelchair meets the need"
+        },
+        "hard": null
+      },
+      "s05": {
+        "fields": {
+          "member": "Ruth Calloway",
+          "denial_id": "DN-5871",
+          "service": "Eight more outpatient physical therapy visits",
+          "notice_date": "2026-06-10",
+          "appeal_window_days": "65"
+        },
+        "hard": null
+      },
+      "s06": {
+        "fields": {
+          "patient": "Ruth Calloway",
+          "discharged": "2026-09-30",
+          "diagnosis": "Left hip fracture, repaired 2026-09-25",
+          "discharge_to": "Brookhollow Rehabilitation (skilled nursing)",
+          "therapy_note": "PT daily, weight-bearing as tolerated"
+        },
+        "hard": "handwritten"
+      },
+      "s07": {
+        "fields": {
+          "beneficiary": "Ruth Calloway",
+          "representative": "Maya Calloway, daughter",
+          "signed_date": "2026-10-06"
+        },
+        "hard": "folded"
+      },
+      "s08": {
+        "fields": {
+          "sender": "Claimsure Advocates",
+          "fee": "25% of anything your plan pays after an appeal"
+        },
+        "hard": null
+      }
+    },
+    "piles": {}
+  }
+}

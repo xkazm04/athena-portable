@@ -1,0 +1,203 @@
+{
+  "playbook": "prior-auth-denial-appeal",
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture",
+    "reader": "fixture"
+  },
+  "passed": true,
+  "proofs": [
+    {
+      "sense": "paper",
+      "id": "F1",
+      "question": "sheets found / track purity vs key",
+      "measured": 1.0,
+      "bar": 0.9,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 8,
+      "note": "found 1.0, purity 1.0"
+    },
+    {
+      "sense": "paper",
+      "id": "F2",
+      "question": "field accuracy over read fields",
+      "measured": 1.0,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 36,
+      "note": "36 right, 0 wrong, 2 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F2x",
+      "question": "false facts: read but wrong",
+      "measured": 0.0,
+      "bar": 0.02,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 36,
+      "note": "36 right, 0 wrong, 2 asked, 0 unscored"
+    },
+    {
+      "sense": "paper",
+      "id": "F3",
+      "question": "provenance coverage of read fields",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 36,
+      "note": "36 of 36 with a box of their own"
+    },
+    {
+      "sense": "paper",
+      "id": "R2",
+      "question": "hard sheets: read right or asked, never silently wrong",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 14,
+      "note": "2 asked"
+    },
+    {
+      "sense": "paper",
+      "id": "R3",
+      "question": "cost per pile, USD",
+      "measured": 0.0,
+      "bar": 0.5,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 16,
+      "note": "$0.0000 over 1 pile(s), 16 calls"
+    },
+    {
+      "sense": "call",
+      "id": "F1",
+      "question": "speaker attribution of the key's turns (consented calls)",
+      "measured": 0.9444444444444444,
+      "bar": 0.9,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 18,
+      "note": ""
+    },
+    {
+      "sense": "call",
+      "id": "F1k",
+      "question": "reference numbers and dates exact in the cited turn",
+      "measured": 1.0,
+      "bar": 0.95,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 6,
+      "note": ""
+    },
+    {
+      "sense": "call",
+      "id": "F3",
+      "question": "sentences without a resolving source in the fileable packet",
+      "measured": 0,
+      "bar": 0.0,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 6,
+      "note": "cites resolve to a kept turn or a read sheet field (resolution, not a model audit)"
+    },
+    {
+      "sense": "call",
+      "id": "F3x",
+      "question": "seeded unsupported drafts caught before signing",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 3,
+      "note": ""
+    },
+    {
+      "sense": "call",
+      "id": "F4",
+      "question": "stored hash binds each draft and every one-byte alteration moves it",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 110,
+      "note": "refusing a spent or mismatched approval is core/approvals.py's (ADR 0038)"
+    },
+    {
+      "sense": "call",
+      "id": "R4",
+      "question": "consent gate: a call without the line in its first minute yields no turns",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 2,
+      "note": "consent half only; the representative authority is a truth trap on the bench"
+    }
+  ]
+}

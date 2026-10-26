@@ -1,0 +1,158 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "provider",
+          "value": "Brookhollow Rehabilitation",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "statement_id",
+          "value": "BH-1020",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "period",
+          "value": "2026-10-01 to 2026-10-20",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "$10,400.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "due_date",
+          "value": "2026-11-05",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "appeal_hold",
+          "value": "Held on written request while a plan appeal of these days is pending",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "provider",
+          "value": "Brookhollow Rehabilitation",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "statement_id",
+          "value": "BH-1020",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "period",
+          "value": "2026-10-01 to 2026-10-20",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "amount_due_usd",
+          "value": "$10,100.00",
+          "confidence": 0.93,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "due_date",
+          "value": "2026-11-05",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "appeal_hold",
+          "value": "Held on written request while a plan appeal of these days is pending",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        }
+      ]
+    }
+  ]
+}

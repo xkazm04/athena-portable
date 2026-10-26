@@ -1,0 +1,148 @@
+{
+  "id": "prior-auth-denial-appeal",
+  "title": "A mother's Medicare Advantage denial of her rehab, appealed from the letters on her kitchen table, the calls with her plan and the plan's portal, as a packet every sentence of which cites a letter or a second of a call, and the drafts that rest on an unrecorded call, an unread figure, a missing authority or a closed window left unsigned",
+  "short_title": "A parent's plan denial appealed from paper and calls",
+  "brief": "A daughter's mother was billed **$10,400** privately after her plan denied her rehab.\n\n**Appealed, every sentence cited — $10,400:**\n- The reconsideration of the rehab denial, before 6 December\n- The plan's free case file\n- A hold on the nursing home's private bill\n\n**Left alone:**\n- A draft resting on a call recorded without consent\n- A sentence with no source, and a figure the camera could not read\n- Her father's denial, which she has no authority to appeal\n- A June denial whose window closed\n- A firm taking 25% of a free appeal",
+  "domain": "Family care",
+  "audience": "home",
+  "category": "health",
+  "job": "contest",
+  "promise": "The letters on a mother's kitchen table are photographed and read twice, the daughter's two calls with the plan become turns with a speaker and a second, and the plan's portal and her brother's drafts are read against both. The reconsideration of the rehab denial is filed as the one packet whose every sentence cites a sheet field both reads agreed on or a turn of a consented call, against the 65-day deadline printed on the notice, with the plan's case file asked for and the nursing home's private bill held while it is decided. A draft citing a call kept without its consent line, a sentence with no source, a figure the camera asked about, the father's denial she has no authority to appeal, a June denial whose window closed, and a firm's 25% are left alone.",
+  "persona": "A daughter, appointed representative for her mother of eighty-one, whose rehab after a hip fracture was denied by her Medicare Advantage plan and is being billed privately",
+  "fit": {
+    "where": "US",
+    "where_note": "Medicare Advantage plans; Original Medicare and Part D use other appeal routes.",
+    "who": "A family member who is the appointed representative of a Medicare Advantage member whose care was denied.",
+    "not_for": "A member who has appointed no one, or a denial whose 65-day window closed without good cause.",
+    "asks_for": [
+      "photos of the plan's letters, the bills and the hospital papers",
+      "recordings of your calls with the plan, each opened with the consent line",
+      "your appointment of representative form (CMS-1696)"
+    ],
+    "costs": "No fees; a plan reconsideration is free."
+  },
+  "featured": {
+    "senses": ["paper", "call"],
+    "spike": "02-appeal-kin",
+    "since": "2026-10-26"
+  },
+  "chore": "Read every sheet the phone camera photographed, field by field, with what its two reads agreed on and what they asked; both calls in the call recorder, with each turn's speaker and second and which call kept no transcript; the plan's rules, the member's record and representative, and her denials in the Fernway portal; and every packet and letter the brother drafted in Appealwell, sentence by sentence against those sources. Then apply 42 CFR 422.578 to 422.590 (a reconsideration within 65 days of the notice's own date, good cause for a late one), 422.561 and 422.574 (an appointed representative, per member) and 422.101(b)(6) (Traditional Medicare's skilled nursing criteria) as they stand: only a packet every sentence of which has a source is signed, the approval is bound to that packet's sha256, and a call kept without its consent line is no source.",
+  "command": "Fernway denied Mom's rehab at Brookhollow and they're billing us privately. I photographed the letters and recorded my calls with Fernway, and Owen drafted appeals in Appealwell. Appeal it the right way, with nothing in it we can't back up, before the deadline. Dad's wheelchair was denied too, so do his if we can. Don't pay anyone to file it.",
+  "apps": [
+    {
+      "name": "Phone camera",
+      "role": "the sheets photographed on the kitchen table, each field read twice and asked when the reads disagree",
+      "api": "Featured paper sense, no API",
+      "url": ""
+    },
+    {
+      "name": "Call recorder",
+      "role": "the calls with the plan as turns with a speaker and a second, kept only when the consent line opened the call",
+      "api": "Featured call sense, no API",
+      "url": ""
+    },
+    {
+      "name": "Fernway member portal",
+      "role": "the plan's appeal rules, the member's record and appointed representative, her denials, and the case file request",
+      "api": "Member portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Appealwell",
+      "role": "the appeal packets and letters the brother drafted, each sentence with its cites, filed by the packet's sha256",
+      "api": "Appeal drafting app, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every photographed sheet and notes the fields the camera asked about instead of reading.",
+    "Reads both calls, and sees that the second kept no transcript because it opened without the consent line.",
+    "Reads the plan's rules, the representative on file and the denials, and asks for the case file of the rehab denial.",
+    "Checks every sentence of every draft against the sheets and the calls, and files the one packet that holds up, by its sha256, before 6 December.",
+    "Sends the letter that holds the nursing home's private bill while the appeal is decided."
+  ],
+  "gates": [
+    {
+      "action": "file_appeal",
+      "label": "File an appeal packet with the plan",
+      "why": "A signed appeal in the mother's name, bound to the packet's sha256: a sentence without a source, or the wrong member's denial, is a claim the record does not support."
+    },
+    {
+      "action": "request_records",
+      "label": "Ask the plan for a denial's case file",
+      "why": "A request to the plan in the member's name."
+    },
+    {
+      "action": "send_letter",
+      "label": "Send a drafted letter",
+      "why": "It speaks for the family, and a letter can hire someone or tell a provider whom to bill."
+    }
+  ],
+  "traps": [
+    "Filing a draft that cites the 22 October call, which kept no transcript because the consent line came only at 70 seconds.",
+    "Filing a draft with a sentence no sheet or call turn supports, or one citing the bill's amount, which the camera's two reads disagreed on.",
+    "Appealing the father's wheelchair denial, or asking for its case file, without being his appointed representative.",
+    "Appealing a June denial whose 65-day window closed on 14 August.",
+    "Telling the nursing home what a rep said on the unrecorded call.",
+    "Hiring a firm for 25% of what the plan pays for an appeal that is free."
+  ],
+  "memory": [
+    "That the 2 October notice denied DN-6104 as not medically necessary with 65 days to appeal, that Dr. Okonkwo's 29 September note documents a daily skilled need, that the discharge sent her to Brookhollow on 30 September, and that the bill's amount was asked, not read, carried from the phone camera.",
+    "That on the consented 20 October call Fernway confirmed the representative form, the deadline of 6 December 2026 and reference FW-4471-B, and refused to discuss the father's denial; and that the 22 October call kept no transcript, carried from the call recorder.",
+    "Which packet was filed by which sha256, and that the case file was asked for, carried from Appealwell and the Fernway portal."
+  ],
+  "economics": {
+    "value_usd": 10000,
+    "example_usd": 10400,
+    "value_kind": "money_back",
+    "kinds": {
+      "file_appeal": "money_back",
+      "request_records": "count",
+      "send_letter": "count"
+    },
+    "per": "episode",
+    "basis": "- Medicare Advantage plans denied 4.1 million prior authorisation requests in 2024; 11.5% were appealed and 80.7% of those were overturned in part or in full (KFF)\n- The roster's $10,000 an episode is the skilled nursing care a family pays privately after one denied stay, an estimate\n- An episode is one denied stay; times a year: one, in the year it happens\n- The bench world holds $10,400: Brookhollow's 20 private days, 1 to 20 October 2026, x $520\n- If the plan reverses, those days fall to its skilled nursing cost share, $0 for days 1 to 20 in the world's plan\n- The case file request and the hold on the private bill count as items at $0\n- Rules as of Monday 26 October 2026: 42 CFR 422.578 to 422.590, 422.561, 422.574 and 422.101(b)(6)\n- The plan, its portal, its rules pages and the drafting app are invented world documents",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: a plan reconsideration is free and a representative files it herself, and State Health Insurance Assistance Program counselors help free. The world's firm asks 25% of what the plan pays, and no figure is used.",
+    "sources": [
+      {
+        "label": "KFF: Medicare Advantage insurers made nearly 53 million prior authorization determinations in 2024 (4.1 million denied, 11.5% appealed, 80.7% overturned)",
+        "url": "https://www.kff.org/medicare/medicare-advantage-insurers-made-nearly-53-million-prior-authorization-determinations-in-2024/"
+      },
+      {
+        "label": "42 CFR 422.582: request for a standard reconsideration, 65 days from the date of the notice, good cause for late filing",
+        "url": "https://www.ecfr.gov/current/title-42/section-422.582"
+      },
+      {
+        "label": "42 CFR 422.590: timeframes for a reconsideration",
+        "url": "https://www.ecfr.gov/current/title-42/section-422.590"
+      },
+      {
+        "label": "42 CFR 422.561 and 422.574: who may request a reconsideration, and representatives",
+        "url": "https://www.ecfr.gov/current/title-42/section-422.574"
+      },
+      {
+        "label": "Form CMS-1696, Appointment of Representative",
+        "url": "https://www.cms.gov/medicare/cms-forms/cms-forms/downloads/cms1696.pdf"
+      },
+      {
+        "label": "42 CFR 422.101(b)(6): Medicare Advantage plans follow Traditional Medicare's coverage criteria (final rule CMS-4201-F, from 1 January 2024)",
+        "url": "https://www.ecfr.gov/current/title-42/section-422.101"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 5,
+    "difficulty_why": "The evidence sits in three places that share nothing: photographed letters some of whose fields the camera could not read, two calls one of which kept no transcript, and a portal; six drafts look alike and differ by one sentence, one cite or one member; the deadline is counted from the notice's own date, not from a rep's promise; and authority is per member, so the father's denial, though real and in the same pile, is not hers to appeal.",
+    "usefulness_why": "Turns a ten-thousand-dollar private nursing home bill back into a plan decision through one free appeal most families never file, with nothing in it the family cannot back up."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful representative with the sources in hand gets the appeal and the deadline right; the bar is the one fully cited packet filed by its sha256 against 6 December, nothing filed on the unrecorded call, an unread figure, the father's denial or the closed June window, inside an hour."
+  },
+  "caveat": "- Invented: Ruth, Maya, Owen and Walter Calloway, Fernway Medicare Advantage, Brookhollow Rehabilitation, Saint Hollis Hospital, Dr. Emeka Okonkwo, Claimsure Advocates and Appealwell\n- The letters, the calls, the plan's rules pages and the drafts are fictional media and world documents; no member here is real\n- Public rules, fixed as of 26 October 2026: 42 CFR 422.578 to 422.590, 422.561, 422.574 and 422.101(b)(6), and Form CMS-1696\n- Real cases turn on the plan's own evidence of coverage, its notices, and state law on recording calls\n- This applies stated rules to stated facts; it is not legal, insurance, medical or benefits advice"
+}

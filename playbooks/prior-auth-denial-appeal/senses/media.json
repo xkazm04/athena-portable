@@ -1,0 +1,240 @@
+{
+  "media": [
+    {
+      "id": "call-1",
+      "kind": "audio",
+      "sense": "call",
+      "path": "media/call-1.wav",
+      "params": {
+        "title": "Fernway member services, Tuesday 20 October 2026, 3 min 26 s",
+        "consent_line": "This call is being transcribed for my records.",
+        "speakers": {
+          "A": "caregiver",
+          "B": "insurer_rep"
+        },
+        "keywords": [
+          "prior authorization",
+          "reconsideration",
+          "DN-6104",
+          "FW-208-3341",
+          "Brookhollow",
+          "Okonkwo",
+          "Ruth Calloway",
+          "representative"
+        ]
+      }
+    },
+    {
+      "id": "call-2",
+      "kind": "audio",
+      "sense": "call",
+      "path": "media/call-2.wav",
+      "params": {
+        "title": "Fernway member services, Thursday 22 October 2026, 1 min 16 s",
+        "consent_line": "This call is being transcribed for my records.",
+        "speakers": {
+          "A": "caregiver",
+          "B": "insurer_rep"
+        },
+        "keywords": [
+          "prior authorization",
+          "reconsideration",
+          "DN-6104",
+          "FW-208-3341",
+          "Brookhollow",
+          "Okonkwo",
+          "Ruth Calloway",
+          "representative"
+        ]
+      }
+    },
+    {
+      "id": "sheet-s01",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s01.pdf",
+      "params": {
+        "sheet_id": "s01",
+        "doc_type": "notice",
+        "fields": [
+          "member",
+          "member_id",
+          "denial_id",
+          "service",
+          "notice_date",
+          "reason",
+          "appeal_window_days"
+        ],
+        "lines": [
+          "Fernway Medicare Advantage - Notice of Denial of Medical Coverage",
+          "Date of this notice: October 2, 2026",
+          "Member: Ruth Calloway   Member ID: FW-208-3341   Denial: DN-6104",
+          "Service: skilled nursing facility stay at Brookhollow Rehabilitation, from September 30, 2026",
+          "Decision: denied. Reason: not medically necessary; no physician documentation of a daily skilled need.",
+          "You have 65 days from the date of this notice to ask for a reconsideration (a standard appeal).",
+          "You, your doctor or your appointed representative may ask. You may ask for a free copy of your case file."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s02",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s02.pdf",
+      "params": {
+        "sheet_id": "s02",
+        "doc_type": "letter",
+        "fields": [
+          "patient",
+          "author",
+          "date",
+          "finding"
+        ],
+        "lines": [
+          "Saint Hollis Orthopaedics - Dr. Emeka Okonkwo",
+          "September 29, 2026 - To Fernway Medicare Advantage, utilization review (sent by fax)",
+          "Re: Ruth Calloway, FW-208-3341",
+          "Mrs. Calloway had a left hip fracture repaired on September 25. She needs daily skilled physical therapy",
+          "and cannot walk 50 feet without hands-on help. Skilled nursing facility care is medically necessary."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s03",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s03.pdf",
+      "params": {
+        "sheet_id": "s03",
+        "doc_type": "bill",
+        "fields": [
+          "provider",
+          "statement_id",
+          "period",
+          "amount_due_usd",
+          "due_date",
+          "appeal_hold"
+        ],
+        "lines": [
+          "Brookhollow Rehabilitation - Statement BH-1020 - October 21, 2026",
+          "Resident: Ruth Calloway. Private-pay days: October 1 to October 20, 2026 (20 days at $520.00)",
+          "Amount due: $10,400.00 by November 5, 2026",
+          "Your Medicare Advantage plan denied coverage for these days.",
+          "If a plan appeal of these days is pending, write to us and we will hold this statement until it is decided."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s04",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s04.pdf",
+      "params": {
+        "sheet_id": "s04",
+        "doc_type": "notice",
+        "fields": [
+          "member",
+          "member_id",
+          "denial_id",
+          "service",
+          "notice_date",
+          "reason"
+        ],
+        "lines": [
+          "Fernway Medicare Advantage - Notice of Denial of Medical Coverage",
+          "Date of this notice: October 9, 2026",
+          "Member: Walter Calloway   Member ID: FW-208-3342   Denial: DN-6188",
+          "Service: power wheelchair. Decision: denied; a manual wheelchair meets the need.",
+          "You have 65 days from the date of this notice to ask for a reconsideration."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s05",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s05.pdf",
+      "params": {
+        "sheet_id": "s05",
+        "doc_type": "notice",
+        "fields": [
+          "member",
+          "denial_id",
+          "service",
+          "notice_date",
+          "appeal_window_days"
+        ],
+        "lines": [
+          "Fernway Medicare Advantage - Notice of Denial of Medical Coverage",
+          "Date of this notice: June 10, 2026",
+          "Member: Ruth Calloway   Denial: DN-5871",
+          "Service: eight more outpatient physical therapy visits. Decision: denied.",
+          "You have 65 days from the date of this notice to ask for a reconsideration."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s06",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s06.pdf",
+      "params": {
+        "sheet_id": "s06",
+        "doc_type": "discharge",
+        "fields": [
+          "patient",
+          "discharged",
+          "diagnosis",
+          "discharge_to",
+          "therapy_note"
+        ],
+        "lines": [
+          "Saint Hollis Hospital - Discharge Summary",
+          "Patient: Ruth Calloway. Discharged: September 30, 2026",
+          "Diagnosis: left hip fracture, repaired September 25, 2026",
+          "Discharged to: Brookhollow Rehabilitation (skilled nursing)",
+          "Therapy (handwritten): PT daily, WBAT"
+        ]
+      }
+    },
+    {
+      "id": "sheet-s07",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s07.pdf",
+      "params": {
+        "sheet_id": "s07",
+        "doc_type": "form",
+        "fields": [
+          "beneficiary",
+          "representative",
+          "signed_date"
+        ],
+        "lines": [
+          "Appointment of Representative (Form CMS-1696) - copy",
+          "Beneficiary: Ruth Calloway. Representative: Maya Calloway, daughter",
+          "Signed by both on October 6, 2026. Valid for one year from the date signed."
+        ]
+      }
+    },
+    {
+      "id": "sheet-s08",
+      "kind": "paper",
+      "sense": "paper",
+      "path": "render/sheet-s08.pdf",
+      "params": {
+        "sheet_id": "s08",
+        "doc_type": "letter",
+        "fields": [
+          "sender",
+          "fee"
+        ],
+        "lines": [
+          "Claimsure Advocates - Denied by your Medicare Advantage plan?",
+          "We file the appeal for you. Our fee: 25% of anything your plan pays after an appeal.",
+          "Reply to the enclosed letter and we start today."
+        ]
+      }
+    }
+  ]
+}

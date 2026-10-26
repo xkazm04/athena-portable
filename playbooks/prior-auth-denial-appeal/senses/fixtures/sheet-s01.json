@@ -1,0 +1,182 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "member_id",
+          "value": "FW-208-3341",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-6104",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Skilled nursing facility stay, Brookhollow Rehabilitation, from 2026-09-30",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-10-02",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "reason",
+          "value": "Not medically necessary: no physician documentation of a daily skilled need",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        },
+        {
+          "name": "appeal_window_days",
+          "value": "65",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.72,
+            0.92,
+            0.78
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "member_id",
+          "value": "FW-208-3341",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-6104",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Skilled nursing facility stay, Brookhollow Rehabilitation, from 2026-09-30",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-10-02",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "reason",
+          "value": "Not medically necessary: no physician documentation of a daily skilled need",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        },
+        {
+          "name": "appeal_window_days",
+          "value": "65",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.72,
+            0.92,
+            0.78
+          ]
+        }
+      ]
+    }
+  ]
+}

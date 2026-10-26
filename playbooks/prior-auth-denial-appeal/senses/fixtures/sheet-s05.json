@@ -1,0 +1,134 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-5871",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Eight more outpatient physical therapy visits",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-06-10",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "appeal_window_days",
+          "value": "65",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-5871",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Eight more outpatient physical therapy visits",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-06-10",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "appeal_window_days",
+          "value": "65",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        }
+      ]
+    }
+  ]
+}

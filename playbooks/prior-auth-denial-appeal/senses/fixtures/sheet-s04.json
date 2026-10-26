@@ -1,0 +1,158 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Walter Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "member_id",
+          "value": "FW-208-3342",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-6188",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Power wheelchair",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-10-09",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "reason",
+          "value": "Not medically necessary: a manual wheelchair meets the need",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "member",
+          "value": "Walter Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "member_id",
+          "value": "FW-208-3342",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "denial_id",
+          "value": "DN-6188",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "service",
+          "value": "Power wheelchair",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        },
+        {
+          "name": "notice_date",
+          "value": "2026-10-09",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.54,
+            0.92,
+            0.6
+          ]
+        },
+        {
+          "name": "reason",
+          "value": "Not medically necessary: a manual wheelchair meets the need",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.63,
+            0.92,
+            0.69
+          ]
+        }
+      ]
+    }
+  ]
+}

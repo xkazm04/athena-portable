@@ -1,0 +1,115 @@
+{
+  "transcript": {
+    "language": "en",
+    "turns": [
+      {
+        "speaker": "C",
+        "start_s": 0.0,
+        "end_s": 6.5,
+        "text": "Thank you for calling Fernway Medicare Advantage. Calls may be monitored."
+      },
+      {
+        "speaker": "A",
+        "start_s": 7.0,
+        "end_s": 12.4,
+        "text": "Hi, before we start: this call is being transcribed for my records."
+      },
+      {
+        "speaker": "B",
+        "start_s": 12.8,
+        "end_s": 19.0,
+        "text": "That's fine. This is Denise in member services. Who am I speaking with?"
+      },
+      {
+        "speaker": "A",
+        "start_s": 19.5,
+        "end_s": 31.0,
+        "text": "Maya Calloway. I'm the appointed representative for my mother, Ruth Calloway, member FW-208-3341."
+      },
+      {
+        "speaker": "B",
+        "start_s": 31.5,
+        "end_s": 44.0,
+        "text": "Thank you. I see your representative form on file for Ruth, received October 8. How can I help?"
+      },
+      {
+        "speaker": "A",
+        "start_s": 44.5,
+        "end_s": 55.0,
+        "text": "Her skilled nursing stay at Brookhollow was denied, denial DN-6104. Why?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 55.5,
+        "end_s": 72.0,
+        "text": "The October 2 notice says the stay was not medically necessary. The reviewer noted no physician's note on the case."
+      },
+      {
+        "speaker": "A",
+        "start_s": 72.5,
+        "end_s": 86.0,
+        "text": "Dr. Okonkwo faxed his note on September 29. Is it really not there?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 86.5,
+        "end_s": 101.0,
+        "text": "I don't see it attached to DN-6104. You can send it with the appeal."
+      },
+      {
+        "speaker": "B",
+        "start_s": 101.5,
+        "end_s": 110.0,
+        "text": "How long do we have to appeal?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 110.5,
+        "end_s": 126.0,
+        "text": "A reconsideration has to reach us within 65 days of the notice date, so by December 6, 2026."
+      },
+      {
+        "speaker": "A",
+        "start_s": 126.5,
+        "end_s": 132.0,
+        "text": "And can I get a copy of the case file?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 132.5,
+        "end_s": 146.0,
+        "text": "Yes, the case file and the criteria the reviewer used are free on request, through the portal."
+      },
+      {
+        "speaker": "B",
+        "start_s": 146.5,
+        "end_s": 160.0,
+        "text": "Honestly, a lot of families skip the appeal. These rarely go anywhere."
+      },
+      {
+        "speaker": "A",
+        "start_s": 160.5,
+        "end_s": 170.0,
+        "text": "Can you give me a reference number for this call?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 170.5,
+        "end_s": 180.0,
+        "text": "Your reference number is FW-4471-B."
+      },
+      {
+        "speaker": "A",
+        "start_s": 180.5,
+        "end_s": 192.0,
+        "text": "One more thing: my father, Walter, had a power wheelchair denied. Can we talk about his?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 192.5,
+        "end_s": 206.0,
+        "text": "I don't have a representative form for you on Walter's account, so I can't discuss his case or take an appeal from you for him."
+      }
+    ]
+  }
+}

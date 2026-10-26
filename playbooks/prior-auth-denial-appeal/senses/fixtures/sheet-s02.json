@@ -1,0 +1,110 @@
+{
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "author",
+          "value": "Dr. Emeka Okonkwo, orthopaedic surgery, Saint Hollis",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "date",
+          "value": "2026-09-29",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "finding",
+          "value": "Needs daily skilled physical therapy after hip fracture repair; cannot walk 50 feet without hands-on help",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "fields": [
+        {
+          "name": "patient",
+          "value": "Ruth Calloway",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.18,
+            0.92,
+            0.24
+          ]
+        },
+        {
+          "name": "author",
+          "value": "Dr. Emeka Okonkwo, orthopaedic surgery, Saint Hollis",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.27,
+            0.92,
+            0.33
+          ]
+        },
+        {
+          "name": "date",
+          "value": "2026-09-29",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.36,
+            0.92,
+            0.42
+          ]
+        },
+        {
+          "name": "finding",
+          "value": "Needs daily skilled physical therapy after hip fracture repair; cannot walk 50 feet without hands-on help",
+          "confidence": 0.98,
+          "frame": 0,
+          "box": [
+            0.08,
+            0.45,
+            0.92,
+            0.51
+          ]
+        }
+      ]
+    }
+  ]
+}

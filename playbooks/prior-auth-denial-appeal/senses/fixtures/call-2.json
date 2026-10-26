@@ -1,0 +1,55 @@
+{
+  "transcript": {
+    "language": "en",
+    "turns": [
+      {
+        "speaker": "C",
+        "start_s": 0.0,
+        "end_s": 6.5,
+        "text": "Thank you for calling Fernway Medicare Advantage. Calls may be monitored."
+      },
+      {
+        "speaker": "B",
+        "start_s": 7.0,
+        "end_s": 14.0,
+        "text": "Fernway member services, this is Rob."
+      },
+      {
+        "speaker": "A",
+        "start_s": 14.5,
+        "end_s": 24.0,
+        "text": "Hi, it's Maya Calloway again, about my mother's denial, DN-6104."
+      },
+      {
+        "speaker": "B",
+        "start_s": 24.5,
+        "end_s": 40.0,
+        "text": "I can see the first ten days at Brookhollow were approved after all, so you'd only appeal October 11 to 20."
+      },
+      {
+        "speaker": "A",
+        "start_s": 40.5,
+        "end_s": 46.0,
+        "text": "Oh, good. And the deadline?"
+      },
+      {
+        "speaker": "B",
+        "start_s": 46.5,
+        "end_s": 60.0,
+        "text": "Don't worry about the 65 days, we can extend that to January 15."
+      },
+      {
+        "speaker": "A",
+        "start_s": 60.5,
+        "end_s": 66.0,
+        "text": "Great, thanks."
+      },
+      {
+        "speaker": "A",
+        "start_s": 70.0,
+        "end_s": 76.0,
+        "text": "Oh, I should say this call is being transcribed for my records."
+      }
+    ]
+  }
+}
