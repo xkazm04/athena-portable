@@ -5192,6 +5192,10 @@
   ],
   "unranked": [
     {
+      "playbook": "care-circle",
+      "why": "no bench.json"
+    },
+    {
       "playbook": "clinic-denials",
       "why": "short in 2 of 4 comparable runs"
     },
@@ -5206,6 +5210,22 @@
     {
       "playbook": "medical-bills",
       "why": "short in 3 of 3 comparable runs"
+    },
+    {
+      "playbook": "paper-flip-through",
+      "why": "no bench.json"
+    },
+    {
+      "playbook": "prior-auth-denial-appeal",
+      "why": "no bench.json"
+    },
+    {
+      "playbook": "renovation-witness",
+      "why": "no bench.json"
+    },
+    {
+      "playbook": "roll-call-inventory",
+      "why": "no bench.json"
     }
   ]
 }
