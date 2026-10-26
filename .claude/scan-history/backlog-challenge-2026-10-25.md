@@ -61,4 +61,4 @@ What is left for a person after the build. Each item names its evidence; nothing
 
 | # | Finding | Evidence |
 | - | ------- | -------- |
-| U1 | Tidycrm's volume legend loses its four keys under forced colours (all one white-fill, black-border style); 6f3fbd2d covered the sheet's cues, not the volume legend | UAT-CL-1, `shots/tidycrm-legend-forced.png` (gitignored; the computed values are in the finding) |
+| U1 | **built 5ecfc8f5** - Tidycrm's volume legend loses its four keys under forced colours (all one white-fill, black-border style); 6f3fbd2d covered the sheet's cues, not the volume legend | UAT-CL-1, `shots/tidycrm-legend-forced.png` (gitignored; the computed values are in the finding) |
