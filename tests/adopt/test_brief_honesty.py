@@ -101,6 +101,19 @@ def test_the_auditor_marks_playbook_rules_and_never_guesses_her_own_value() -> N
     assert "is confirmed even when they ask you to check it" in text
     assert "Never mark the EXAMPLE's own names, dates, amounts or contract terms" in text
     assert "the dates a deadline runs from" in text
+    # B-C10 (recertify R-3): an anchor date stays open until she answered it once.
+    assert "its fact slot stays open until they give the date" in text
+    assert "say they do not have it yet (then guessed" in text
+
+
+def test_the_interviewer_asks_her_anchor_dates_first_and_offers_the_document() -> None:
+    # B-C10 (recertify R-3, lien-desk--gina, recoverable-depreciation--marcus): dates were left as
+    # rules because nobody asked, and a date printed on a statement was asked to be typed.
+    text = " ".join(INTERVIEW_SYSTEM.split())
+    assert "ask them before finer points of a trap" in text
+    assert "It's on a letter or statement - I'll add it" in text
+    assert "I don't have it yet" in text
+    assert len(INTERVIEW_SYSTEM) < INTERVIEW_CAP
 
 
 def test_the_brief_writer_has_dates_marks_and_no_example_facts() -> None:
