@@ -326,6 +326,49 @@ def _tool(app_id: str, raw: Any, tables: Mapping[str, Any], problems: list[str])
     )
 
 
+#: A featured chore's built sense tables (``senses/sensed.json``, written by ``python -m
+#: athena.senses build``). Its tables join the world's so a READ tool may serve them; a sensed
+#: table never shadows an authored one. Names mirror :mod:`athena.senses.contract`.
+SENSED_PATH = ("senses", "sensed.json")
+FEATURED_KEYS = frozenset({"senses", "spike", "since"})
+FEATURED_SENSES = frozenset({"paper", "call", "object", "walk", "circle"})
+
+
+def _merge_sensed(root: Path, tables: dict[str, list[dict[str, Any]]], problems: list[str]) -> None:
+    path = root.joinpath(*SENSED_PATH)
+    if not path.is_file():
+        return
+    sensed = _json(path, problems)
+    raw = sensed.get("tables", {})
+    if not isinstance(raw, Mapping):
+        problems.append("senses/sensed.json tables must be an object")
+        return
+    for name, rows in raw.items():
+        if str(name) in tables:
+            problems.append(f"senses/sensed.json table {name!r} shadows a world.json table")
+        elif isinstance(rows, list) and all(isinstance(r, Mapping) for r in rows):
+            tables[str(name)] = [dict(r) for r in rows]
+        else:
+            problems.append(f"senses/sensed.json table {name!r} must be a list of objects")
+
+
+def _featured_problems(featured: Any) -> list[str]:
+    """The authored half of a featured chore. Its status is computed from ``senses/proofs.json``
+    and is never written here: a chore earns the flag on the bench (ADR 0040)."""
+    if featured is None:
+        return []
+    if not isinstance(featured, Mapping):
+        return ["featured must be an object"]
+    problems = [f"featured.{k} is not a featured key" for k in featured if k not in FEATURED_KEYS]
+    senses = featured.get("senses")
+    if not isinstance(senses, list) or not senses or not set(senses) <= FEATURED_SENSES:
+        problems.append(f"featured.senses must be a non-empty list from {sorted(FEATURED_SENSES)}")
+    for key in ("spike", "since"):
+        if not isinstance(featured.get(key), str) or not featured.get(key):
+            problems.append(f"featured.{key} must be a non-empty string")
+    return problems
+
+
 def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playbook:
     """Read ``root`` into a :class:`Playbook`; raise :class:`PlaybookError` with every problem.
 
@@ -366,6 +409,8 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
                 tables[str(name)] = [dict(r) for r in rows]
             else:
                 problems.append(f"table {name!r} must be a list of objects")
+    _merge_sensed(root, tables, problems)
+    problems.extend(_featured_problems(showcase.get("featured")))
 
     apps: list[AppSpec] = []
     for raw in world.get("apps", []) if isinstance(world.get("apps"), list) else []:
