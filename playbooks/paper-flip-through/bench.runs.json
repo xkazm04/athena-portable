@@ -1,0 +1,22 @@
+{
+  "playbook": "paper-flip-through",
+  "runs": [
+    {
+      "run_at": "2026-10-26T22:21:20Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:2e5f4103261c9ca7",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 9,
+      "value_found_usd": 3107.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 224.0,
+      "your_time_s": 360
+    }
+  ],
+  "corrections": []
+}
