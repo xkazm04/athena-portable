@@ -3550,7 +3550,11 @@
           "revision": 6,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/scripts/dev-source-loc.mjs:54 The dev server pulls @babel/core into a build-time plugin that runs on the developer workstation. No hand-kept build-time dependency inventory exists anywhere in the repo (git grep for build-time dependency/tier/inventory terms found nothing), so this tier is still priced by the merged graph. The env-var gate narrows when the plugin runs, but it does not inventory the dependency.",
+          "evaluatedAt": "2026-10-26",
+          "evaluatedAgainst": "sha256-b2:f5666db1094acd9f",
+          "evaluatedRevision": 6
         },
         {
           "subject": "settings",

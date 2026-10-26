@@ -7766,6 +7766,37 @@
           "evidence": "apps/desktop/src/console/Console.tsx:9 This is a UI stage component with no runtime CLI front end to assemble."
         }
       ]
+    },
+    "6099214d-afb1-49fe-b67b-346df665a89f/supply-chain": {
+      "context": "desktop-build-config",
+      "subject": "supply-chain",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-26",
+      "evaluatedTs": "2026-10-26T22:25:43.234Z",
+      "worker": "d5986b27-96f2-47d1-ab97-92626b0e2817",
+      "techniques": [
+        {
+          "technique": "permission-manifest-scoping",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src-tauri/build.rs:25 Turns on the app ACL manifest, so each command reaches only the webviews a per-surface capability grants it to. Page webviews get only bridge_reply. The header (build.rs:15) says commands.test.ts holds the declared, registered, permitted and invoked lists in parity, and that test asserts a nonzero population."
+        },
+        {
+          "technique": "build-time-dependency-tier",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/scripts/dev-source-loc.mjs:54 A build-time-only package runs on the dev workstation inside the Vite serve process. The build is not hermetic, and the repo has no build-time inventory or per-entry 'what could this reach' record (searched). Opt-in via ATHENA_INSPECTOR=1 limits exposure but does not replace the inventory."
+        },
+        {
+          "technique": "reading-is-not-running",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/scripts/dev-source-loc.mjs:65 The plugin transforms only this repo's own source, not a foreign tree, so the precondition does not hold. Even so, configFile:false and babelrc:false stop Babel from evaluating config programs found in the tree."
+        },
+        {
+          "technique": "archive-extraction-safety",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/vite.config.ts:69 Nothing in these files unpacks an archive (git grep for unzip/extract found nothing). The only path built from a request is this dev-server film route, bounded by a one-segment regex."
+        }
+      ]
     }
   }
 }
