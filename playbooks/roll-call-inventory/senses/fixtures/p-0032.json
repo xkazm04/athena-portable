@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "car", "score": 0.812, "box": [0.406, 0.514, 0.713, 0.803], "frame": 0, "track_id": "t1"},
+    {"label": "bicycle", "score": 0.848, "box": [0.119, 0.141, 0.396, 0.539], "frame": 0, "track_id": "t2"},
+    {"label": "bicycle", "score": 0.959, "box": [0.224, 0.277, 0.529, 0.524], "frame": 0, "track_id": "t3"},
+    {"label": "table saw", "score": 0.923, "box": [0.203, 0.311, 0.417, 0.669], "frame": 0, "track_id": "t4"},
+    {"label": "curtain", "score": 0.55, "box": [0.375, 0.065, 0.627, 0.339], "frame": 0, "track_id": "t5"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Toyota RAV4", "confidence": 0.89, "frame": 0, "box": [0.406, 0.514, 0.713, 0.803]},
+        {"name": "t1.brand", "value": "Toyota", "confidence": 0.9, "frame": 0, "box": [0.406, 0.514, 0.713, 0.803]},
+        {"name": "t2.label", "value": "Trek Marlin mountain bike", "confidence": 0.87, "frame": 0, "box": [0.119, 0.141, 0.396, 0.539]},
+        {"name": "t2.brand", "value": "Trek", "confidence": 0.9, "frame": 0, "box": [0.119, 0.141, 0.396, 0.539]},
+        {"name": "t3.label", "value": "Trek Marlin mountain bike", "confidence": 0.83, "frame": 0, "box": [0.224, 0.277, 0.529, 0.524]},
+        {"name": "t3.brand", "value": "Trek", "confidence": 0.9, "frame": 0, "box": [0.224, 0.277, 0.529, 0.524]},
+        {"name": "t4.label", "value": "DeWalt jobsite table saw", "confidence": 0.96, "frame": 0, "box": [0.203, 0.311, 0.417, 0.669]},
+        {"name": "t4.brand", "value": "DeWalt", "confidence": 0.9, "frame": 0, "box": [0.203, 0.311, 0.417, 0.669]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

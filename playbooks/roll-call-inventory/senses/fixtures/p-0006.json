@@ -1,0 +1,27 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.921, "box": [0.129, 0.268, 0.409, 0.416], "frame": 0, "track_id": "t1"},
+    {"label": "sofa", "score": 0.931, "box": [0.207, 0.217, 0.518, 0.46], "frame": 0, "track_id": "t2"},
+    {"label": "television", "score": 0.761, "box": [0.215, 0.375, 0.539, 0.621], "frame": 0, "track_id": "t3"},
+    {"label": "floor lamp", "score": 0.75, "box": [0.327, 0.145, 0.633, 0.5], "frame": 0, "track_id": "t4"},
+    {"label": "floor lamp", "score": 0.735, "box": [0.488, 0.371, 0.794, 0.588], "frame": 0, "track_id": "t5"},
+    {"label": "bookshelf", "score": 0.813, "box": [0.48, 0.186, 0.68, 0.422], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.554, 0.128, 0.675, 0.512], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t2.label", "value": "Grey IKEA Kivik sectional sofa", "confidence": 0.83, "frame": 0, "box": [0.207, 0.217, 0.518, 0.46]},
+        {"name": "t2.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.207, 0.217, 0.518, 0.46]},
+        {"name": "t3.label", "value": "LG 65\" OLED TV", "confidence": 0.82, "frame": 0, "box": [0.215, 0.375, 0.539, 0.621]},
+        {"name": "t3.brand", "value": "LG", "confidence": 0.9, "frame": 0, "box": [0.215, 0.375, 0.539, 0.621]},
+        {"name": "t4.label", "value": "Brass arc floor lamp", "confidence": 0.85, "frame": 0, "box": [0.327, 0.145, 0.633, 0.5]},
+        {"name": "t5.label", "value": "Brass arc floor lamp", "confidence": 0.85, "frame": 0, "box": [0.488, 0.371, 0.794, 0.588]},
+        {"name": "t6.label", "value": "IKEA Billy bookcase, white", "confidence": 0.87, "frame": 0, "box": [0.48, 0.186, 0.68, 0.422]},
+        {"name": "t6.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.48, 0.186, 0.68, 0.422]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

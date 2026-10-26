@@ -1,0 +1,16 @@
+{
+  "segments": [
+    {"label": "exercise bike", "score": 0.791, "box": [0.371, 0.157, 0.572, 0.556], "frame": 0, "track_id": "t1"},
+    {"label": "curtain", "score": 0.55, "box": [0.069, 0.159, 0.227, 0.54], "frame": 0, "track_id": "t2"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Peloton Bike", "confidence": 0.87, "frame": 0, "box": [0.371, 0.157, 0.572, 0.556]},
+        {"name": "t1.brand", "value": "Peloton", "confidence": 0.9, "frame": 0, "box": [0.371, 0.157, 0.572, 0.556]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

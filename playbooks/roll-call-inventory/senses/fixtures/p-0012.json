@@ -1,0 +1,17 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.988, "box": [0.259, 0.424, 0.416, 0.737], "frame": 0, "track_id": "t1"},
+    {"label": "stand mixer", "score": 0.874, "box": [0.459, 0.387, 0.697, 0.642], "frame": 0, "track_id": "t2"},
+    {"label": "curtain", "score": 0.55, "box": [0.107, 0.098, 0.399, 0.475], "frame": 0, "track_id": "t3"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t2.label", "value": "KitchenAid Artisan stand mixer, red", "confidence": 0.95, "frame": 0, "box": [0.459, 0.387, 0.697, 0.642]},
+        {"name": "t2.brand", "value": "KitchenAid", "confidence": 0.9, "frame": 0, "box": [0.459, 0.387, 0.697, 0.642]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

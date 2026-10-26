@@ -1,0 +1,18 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.965, "box": [0.233, 0.235, 0.475, 0.522], "frame": 0, "track_id": "t1"},
+    {"label": "bed", "score": 0.739, "box": [0.15, 0.051, 0.318, 0.391], "frame": 0, "track_id": "t2"},
+    {"label": "dresser", "score": 0.745, "box": [0.133, 0.155, 0.293, 0.388], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.084, 0.134, 0.317, 0.271], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t2.label", "value": "Upholstered queen bed frame", "confidence": 0.88, "frame": 0, "box": [0.15, 0.051, 0.318, 0.391]},
+        {"name": "t3.label", "value": "Six-drawer oak dresser", "confidence": 0.8, "frame": 0, "box": [0.133, 0.155, 0.293, 0.388]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

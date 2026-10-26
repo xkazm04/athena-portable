@@ -1,0 +1,127 @@
+{
+  "id": "roll-call-inventory",
+  "title": "The home's contents, itemised from the family's own photos",
+  "short_title": "Contents claim itemised from photos",
+  "brief": "A Sacramento family whose house burned has **$17,885** of possessions on its contents claim.\n\n**Claimed — 20 possessions, $17,885:**\n- Each one seen in the family's photos, room by room\n- Counted as the most seen together in one photo\n- Priced from the insurer's guide, once each\n- One photo per room in the binder, none with people\n\n**Left alone:**\n- A TV replaced in 2024 and a bike sold on Marketplace\n- A fridge already submitted from memory\n- The car, which the auto policy covers\n- Three things at Grandma's house\n- An unnamed lamp and the estimator's guesses",
+  "domain": "Home insurance",
+  "audience": "home",
+  "category": "housing",
+  "job": "recover",
+  "promise": "Every possession the family's photos show, one line each with its room, count, price and the photos that prove it, submitted to the insurer once; nothing claimed that was gone before the fire, belongs to another house, was already submitted, is excluded or rests on no photo, and no photo of a person shared.",
+  "persona": "A Sacramento family of four whose house burned to the ground, with years of phone, Facebook and Instagram photos and an insurer that pays contents only line by line",
+  "chore": "Read the insurer's claim, policy and what was already submitted. Then go through the photo archive's object scan room by room: each line is one possession merged across photos and years, with its count, first and last seen, and the photos behind it. Check each line against the photos' captions and places, and the dates against the day of the fire. Submit what the family still owned at the guide's price times the count, and put one photo of each room, without people, in the adjuster's binder.",
+  "command": "Our house burned down last month and Harborline wants every single thing we owned listed. Our Keepsake photo archive has scanned all our photos. Go through it, submit everything we still had on the day of the fire with the right counts, and put one photo of each room in the adjuster's binder. No photos with the kids or anyone in them.",
+  "apps": [
+    {
+      "name": "Harborline contents claim",
+      "role": "the claim, the policy's contents terms, the lines already submitted, the estimator's suggestions, the price guide, and the forms",
+      "api": "Policyholder portal only",
+      "url": ""
+    },
+    {
+      "name": "Keepsake photo archive",
+      "role": "the family's photos with captions and places, and the object scan: one line per possession, the photos that show it, which of them have people",
+      "api": "Customer app only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the claim, the adjuster's request and the policy's contents, exclusion and pricing terms in Harborline.",
+    "Reads what was already submitted from memory, and the estimator's suggestions.",
+    "Goes through the photo archive's inventory room by room, and each line's photos, captions and places.",
+    "Sets aside what was gone before the fire, what belongs to another house, what is excluded, and what the scan could not name.",
+    "Back in Harborline, submits each remaining possession once at the guide's price times its count.",
+    "Adds one photo of each room, without people, to the adjuster's binder."
+  ],
+  "gates": [
+    {
+      "action": "submit_inventory",
+      "label": "Submit a possession to the contents claim",
+      "why": "It states to the insurer, in the family's name, that they owned this item on the day of the fire; a wrong or doubled line is a misstatement on a claim."
+    },
+    {
+      "action": "share_binder",
+      "label": "Add a photo to the adjuster's evidence binder",
+      "why": "The photo leaves the family's archive for the insurer's claim file, which investigators and vendors can see; a photo of the children cannot be taken back."
+    }
+  ],
+  "traps": [
+    "A Samsung TV last seen at Christmas 2023: the LG that replaced it arrived in February 2024.",
+    "A Peloton sold on Facebook Marketplace in June 2024.",
+    "A refrigerator already submitted from memory: a second line double-claims it.",
+    "The family car in the garage photos: motor vehicles are excluded from contents.",
+    "A grandfather clock, a piano and a leather sofa seen only at Grandma's house in Fresno.",
+    "A bedside lamp the scan could not name: a question for the family, not a guess.",
+    "Three estimator suggestions (a sound system, jewelry, handbags) that no photo shows.",
+    "Photos with the children or guests in them, and a photo of Grandma's living room, offered for the binder."
+  ],
+  "memory": [
+    "Each possession's line, its count, first and last seen, and the photos that prove it.",
+    "Which photos have people in them and must never leave the archive.",
+    "What was already submitted, and what was set aside and why.",
+    "The questions the scan left for the family."
+  ],
+  "economics": {
+    "value_usd": 20000,
+    "example_usd": 17885,
+    "per": "episode",
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_inventory": "money_back",
+      "share_binder": "count"
+    },
+    "basis": "- Contents limits are typically 50 to 70% of the dwelling limit: $250,000 to $350,000 on a $500,000 home (Policygenius).\n- An item left off the inventory usually goes unpaid, even when the insurer agrees it was owned.\n- After the 2017 Wine Country fires, 47% of total-loss owners surveyed were underinsured on contents (United Policyholders).\n- The roster assumes a photo-led list adds 25% to an $80,000 memory-only list, about $20,000; 25% is spike 03's target, not a measured figure.\n- California's SB 495 advances 60% of contents without an inventory after a declared emergency; the rest, and everything elsewhere, is paid line by line.\n- The bench world holds $17,885 of photographed possessions across six rooms.\n- Times a year: once, after a loss.",
+    "manual_minutes": 1200,
+    "times_per_year": 1,
+    "incumbent": "Public adjusters and paid total-loss inventory services work for a share of the claim or a fee, commonly 10 to 20%. The figure used is 15%, an estimate.",
+    "incumbent_fee_pct": 15,
+    "sources": [
+      {
+        "label": "Policygenius: personal property limits, typically 50 to 70% of the dwelling limit",
+        "url": "https://policygenius.com/homeowners-insurance/personal-property-insurance/"
+      },
+      {
+        "label": "United Policyholders: Fourmile and Wine Country fire surveys of contents underinsurance",
+        "url": "https://uphelp.org/survey-shows-fourmile-fire-victims-severely-underinsured/"
+      },
+      {
+        "label": "California SB 495: 60% of contents limits without a detailed inventory in a declared emergency",
+        "url": "https://sd24.senate.ca.gov/node/790"
+      },
+      {
+        "label": "United Policyholders: after the Los Angeles wildfires, itemization the problem named most often",
+        "url": "https://uphelp.org/after-the-los-angeles-wildfires-80-of-victims-report-serious-insurance-claim-issues/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 5,
+    "difficulty_why": "Twenty-seven lines from forty-five photos; a replaced TV, a sold bike, a doubled fridge, an excluded car, another house's furniture and the family's own children in the best room shots each look like something to file.",
+    "usefulness_why": "Thousands of dollars of contents that go unpaid because nobody can list a burned house from memory, at the worst moment of a family's year."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful family member working from the photos finds most of it; the bar is most of the value, nothing claimed that was gone, doubled, excluded or someone else's, and no photo of a person shared, inside an hour."
+  },
+  "caveat": "- Harborline, Keepsake, the Reyes family, their photos and Grandma Ruth are invented; no image file exists, only the scan's recorded answers.\n- The terms follow a common homeowners policy's contents coverage, fixed in the bench world as of October 2026.\n- A real policy's terms and the adjuster decide; this is not legal advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Contents are paid against an itemised inventory under most US homeowners and renters policies; California's SB 495 advances part of it after a declared emergency.",
+    "who": "A household that lost the contents of its home and must list them for its insurer.",
+    "not_for": "A household with no photos of its rooms, or a loss the insurer pays without an inventory.",
+    "asks_for": [
+      "your phone photos and social media photo exports",
+      "your insurer's claim portal",
+      "what you already submitted"
+    ],
+    "costs": "No fees from Athena; only your Claude usage and the photo scan's model calls. Public adjusters usually keep a share of the claim."
+  },
+  "featured": {
+    "senses": ["object"],
+    "spike": "03-roll-call",
+    "since": "2026-10-26"
+  }
+}

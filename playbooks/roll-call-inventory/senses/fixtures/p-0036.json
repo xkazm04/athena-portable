@@ -1,0 +1,22 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.928, "box": [0.032, 0.223, 0.324, 0.562], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.951, "box": [0.289, 0.319, 0.511, 0.589], "frame": 0, "track_id": "t2"},
+    {"label": "person", "score": 0.975, "box": [0.136, 0.347, 0.471, 0.705], "frame": 0, "track_id": "t3"},
+    {"label": "person", "score": 0.916, "box": [0.579, 0.47, 0.737, 0.664], "frame": 0, "track_id": "t4"},
+    {"label": "clock", "score": 0.936, "box": [0.137, 0.077, 0.482, 0.311], "frame": 0, "track_id": "t5"},
+    {"label": "piano", "score": 0.885, "box": [0.028, 0.485, 0.331, 0.883], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.464, 0.096, 0.709, 0.34], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t5.label", "value": "Grandfather clock, walnut", "confidence": 0.82, "frame": 0, "box": [0.137, 0.077, 0.482, 0.311]},
+        {"name": "t6.label", "value": "Yamaha upright piano", "confidence": 0.89, "frame": 0, "box": [0.028, 0.485, 0.331, 0.883]},
+        {"name": "t6.brand", "value": "Yamaha", "confidence": 0.9, "frame": 0, "box": [0.028, 0.485, 0.331, 0.883]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

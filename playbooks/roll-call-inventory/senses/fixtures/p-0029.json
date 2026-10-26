@@ -1,0 +1,28 @@
+{
+  "segments": [
+    {"label": "office chair", "score": 0.951, "box": [0.441, 0.487, 0.788, 0.779], "frame": 0, "track_id": "t1"},
+    {"label": "monitor", "score": 0.831, "box": [0.263, 0.524, 0.591, 0.91], "frame": 0, "track_id": "t2"},
+    {"label": "monitor", "score": 0.952, "box": [0.256, 0.549, 0.588, 0.75], "frame": 0, "track_id": "t3"},
+    {"label": "laptop", "score": 0.873, "box": [0.076, 0.411, 0.263, 0.677], "frame": 0, "track_id": "t4"},
+    {"label": "standing desk", "score": 0.9, "box": [0.452, 0.188, 0.672, 0.405], "frame": 0, "track_id": "t5"},
+    {"label": "curtain", "score": 0.55, "box": [0.187, 0.102, 0.375, 0.337], "frame": 0, "track_id": "t6"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Herman Miller Aeron chair", "confidence": 0.89, "frame": 0, "box": [0.441, 0.487, 0.788, 0.779]},
+        {"name": "t1.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.441, 0.487, 0.788, 0.779]},
+        {"name": "t2.label", "value": "Dell 27-inch monitor", "confidence": 0.93, "frame": 0, "box": [0.263, 0.524, 0.591, 0.91]},
+        {"name": "t2.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.263, 0.524, 0.591, 0.91]},
+        {"name": "t3.label", "value": "Dell 27in monitor", "confidence": 0.83, "frame": 0, "box": [0.256, 0.549, 0.588, 0.75]},
+        {"name": "t3.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.256, 0.549, 0.588, 0.75]},
+        {"name": "t4.label", "value": "Apple MacBook Pro 14in", "confidence": 0.81, "frame": 0, "box": [0.076, 0.411, 0.263, 0.677]},
+        {"name": "t4.brand", "value": "Apple", "confidence": 0.9, "frame": 0, "box": [0.076, 0.411, 0.263, 0.677]},
+        {"name": "t5.label", "value": "Uplift V2 standing desk", "confidence": 0.93, "frame": 0, "box": [0.452, 0.188, 0.672, 0.405]},
+        {"name": "t5.brand", "value": "Uplift", "confidence": 0.9, "frame": 0, "box": [0.452, 0.188, 0.672, 0.405]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "object": {
+    "note": "Every possession the photos show, claimable or not (truth.json decides); the bedside lamp's crop is unreadable on purpose, so the sense must ask, never guess.",
+    "items": [
+      {
+        "label": "IKEA Kivik sectional sofa, grey",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "LG 65in OLED TV",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "Samsung 40in LED TV",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "Brass arc floor lamp",
+        "room": "living room",
+        "count": 2
+      },
+      {
+        "label": "Walnut coffee table",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "IKEA Billy bookcase, white",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "LG French door refrigerator",
+        "room": "kitchen",
+        "count": 1
+      },
+      {
+        "label": "KitchenAid Artisan stand mixer, red",
+        "room": "kitchen",
+        "count": 1
+      },
+      {
+        "label": "Oak dining table",
+        "room": "kitchen",
+        "count": 1
+      },
+      {
+        "label": "Oak dining chair",
+        "room": "kitchen",
+        "count": 4
+      },
+      {
+        "label": "Breville Barista Express espresso machine",
+        "room": "kitchen",
+        "count": 1
+      },
+      {
+        "label": "Upholstered queen bed frame",
+        "room": "main bedroom",
+        "count": 1
+      },
+      {
+        "label": "Six-drawer oak dresser",
+        "room": "main bedroom",
+        "count": 1
+      },
+      {
+        "label": "Twin-over-twin bunk bed",
+        "room": "kids' room",
+        "count": 1
+      },
+      {
+        "label": "Nintendo Switch OLED console",
+        "room": "kids' room",
+        "count": 1
+      },
+      {
+        "label": "Kids' white desk",
+        "room": "kids' room",
+        "count": 1
+      },
+      {
+        "label": "Peloton Bike",
+        "room": "home office",
+        "count": 1
+      },
+      {
+        "label": "Herman Miller Aeron chair",
+        "room": "home office",
+        "count": 1
+      },
+      {
+        "label": "Dell 27in monitor",
+        "room": "home office",
+        "count": 2
+      },
+      {
+        "label": "Apple MacBook Pro 14in",
+        "room": "home office",
+        "count": 1
+      },
+      {
+        "label": "Uplift V2 standing desk",
+        "room": "home office",
+        "count": 1
+      },
+      {
+        "label": "Toyota RAV4",
+        "room": "garage",
+        "count": 1
+      },
+      {
+        "label": "Trek Marlin mountain bike",
+        "room": "garage",
+        "count": 2
+      },
+      {
+        "label": "DeWalt jobsite table saw",
+        "room": "garage",
+        "count": 1
+      },
+      {
+        "label": "Grandfather clock, walnut",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "Yamaha upright piano",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "Brown leather Chesterfield sofa",
+        "room": "living room",
+        "count": 1
+      },
+      {
+        "label": "Bedside table lamp",
+        "room": "main bedroom",
+        "count": 1
+      }
+    ],
+    "people_photos": {
+      "p-0002": 2,
+      "p-0004": 3,
+      "p-0006": 1,
+      "p-0010": 2,
+      "p-0012": 1,
+      "p-0014": 5,
+      "p-0021": 1,
+      "p-0022": 2,
+      "p-0023": 2,
+      "p-0031": 1,
+      "p-0033": 2,
+      "p-0036": 4,
+      "p-0037": 3,
+      "p-0039": 4,
+      "p-0044": 2,
+      "p-0045": 2
+    }
+  }
+}

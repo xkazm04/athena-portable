@@ -1,0 +1,18 @@
+{
+  "segments": [
+    {"label": "bed", "score": 0.787, "box": [0.155, 0.089, 0.399, 0.469], "frame": 0, "track_id": "t1"},
+    {"label": "dresser", "score": 0.95, "box": [0.423, 0.117, 0.74, 0.405], "frame": 0, "track_id": "t2"},
+    {"label": "table lamp", "score": 0.62, "box": [0.449, 0.222, 0.755, 0.603], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.52, 0.269, 0.814, 0.524], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Upholstered queen bed frame", "confidence": 0.95, "frame": 0, "box": [0.155, 0.089, 0.399, 0.469]},
+        {"name": "t2.label", "value": "Six-drawer oak dresser", "confidence": 0.92, "frame": 0, "box": [0.423, 0.117, 0.74, 0.405]}
+      ],
+      "unreadable": ["t3.label", "t3.brand"]
+    }
+  ]
+}

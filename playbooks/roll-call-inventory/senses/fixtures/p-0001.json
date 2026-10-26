@@ -1,0 +1,21 @@
+{
+  "segments": [
+    {"label": "sofa", "score": 0.869, "box": [0.158, 0.322, 0.363, 0.611], "frame": 0, "track_id": "t1"},
+    {"label": "television", "score": 0.969, "box": [0.028, 0.469, 0.207, 0.654], "frame": 0, "track_id": "t2"},
+    {"label": "coffee table", "score": 0.871, "box": [0.505, 0.288, 0.772, 0.45], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.323, 0.421, 0.598, 0.559], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "IKEA Kivik sectional sofa, grey", "confidence": 0.81, "frame": 0, "box": [0.158, 0.322, 0.363, 0.611]},
+        {"name": "t1.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.158, 0.322, 0.363, 0.611]},
+        {"name": "t2.label", "value": "Samsung 40in LED TV", "confidence": 0.88, "frame": 0, "box": [0.028, 0.469, 0.207, 0.654]},
+        {"name": "t2.brand", "value": "Samsung", "confidence": 0.9, "frame": 0, "box": [0.028, 0.469, 0.207, 0.654]},
+        {"name": "t3.label", "value": "Walnut coffee table", "confidence": 0.95, "frame": 0, "box": [0.505, 0.288, 0.772, 0.45]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

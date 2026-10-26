@@ -1,0 +1,22 @@
+{
+  "segments": [
+    {"label": "dining table", "score": 0.79, "box": [0.313, 0.174, 0.61, 0.393], "frame": 0, "track_id": "t1"},
+    {"label": "dining chair", "score": 0.73, "box": [0.334, 0.436, 0.535, 0.793], "frame": 0, "track_id": "t2"},
+    {"label": "dining chair", "score": 0.75, "box": [0.078, 0.106, 0.377, 0.43], "frame": 0, "track_id": "t3"},
+    {"label": "espresso machine", "score": 0.86, "box": [0.262, 0.422, 0.569, 0.751], "frame": 0, "track_id": "t4"},
+    {"label": "curtain", "score": 0.55, "box": [0.251, 0.147, 0.492, 0.426], "frame": 0, "track_id": "t5"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Oak dining table", "confidence": 0.87, "frame": 0, "box": [0.313, 0.174, 0.61, 0.393]},
+        {"name": "t2.label", "value": "Oak dining chair", "confidence": 0.85, "frame": 0, "box": [0.334, 0.436, 0.535, 0.793]},
+        {"name": "t3.label", "value": "Oak dining chair", "confidence": 0.83, "frame": 0, "box": [0.078, 0.106, 0.377, 0.43]},
+        {"name": "t4.label", "value": "Breville Barista Express espresso machine", "confidence": 0.82, "frame": 0, "box": [0.262, 0.422, 0.569, 0.751]},
+        {"name": "t4.brand", "value": "Breville", "confidence": 0.9, "frame": 0, "box": [0.262, 0.422, 0.569, 0.751]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

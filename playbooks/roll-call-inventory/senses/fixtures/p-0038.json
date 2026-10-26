@@ -1,0 +1,16 @@
+{
+  "segments": [
+    {"label": "piano", "score": 0.931, "box": [0.267, 0.474, 0.566, 0.61], "frame": 0, "track_id": "t1"},
+    {"label": "curtain", "score": 0.55, "box": [0.589, 0.233, 0.759, 0.507], "frame": 0, "track_id": "t2"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Upright piano, Yamaha", "confidence": 0.87, "frame": 0, "box": [0.267, 0.474, 0.566, 0.61]},
+        {"name": "t1.brand", "value": "Yamaha", "confidence": 0.9, "frame": 0, "box": [0.267, 0.474, 0.566, 0.61]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

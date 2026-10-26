@@ -1,0 +1,21 @@
+{
+  "segments": [
+    {"label": "sofa", "score": 0.819, "box": [0.448, 0.464, 0.76, 0.84], "frame": 0, "track_id": "t1"},
+    {"label": "coffee table", "score": 0.94, "box": [0.09, 0.49, 0.297, 0.743], "frame": 0, "track_id": "t2"},
+    {"label": "bookshelf", "score": 0.708, "box": [0.13, 0.462, 0.388, 0.606], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.024, 0.466, 0.187, 0.663], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "IKEA Kivik sectional sofa, grey", "confidence": 0.92, "frame": 0, "box": [0.448, 0.464, 0.76, 0.84]},
+        {"name": "t1.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.448, 0.464, 0.76, 0.84]},
+        {"name": "t2.label", "value": "Walnut coffee table", "confidence": 0.85, "frame": 0, "box": [0.09, 0.49, 0.297, 0.743]},
+        {"name": "t3.label", "value": "White IKEA Billy bookcase", "confidence": 0.86, "frame": 0, "box": [0.13, 0.462, 0.388, 0.606]},
+        {"name": "t3.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.13, 0.462, 0.388, 0.606]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "segments": [
+    {"label": "dresser", "score": 0.732, "box": [0.525, 0.158, 0.835, 0.541], "frame": 0, "track_id": "t1"},
+    {"label": "curtain", "score": 0.55, "box": [0.25, 0.156, 0.413, 0.287], "frame": 0, "track_id": "t2"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Six-drawer oak dresser", "confidence": 0.96, "frame": 0, "box": [0.525, 0.158, 0.835, 0.541]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

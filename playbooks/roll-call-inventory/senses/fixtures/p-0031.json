@@ -1,0 +1,29 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.918, "box": [0.467, 0.283, 0.812, 0.623], "frame": 0, "track_id": "t1"},
+    {"label": "laptop", "score": 0.817, "box": [0.588, 0.068, 0.751, 0.191], "frame": 0, "track_id": "t2"},
+    {"label": "monitor", "score": 0.767, "box": [0.05, 0.323, 0.191, 0.53], "frame": 0, "track_id": "t3"},
+    {"label": "monitor", "score": 0.869, "box": [0.263, 0.18, 0.393, 0.42], "frame": 0, "track_id": "t4"},
+    {"label": "standing desk", "score": 0.905, "box": [0.549, 0.454, 0.726, 0.612], "frame": 0, "track_id": "t5"},
+    {"label": "office chair", "score": 0.746, "box": [0.315, 0.465, 0.562, 0.664], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.393, 0.498, 0.721, 0.749], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t2.label", "value": "Apple MacBook Pro 14\"", "confidence": 0.86, "frame": 0, "box": [0.588, 0.068, 0.751, 0.191]},
+        {"name": "t2.brand", "value": "Apple", "confidence": 0.9, "frame": 0, "box": [0.588, 0.068, 0.751, 0.191]},
+        {"name": "t3.label", "value": "Dell 27-inch monitor", "confidence": 0.94, "frame": 0, "box": [0.05, 0.323, 0.191, 0.53]},
+        {"name": "t3.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.05, 0.323, 0.191, 0.53]},
+        {"name": "t4.label", "value": "Dell 27in monitor", "confidence": 0.91, "frame": 0, "box": [0.263, 0.18, 0.393, 0.42]},
+        {"name": "t4.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.263, 0.18, 0.393, 0.42]},
+        {"name": "t5.label", "value": "Uplift V2 standing desk", "confidence": 0.93, "frame": 0, "box": [0.549, 0.454, 0.726, 0.612]},
+        {"name": "t5.brand", "value": "Uplift", "confidence": 0.9, "frame": 0, "box": [0.549, 0.454, 0.726, 0.612]},
+        {"name": "t6.label", "value": "Herman Miller Aeron chair", "confidence": 0.8, "frame": 0, "box": [0.315, 0.465, 0.562, 0.664]},
+        {"name": "t6.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.315, 0.465, 0.562, 0.664]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "segments": [
+    {"label": "laptop", "score": 0.844, "box": [0.137, 0.199, 0.464, 0.356], "frame": 0, "track_id": "t1"},
+    {"label": "office chair", "score": 0.899, "box": [0.226, 0.434, 0.555, 0.794], "frame": 0, "track_id": "t2"},
+    {"label": "curtain", "score": 0.55, "box": [0.055, 0.266, 0.247, 0.441], "frame": 0, "track_id": "t3"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Apple MacBook Pro 14in", "confidence": 0.91, "frame": 0, "box": [0.137, 0.199, 0.464, 0.356]},
+        {"name": "t1.brand", "value": "Apple", "confidence": 0.9, "frame": 0, "box": [0.137, 0.199, 0.464, 0.356]},
+        {"name": "t2.label", "value": "Herman Miller Aeron chair", "confidence": 0.83, "frame": 0, "box": [0.226, 0.434, 0.555, 0.794]},
+        {"name": "t2.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.226, 0.434, 0.555, 0.794]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

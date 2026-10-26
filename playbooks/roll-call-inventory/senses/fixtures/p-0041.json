@@ -1,0 +1,26 @@
+{
+  "segments": [
+    {"label": "refrigerator", "score": 0.878, "box": [0.245, 0.306, 0.465, 0.602], "frame": 0, "track_id": "t1"},
+    {"label": "dining table", "score": 0.819, "box": [0.076, 0.54, 0.355, 0.683], "frame": 0, "track_id": "t2"},
+    {"label": "dining chair", "score": 0.814, "box": [0.595, 0.083, 0.717, 0.337], "frame": 0, "track_id": "t3"},
+    {"label": "dining chair", "score": 0.939, "box": [0.499, 0.216, 0.716, 0.499], "frame": 0, "track_id": "t4"},
+    {"label": "dining chair", "score": 0.952, "box": [0.247, 0.094, 0.515, 0.222], "frame": 0, "track_id": "t5"},
+    {"label": "dining chair", "score": 0.931, "box": [0.353, 0.093, 0.526, 0.344], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.185, 0.541, 0.457, 0.809], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "LG French door refrigerator", "confidence": 0.87, "frame": 0, "box": [0.245, 0.306, 0.465, 0.602]},
+        {"name": "t1.brand", "value": "LG", "confidence": 0.9, "frame": 0, "box": [0.245, 0.306, 0.465, 0.602]},
+        {"name": "t2.label", "value": "Oak dining table", "confidence": 0.93, "frame": 0, "box": [0.076, 0.54, 0.355, 0.683]},
+        {"name": "t3.label", "value": "Oak dining chair", "confidence": 0.95, "frame": 0, "box": [0.595, 0.083, 0.717, 0.337]},
+        {"name": "t4.label", "value": "Oak dining chair", "confidence": 0.83, "frame": 0, "box": [0.499, 0.216, 0.716, 0.499]},
+        {"name": "t5.label", "value": "Oak dining chair", "confidence": 0.89, "frame": 0, "box": [0.247, 0.094, 0.515, 0.222]},
+        {"name": "t6.label", "value": "Oak dining chair", "confidence": 0.89, "frame": 0, "box": [0.353, 0.093, 0.526, 0.344]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

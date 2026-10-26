@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.918, "box": [0.257, 0.355, 0.413, 0.487], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.978, "box": [0.202, 0.529, 0.528, 0.755], "frame": 0, "track_id": "t2"},
+    {"label": "person", "score": 0.941, "box": [0.322, 0.372, 0.579, 0.649], "frame": 0, "track_id": "t3"},
+    {"label": "sofa", "score": 0.894, "box": [0.38, 0.52, 0.616, 0.761], "frame": 0, "track_id": "t4"},
+    {"label": "television", "score": 0.703, "box": [0.195, 0.539, 0.434, 0.812], "frame": 0, "track_id": "t5"},
+    {"label": "bookshelf", "score": 0.716, "box": [0.356, 0.06, 0.618, 0.357], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.29, 0.39, 0.492, 0.708], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t4.label", "value": "Grey IKEA Kivik sectional sofa", "confidence": 0.84, "frame": 0, "box": [0.38, 0.52, 0.616, 0.761]},
+        {"name": "t4.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.38, 0.52, 0.616, 0.761]},
+        {"name": "t5.label", "value": "Samsung 40in LED TV", "confidence": 0.87, "frame": 0, "box": [0.195, 0.539, 0.434, 0.812]},
+        {"name": "t5.brand", "value": "Samsung", "confidence": 0.9, "frame": 0, "box": [0.195, 0.539, 0.434, 0.812]},
+        {"name": "t6.label", "value": "White IKEA Billy bookcase", "confidence": 0.91, "frame": 0, "box": [0.356, 0.06, 0.618, 0.357]},
+        {"name": "t6.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.356, 0.06, 0.618, 0.357]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

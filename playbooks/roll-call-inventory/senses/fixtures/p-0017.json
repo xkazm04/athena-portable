@@ -1,0 +1,22 @@
+{
+  "segments": [
+    {"label": "refrigerator", "score": 0.917, "box": [0.137, 0.175, 0.437, 0.303], "frame": 0, "track_id": "t1"},
+    {"label": "stand mixer", "score": 0.871, "box": [0.571, 0.242, 0.818, 0.525], "frame": 0, "track_id": "t2"},
+    {"label": "espresso machine", "score": 0.862, "box": [0.418, 0.2, 0.736, 0.455], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.021, 0.435, 0.294, 0.693], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "LG French door refrigerator", "confidence": 0.95, "frame": 0, "box": [0.137, 0.175, 0.437, 0.303]},
+        {"name": "t1.brand", "value": "LG", "confidence": 0.9, "frame": 0, "box": [0.137, 0.175, 0.437, 0.303]},
+        {"name": "t2.label", "value": "KitchenAid Artisan stand mixer, red", "confidence": 0.97, "frame": 0, "box": [0.571, 0.242, 0.818, 0.525]},
+        {"name": "t2.brand", "value": "KitchenAid", "confidence": 0.9, "frame": 0, "box": [0.571, 0.242, 0.818, 0.525]},
+        {"name": "t3.label", "value": "Breville Barista Express espresso machine", "confidence": 0.92, "frame": 0, "box": [0.418, 0.2, 0.736, 0.455]},
+        {"name": "t3.brand", "value": "Breville", "confidence": 0.9, "frame": 0, "box": [0.418, 0.2, 0.736, 0.455]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

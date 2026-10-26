@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.945, "box": [0.243, 0.476, 0.555, 0.612], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.936, "box": [0.246, 0.139, 0.423, 0.333], "frame": 0, "track_id": "t2"},
+    {"label": "television", "score": 0.819, "box": [0.423, 0.22, 0.568, 0.402], "frame": 0, "track_id": "t3"},
+    {"label": "sofa", "score": 0.865, "box": [0.162, 0.4, 0.332, 0.708], "frame": 0, "track_id": "t4"},
+    {"label": "floor lamp", "score": 0.87, "box": [0.456, 0.247, 0.7, 0.534], "frame": 0, "track_id": "t5"},
+    {"label": "floor lamp", "score": 0.856, "box": [0.052, 0.443, 0.37, 0.701], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.541, 0.393, 0.712, 0.742], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t3.label", "value": "LG 65\" OLED TV", "confidence": 0.9, "frame": 0, "box": [0.423, 0.22, 0.568, 0.402]},
+        {"name": "t3.brand", "value": "LG", "confidence": 0.9, "frame": 0, "box": [0.423, 0.22, 0.568, 0.402]},
+        {"name": "t4.label", "value": "Grey IKEA Kivik sectional sofa", "confidence": 0.83, "frame": 0, "box": [0.162, 0.4, 0.332, 0.708]},
+        {"name": "t4.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.162, 0.4, 0.332, 0.708]},
+        {"name": "t5.label", "value": "Brass arc floor lamp", "confidence": 0.88, "frame": 0, "box": [0.456, 0.247, 0.7, 0.534]},
+        {"name": "t6.label", "value": "Brass arc floor lamp", "confidence": 0.85, "frame": 0, "box": [0.052, 0.443, 0.37, 0.701]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

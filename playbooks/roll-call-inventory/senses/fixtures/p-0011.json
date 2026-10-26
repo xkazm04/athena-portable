@@ -1,0 +1,27 @@
+{
+  "segments": [
+    {"label": "refrigerator", "score": 0.725, "box": [0.023, 0.122, 0.321, 0.254], "frame": 0, "track_id": "t1"},
+    {"label": "stand mixer", "score": 0.733, "box": [0.531, 0.14, 0.656, 0.495], "frame": 0, "track_id": "t2"},
+    {"label": "dining table", "score": 0.916, "box": [0.411, 0.468, 0.75, 0.75], "frame": 0, "track_id": "t3"},
+    {"label": "dining chair", "score": 0.902, "box": [0.465, 0.306, 0.75, 0.456], "frame": 0, "track_id": "t4"},
+    {"label": "dining chair", "score": 0.765, "box": [0.055, 0.212, 0.305, 0.564], "frame": 0, "track_id": "t5"},
+    {"label": "dining chair", "score": 0.799, "box": [0.165, 0.358, 0.458, 0.588], "frame": 0, "track_id": "t6"},
+    {"label": "curtain", "score": 0.55, "box": [0.223, 0.259, 0.362, 0.519], "frame": 0, "track_id": "t7"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "LG French door refrigerator", "confidence": 0.82, "frame": 0, "box": [0.023, 0.122, 0.321, 0.254]},
+        {"name": "t1.brand", "value": "LG", "confidence": 0.9, "frame": 0, "box": [0.023, 0.122, 0.321, 0.254]},
+        {"name": "t2.label", "value": "KitchenAid Artisan stand mixer, red", "confidence": 0.94, "frame": 0, "box": [0.531, 0.14, 0.656, 0.495]},
+        {"name": "t2.brand", "value": "KitchenAid", "confidence": 0.9, "frame": 0, "box": [0.531, 0.14, 0.656, 0.495]},
+        {"name": "t3.label", "value": "Oak dining table", "confidence": 0.81, "frame": 0, "box": [0.411, 0.468, 0.75, 0.75]},
+        {"name": "t4.label", "value": "Oak dining chair", "confidence": 0.96, "frame": 0, "box": [0.465, 0.306, 0.75, 0.456]},
+        {"name": "t5.label", "value": "Oak dining chair", "confidence": 0.83, "frame": 0, "box": [0.055, 0.212, 0.305, 0.564]},
+        {"name": "t6.label", "value": "Oak dining chair", "confidence": 0.87, "frame": 0, "box": [0.165, 0.358, 0.458, 0.588]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

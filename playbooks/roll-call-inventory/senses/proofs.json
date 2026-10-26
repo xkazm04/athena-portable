@@ -1,0 +1,86 @@
+{
+  "playbook": "roll-call-inventory",
+  "backends": {
+    "segmenter": "fixture",
+    "transcriber": "fixture",
+    "reader": "fixture"
+  },
+  "passed": true,
+  "proofs": [
+    {
+      "id": "F1",
+      "question": "recall of the key's possessions (a photo archive contains the home)",
+      "measured": 0.9642857142857143,
+      "bar": 0.6,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 28,
+      "note": "27 of 28 found, 27 with the right count; 1 asked, not guessed"
+    },
+    {
+      "id": "F1x",
+      "question": "unsupported lines: no possession in the key behind it, or no photo cited",
+      "measured": 0.0,
+      "bar": 0.0,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 27,
+      "note": ""
+    },
+    {
+      "id": "F3",
+      "question": "duplicates after the merge (one possession stays one line across years)",
+      "measured": 0.0,
+      "bar": 0.02,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 27,
+      "note": "0 duplicate lines of 27"
+    },
+    {
+      "id": "F4",
+      "question": "people excluded: every photo with people found, no person box in any table",
+      "measured": 1.0,
+      "bar": 1.0,
+      "op": ">=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 16,
+      "note": "interior-shot sorting not measured"
+    },
+    {
+      "id": "R2",
+      "question": "cost per household of 5,000 photos (resume not measured)",
+      "measured": 0.0,
+      "bar": 45.0,
+      "op": "<=",
+      "passed": true,
+      "backend": {
+        "segmenter": "fixture",
+        "transcriber": "fixture",
+        "reader": "fixture"
+      },
+      "n": 45,
+      "note": "$0.0000 for 45 photos, 311 calls; fixture calls are free, so this is a rehearsal: at SAM 3.1's published price the 267 segment calls (one per prompt) alone would be $74.17 per household"
+    }
+  ]
+}

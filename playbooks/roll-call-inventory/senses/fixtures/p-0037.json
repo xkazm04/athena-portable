@@ -1,0 +1,20 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.913, "box": [0.368, 0.212, 0.605, 0.436], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.929, "box": [0.228, 0.351, 0.573, 0.733], "frame": 0, "track_id": "t2"},
+    {"label": "person", "score": 0.978, "box": [0.504, 0.193, 0.849, 0.389], "frame": 0, "track_id": "t3"},
+    {"label": "clock", "score": 0.874, "box": [0.091, 0.3, 0.38, 0.516], "frame": 0, "track_id": "t4"},
+    {"label": "sofa", "score": 0.936, "box": [0.581, 0.276, 0.811, 0.545], "frame": 0, "track_id": "t5"},
+    {"label": "curtain", "score": 0.55, "box": [0.327, 0.271, 0.589, 0.41], "frame": 0, "track_id": "t6"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t4.label", "value": "Grandfather clock, walnut", "confidence": 0.85, "frame": 0, "box": [0.091, 0.3, 0.38, 0.516]},
+        {"name": "t5.label", "value": "Brown leather Chesterfield sofa", "confidence": 0.97, "frame": 0, "box": [0.581, 0.276, 0.811, 0.545]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

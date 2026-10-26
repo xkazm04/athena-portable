@@ -1,0 +1,23 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.968, "box": [0.363, 0.201, 0.49, 0.563], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.943, "box": [0.437, 0.489, 0.721, 0.867], "frame": 0, "track_id": "t2"},
+    {"label": "sofa", "score": 0.937, "box": [0.249, 0.45, 0.471, 0.832], "frame": 0, "track_id": "t3"},
+    {"label": "television", "score": 0.869, "box": [0.099, 0.158, 0.441, 0.401], "frame": 0, "track_id": "t4"},
+    {"label": "floor lamp", "score": 0.858, "box": [0.314, 0.243, 0.515, 0.527], "frame": 0, "track_id": "t5"},
+    {"label": "curtain", "score": 0.55, "box": [0.416, 0.514, 0.733, 0.912], "frame": 0, "track_id": "t6"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t3.label", "value": "Grey IKEA Kivik sectional sofa", "confidence": 0.82, "frame": 0, "box": [0.249, 0.45, 0.471, 0.832]},
+        {"name": "t3.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.249, 0.45, 0.471, 0.832]},
+        {"name": "t4.label", "value": "Samsung 40-inch LED TV", "confidence": 0.85, "frame": 0, "box": [0.099, 0.158, 0.441, 0.401]},
+        {"name": "t4.brand", "value": "Samsung", "confidence": 0.9, "frame": 0, "box": [0.099, 0.158, 0.441, 0.401]},
+        {"name": "t5.label", "value": "Brass arc floor lamp", "confidence": 0.95, "frame": 0, "box": [0.314, 0.243, 0.515, 0.527]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

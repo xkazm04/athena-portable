@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "sofa", "score": 0.944, "box": [0.409, 0.132, 0.727, 0.522], "frame": 0, "track_id": "t1"},
+    {"label": "floor lamp", "score": 0.777, "box": [0.434, 0.156, 0.745, 0.436], "frame": 0, "track_id": "t2"},
+    {"label": "floor lamp", "score": 0.811, "box": [0.515, 0.545, 0.656, 0.889], "frame": 0, "track_id": "t3"},
+    {"label": "coffee table", "score": 0.866, "box": [0.19, 0.434, 0.511, 0.567], "frame": 0, "track_id": "t4"},
+    {"label": "bookshelf", "score": 0.836, "box": [0.437, 0.215, 0.759, 0.61], "frame": 0, "track_id": "t5"},
+    {"label": "curtain", "score": 0.55, "box": [0.2, 0.088, 0.458, 0.217], "frame": 0, "track_id": "t6"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "IKEA Kivik sectional sofa, grey", "confidence": 0.9, "frame": 0, "box": [0.409, 0.132, 0.727, 0.522]},
+        {"name": "t1.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.409, 0.132, 0.727, 0.522]},
+        {"name": "t2.label", "value": "Brass arc floor lamp", "confidence": 0.81, "frame": 0, "box": [0.434, 0.156, 0.745, 0.436]},
+        {"name": "t3.label", "value": "Brass arc floor lamp", "confidence": 0.83, "frame": 0, "box": [0.515, 0.545, 0.656, 0.889]},
+        {"name": "t4.label", "value": "Walnut coffee table", "confidence": 0.81, "frame": 0, "box": [0.19, 0.434, 0.511, 0.567]},
+        {"name": "t5.label", "value": "IKEA Billy bookcase, white", "confidence": 0.97, "frame": 0, "box": [0.437, 0.215, 0.759, 0.61]},
+        {"name": "t5.brand", "value": "IKEA", "confidence": 0.9, "frame": 0, "box": [0.437, 0.215, 0.759, 0.61]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

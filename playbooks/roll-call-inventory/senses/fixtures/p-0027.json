@@ -1,0 +1,28 @@
+{
+  "segments": [
+    {"label": "exercise bike", "score": 0.961, "box": [0.066, 0.463, 0.212, 0.589], "frame": 0, "track_id": "t1"},
+    {"label": "office chair", "score": 0.924, "box": [0.538, 0.093, 0.765, 0.275], "frame": 0, "track_id": "t2"},
+    {"label": "monitor", "score": 0.863, "box": [0.392, 0.431, 0.713, 0.648], "frame": 0, "track_id": "t3"},
+    {"label": "monitor", "score": 0.756, "box": [0.084, 0.468, 0.341, 0.816], "frame": 0, "track_id": "t4"},
+    {"label": "laptop", "score": 0.831, "box": [0.289, 0.414, 0.427, 0.631], "frame": 0, "track_id": "t5"},
+    {"label": "curtain", "score": 0.55, "box": [0.341, 0.418, 0.558, 0.719], "frame": 0, "track_id": "t6"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Peloton Bike", "confidence": 0.83, "frame": 0, "box": [0.066, 0.463, 0.212, 0.589]},
+        {"name": "t1.brand", "value": "Peloton", "confidence": 0.9, "frame": 0, "box": [0.066, 0.463, 0.212, 0.589]},
+        {"name": "t2.label", "value": "Herman Miller Aeron chair", "confidence": 0.9, "frame": 0, "box": [0.538, 0.093, 0.765, 0.275]},
+        {"name": "t2.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.538, 0.093, 0.765, 0.275]},
+        {"name": "t3.label", "value": "Dell 27-inch monitor", "confidence": 0.88, "frame": 0, "box": [0.392, 0.431, 0.713, 0.648]},
+        {"name": "t3.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.392, 0.431, 0.713, 0.648]},
+        {"name": "t4.label", "value": "Dell 27in monitor", "confidence": 0.89, "frame": 0, "box": [0.084, 0.468, 0.341, 0.816]},
+        {"name": "t4.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.084, 0.468, 0.341, 0.816]},
+        {"name": "t5.label", "value": "Apple MacBook Pro 14\"", "confidence": 0.81, "frame": 0, "box": [0.289, 0.414, 0.427, 0.631]},
+        {"name": "t5.brand", "value": "Apple", "confidence": 0.9, "frame": 0, "box": [0.289, 0.414, 0.427, 0.631]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

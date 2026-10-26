@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "office chair", "score": 0.964, "box": [0.065, 0.127, 0.36, 0.443], "frame": 0, "track_id": "t1"},
+    {"label": "monitor", "score": 0.825, "box": [0.528, 0.236, 0.685, 0.444], "frame": 0, "track_id": "t2"},
+    {"label": "monitor", "score": 0.825, "box": [0.334, 0.23, 0.651, 0.43], "frame": 0, "track_id": "t3"},
+    {"label": "standing desk", "score": 0.703, "box": [0.488, 0.199, 0.664, 0.545], "frame": 0, "track_id": "t4"},
+    {"label": "curtain", "score": 0.55, "box": [0.328, 0.318, 0.486, 0.452], "frame": 0, "track_id": "t5"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Herman Miller Aeron chair", "confidence": 0.97, "frame": 0, "box": [0.065, 0.127, 0.36, 0.443]},
+        {"name": "t1.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.065, 0.127, 0.36, 0.443]},
+        {"name": "t2.label", "value": "Dell 27-inch monitor", "confidence": 0.89, "frame": 0, "box": [0.528, 0.236, 0.685, 0.444]},
+        {"name": "t2.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.528, 0.236, 0.685, 0.444]},
+        {"name": "t3.label", "value": "Dell 27in monitor", "confidence": 0.95, "frame": 0, "box": [0.334, 0.23, 0.651, 0.43]},
+        {"name": "t3.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.334, 0.23, 0.651, 0.43]},
+        {"name": "t4.label", "value": "Uplift V2 standing desk", "confidence": 0.82, "frame": 0, "box": [0.488, 0.199, 0.664, 0.545]},
+        {"name": "t4.brand", "value": "Uplift", "confidence": 0.9, "frame": 0, "box": [0.488, 0.199, 0.664, 0.545]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

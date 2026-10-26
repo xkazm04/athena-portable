@@ -1,0 +1,25 @@
+{
+  "segments": [
+    {"label": "exercise bike", "score": 0.808, "box": [0.445, 0.217, 0.65, 0.357], "frame": 0, "track_id": "t1"},
+    {"label": "office chair", "score": 0.875, "box": [0.081, 0.334, 0.226, 0.477], "frame": 0, "track_id": "t2"},
+    {"label": "monitor", "score": 0.703, "box": [0.048, 0.126, 0.317, 0.41], "frame": 0, "track_id": "t3"},
+    {"label": "laptop", "score": 0.911, "box": [0.581, 0.16, 0.83, 0.398], "frame": 0, "track_id": "t4"},
+    {"label": "curtain", "score": 0.55, "box": [0.477, 0.318, 0.641, 0.487], "frame": 0, "track_id": "t5"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Peloton Bike", "confidence": 0.96, "frame": 0, "box": [0.445, 0.217, 0.65, 0.357]},
+        {"name": "t1.brand", "value": "Peloton", "confidence": 0.9, "frame": 0, "box": [0.445, 0.217, 0.65, 0.357]},
+        {"name": "t2.label", "value": "Herman Miller Aeron chair", "confidence": 0.84, "frame": 0, "box": [0.081, 0.334, 0.226, 0.477]},
+        {"name": "t2.brand", "value": "Herman Miller", "confidence": 0.9, "frame": 0, "box": [0.081, 0.334, 0.226, 0.477]},
+        {"name": "t3.label", "value": "Dell 27in monitor", "confidence": 0.84, "frame": 0, "box": [0.048, 0.126, 0.317, 0.41]},
+        {"name": "t3.brand", "value": "Dell", "confidence": 0.9, "frame": 0, "box": [0.048, 0.126, 0.317, 0.41]},
+        {"name": "t4.label", "value": "Apple MacBook Pro 14in", "confidence": 0.9, "frame": 0, "box": [0.581, 0.16, 0.83, 0.398]},
+        {"name": "t4.brand", "value": "Apple", "confidence": 0.9, "frame": 0, "box": [0.581, 0.16, 0.83, 0.398]}
+      ],
+      "unreadable": []
+    }
+  ]
+}

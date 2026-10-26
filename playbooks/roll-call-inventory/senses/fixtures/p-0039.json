@@ -1,0 +1,16 @@
+{
+  "segments": [
+    {"label": "person", "score": 0.98, "box": [0.27, 0.484, 0.554, 0.705], "frame": 0, "track_id": "t1"},
+    {"label": "person", "score": 0.927, "box": [0.313, 0.25, 0.519, 0.552], "frame": 0, "track_id": "t2"},
+    {"label": "person", "score": 0.979, "box": [0.359, 0.123, 0.53, 0.347], "frame": 0, "track_id": "t3"},
+    {"label": "person", "score": 0.955, "box": [0.101, 0.091, 0.295, 0.29], "frame": 0, "track_id": "t4"},
+    {"label": "curtain", "score": 0.55, "box": [0.037, 0.319, 0.369, 0.589], "frame": 0, "track_id": "t5"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [],
+      "unreadable": []
+    }
+  ]
+}

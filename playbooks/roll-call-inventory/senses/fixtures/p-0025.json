@@ -1,0 +1,20 @@
+{
+  "segments": [
+    {"label": "bunk bed", "score": 0.864, "box": [0.299, 0.185, 0.458, 0.507], "frame": 0, "track_id": "t1"},
+    {"label": "desk", "score": 0.706, "box": [0.244, 0.294, 0.4, 0.613], "frame": 0, "track_id": "t2"},
+    {"label": "game console", "score": 0.928, "box": [0.46, 0.389, 0.602, 0.575], "frame": 0, "track_id": "t3"},
+    {"label": "curtain", "score": 0.55, "box": [0.53, 0.486, 0.753, 0.857], "frame": 0, "track_id": "t4"}
+  ],
+  "reads": [
+    {
+      "attempt": 0,
+      "fields": [
+        {"name": "t1.label", "value": "Twin-over-twin bunk bed", "confidence": 0.92, "frame": 0, "box": [0.299, 0.185, 0.458, 0.507]},
+        {"name": "t2.label", "value": "Kids' white desk", "confidence": 0.88, "frame": 0, "box": [0.244, 0.294, 0.4, 0.613]},
+        {"name": "t3.label", "value": "Nintendo Switch OLED console", "confidence": 0.91, "frame": 0, "box": [0.46, 0.389, 0.602, 0.575]},
+        {"name": "t3.brand", "value": "Nintendo", "confidence": 0.9, "frame": 0, "box": [0.46, 0.389, 0.602, 0.575]}
+      ],
+      "unreadable": []
+    }
+  ]
+}
