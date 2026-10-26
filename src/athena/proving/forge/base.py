@@ -7,6 +7,7 @@ the files themselves, and the spec loader is called on a *copy* only to judge a 
 from __future__ import annotations
 
 import json
+import shutil
 import statistics
 import tempfile
 from collections import Counter
@@ -261,6 +262,12 @@ def materialize(
         ("truth.json", truth),
     ):
         (root / name).write_text(json.dumps(value, ensure_ascii=False, indent=1), encoding="utf-8")
+    # A featured chore's READ tools serve its sensed tables (ADR 0226); a variant keeps the base's
+    # media, so it keeps the tables built from them.
+    sensed = base.library / base.id / "senses" / "sensed.json"
+    if sensed.is_file():
+        (root / "senses").mkdir(exist_ok=True)
+        shutil.copyfile(sensed, root / "senses" / "sensed.json")
     return load_playbook(root, load_taxonomy(base.library))
 
 

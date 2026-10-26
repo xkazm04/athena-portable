@@ -434,7 +434,7 @@ def test_main_reports_a_bad_pairs_file_and_writes_numbers(tmp_path: Path) -> Non
         == 0
     )
     assert (tmp_path / "chores-uat" / "n" / "numbers.json").is_file() and extra.is_file()
-    assert json.loads(out[-1])["playbooks"] == 95
+    assert json.loads(out[-1])["playbooks"] == 100
 
 
 def test_instrument_names_every_prompt_and_tier() -> None:
