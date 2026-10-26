@@ -14,7 +14,7 @@ frame are two lamps, however many photos show one), never the sum across photos,
 double-claim. Nothing here merges two different rooms or two different labels, so a moved
 armchair stays two lines for the person to join, not one guessed.
 
-ADR 0303 records these rules.
+ADR 0229 records these rules.
 """
 
 from __future__ import annotations
@@ -111,7 +111,7 @@ def merge(sightings: Iterable[Sighting], max_gap_days: int | None = None) -> lis
     """Every possession the sightings prove, ordered by room, first seen, then label.
 
     ``max_gap_days`` splits a key's sightings at a longer silence; ``None`` (the build's choice,
-    ADR 0303) never splits."""
+    ADR 0229) never splits."""
     groups: dict[tuple[str, str], list[Sighting]] = {}
     for s in sightings:
         groups.setdefault((s.room, normalise(s.label)), []).append(s)

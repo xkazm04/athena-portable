@@ -1,4 +1,4 @@
-"""Spike 01, ADR 0301 (the paper sense): a flip-through or a photo of mail -> sheets, fields.
+"""Spike 01, ADR 0227 (the paper sense): a flip-through or a photo of mail -> sheets, fields.
 
 **Sheets.** A ``video`` item of sense ``paper`` is a flip-through of a pile. The segmenter is asked
 for its ``params.prompt`` ("sheet of paper"); segments carrying one ``track_id`` are one sheet, and

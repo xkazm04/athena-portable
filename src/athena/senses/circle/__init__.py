@@ -30,7 +30,7 @@ media_id}``. Absent is an omitted key (contract). The answer key is ``key.json["
 
 :func:`prove` measures spike 05's F1 (whose yes, and no breach), F3 (bottle count, label fields, no
 false clear) and F4 (task attribution) on one build. F2, F5 and R1 need members on devices and a
-replica, which tonight's single-user rule (ADR 0305) keeps out; R2 is the suite itself; V1 and V2
+replica, which tonight's single-user rule (ADR 0231) keeps out; R2 is the suite itself; V1 and V2
 need the multi-actor Character harness. None of those is measured here.
 """
 

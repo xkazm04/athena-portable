@@ -1,5 +1,5 @@
 """A featured chore's two loader seams: sensed tables join the world, and the authored
-``featured`` block is checked while its status stays computed (spike 00, ADR 0300)."""
+``featured`` block is checked while its status stays computed (spike 00, ADR 0226)."""
 
 from __future__ import annotations
 

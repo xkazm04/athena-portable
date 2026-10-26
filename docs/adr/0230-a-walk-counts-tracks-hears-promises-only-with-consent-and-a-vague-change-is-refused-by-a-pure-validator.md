@@ -1,8 +1,8 @@
-# 0304. A walk counts tracks, hears promises only with consent, and a vague change is refused by a pure validator
+# 0230. A walk counts tracks, hears promises only with consent, and a vague change is refused by a pure validator
 
 Date: 2026-10-26
 
-Builds on [0300](0300-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md).
+Builds on [0226](0226-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md).
 Spike: `docs/concepts/meta-featured-chores/04-renovation-witness/`. Chore: `playbooks/renovation-witness/`.
 
 ## Context

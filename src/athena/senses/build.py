@@ -6,7 +6,7 @@ items), merges their tables and writes ``senses/sensed.json``. Two senses writin
 refused, as is a sensed table shadowing a ``world.json`` table (the loader checks it again).
 
 :func:`prove` builds, then runs each sense's ``prove`` against ``senses/key.json`` and writes
-``senses/proofs.json``. :func:`featured_status` reads it back (ADR 0300, decision 3).
+``senses/proofs.json``. :func:`featured_status` reads it back (ADR 0226, decision 3).
 
 The written files carry no clock: a fixture build is byte-identical run to run, so a committed
 ``sensed.json`` only changes when the media, the fixtures or a sense did.

@@ -17,7 +17,7 @@ own yes never counts toward a quorum (report part 4), and a name that is not a m
 nothing - a forged member, or a yes said for someone else, moves no edge.
 
 Pure functions over data: no clock, no I/O beyond :func:`load_table`'s argument, no model. The
-Director's rule for tonight (ADR 0305): Athena stays single-user, so this table is data the bench
+Director's rule for tonight (ADR 0231): Athena stays single-user, so this table is data the bench
 reads (the ``signer_rules`` table), not a change to the gate.
 """
 

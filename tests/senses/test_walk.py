@@ -1,5 +1,5 @@
 """The walk sense: counts by track, promises by an explainable classifier, consent before audio, the
-vague-change validator, and the proofs spike 04's README names (ADR 0300)."""
+vague-change validator, and the proofs spike 04's README names (ADR 0226)."""
 
 from __future__ import annotations
 

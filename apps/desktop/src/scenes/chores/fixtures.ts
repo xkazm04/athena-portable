@@ -95,7 +95,7 @@ function ledgerFixture(): PlaybooksModel {
   return selectPlaybooks(playbooks, typical.actions);
 }
 
-/** The featured band on the catalogue (ADR 0300). */
+/** The featured band on the catalogue (ADR 0226). */
 export const FEATURED_FIXTURE = "ledger-featured";
 
 /** An invented `senses/proofs.json`: `passed` of `total` proofs passed, the reader on `reader`. */

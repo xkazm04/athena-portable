@@ -1,5 +1,5 @@
 /**
- * The featured band on the catalogue — ADR 0300, spike 00 of the featured-chores program.
+ * The featured band on the catalogue — ADR 0226, spike 00 of the featured-chores program.
  *
  * A featured chore reads its world through a Meta sense (a letter filmed, a call, a walk-through)
  * and earns its standing on its proofs (`senses/proofs.json`), never by being authored: the band

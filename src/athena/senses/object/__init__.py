@@ -12,7 +12,7 @@ taken, its album and the room's ``prompts`` (the household concepts SAM is asked
 3. **Reads** every other instance's crop, one read per photo, fields ``<track_id>.label`` (what it
    is) and ``<track_id>.brand``. A label the reader could not give is **asked, not guessed**: an
    ``inventory_asked`` row, never an inventory line.
-4. **Merges** across photos and years (:mod:`.merge`, ADR 0303) into the ``inventory`` table.
+4. **Merges** across photos and years (:mod:`.merge`, ADR 0229) into the ``inventory`` table.
 
 ``inventory`` rows: ``item_id``, ``label``, ``brand`` (when read), ``room``, ``count``, ``photos``,
 ``first_seen``, ``last_seen``, ``sightings``, ``with_people``, ``people_excluded``, and the

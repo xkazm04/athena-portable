@@ -80,7 +80,7 @@ fallback as an ordinary chore, or nothing, and says which.
 | `src/athena/senses/<sense>/` | the spike that owns the sense | consume its public functions |
 | `playbooks/<new-id>/` | the chore's spike | - |
 | `playbooks/ranking.json`, `CHANGELOG.md`, `docs/features/*.md` | everyone | regenerate or append in a separate commit, re-read just before writing |
-| ADR numbers | **0300-0309** (2026-10-26: the first block, 0201-0230, was taken by other sessions before the spikes began). 0300 senses contract · 0301 paper · 0302 call · 0303 object · 0304 walk · 0305 circle · 0306 Meta clients | never take a number outside your block |
+| ADR numbers | **the next free number, no gaps** (2026-10-26: the reserved 0201-0230 block was taken by other sessions before the spikes began, and `tests/test_adr_numbering.py` forbids gaps). Taken: 0226 senses contract · 0227 paper · 0228 call · 0229 object · 0230 walk · 0231 circle | `ls docs/adr | tail` right before writing one; a collision fails the gate |
 | media (video, audio, photo folders) | each spike, **local only** (ADR 0055) | commit the index, never the media |
 
 ## Budget

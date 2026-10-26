@@ -1,10 +1,10 @@
-# 0305. The circle is data the bench reads, and a table, not a model, names the signer
+# 0231. The circle is data the bench reads, and a table, not a model, names the signer
 
 Date: 2026-10-26
 
-Builds on [0300](0300-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
+Builds on [0226](0226-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
 (a sense writes cited world tables). Program: `docs/concepts/meta-featured-chores/`; spike
-`05-care-circle`. ADR block 0300-0309.
+`05-care-circle`. ADR block 0226-0309.
 
 ## Context
 
@@ -29,7 +29,7 @@ family's signer rules end to end on the bench.
    not a member signs nothing. The chore's truth rewards a card that names the signers the table
    resolves and traps a card filed on a missing, vetoed or spoken yes.
 3. **The rule table is authored, and its rows cite the file.** Every sensed row carries a
-   `media_id` (ADR 0300); the rule table is not media, so its rows carry `media_id: "signers.json"`,
+   `media_id` (ADR 0226); the rule table is not media, so its rows carry `media_id: "signers.json"`,
    the file under the chore's `senses/` it came from.
 
 ## Consequences

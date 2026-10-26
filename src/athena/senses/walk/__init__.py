@@ -1,4 +1,4 @@
-"""The walk sense: a weekly phone walk of a room becomes counts and promises (spike 04, ADR 0300).
+"""The walk sense: a weekly phone walk of a room becomes counts and promises (spike 04, ADR 0226).
 
 ``docs/concepts/meta-featured-chores/04-renovation-witness/README.md``. A homeowner walks the
 remodel with the phone for three minutes a week. Each walk is one ``video`` item in

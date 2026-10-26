@@ -14,7 +14,7 @@ diarized turns; :func:`build` writes one ``call_turns`` row per turn::
 
 ``speaker`` is the ROLE ``speakers`` maps the diarized label to; a label the map does not name (an
 IVR, a third voice) is kept as the label itself, never guessed into a role. ``second`` is the
-turn's start, the provenance column every sensed row carries (ADR 0300).
+turn's start, the provenance column every sensed row carries (ADR 0226).
 
 **The consent rule (spike 02's "never records a call without the spoken consent line").** Unless
 a turn starting inside the first :data:`CONSENT_WINDOW_S` seconds contains the item's consent line

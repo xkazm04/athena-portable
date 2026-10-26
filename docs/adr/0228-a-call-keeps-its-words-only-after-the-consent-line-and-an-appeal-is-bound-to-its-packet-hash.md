@@ -1,8 +1,8 @@
-# 0302. A call keeps its words only after the consent line, and an appeal is bound to its packet hash
+# 0228. A call keeps its words only after the consent line, and an appeal is bound to its packet hash
 
 Date: 2026-10-26
 
-Builds on [0300](0300-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
+Builds on [0226](0226-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
 (a sense writes cited world tables), 0038 (a single-use approval) and 0057 (the authoring floor).
 Spike: `docs/concepts/meta-featured-chores/02-appeal-kin/`. Code: `src/athena/senses/call/`; chore:
 `playbooks/prior-auth-denial-appeal/`.

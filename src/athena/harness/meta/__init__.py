@@ -1,4 +1,4 @@
-"""Meta's hosted models as Athena clients (spike 00, pieces 1-3, 5 and 6; ADR 0300).
+"""Meta's hosted models as Athena clients (spike 00, pieces 1-3, 5 and 6; ADR 0226).
 
 Every shape here is Meta's *published* one (press) until the day-1 probe measures it.
 

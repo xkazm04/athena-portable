@@ -1,4 +1,4 @@
-"""The object sense (spike 03, ADR 0303): photos -> one cited line per possession, no people."""
+"""The object sense (spike 03, ADR 0229): photos -> one cited line per possession, no people."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * The featured band — ADR 0300. The status rule is the bench's `featured_status`, case by case;
+ * The featured band — ADR 0226. The status rule is the bench's `featured_status`, case by case;
  * the reader finds `senses/proofs.json` beside its `playbook.json`; the band is mounted on the
  * catalogue, leads with what is proven on Meta, never dresses a rehearsal as proven, opens a chore
  * as a ledger row does, and is not drawn at all when no playbook is featured.

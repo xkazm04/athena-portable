@@ -10,7 +10,7 @@
  * press from its case or its chore's page; `Yours` narrows the ledger to the chores with a case.
  * Without deps (the preview, no daemon) there is no band and the page is as it always was.
  *
- * The featured chores (ADR 0300, `featured.tsx`) sit under it, above the areas: drawn only when a
+ * The featured chores (ADR 0226, `featured.tsx`) sit under it, above the areas: drawn only when a
  * playbook carries a `featured` block, each a press from its topic page like a ledger row.
  *
  * A case linked to a Project (ADR 0225) wears its chip on its row, a press into the Project's level;

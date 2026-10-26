@@ -1,8 +1,8 @@
-# 0303. The object sense merges by room and label, counts what is seen together, and keeps people out
+# 0229. The object sense merges by room and label, counts what is seen together, and keeps people out
 
 Date: 2026-10-26
 
-Builds on [0300](0300-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
+Builds on [0226](0226-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
 (a sense writes cited world tables). Spike: `docs/concepts/meta-featured-chores/03-roll-call/`.
 Code: `src/athena/senses/object/`. First chore: `playbooks/roll-call-inventory/`.
 

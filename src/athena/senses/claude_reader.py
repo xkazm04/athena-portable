@@ -1,4 +1,4 @@
-"""ADR 0300 decision 2 (the ``claude`` Reader): the Claude Code CLI reads one rendered sheet.
+"""ADR 0226 decision 2 (the ``claude`` Reader): the Claude Code CLI reads one rendered sheet.
 
 Tonight's one real reader. For a request whose file exists, one ``research`` leg goes through the
 house door (:class:`~athena.adopt.legs.LegRunner`, the same flags as the Adopt documents lane):
@@ -8,7 +8,7 @@ fields it could not read. The sheet is untrusted data: a printed "ignore your in
 line of the letter (spike 01's R4), and the prompt says so.
 
 - **No file, or no CLI on PATH** -> the ``fallback`` (the fixture reader) answers, and its call
-  row says ``backend="fixture"``: a degraded call is visible, never silent (ADR 0300).
+  row says ``backend="fixture"``: a degraded call is visible, never silent (ADR 0226).
 - **A failed leg** (timeout, engine error, an answer that is not the schema twice) -> every field
   is unreadable, so the sense asks rather than guesses; the call row still says ``claude``.
 - **Provenance:** the CLI gives no pixel box, so a field cites frame ``0`` of the sheet and no box.

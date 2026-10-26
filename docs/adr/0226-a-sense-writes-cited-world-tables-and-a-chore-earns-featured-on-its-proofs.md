@@ -1,11 +1,11 @@
-# 0300. A sense writes cited world tables, and a chore earns "featured" on its proofs
+# 0226. A sense writes cited world tables, and a chore earns "featured" on its proofs
 
 Date: 2026-10-26
 
 Builds on [0040](0040-a-playbook-is-data-and-earns-its-place-on-the-bench.md) (a playbook is data
 and earns its place on the bench), 0055 (evidence media stay local, the index is committed) and
 0122 (an unpriced call weighs against the cap). Program: `docs/concepts/meta-featured-chores/`.
-ADR block **0300-0309** for the featured-chore program: the block the program reserved (0201-0230)
+The featured-chore program takes the next free numbers from here (0226-0231): the block it reserved (0201-0230)
 was taken by other sessions before the spikes started.
 
 ## Context

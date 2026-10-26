@@ -1,8 +1,8 @@
-# 0301. The paper sense keeps a field only when two reads agree, and asks for the rest
+# 0227. The paper sense keeps a field only when two reads agree, and asks for the rest
 
 Date: 2026-10-26
 
-Builds on [0300](0300-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
+Builds on [0226](0226-a-sense-writes-cited-world-tables-and-a-chore-earns-featured-on-its-proofs.md)
 (a sense writes cited world tables). Spike: `docs/concepts/meta-featured-chores/01-paper-flip/`.
 Code: `src/athena/senses/paper/`, `src/athena/senses/claude_reader.py`.
 
