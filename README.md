@@ -7,8 +7,8 @@ Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI track**. Licens
 [Apache-2.0](LICENSE). The submission text is [`docs/submission.md`](docs/submission.md), the
 product feedback is [`docs/feedback.md`](docs/feedback.md), and the requirement checklist is
 [`docs/submission-checklist.md`](docs/submission-checklist.md). Each module's current state is
-documented in [`docs/features/`](docs/features/README.md), and
-[`docs/report/index.html`](docs/report/index.html) summarises what each build wave added.
+documented in [`docs/features/`](docs/features/README.md), and the night-by-night history is in the
+[CHANGELOG](CHANGELOG.md).
 
 Athena is a single-user desktop agent whose environment is the web applications the user already
 has open: an invoicing tool, a CRM, a support inbox. She holds them in tabs, reads the page in

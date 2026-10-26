@@ -4,7 +4,7 @@ High-level documentation of every module as it stands on 2026-10-08. Each page s
 module is for, what is built, how it works in outline, where the code lives, and what is not done.
 The design authority stays the [README](../../README.md) (its six invariants and its architecture);
 decisions are in [`docs/adr/`](../adr/) (52 records); the night-by-night history is in the
-[CHANGELOG](../../CHANGELOG.md). The [build report](../report/index.html) summarises the waves.
+[CHANGELOG](../../CHANGELOG.md).
 
 ## What Athena is
 
