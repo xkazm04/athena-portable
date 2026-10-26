@@ -9,10 +9,14 @@
  * over CDP, plays the script's `desktop` acts beat by beat, and logs every beat's offset on the
  * capture's clock to `take/desktop.take.json`. A beat with a `cue` first waits for it on the
  * page (`card`: a decision card is up; `decided`: it is stamped), and the wait is logged as a
- * speed-up range, exactly as the proving recorder does.
+ * speed-up range, exactly as the proving recorder does. The steps a beat may take, on Athena's
+ * window and on Main's console (the finder, a dive to the surface or to a tab's page), are
+ * `scripts/lib/desktop-steps.mjs`; `--dry` refuses a script with a step outside them.
  *
  * The app must be started with its CDP port open (docs/demo.md section 5, uat/env.md):
  *   WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222 ./athena-desktop.exe
+ * from a bundled build (`pnpm tauri build --debug --no-bundle`): a dev build's blob shared worker
+ * kills Playwright's attach, so the recorder reads `/json/list` first and refuses one.
  *
  * Usage:
  *   node scripts/record-desktop.mjs [--dry] [--cdp http://127.0.0.1:9222] [--window all|largest]
@@ -31,6 +35,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { checkDesktopActs, devBuildSigns, hashOf, parseStep } from './lib/desktop-steps.mjs';
 import { captionOf, holdOf } from './lib/timeline.mjs';
 
 const execFileAsync = promisify(execFile);
@@ -186,27 +191,58 @@ function stopCapture(capture) {
 
 // ---------------------------------------------------------------- the drive
 
-/** Athena's own window, the one with the composer and the decision cards. */
+/** Athena's own window (the composer, the decision cards, the Record) and Main's console. */
 const SELECTORS = {
   composer: 'input[name="message"]',
   card: '[data-card]',
   approve: '[data-act="approve"]',
   decline: '[data-act="decline"]',
   decided: '[data-decision]',
+  record: '[data-act="record"]',
+  finderField: '.finder__field',
+  finderHit: '.finder__hit',
+  finderButton: 'button[title="Go to a place (Ctrl+K)"]',
 };
 
 async function perform(api, beat, step) {
-  const page = api.athena();
-  if (!page) throw new Error('no athena.html page over CDP; is the Athena window open?');
-  if (step === 'type-command') {
+  const { verb, arg, page: where } = parseStep(step);
+  if (verb === 'pause') {
+    await new Promise((r) => setTimeout(r, Number(arg)));
+    return;
+  }
+  const page = where === 'main' ? api.main() : api.athena();
+  if (!page) {
+    throw new Error(where === 'main' ? 'no chrome.html page over CDP; is Main open?' : 'no athena.html page over CDP; is the Athena window open?');
+  }
+  if (verb === 'type-command') {
     await page.locator(SELECTORS.composer).click();
     await page.locator(SELECTORS.composer).pressSequentially(beat.command ?? beat.line, { delay: 35 });
-  } else if (step === 'send') {
+  } else if (verb === 'send') {
     await page.locator(SELECTORS.composer).press('Enter');
-  } else if (step === 'approve' || step === 'decline') {
-    await page.locator(SELECTORS[step]).first().click();
-  } else if (step === 'wait-decided') {
+  } else if (verb === 'approve' || verb === 'decline') {
+    await page.locator(SELECTORS[verb]).first().click();
+  } else if (verb === 'wait-decided') {
     await page.locator(SELECTORS.decided).first().waitFor({ timeout: 30_000 });
+  } else if (verb === 'open-record') {
+    await page.locator(SELECTORS.record).first().click();
+  } else if (verb === 'surface' || verb === 'page') {
+    // The depth store follows the hash (apps/desktop/src/depth/store.ts), so the stage plays its own dive.
+    await page.evaluate((hash) => {
+      window.location.hash = hash;
+    }, hashOf({ verb, arg }));
+  } else if (verb === 'finder') {
+    // The console's own key (Ctrl+K anywhere), the query typed where the audience can read it, and
+    // Enter on the first hit: the finder makes the move through the depth's own `go`.
+    await page.keyboard.press('Control+K');
+    // The key reaches the console only when its document has focus; the bar's own control does not need it.
+    const opened = await page.locator(SELECTORS.finderField).waitFor({ timeout: 2_000 }).then(() => true, () => false);
+    if (!opened) await page.locator(SELECTORS.finderButton).first().click();
+    await page.locator(SELECTORS.finderField).waitFor({ timeout: 10_000 });
+    await page.locator(SELECTORS.finderField).pressSequentially(arg, { delay: 70 });
+    await page.locator(SELECTORS.finderHit).first().waitFor({ timeout: 10_000 });
+    await new Promise((r) => setTimeout(r, 400));
+    await page.locator(SELECTORS.finderField).press('Enter');
+    await page.locator(SELECTORS.finderField).waitFor({ state: 'detached', timeout: 10_000 });
   } else {
     throw new Error(`unknown desktop step: ${step}`);
   }
@@ -227,6 +263,8 @@ async function main() {
   const script = JSON.parse(readFileSync(args.script, 'utf8'));
   const acts = script.acts.filter((a) => a.segment === 'desktop');
   if (acts.length === 0) fail(`${path.relative(JOURNEY, args.script)} has no desktop acts`);
+  const problems = checkDesktopActs(acts);
+  if (problems.length) fail(`the recorder cannot play ${path.relative(JOURNEY, args.script)}:\n  ${problems.join('\n  ')}`);
   const durationsPath = path.join(TAKE, 'audio', 'durations.json');
   const durations = existsSync(durationsPath) ? JSON.parse(readFileSync(durationsPath, 'utf8')) : {};
   // The hold rule is src/script.ts's, from scripts/lib/timeline.mjs: a clip the narration manifest
@@ -268,12 +306,29 @@ async function main() {
   if (!region) {
     fail(`${args.processName} has no visible window to film. Start the app with its CDP port and open Athena (docs/demo.md section 5).`, 2);
   }
+  const targets = await fetch(`${args.cdp.replace(/\/$/, '')}/json/list`)
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+  if (!targets) fail(`no CDP endpoint at ${args.cdp}; start the app with WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`, 2);
+  const dev = devBuildSigns(targets);
+  if (dev.length) {
+    fail(
+      `this looks like a dev build (${dev.map((t) => `${t.type} ${String(t.url).slice(0, 60)}`).join('; ')}): its blob shared ` +
+        'worker kills Playwright\'s CDP attach. Record from a bundled build, pnpm tauri build --debug --no-bundle (docs/demo.md section 5.6).',
+      2,
+    );
+  }
   const require = createRequire(path.join(JOURNEY, 'package.json'));
   const { chromium } = require('@playwright/test');
   const browser = await chromium.connectOverCDP(args.cdp);
   const all = () => browser.contexts().flatMap((c) => c.pages());
-  const api = { athena: () => all().find((p) => p.url().includes('athena.html')) };
+  const api = {
+    athena: () => all().find((p) => p.url().includes('athena.html')),
+    main: () => all().find((p) => p.url().includes('chrome.html')),
+  };
   if (!api.athena()) fail('connected over CDP but found no athena.html page; open Athena\'s window first', 2);
+  const needsMain = acts.some((a) => a.beats.some((b) => (b.do ?? []).some((s) => parseStep(s).page === 'main')));
+  if (needsMain && !api.main()) fail('connected over CDP but found no chrome.html page; open Main first', 2);
 
   await mkdir(TAKE, { recursive: true });
   let capture = null;

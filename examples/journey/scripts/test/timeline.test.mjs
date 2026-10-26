@@ -128,7 +128,7 @@ test('case 4: a clip the manifest says was read from another line is not paced t
 // ---------------------------------------------------------------- case 5 (guard)
 
 test('case 5 (guard): hold and caption equal src/script.ts for every beat of both scripts', () => {
-  for (const rel of ['script/proving.en.json', 'script/journey.en.json']) {
+  for (const rel of ['script/proving.en.json', 'script/journey.en.json', 'script/film.en.json']) {
     const script = readJson(rel);
     const beats = script.acts.flatMap((a) => a.beats);
     const measured = Object.fromEntries(beats.filter((_, i) => i % 2 === 0).map((b, i) => [b.id, 1500 + i * 731]));

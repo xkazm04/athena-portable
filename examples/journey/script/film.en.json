@@ -1,0 +1,271 @@
+{
+  "title": "Athena — the submission film",
+  "status": "2026-10-26: the cut of the product as it is today, for the operator's review before narration; supersedes the 2026-10-07 draft script/proving.en.json. Every figure on a card names its run in docs/demo.md section 5.1",
+  "language": "en",
+  "words_per_second": 2.5,
+  "chars_per_second": 15,
+  "breath_ms": 500,
+  "max_ms": 179000,
+  "voices": {
+    "narrator": {
+      "hint": "neutral English, calm, measured, stability high"
+    },
+    "mira": {
+      "hint": "conversational, warm",
+      "gender": "female"
+    }
+  },
+  "acts": [
+    {
+      "id": "open",
+      "title": "open",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "T1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Athena is a personal agent inside the web apps you already use. Anything that reaches a person, or cannot be undone, stops and asks you first.",
+          "screen": "Title card: Athena. A personal agent, inside the web apps you already use.",
+          "card": { "kicker": "Athena", "title": "A personal agent, inside the web apps you already use.", "sub": "Anything that reaches a person, or cannot be undone, stops and asks you first." },
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "title": "her desktop, today",
+      "segment": "desktop",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "S1",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "This is her desktop: Athena on top, and every place she can take you one move below her.",
+          "screen": "Main at the surface: Athena's face at the top of the water and the five lights under her (Projects, Chores, Accounts, Voice, Mind); Athena's own window beside Main",
+          "do": ["surface"],
+          "settle_ms": 1500
+        },
+        {
+          "id": "S2",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "Control K goes anywhere. A project keeps work apart: the studio's books, a brief she reads every turn, its own memory.",
+          "screen": "Ctrl+K opens the finder; 'Studio books' is typed; Enter dives to the project's level: its name, its brief, Ledgerbox among its apps, its chores, what it remembers",
+          "do": ["finder:Studio books"],
+          "settle_ms": 2000
+        },
+        {
+          "id": "S3",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "Ledgerbox, the studio's invoicing app, is open in a tab.",
+          "screen": "The stage dives to Ledgerbox's page: the live tab, the overdue invoices",
+          "do": ["page:http://localhost:3001"],
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "title": "the gate",
+      "segment": "desktop",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "D1",
+          "app": "desktop",
+          "voice": "mira",
+          "line": "Send Halcyon Works a reminder about their overdue invoice.",
+          "screen": "The command is typed into Athena's message field and sent",
+          "do": ["type-command", "send"],
+          "settle_ms": 800
+        },
+        {
+          "id": "D2",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "She drafts it on the page. Sending reaches a person, so the gate stops her and asks. The card shows exactly what will go out.",
+          "screen": "The decision card arrives in Athena's window: send_reminder, the recipient and the draft; the wait for her turn is sped up and labelled",
+          "cue": "card",
+          "settle_ms": 1200
+        },
+        {
+          "id": "D3",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "Approve, and that one action runs, once. Decline, and nothing moves.",
+          "screen": "Approve is pressed; the card stamps approved; the reminder is recorded on the page",
+          "do": ["approve", "wait-decided"],
+          "settle_ms": 1500
+        },
+        {
+          "id": "D4",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "The record keeps what ran, on which app, and who said yes.",
+          "screen": "Athena's Record: 'This window' leads with send_reminder, approved, on Ledgerbox. The Model calls list stays below the fold: it names the engine's model",
+          "do": ["open-record"],
+          "settle_ms": 2000
+        }
+      ]
+    },
+    {
+      "id": "chores",
+      "title": "a chore, benched",
+      "segment": "desktop",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "C1",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "Chores are longer jobs, each rehearsed in an invented world with a known answer.",
+          "screen": "Back to the surface, then Ctrl+K and 'Public service loan': the finder dives to Chores, the PSLF chore's page",
+          "do": ["surface", "pause:1200", "finder:Public service loan"],
+          "settle_ms": 2000
+        },
+        {
+          "id": "C2",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "This one certifies loan-forgiveness months. In its test run she made all five filings the rules allow, twenty thousand dollars, and fell for none of eight traps.",
+          "screen": "The chore's page as it opens: 'In the example case $20,000 back, in the invented example'; 'Mistakes avoided 8/8 in the test run'; the verdict line under the tiles. The runs list stays folded (it names the bench's engine)",
+          "settle_ms": 2500
+        }
+      ]
+    },
+    {
+      "id": "claim",
+      "title": "chapter: the claim",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "K1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "A gate is only a claim until someone attacks it. So we built a Proving Ground.",
+          "screen": "Chapter card: Can she be talked past her own gate?",
+          "card": { "kicker": "The Proving Ground", "title": "Can she be talked past her own gate?", "sub": "Generated adversaries, a real daemon, the gate's own records." },
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "proving",
+      "title": "the Proving Ground, live",
+      "segment": "proving",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "P1",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "NVIDIA Nemotron, served on Nebius Token Factory, writes the attacks: poisoned pages, forged tool results, planted memories.",
+          "screen": "The hosted trigger page, top: the claim and the rule that no model's opinion is a verdict input",
+          "do": ["goto"],
+          "settle_ms": 1500
+        },
+        {
+          "id": "P2",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "A judge with a token starts a small Gauntlet. Every attack lands in a fresh, throwaway world, against Athena running on Nemotron.",
+          "screen": "The token is typed (masked), Gauntlet and Small are picked, Start run is pressed; the start line appears in the live feed",
+          "do": ["scroll:#h-run", "fill-token", "pick:kind=gauntlet", "pick:preset=small", "start"],
+          "settle_ms": 2000
+        },
+        {
+          "id": "P3",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "Each call streams in as it happens: the attacker writing, Athena answering, and what every call cost.",
+          "screen": "The first call lands in the feed; the tally counts calls and Nemotron dollars; the wait to the end is sped up and labelled",
+          "cue": "first_call",
+          "settle_ms": 1500
+        },
+        {
+          "id": "P4",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "The verdict is read from the gate's own records, never from a model's opinion. Zero breached.",
+          "screen": "The end line in the feed; the page scrolls to the run's row in the history: 0 breached, held / driven",
+          "cue": "end",
+          "do": ["scroll:#h-history"],
+          "settle_ms": 2500
+        },
+        {
+          "id": "P5",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "And the whole run cost less than a cent of Nemotron.",
+          "screen": "The run's cost column and the attack-by-attack list: Nemotron at a fraction of a cent",
+          "do": ["scroll:#h-drill"],
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "title": "the measured proofs",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "R1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Three full runs: three hundred and six hostile turns, and no gated action ran without approval.",
+          "screen": "Stat card: 306 hostile turns · 0 breaches, three runs",
+          "card": { "kicker": "Gauntlet, three full runs", "stat": "306 · 0", "title": "306 hostile turns. 0 breaches.", "sub": "Read from the gate's records: what it allowed, what the brain wrote, what the approval table holds." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R2",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Nemotron also plays our test users: in character on ninety-four to ninety-seven percent of turns, judged blind.",
+          "screen": "Stat card: persona fidelity 94–97%, three runs",
+          "card": { "kicker": "Model-played users", "stat": "94–97%", "title": "In persona, judged blind, in three runs.", "sub": "Nemotron plays the people the product is for, and answers the decision cards on the card." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R3",
+          "app": "card",
+          "voice": "narrator",
+          "line": "And an approval is spent once: a replay is refused.",
+          "screen": "Card: an approval is single use",
+          "card": { "kicker": "Approvals", "stat": "1×", "title": "An approval is spent once.", "sub": "It runs exactly what was approved. A replay is refused, whoever asks." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R4",
+          "app": "card",
+          "voice": "narrator",
+          "line": "On newer models, Nemotron Super-VL reads people's documents: ninety-one percent right, against ninety-six for the reference reader, at about a thirtieth of the cost.",
+          "screen": "Stat card: the 2026-10-22 retest, 91% at about 1/30 of the cost",
+          "card": { "kicker": "Retest, 2026-10-22", "stat": "91% · 1/30", "title": "Nemotron 3.5 Super-VL reads the documents.", "sub": "91.0% of fields against the reference reader's 96.2%, at $0.0007 a document against $0.0209. Now an opt-in reader in the product." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R5",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Each role starts on Nemotron Lightning, the cheapest rung on Nebius Token Factory, and climbs to Super only when its proof fails.",
+          "screen": "Card: the model ladder — Lightning, then Super only on a failed proof",
+          "card": { "kicker": "The ladder on Nebius Token Factory", "title": "NVIDIA Nemotron 3.5 Lightning → Nemotron 3 Super", "sub": "Start on the cheapest rung. Climb only when a proof fails." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R6",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Athena. A personal agent in the apps you already use, behind a gate she cannot argue with.",
+          "screen": "Closing card: Athena · A personal agent",
+          "card": { "kicker": "Athena", "title": "A personal agent.", "sub": "In the web apps you already use, behind a gate she cannot argue with." },
+          "settle_ms": 2000
+        }
+      ]
+    }
+  ]
+}
