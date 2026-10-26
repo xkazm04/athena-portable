@@ -154,16 +154,23 @@ def prove(root: Path, overrides: Mapping[str, Backend] | None = None) -> list[Pr
     out = run_senses(ctx)
     key = _read(root / SENSES_DIR / KEY_FILE)
     results: list[ProofResult] = []
+    rows: list[dict[str, Any]] = []
     for name in SENSES:
         if any(m.sense == name for m in ctx.media):
-            results.extend(sense_module(sense_of(name)).prove(ctx, out, key))
+            for r in sense_module(sense_of(name)).prove(ctx, out, key):
+                results.append(r)
+                # Proof ids are the spike README's (F1, R4...), so two senses in one chore can
+                # both have an F1: the row names its sense, and the pair is the identity.
+                rows.append(
+                    {"sense": name, **{k: v for k, v in asdict(r).items() if v is not None}}
+                )
     _write(
         root / SENSES_DIR / PROOFS_FILE,
         {
             "playbook": ctx.playbook_id,
             "backends": dict(ctx.senses.backends),
             "passed": all(r.passed for r in results) and bool(results),
-            "proofs": [{k: v for k, v in asdict(r).items() if v is not None} for r in results],
+            "proofs": rows,
         },
     )
     return results
