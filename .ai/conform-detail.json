@@ -7745,6 +7745,27 @@
       "evaluatedTs": "2026-10-26T22:11:42.202Z",
       "worker": "4b76e42b-6fb6-4550-935b-088ab359311e",
       "techniques": []
+    },
+    "41fb4245-53a6-4ccd-8a5c-123c93d7fa65/standards-layered-runtime": {
+      "context": "desktop-console",
+      "subject": "standards-layered-runtime",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-26",
+      "evaluatedTs": "2026-10-26T22:18:47.096Z",
+      "worker": "8f40411e-890d-429c-8e14-652884a6e045",
+      "techniques": [
+        {
+          "technique": "crate-per-standards-body",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/console/root.tsx:9 This is a React component module, not a runtime package graph split by standards authority."
+        },
+        {
+          "technique": "cli-as-thin-assembler",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/console/Console.tsx:9 This is a UI stage component with no runtime CLI front end to assemble."
+        }
+      ]
     }
   }
 }

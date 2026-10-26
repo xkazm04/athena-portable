@@ -4170,7 +4170,11 @@
           "revision": 1,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/console/root.tsx:26 The context is a React UI root and does not embed a guest-language runtime. Its root only starts app stores (shell, tabs, daemon, settings, engines, depth), so it has no engine, standards packages, extras layer or CLI assembler that the subject could govern. A grep of apps/desktop/src/console/ found no hits for wintertc, deno_core, boa_engine, rquickjs or JsRuntime, and a repo-wide search found those names only in .ai/ registry bookkeeping files.",
+          "evaluatedAt": "2026-10-26",
+          "evaluatedAgainst": "sha256-b2:3cf694924d502131",
+          "evaluatedRevision": 2
         },
         {
           "subject": "subprocess-lifecycle",
