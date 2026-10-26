@@ -80,7 +80,7 @@ fallback as an ordinary chore, or nothing, and says which.
 | `src/athena/senses/<sense>/` | the spike that owns the sense | consume its public functions |
 | `playbooks/<new-id>/` | the chore's spike | - |
 | `playbooks/ranking.json`, `CHANGELOG.md`, `docs/features/*.md` | everyone | regenerate or append in a separate commit, re-read just before writing |
-| ADR numbers | 00: 0201-0205 · 01: 0206-0210 · 02: 0211-0215 · 03: 0216-0220 · 04: 0221-0225 · 05: 0226-0230 (a block clear of the sequence other sessions are still using) | never take a number outside your block |
+| ADR numbers | **0300-0309** (2026-10-26: the first block, 0201-0230, was taken by other sessions before the spikes began). 0300 senses contract · 0301 paper · 0302 call · 0303 object · 0304 walk · 0305 circle · 0306 Meta clients | never take a number outside your block |
 | media (video, audio, photo folders) | each spike, **local only** (ADR 0055) | commit the index, never the media |
 
 ## Budget

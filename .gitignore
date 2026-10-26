@@ -71,3 +71,7 @@ evidence/
 /.claude/rules/ai-registry-software-engineering.md
 /.ai/skill-runs.local.jsonl
 # END ai-registry linked skills
+
+# Featured chores (ADR 0300): rendered sheets are regenerable, recorded media stay local (ADR 0055)
+playbooks/*/senses/render/
+playbooks/*/senses/media/
