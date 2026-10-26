@@ -75,7 +75,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    # Intermixed, so ``show --run-dir <dir> <name>`` parses the same on 3.11 and 3.12 as on 3.13.
+    args = build_parser().parse_intermixed_args(argv)
     if args.n < 1:
         print("refused: --n must be 1 or more", file=sys.stderr)
         return 2

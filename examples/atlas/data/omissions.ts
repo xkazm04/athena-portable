@@ -52,6 +52,13 @@ export const OMISSIONS: Omission[] = [
     modules: 63,
   },
   {
+    path: "src/athena/spaces/",
+    reason:
+      "projects as walled spaces: a brief, paired apps and a wall around the memory written inside it, a store and routes beside the turn rather than a layer of it",
+    source: "src/athena/spaces/__init__.py; ADR 0225",
+    modules: 4,
+  },
+  {
     path: "src/athena/vitals/",
     reason:
       "a PC's room measured and the gate on background tasks: scheduling for the sleep cycle and delegated tasks, not the turn",
@@ -115,6 +122,12 @@ export const OMISSIONS: Omission[] = [
     path: "src/athena/contracts/adopt.py",
     reason: "the Adopt studio's wire contract, which belongs with the omitted adopt package",
     source: "src/athena/contracts/adopt.py; ADR 0097",
+    modules: 1,
+  },
+  {
+    path: "src/athena/contracts/spaces.py",
+    reason: "the wire shapes of a project (a walled space), which belong with the omitted spaces package",
+    source: "src/athena/contracts/spaces.py; ADR 0225",
     modules: 1,
   },
   {
