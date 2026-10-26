@@ -1,0 +1,90 @@
+{
+ "schema": "conform-run/1",
+ "worker": "2a136824-1780-4478-9cb0-8b4d17bb0347",
+ "subject": "browser-credential-boundary",
+ "evaluatedAt": "2026-10-24T23:54:29.469119+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "browser-lane",
+   "subject": "browser-credential-boundary",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/lane/ports.py:3 The lane is daemon-side Python. It holds no credential, reads no env or config value, reaches no data store and fetches nothing outbound: a search of src/athena/lane and tests/lane for secret, credential, api_key, redact, upstream and fetch found nothing, and 'token' only turned up approval-choice tokens and LLM usage counts. So the question of whether the browser holds a credential is never decided here, and none of the subject's enforcement points exist in this context.",
+   "techniques": [
+    {
+     "technique": "public-vs-server-env-split",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/ports.py:3 No configuration value is read here (no getenv/environ access in the lane), so no value can change side between bundle and server."
+    },
+    {
+     "technique": "broker-proxy-attaches-secret",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/browser_lane.py:20 The lane holds no executor for host tools and puts no secret on any upstream call. It brokers approvals, not credentials."
+    },
+    {
+     "technique": "outbound-fetch-destination-validation",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/browser_lane.py:21 Execution happens in the user's browser from their own network position, which is the technique's own named exception. The server-side lane makes no fetch."
+    },
+    {
+     "technique": "opaque-upstream-errors",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/browser_lane.py:171 There is no upstream broker route. Refusal reasons already come from a closed set, and `detail` carries internal approval/catalog messages, not upstream bodies."
+    },
+    {
+     "technique": "default-deny-plus-defaulted-owner",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/ports.py:163 Writes go through injected ports (brain episodes, ledger). No browser-reachable table or row policy exists in this context."
+    },
+    {
+     "technique": "aggregate-view-not-base-table",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/ports.py:4 No data-store grants or views. No public role reads any table through this lane."
+    },
+    {
+     "technique": "omit-the-column-not-the-value",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/ports.py:7 No schema is defined or reachable here, so structural column omission has nothing to act on."
+    },
+    {
+     "technique": "allowlisted-operator-stream",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/browser_lane.py:231 The streamed events are model turn events going to the user's own panel, not a debug surface over requests that carried other parties' credentials."
+    }
+   ],
+   "absenceTerms": [
+    "secret",
+    "credential",
+    "api_key",
+    "redact",
+    "upstream"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-24T23:54:29.469119+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "browser-credential-boundary"
+   ],
+   "techniques": [
+    "aggregate-view-not-base-table",
+    "allowlisted-operator-stream",
+    "broker-proxy-attaches-secret",
+    "default-deny-plus-defaulted-owner",
+    "omit-the-column-not-the-value",
+    "opaque-upstream-errors",
+    "outbound-fetch-destination-validation",
+    "public-vs-server-env-split"
+   ],
+   "deviations": 0,
+   "context": "browser-lane",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}
