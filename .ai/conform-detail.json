@@ -7735,6 +7735,16 @@
           "evidence": "src/athena/connectors/mcp/config.py:143 MCP servers are an explicit list a person writes; no server declares that it requires another, so there is nothing to close over before selection."
         }
       ]
+    },
+    "41fb4245-53a6-4ccd-8a5c-123c93d7fa65/sql-console": {
+      "context": "desktop-console",
+      "subject": "sql-console",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-26",
+      "evaluatedTs": "2026-10-26T22:11:42.202Z",
+      "worker": "4b76e42b-6fb6-4550-935b-088ab359311e",
+      "techniques": []
     }
   }
 }
