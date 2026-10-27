@@ -9611,7 +9611,11 @@
           "revision": 3,
           "changedAt": "2026-09-22",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/space/geometry.ts:17 The context is a client-side CRM view model, 3D camera/layout arithmetic and WebMCP tools with no fixed-input-size model run over windows of an oversized input; a recursive grep of examples/tidycrm/components/blocks for stitch, inference, blend, tensor, accelerator, gaussian and onnx found no hits, so the subject's precondition does not hold.",
+          "evaluatedAt": "2026-10-27",
+          "evaluatedAgainst": "sha256-b2:be767e8151f6602a",
+          "evaluatedRevision": 3
         }
       ],
       "governance": "governed"

@@ -7820,6 +7820,37 @@
           "evidence": "examples/tidycrm/components/blocks/style/base/forced-colors.css:44 In these files 'verdict' is UI vocabulary for a visual stripe. No checker verdict is stored or compared."
         }
       ]
+    },
+    "b96add2f-57d0-4373-8741-748e5560658e/windowed-inference-over-oversized-inputs": {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "windowed-inference-over-oversized-inputs",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:23:08.587Z",
+      "worker": "f7a86d9e-2b6e-4d8e-9d42-bfeddce4c9ff",
+      "techniques": [
+        {
+          "technique": "overlap-weighted-stitching",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/space/geometry.ts:17 geometry is scene layout arithmetic, not window prediction blending"
+        },
+        {
+          "technique": "strictly-positive-blend-weights",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/space/camera.ts:188 the only 'overlap' in the context is label projection on screen; no blend weights exist"
+        },
+        {
+          "technique": "resolution-decoupled-window-mapping",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model.ts:4 'model' here is a view model of types and pure functions, not an ML model with heads"
+        },
+        {
+          "technique": "split-device-inference-and-stitching",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model.ts:4 no accelerator/device placement anywhere in the context"
+        }
+      ]
     }
   }
 }
