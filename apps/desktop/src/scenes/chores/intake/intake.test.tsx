@@ -520,6 +520,17 @@ describe("the conversation", () => {
     ).toBe(false);
   });
 
+  it("says the daemon's nothing-said refusal plainly, with no code word", async () => {
+    intake.decide = () =>
+      Promise.reject(new ApiError(409, "validator_failed", "nothing_said: say what you need first"));
+    await show();
+    type(q<HTMLTextAreaElement>("#ad-say")!, NEED);
+    await click(sendIn(".ad-composer"));
+    await click(button("Just decide for me"));
+    expect(text()).toContain("She has not heard what you need yet.");
+    expect(text()).not.toContain("nothing_said");
+  });
+
   it("holds Just decide for me until the person has said something", async () => {
     await show();
     await feed(CARD);

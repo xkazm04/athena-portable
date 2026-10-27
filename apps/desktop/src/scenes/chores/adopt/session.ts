@@ -44,7 +44,8 @@ export const gone = (error: unknown): boolean =>
 /**
  * A refusal in words. The daemon carries two adopt refusals in its closed reason vocabulary with a
  * prefix on the detail (ADR 0097): `busy:` (three conversations already open, 429) and `stale_rev:`
- * (an approve for a brief that has since changed, 409); both are said plainly here.
+ * (an approve for a brief that has since changed, 409); the front door adds `nothing_said:` and
+ * `decided:` (409, ADR 0098). Each is said plainly here, never as its code word.
  */
 export const why = (error: unknown): { reason: string; detail: string } => {
   if (!(error instanceof ApiError)) {
@@ -60,6 +61,16 @@ export const why = (error: unknown): { reason: string; detail: string } => {
       detail:
         "Three conversations are already open with her. Close one, then try again.",
     };
+  }
+  // The front door's two refusals (ADR 0098), 409 `validator_failed` with a prefix on the detail.
+  if (detail.startsWith("nothing_said:")) {
+    return {
+      reason: error.reason,
+      detail: "She has not heard what you need yet. Say it in your own words, then ask her to decide.",
+    };
+  }
+  if (detail.startsWith("decided:")) {
+    return { reason: error.reason, detail: "She has already given her verdict on this conversation." };
   }
   if (detail.startsWith("stale_rev:")) {
     return {
