@@ -461,6 +461,7 @@ describe("leaving", () => {
     escape();
     expect(go).not.toHaveBeenCalled();
     expect(q('[role="alertdialog"]')).not.toBeNull();
+    expect(document.activeElement?.textContent?.trim()).toBe("Stay");
     await click(button("Stay"));
     expect(q('[role="alertdialog"]')).toBeNull();
     escape();

@@ -148,7 +148,8 @@ export default function Studio({
           <Button variant="primary" size="sm" onClick={back}>
             Leave
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setAsking(false)}>
+          {/* An alertdialog takes the focus, on the answer that loses nothing. */}
+          <Button variant="ghost" size="sm" autoFocus onClick={() => setAsking(false)}>
             Stay
           </Button>
         </div>

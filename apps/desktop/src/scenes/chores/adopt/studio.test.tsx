@@ -1015,6 +1015,8 @@ describe("leaving, and the voice", () => {
     });
     expect(go).not.toHaveBeenCalled();
     expect(text(".ad-ask")).toContain("Leave anyway?");
+    // The question takes the focus, on the answer that loses nothing.
+    expect(document.activeElement?.textContent?.trim()).toBe("Stay");
   });
 
   it("puts a spoken take in the box and never sends it on its own", async () => {
