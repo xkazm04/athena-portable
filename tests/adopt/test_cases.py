@@ -253,8 +253,20 @@ def test_reopen_refuses_a_bad_unknown_or_foreign_case(live: Live) -> None:
     assert start(case_id, "demo-other")[0] == 400
 
 
-def test_a_rewrite_keeps_keys_a_later_writer_added(live: Live) -> None:
+def test_approving_the_same_rev_twice_in_one_session_writes_one_approval(live: Live) -> None:
     sid, case_id = approve_one(live, clear_script())
+    book = CaseBook(live.local.brain)
+    first = book.load(case_id)
+    assert first is not None
+    status, body = live.request(f"/adopt/{sid}/approve", method="POST", body={"rev": 1})
+    assert status == 200 and body["case_id"] == case_id and body["case_problem"] == "", body
+    again = book.load(case_id)
+    assert again is not None and [a.rev for a in again.approvals] == [1]
+    assert again.approvals == first.approvals and again.episode_id == first.episode_id
+
+
+def test_a_rewrite_keeps_keys_a_later_writer_added(live: Live, tmp_path: Path) -> None:
+    _, case_id = approve_one(live, clear_script())
     path = live.local.brain.root / "goals" / f"{case_id}.md"
     meta, body = frontmatter.parse(path.read_text(encoding="utf-8"))
     case, _ = parse_case(body)
@@ -263,9 +275,15 @@ def test_a_rewrite_keeps_keys_a_later_writer_added(live: Live) -> None:
         encoding="utf-8",
         newline="\n",
     )
-    session = live.rig.store.get(sid)
+    restart(live, tmp_path)
+    status, body = live.request(
+        "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "case_id": case_id}
+    )
+    assert status == 200, body
+    session = live.rig.store.get(str(body["session_id"]))
     assert session is not None
-    assert live.request(f"/adopt/{sid}/approve", method="POST", body={"rev": 1})[0] == 200
+    session.drain()
+    assert live.request(f"/adopt/{session.id}/approve", method="POST", body={"rev": 1})[0] == 200
     _, body = frontmatter.parse(path.read_text(encoding="utf-8"))
     case, extra = parse_case(body)
     assert extra == {"receipts": [{"n": 1}]} and len(case.approvals) == 2

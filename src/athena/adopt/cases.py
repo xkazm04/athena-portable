@@ -337,8 +337,17 @@ class CaseBook:
         is minted on its first save and kept; a reopened session already holds its case's. Raises
         ``ValueError`` for a rev never drafted, and what the brain raises (a refused fact, a disk
         error). The episode and the facts are stamped with the case's project (ADR 0225).
+        A rev this session already saved answers the case unchanged: one approval per shown
+        draft per session, however many times the request arrives.
         """
         with self._lock, session.case_lock:
+            with session.lock:
+                saved = session.case
+                if saved is not None and session.saved_rev == rev:
+                    # A double click or a retried request: this session already wrote this
+                    # draft's approval. A reopened case starts with no saved rev, so its
+                    # approval at an unchanged rev is a new one.
+                    return saved
             draft = session.draft_of(rev)
             if draft is None:
                 raise ValueError(f"brief {rev} was never drafted in this session")
@@ -439,6 +448,7 @@ class CaseBook:
             with session.lock:
                 session.case_id = case_id
                 session.case = case
+                session.saved_rev = rev
                 session.slot_meta = {s.id: s for s in kept}
             return case
 

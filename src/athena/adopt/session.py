@@ -241,6 +241,8 @@ class AdoptSession:
         #: An answer arrived after the brief: the brief at ``rev`` may no longer be approved.
         self.brief_stale = False
         self.approved_rev: int | None = None
+        #: The rev this session last wrote to its case file; a second approval of it is a retry.
+        self.saved_rev: int | None = None
         self.docs: dict[str, Path] = {}
         #: Things worth counting that are not events: malformed legs, failed hooks.
         self.counters: dict[str, int] = {}
