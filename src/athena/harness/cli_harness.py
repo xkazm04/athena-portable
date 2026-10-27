@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -160,6 +161,10 @@ class CliDialect:
 
     def decode(self, record: Mapping[str, Any]) -> Decoded | None:
         raise NotImplementedError
+
+    def law(self, static_text: str) -> str:
+        """The static half as this CLI is told it; a dialect may add an engine-specific line."""
+        return static_text
 
     def classify(
         self, status: ExitStatus, outcome: Decoded | None
@@ -338,6 +343,19 @@ MUSE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
     ("timed out", "transient"),
 )
 
+#: An experiment (2026-10-27): asked for twenty acts, Athena-on-Muse wrote "filing the 20 lines"
+#: and one ``OP:`` line, reasoning "single-line submissions to avoid parse errors" - the shared
+#: capability block only ever says "an `OP:` line". Set to ``1``, Muse is told the grammar is per
+#: line; measured against the same chores without it before it is ever on by default.
+MUSE_BATCH_LAW_ENV = "ATHENA_MUSE_BATCH_LAW"
+MUSE_BATCH_LAW = (
+    "## Many acts in one reply\n\n"
+    "Each `OP:` line is read and checked on its own: a reply may carry as many `OP:` lines as "
+    "there are acts, one per line, and a line that fails to parse drops only itself. When the "
+    "person asks for several acts - every line of a claim, every bill in a pile - write one "
+    "`OP:` line for each of them in the same reply, never one now and the rest later."
+)
+
 
 @dataclass(frozen=True)
 class MuseDialect(CliDialect):
@@ -398,6 +416,11 @@ class MuseDialect(CliDialect):
                 said=_text(payload.get("reason")) if failed else "",
             )
         return None
+
+    def law(self, static_text: str) -> str:
+        if os.environ.get(MUSE_BATCH_LAW_ENV, "").strip() != "1":
+            return static_text
+        return f"{static_text.rstrip()}\n\n{MUSE_BATCH_LAW}\n"
 
 
 CLAUDE = ClaudeDialect(name="claude_code", executable="claude", signatures=CLAUDE_SIGNATURES)
@@ -563,7 +586,7 @@ class CliHarness(RoundHarness):
             stdin = history[-1]
         if self.dialect.stdin_as_file:
             if resume is None and not self.dialect.system_on_stdin:
-                stdin = "\n\n---\n\n".join([static_text.rstrip(), stdin])
+                stdin = "\n\n---\n\n".join([self.dialect.law(static_text).rstrip(), stdin])
             prompt_file = self._write_prompt(f"{conversation_id}-turn", stdin)
             stdin = ""
         return CliRequest(
