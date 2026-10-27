@@ -26,3 +26,5 @@ header, and say there that it was captured.
   `tokenfactory_turn.ndjson`, one whole HTTP response body per line.
 
 `rounds_from_transcript` in `athena.harness.transports` is the parser, and it is the only one.
+
+- `muse_exec_text_only.jsonl`: `muse exec --json` (Muse Code 1.4.13, muse-spark-1.3), 2026-10-27, trimmed to the records MuseDialect reads plus one it skips.

@@ -35,7 +35,7 @@ def on_path(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_the_engines_are_the_two_dialects_and_token_factory() -> None:
-    assert ENGINES == ("claude_code", "codex", "nebius")
+    assert ENGINES == ("claude_code", "codex", "nebius", "muse_code")
 
 
 def test_an_unknown_engine_is_a_status_and_not_an_exception() -> None:

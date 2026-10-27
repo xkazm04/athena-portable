@@ -40,6 +40,8 @@ from athena.harness.cli_harness import (
     CLAUDE_EXTRA_ARGS,
     CODEX,
     DIALECTS,
+    MUSE,
+    MUSE_EXTRA_ARGS,
     CliDialect,
     CliHarness,
 )
@@ -67,7 +69,7 @@ __all__ = [
 ]
 
 #: The engines this build offers, in the order a setup screen should try them.
-ENGINES: tuple[str, ...] = (CLAUDE.name, CODEX.name, NEBIUS)
+ENGINES: tuple[str, ...] = (CLAUDE.name, CODEX.name, NEBIUS, MUSE.name)
 
 #: The engines that are an API behind a key rather than a binary on ``PATH``.
 API_ENGINES: tuple[str, ...] = (NEBIUS,)
@@ -305,4 +307,6 @@ def build_api_harness(
 
 
 def _default_args(dialect: CliDialect) -> tuple[str, ...]:
-    return CLAUDE_EXTRA_ARGS if dialect.name == CLAUDE.name else ()
+    if dialect.name == CLAUDE.name:
+        return CLAUDE_EXTRA_ARGS
+    return MUSE_EXTRA_ARGS if dialect.name == MUSE.name else ()

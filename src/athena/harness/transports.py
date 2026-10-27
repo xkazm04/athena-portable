@@ -101,6 +101,8 @@ ENGINE_KEYS: dict[str, tuple[str, ...]] = {
     ),
     "codex": ("OPENAI_API_KEY", "CODEX_API_KEY"),
     "nebius": ("NEBIUS_API_KEY",),
+    #: Set, ``muse`` bills Meta's pay-as-you-go API instead of the Muse Code plan.
+    "muse_code": ("META_API_KEY",),
 }
 
 #: What :func:`child_env` never lets through, compared in upper case: a Windows child reads its

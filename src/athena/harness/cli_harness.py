@@ -45,6 +45,8 @@ __all__ = [
     "DIALECTS",
     "FAILURE_SENTENCES",
     "MAX_ROUNDS",
+    "MUSE",
+    "MUSE_EXTRA_ARGS",
     "TURN_TIMEOUT_S",
     "CliDialect",
     "CliHarness",
@@ -56,6 +58,24 @@ __all__ = [
 #: a shell. ``dontAsk`` denies whatever permission prompt remains rather than blocking on a
 #: terminal nobody is looking at.
 CLAUDE_EXTRA_ARGS: tuple[str, ...] = ("--restricted", "--permission-mode", "dontAsk")
+
+#: The same rule for ``muse exec`` (Muse Code 1.4, measured 2026-10-27): no coding tools, no
+#: shell, no writes, no web, no reminder sub-agents, none of the person's Claude Code skills, and
+#: Contributor mode off on every run - a subscription defaults to it, and Athena's law and a
+#: person's page are not training data. ``-c`` keys cannot drop Muse's own ~15k-token base
+#: instructions; that is allowance, not money, on the plan.
+MUSE_EXTRA_ARGS: tuple[str, ...] = (
+    "--contributor-mode",
+    "off",
+    "--preset",
+    "empty",
+    "--no-session-log",
+    "--disable-shell",
+    "--disable-write",
+    "--disable-web-tools",
+    "--disable-reminders",
+    "--no-foreign-personal-context",
+)
 
 # --- how a round failed --------------------------------------------------------------------------
 
@@ -119,6 +139,9 @@ class CliDialect:
     executable: str
     system_on_stdin: bool = False
     resumes: bool = True
+    #: The CLI cannot read its prompt from stdin; what would go there is written to a file and
+    #: the file is named on the command line instead (``muse exec --prompt-file``).
+    stdin_as_file: bool = False
     #: What this CLI says when it fails, lowercased, first match wins. Dated: a CLI release can
     #: reword any of these, and an unmatched failure is still a failure, read as ``unknown``.
     signatures: tuple[tuple[str, FailureClass], ...] = ()
@@ -294,6 +317,78 @@ class CodexDialect(CliDialect):
         return None
 
 
+#: ``muse exec`` 1.4, as of 2026-10-27. It never resumes from ``exec``, so it has no "gone".
+MUSE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
+    ("context window", "poisoned"),
+    ("context_length", "poisoned"),
+    ("not logged in", "auth"),
+    ("run `muse login`", "auth"),
+    ("unauthorized", "auth"),
+    ("allowance", "limit"),
+    ("usage limit", "limit"),
+    ("rate limit", "limit"),
+    ("overloaded", "transient"),
+    ("service unavailable", "transient"),
+    ("timed out", "transient"),
+)
+
+
+@dataclass(frozen=True)
+class MuseDialect(CliDialect):
+    """``muse exec --json --prompt-file <file>``: Meta's Muse Code CLI on the person's plan.
+
+    Its stdout is the MSP event stream, and three payloads matter: ``run.output.delta`` is text,
+    ``run.usage`` is the tokens per model (read as a usage-only result: the harness adds every
+    result's tokens and keeps the last non-error one as the outcome), and ``run.terminal.*`` ends
+    the run - after the usage, so it is the outcome. Its ``text`` repeats the deltas and is not
+    read again.
+    """
+
+    def argv(
+        self,
+        *,
+        prompt_file: str | None,
+        model: str,
+        resume: str | None,
+        extra_args: Sequence[str],
+    ) -> list[str]:
+        argv = ["exec", "--json"]
+        if prompt_file:
+            argv += ["--prompt-file", prompt_file]
+        if model:
+            argv += ["--model", model]
+        return argv + list(extra_args)
+
+    def decode(self, record: Mapping[str, Any]) -> Decoded | None:
+        kind = record.get("payload_type")
+        payload = record.get("payload")
+        payload = payload if isinstance(payload, Mapping) else {}
+        if kind == "session.run.linked":
+            stream = record.get("stream")
+            sid = stream.get("id") if isinstance(stream, Mapping) else None
+            return Decoded("session", session_id=_str_or_none(sid))
+        if kind == "run.output.delta":
+            text = _text(payload.get("text"))
+            return Decoded("text", text=text) if text else None
+        if kind == "run.usage":
+            models = payload.get("models")
+            rows = [m for m in models if isinstance(m, Mapping)] if isinstance(models, list) else []
+            return Decoded(
+                "result",
+                input_tokens=sum(_int(m.get("input_tokens")) for m in rows),
+                output_tokens=sum(_int(m.get("output_tokens")) for m in rows),
+            )
+        if isinstance(kind, str) and kind.startswith("run.terminal."):
+            failed = payload.get("terminal") != "completed"
+            return Decoded(
+                "result",
+                is_error=failed,
+                subtype=_text(payload.get("terminal")) if failed else "",
+                said=_text(payload.get("reason")) if failed else "",
+            )
+        return None
+
+
 CLAUDE = ClaudeDialect(name="claude_code", executable="claude", signatures=CLAUDE_SIGNATURES)
 CODEX = CodexDialect(
     name="codex",
@@ -302,7 +397,15 @@ CODEX = CodexDialect(
     resumes=False,
     signatures=CODEX_SIGNATURES,
 )
-DIALECTS: dict[str, CliDialect] = {CLAUDE.name: CLAUDE, CODEX.name: CODEX}
+MUSE = MuseDialect(
+    name="muse_code",
+    executable="muse",
+    system_on_stdin=True,
+    resumes=False,
+    stdin_as_file=True,
+    signatures=MUSE_SIGNATURES,
+)
+DIALECTS: dict[str, CliDialect] = {CLAUDE.name: CLAUDE, CODEX.name: CODEX, MUSE.name: MUSE}
 
 # --- the harness ---------------------------------------------------------------------------------
 
@@ -449,6 +552,9 @@ class CliHarness(RoundHarness):
             stdin = history[0] if len(history) == 1 else "\n\n---\n\n".join(history)
         else:
             stdin = history[-1]
+        if self.dialect.stdin_as_file:
+            prompt_file = self._write_prompt(f"{conversation_id}-turn", stdin)
+            stdin = ""
         return CliRequest(
             argv=self.dialect.argv(
                 prompt_file=prompt_file,
