@@ -1,5 +1,5 @@
 /** The fleet's two streams, decoded — ADR 0140 (`src/athena/peer/events.py`, `remote.py`). */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { busEventFromJson, followBus, overlayWords, turnFrameFromJson, type BusEvent } from "./fleet";
 
@@ -39,6 +39,39 @@ describe("the event bus", () => {
     expect(connects).toBe(2);
     expect(seen).toHaveLength(2);
     expect(waits).toEqual([1000, 1000]);
+  });
+
+  it("logs a handler that throws and keeps reading the same stream", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    let connects = 0;
+    const seen: string[] = [];
+    let stop = () => {};
+    await new Promise<void>((done) => {
+      stop = followBus(
+        () => ({
+          async *events() {
+            yield { kind: "peer.changed", peer_id: "dev_bad" } as BusEvent;
+            yield { kind: "peer.changed", peer_id: "dev_good" } as BusEvent;
+          },
+        }),
+        (event) => {
+          const id = event.kind === "peer.changed" ? event.peer_id : null;
+          if (id === "dev_bad") throw new Error("handler broke");
+          seen.push(String(id));
+        },
+        () => {
+          connects += 1;
+        },
+        async () => done(),
+      );
+    });
+    stop();
+    const logged = errors.mock.calls.map((c) => String(c[0]));
+    errors.mockRestore();
+    // One connect, and the frame after the throw was still delivered on it.
+    expect(connects).toBe(1);
+    expect(seen).toEqual(["dev_good"]);
+    expect(logged).toEqual([expect.stringContaining("handler broke")]);
   });
 });
 

@@ -238,7 +238,13 @@ export function followBus(
           connected?.();
           for await (const event of client.events(controller.signal)) {
             if (stopped) break;
-            on(event);
+            try {
+              on(event);
+            } catch (error) {
+              // A reader's own bug is said once and costs that frame only: thrown out of this loop
+              // it would end the stream silently, and every frame after it would be lost.
+              console.error(`[athena] bus ${event.kind}: ${error instanceof Error ? error.message : String(error)}`);
+            }
           }
         } catch {
           // Refused, dropped or aborted: the next pass reconnects, or the loop has been stopped.

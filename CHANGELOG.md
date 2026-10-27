@@ -1111,6 +1111,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(docread): a resumed read starts from what its ledger already spent, so the caps hold per run and not per session.` Stabilize 2026-10-27 (proving-docread, risk-assessor; ADR 0122): each `read --run` got a full purse again; `run_read` now restores spend from the run's `ledger.jsonl` as the forge does.
 - `fix(engines): an engine the daemon reports but the desktop cannot launch is never counted as one to switch to.` Stabilize 2026-10-27 (desktop-client-lib, parity-auditor): /engines now reports muse_code and nebius beside the two engines the shell launches, and `usable()` counted them, so Setup could say "1 of 4 ready, but another is chosen" with nothing to choose; it keeps only ENGINE_IDS now.
 - `fix(midturn): a hyphenated word that starts with a cue ("stop-loss", "wait-list") queues instead of stopping her turn.` Stabilize 2026-10-27 (desktop-client-lib, bounty-hunter): the cue's end allowed a hyphen, so "stop-loss orders for March next" interrupted the running turn; three queue cases pin it.
+- `fix(fleet): a bus reader that throws is logged and costs one frame, instead of silently ending the stream.` Stabilize 2026-10-27 (desktop-client-lib, observability-auditor): `followBus` ran each reader inside the catch meant for a dropped stream, so one reader's bug closed /events and lost the frames after it without a word.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
