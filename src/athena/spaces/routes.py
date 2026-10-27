@@ -48,6 +48,7 @@ from athena.contracts.spaces import (
     SpaceMemoryKind,
     SpaceSummary,
 )
+from athena.core.brain import UnstampRefused
 from athena.daemon.routes import Reply, Request, Route, error, refusal
 from athena.spaces.book import SpaceBook, SpaceInvalid, check_input
 from athena.spaces.memory import (
@@ -224,7 +225,10 @@ def promote(daemon: AthenaDaemon, book: SpaceBook, space_id: str, memory_id: str
         return refusal(400, "bad_request", "an episode stays in the project it was said in")
     if kind not in ("fact", "procedural"):
         return refusal(400, "bad_request", f"not a fact or procedural id: {memory_id!r}")
-    moved = promote_to_core(daemon.brain, space_id, memory_id)
+    try:
+        moved = promote_to_core(daemon.brain, space_id, memory_id)
+    except UnstampRefused as exc:
+        return error(409, "validator_failed", str(exc))
     if moved is None:
         return error(404, "unknown_ref", f"{memory_id} is not a memory of this project")
     return 200, {"id": memory_id, "kind": moved}

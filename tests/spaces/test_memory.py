@@ -100,6 +100,42 @@ def test_make_core_moves_a_fact_out_of_the_project_and_another_project_then_reca
     assert wrong.status == 404 and wrong.body["reason"] == "unknown_ref"
 
 
+def test_make_core_refuses_a_closed_memory_and_a_retired_marker_and_says_why(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    """A memory a same-project successor closes would be hidden everywhere once core's (its
+    closer is invisible there), and a retired forget marker would bar its key in every project:
+    the move answers a reason, nothing moves, and recall is as it was."""
+    a = create(live, "Taxes")
+    brain = daemon.brain
+    mine = written(daemon, a, "zephyr")
+    newer = brain.write_fact(
+        "zephyr fact",
+        "The zephyr answer is 43.",
+        sources=[mine["episode"]],
+        supersedes=[mine["fact"]],
+        space=a,
+    )
+    closed = live.request(f"/spaces/{a}/memory/{mine['fact']}/core", method="POST")
+    assert closed.status == 409 and closed.body["reason"] == "validator_failed"
+    assert "superseded" in closed.body["detail"]
+    marker = brain.write_fact(
+        "forgotten: zephyr always",
+        "A person forgot this.",
+        sources=[mine["episode"]],
+        supersedes=[mine["always"]],
+        retired=True,
+        space=a,
+    )
+    retired = live.request(f"/spaces/{a}/memory/{marker.id}/core", method="POST")
+    assert retired.status == 409 and "retired" in retired.body["detail"]
+    node = brain.node(mine["fact"])
+    assert node is not None and node.space == a, "nothing moved"
+    # The live successor still moves: the refusal is about what is closed, not about the project.
+    ok = live.request(f"/spaces/{a}/memory/{newer.id}/core", method="POST")
+    assert ok.status == 200
+
+
 def test_erase_answers_what_went_and_leaves_core_and_other_projects(
     live: Live, daemon: AthenaDaemon
 ) -> None:

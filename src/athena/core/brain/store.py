@@ -223,6 +223,12 @@ class ProvenanceError(ValueError):
     """A distilled memory cited a source that is not a live episode of this brain."""
 
 
+class UnstampRefused(ValueError):
+    """A memory of the space that cannot be moved to core: it is closed by a memory of its own
+    space (core would hide it, its closer being invisible there) or it is a retired marker (its
+    bar would widen from one project to every one). ``str()`` is the sentence a person reads."""
+
+
 @dataclass(frozen=True)
 class MemoryRef:
     """What a writer returns: the minted id, the brain-relative path, and the kind."""
@@ -1201,6 +1207,12 @@ class Brain:
         kept too, which a reindex would reset. Its citations are kept as they are: a promoted
         memory may cite what was said in the space, and a core memory's citation of an episode
         nobody can see is recorded, never followed by recall (the episode block draws on its own).
+
+        Raises :class:`UnstampRefused` for a memory that a memory of its own space closes
+        (superseded), and for a retired one (a person's forget marker): moved, the first would be
+        hidden everywhere - the successor that closes it is invisible in core, the case
+        ``_require_supersedable`` refuses at write (ADR 0225) - and the second would bar its key
+        in every project instead of one. Nothing moves.
         """
         if space == CORE or not ids.is_id("space", space):
             return None
@@ -1219,6 +1231,23 @@ class Brain:
             moved = _without_space(raw, space)
             if moved is None:
                 return None
+            if frontmatter.parse(raw)[0].get(RETIRED_KEY) is True:
+                raise UnstampRefused(
+                    "this is a retired memory (a forget marker); it stays in the project "
+                    "whose forget it records"
+                )
+            with closing(self.read_connection()) as con:
+                closer = con.execute(
+                    """SELECT 1 FROM companion_supersede s
+                       JOIN companion_node c ON c.id = s.node_id
+                       WHERE s.superseded_id = ? AND c.space = ? LIMIT 1""",
+                    (node_id, space),
+                ).fetchone()
+            if closer is not None:
+                raise UnstampRefused(
+                    "this memory was superseded by a newer one in this project; "
+                    "make the newer one core's instead"
+                )
             self._write_file(rel, moved)
             with self.write_txn() as con:
                 con.execute(

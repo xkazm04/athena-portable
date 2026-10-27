@@ -123,6 +123,7 @@ def promote_to_core(brain: Brain, space_id: str, memory_id: str) -> SpaceMemoryK
     """Remove ``space_id``'s stamp from the fact or procedural ``memory_id``, so it is core's from
     now on; its kind, or ``None`` when no such memory carries that stamp. The caller has already
     refused an episode id: an episode is a record of what was said where, and stays where it was.
+    Raises :class:`~athena.core.brain.UnstampRefused` for a closed or retired memory.
     """
     if space_id == CORE:
         return None

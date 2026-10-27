@@ -11,7 +11,7 @@ from __future__ import annotations
 from athena.core.brain.frontmatter import FrontmatterError
 from athena.core.brain.paths import INDEX_FILENAME, brain_root, ensure_tree
 from athena.core.brain.reconcile import ReconcileStats, index_fingerprint, reconcile_from_disk
-from athena.core.brain.store import Brain, MemoryRef, NodeRow, ProvenanceError
+from athena.core.brain.store import Brain, MemoryRef, NodeRow, ProvenanceError, UnstampRefused
 
 __all__ = [
     "INDEX_FILENAME",
@@ -21,6 +21,7 @@ __all__ = [
     "NodeRow",
     "ProvenanceError",
     "ReconcileStats",
+    "UnstampRefused",
     "brain_root",
     "ensure_tree",
     "index_fingerprint",
