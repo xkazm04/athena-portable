@@ -65,7 +65,7 @@ from athena.proving.chores_uat.judge import (
     judge_prompt,
     judge_view,
 )
-from athena.proving.chores_uat.numbers import number_row
+from athena.proving.chores_uat.numbers import number_row, read_ranking
 from athena.proving.chores_uat.rig import (
     HARNESS_TIER,
     UNPRICED_LEG_USD,
@@ -525,7 +525,8 @@ def _numbers_row(rig: Rig, playbook: Mapping[str, Any]) -> dict[str, Any]:
     bench = (
         read_record(rig.library / str(playbook.get("id")) / "bench.json") if rig.library else None
     )
-    return number_row(playbook, bench)
+    rank = read_ranking(rig.library).get(str(playbook.get("id"))) if rig.library else None
+    return number_row(playbook, bench, rank)
 
 
 def _judge_into(

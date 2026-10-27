@@ -20,6 +20,7 @@ import pytest
 
 from athena.proving.chores_uat.numbers import (
     DASH,
+    PER,
     TAG,
     TIMES,
     annual_value,
@@ -107,9 +108,10 @@ def test_absent_figures_are_null_never_zero() -> None:
     assert row["speedup_with_review"] is None and row["bench_runs_n"] is None
     assert row["expectation_minutes"] is None
     assert row["verdict"] == "unbenched"
-    assert row["unit_shown"] == "a quarter"
+    # model.ts PERIODS: a quarter is four of a year, said "a year" (ADR 0213).
+    assert row["unit_shown"] == "a year"
     joined = " ".join(row["quirks"])
-    assert "quarter is not multiplied by 4" in joined
+    assert "quarter" not in joined
     assert "no bench.json" in joined
     assert "assumes 30" in joined
 
@@ -138,6 +140,7 @@ def test_comparable_runs_mirrors_the_desktop() -> None:
 
 def test_the_words_match_the_desktop() -> None:
     assert annual_value(100, "month") == 1200 and annual_value(100, "episode") == 100
+    assert annual_value(100, "quarter") == 400 and annual_value(100, "year") == 100
     assert usd_text(50400) == "$50,400" and usd_text(12.5) == "$12.50" and usd_text(7) == "$7"
     # toLocaleString rounds half away from zero; Python's format would say $3,422 for 3,422.50.
     assert usd_text(3423.5) == "$3,424" and usd_text(3422.5) == "$3,423"
@@ -188,8 +191,9 @@ PAGES = {
         f"Time saved: 10 h -> 7 min, including about 4 min of your review · 86{TIMES} faster"
         f" · {SRC}",
         "Mistakes avoided: 22/22 in the test run",
-        "Beats its bar: Beat its bar in 2 of 4 test runs: 8 of 10 found, $1,910 back of $2,120, "
-        "no false claims.",
+        # ranking.json leaves it out (ADR 0213): verdictOf's "Not ranked" with the ranking's why.
+        "Not ranked: Not ranked: short in 2 of 4 comparable runs. The latest test run beat its "
+        "bar: 8 of 10 found, $1,910 back of $2,120, no false claims.",
         "Typical value: about $50,400 a year, author's estimate",
     ],
     "lien-desk": [
@@ -273,3 +277,49 @@ def test_meets_and_a_bench_without_review() -> None:
         "One test run so far."
     )
     assert row["guard_text"] == f"{DASH} known mistakes, not tested"
+
+
+# --- the committed ranking (ADR 0213): what the desktop reads beside bench.json ------------------
+
+
+def _ranking() -> dict[str, Any]:
+    import json
+
+    assert LIBRARY is not None
+    raw = json.loads((LIBRARY / "ranking.json").read_text(encoding="utf-8"))
+    assert isinstance(raw, dict)
+    return raw
+
+
+def test_the_estimate_is_the_rankings_year_for_every_ranked_chore(
+    rows: dict[str, dict[str, Any]],
+) -> None:
+    """model.ts ``annualValue``: ``rank.annualUsd`` where the ranking names the chore. The ground
+    truth is ranking.json itself, not a list kept here."""
+    ranked = [r for r in _ranking()["ranked"] if isinstance(r.get("money"), dict)]
+    assert len(ranked) > 50
+    for r in ranked:
+        annual = r["money"].get("annual_usd")
+        if annual is None:
+            continue
+        row = rows[r["playbook"]]
+        assert row["annual_shown"] == annual, r["playbook"]
+        assert row["unit_shown"] in ("a year", *PER.values()), r["playbook"]
+        assert f"about {usd_text(annual)} " in row["estimate_text"], r["playbook"]
+
+
+def test_an_unranked_chore_whose_run_did_not_fall_short_reads_not_ranked(
+    rows: dict[str, dict[str, Any]],
+) -> None:
+    """verdictOf: ``rank.unranked`` and a word other than short -> "Not ranked" and its why."""
+    seen = 0
+    for r in _ranking()["unranked"]:
+        row = rows[r["playbook"]]
+        if row["verdict"] == "short":
+            assert row["verdict_label"] == "Falls short", r["playbook"]
+            continue
+        seen += 1
+        assert row["verdict_label"] == "Not ranked", r["playbook"]
+        assert row["verdict_text"].startswith(f"Not ranked: {r['why']}. The latest test run ")
+        assert row["unranked"] == r["why"]
+    assert seen >= 1

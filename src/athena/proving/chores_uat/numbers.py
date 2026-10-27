@@ -19,8 +19,13 @@ topic page (fix wave chores-uat, ADR 0133-0136; ``apps/desktop/src/scenes/chores
 The older fields are kept so ``numbers.json`` stays comparable across runs:
 
 - ``annual_shown``/``unit_shown`` mirror ``annualValue`` and the ``PER`` table: still the
-  estimate line's figure and unit. A month is twelve, a week fifty-two, a year one; any other
-  ``per`` (episode, quarter, estate) is said raw in its own unit.
+  estimate line's figure and unit. The committed ranking's year (``playbooks/ranking.json``,
+  ``money.annual_usd``, ADR 0213) where it names the chore, else the period table: a quarter is
+  four, a month twelve, a week fifty-two, a year one, all said "a year"; any other ``per``
+  (episode, estate) is said raw in its own unit.
+- the badge reads the ranking too (``verdictOf``'s ``rank``): its runs where it has them, and a
+  chore the ranking leaves out reads "Not ranked" with the ranking's why unless its latest run
+  fell short (``unranked``).
 - ``speedup_shown`` is the pre-0136 page's speed (``speedup(manualMinutes, bench.wallS / 60)``,
   the bench's wall clock only). ``speedup_with_review`` is what the page shows now.
 - ``world_total_usd`` is what the bench world holds (``score.value_total_usd``) and
@@ -53,6 +58,7 @@ __all__ = [
     "minutes_text",
     "number_row",
     "read_library",
+    "read_ranking",
     "speedup_text",
     "summary",
     "usd_text",
@@ -70,7 +76,9 @@ PER: dict[str, str] = {
     "quarter": "a quarter",
     "estate": "an estate",
 }
-_YEARLY = ("year", "month", "week")
+#: ``modules/playbooks/model.ts`` ``PERIODS``: how many times a year each span comes round.
+PERIODS: dict[str, int] = {"year": 1, "quarter": 4, "month": 12, "week": 52}
+_YEARLY = tuple(PERIODS)
 #: The desktop's own glyphs: the multiplication sign of "18x faster" and the en dash of "unknown".
 TIMES = "\u00d7"
 DASH = "\u2013"
@@ -82,6 +90,7 @@ _LABELS = {
     "meets": "Meets its bar",
     "short": "Falls short",
     "unbenched": "Not tested",
+    "unranked": "Not ranked",
 }
 #: ``lib/playbooks.ts`` ``ValueKind``; ``count`` is a card's kind, never the estimate's.
 _KINDS = ("money_back", "money_protected", "penalty_avoided", "count")
@@ -160,6 +169,33 @@ def read_library(root: str | Path) -> dict[str, tuple[dict[str, Any], dict[str, 
     return out
 
 
+def read_ranking(root: str | Path) -> dict[str, dict[str, Any]]:
+    """``lib/playbooks.ts`` ``parseRanking``: ``playbooks/ranking.json`` by playbook id, each
+    ``{"annual_usd", "runs": (n, exceeds) | None, "unranked": why | None}``. Lenient as the
+    desktop is: no file or garbage is ``{}``, and a row without a playbook id is dropped."""
+    raw = _json(Path(root) / "ranking.json")
+    out: dict[str, dict[str, Any]] = {}
+    if not isinstance(raw, Mapping):
+        return out
+    for r in raw.get("ranked") or []:
+        if not isinstance(r, Mapping) or not isinstance(r.get("playbook"), str):
+            continue
+        bench = r.get("bench")
+        runs = bench.get("runs") if isinstance(bench, Mapping) else None
+        money = r.get("money")
+        out[r["playbook"]] = {
+            "annual_usd": _num(money.get("annual_usd")) if isinstance(money, Mapping) else None,
+            "runs": (int(_n0(runs.get("n"))), int(_n0(runs.get("exceeds"))))
+            if isinstance(runs, Mapping)
+            else None,
+            "unranked": None,
+        }
+    for r in raw.get("unranked") or []:
+        if isinstance(r, Mapping) and isinstance(r.get("playbook"), str):
+            out[r["playbook"]] = {"annual_usd": None, "runs": None, "unranked": _str(r.get("why"))}
+    return out
+
+
 # --- the desktop's arithmetic, mirrored -----------------------------------------------------------
 
 
@@ -171,12 +207,9 @@ def _num(value: Any) -> float | None:
 
 
 def annual_value(value_usd: float, per: str) -> float:
-    """``annualValue``: month x12, week x52, anything else as it is."""
-    if per == "month":
-        return value_usd * 12
-    if per == "week":
-        return value_usd * 52
-    return value_usd
+    """``annualValue`` without a ranking row: the period table (quarter x4, month x12, week x52),
+    anything else as it is."""
+    return value_usd * PERIODS.get(per, 1)
 
 
 def _js_round(x: float) -> int:
@@ -384,8 +417,13 @@ def _int_text(x: float) -> str:
     return _js_text(x)
 
 
-def _verdict_sentence(econ: Mapping[str, Any], bench: Mapping[str, Any] | None) -> str:
-    """``verdictOf``'s sentence (``modules/playbooks/model.ts``)."""
+def _verdict_sentence(
+    econ: Mapping[str, Any],
+    bench: Mapping[str, Any] | None,
+    rank: Mapping[str, Any] | None = None,
+) -> str:
+    """``verdictOf``'s sentence (``modules/playbooks/model.ts``): the ranking's runs where it has
+    them, and "Not ranked" for a chore it leaves out whose latest run did not fall short."""
     if bench is None:
         return "No test run yet, so nothing here is measured."
     score = bench.get("score") if isinstance(bench.get("score"), Mapping) else {}
@@ -401,11 +439,17 @@ def _verdict_sentence(econ: Mapping[str, Any], bench: Mapping[str, Any] | None) 
         )
         if x
     )
-    n, exceeds = comparable_runs(bench)
+    runs = rank.get("runs") if rank is not None else None
+    n, exceeds = runs if runs is not None else comparable_runs(bench)
     one = n == 1
     beat = f"{exceeds} of {n} test runs"
     verdict = bench.get("verdict")
     word = verdict.get("word") if isinstance(verdict, Mapping) else None
+    word = word if word in _VERDICTS else "short"
+    why = rank.get("unranked") if rank is not None else None
+    if why is not None and word != "short":
+        did = "beat" if word == "exceeds" else "met"
+        return f"Not ranked: {why}. The latest test run {did} its bar: {body}."
     if word == "exceeds":
         return f"Beat its bar in {'its one test run' if one else beat}: {body}."
     if word == "meets":
@@ -434,8 +478,13 @@ def _guard_text(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) ->
     return f"{traps or DASH} known mistakes, not tested"
 
 
-def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> dict[str, Any]:
-    """One playbook's row of ``numbers.json``."""
+def number_row(
+    playbook: Mapping[str, Any],
+    bench: Mapping[str, Any] | None,
+    rank: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """One playbook's row of ``numbers.json``; ``rank`` is its :func:`read_ranking` row, as the
+    desktop reads it beside bench.json (``None``: the bench's word alone)."""
     econ = playbook.get("economics")
     econ = econ if isinstance(econ, Mapping) else {}
     expect = playbook.get("expectation")
@@ -451,7 +500,11 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         quirks.append("economics.value_usd is absent: the desktop shows $0")
     elif value == 0:
         quirks.append("economics.value_usd is 0: the desktop shows $0 as the value")
-    annual = annual_value(value, per) if value is not None else None
+    ranked_year = rank.get("annual_usd") if rank is not None else None
+    if ranked_year is not None:
+        annual: float | None = float(ranked_year)
+    else:
+        annual = annual_value(value, per) if value is not None else None
     yearly = per in _YEARLY
     unit = "a year" if yearly else PER.get(per, f"per {per}")
     if not yearly:
@@ -459,8 +512,6 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
             f"per {per!r} is not annualised: the estimate is said {unit!r}, and the ledger's "
             "value order puts it after every yearly money-back figure"
         )
-        if per == "quarter":
-            quirks.append("a quarter is not multiplied by 4 on the way to the estimate line")
         times = _num(econ.get("times_per_year"))
         if times is not None:
             quirks.append(f"economics.times_per_year = {times:g} is not used by the shown value")
@@ -487,7 +538,8 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         verdict_word = raw_word if raw_word in _VERDICTS else "short"
         if raw_word not in _VERDICTS:
             quirks.append(f"bench verdict {raw_word!r} is not a known word: shown as 'Falls short'")
-        runs_n = comparable_runs(bench)[0]
+        rank_runs = rank.get("runs") if rank is not None else None
+        runs_n = rank_runs[0] if rank_runs is not None else comparable_runs(bench)[0]
         if not world_total:
             quirks.append("the bench world holds no dollar total: the verdict sentence names none")
 
@@ -508,6 +560,9 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         quirks.append("economics.basis is absent")
     ratio = annual / world_total if annual and world_total else None
 
+    why = rank.get("unranked") if rank is not None else None
+    unranked = why if bench is not None and why is not None and verdict_word != "short" else None
+
     # The post-0136 page, in its own words (worth.ts, topic.tsx, modules/playbooks/model.ts).
     kind = _value_kind(econ)
     example = _num(econ.get("example_usd"))
@@ -521,10 +576,8 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
     # kind's word only when the estimate is not money back; valueCell reads annualValue of
     # `num(econ.value_usd)` (0 when absent) and "a year" or the PER word.
     kind_word = "" if kind == "money_back" else f" {_KIND_WORD[kind]}"
-    estimate = (
-        f"Typical value: about {usd_text(annual_value(value or 0.0, per))} {unit}{kind_word}, "
-        "author's estimate"
-    )
+    figure = annual if annual is not None else annual_value(value or 0.0, per)
+    estimate = f"Typical value: about {usd_text(figure)} {unit}{kind_word}, author's estimate"
     # beforeAfterOf + topic.tsx's "Time saved" tile: hand -> her run plus your review, then
     # `[band.athena.review, band.ratio, TIME_SOURCE].filter(Boolean).join(" · ")`.
     manual0 = manual or 0.0
@@ -553,6 +606,8 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         "sources_n": _sources_n(econ),
         "incumbent_fee_pct": _num(econ.get("incumbent_fee_pct")),
         "verdict": verdict_word,
+        # verdictOf's "Not ranked": the ranking's why, when its latest run did not fall short.
+        "unranked": unranked,
         "bench_runs_n": runs_n,
         "manual_minutes": manual,
         "bench_minutes": round(bench_minutes, 3) if bench_minutes is not None else None,
@@ -571,8 +626,8 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         "estimate_text": estimate,
         "time_text": time_text,
         "guard_text": _guard_text(playbook, bench),
-        "verdict_label": _LABELS[verdict_word],
-        "verdict_text": _verdict_sentence(econ, bench),
+        "verdict_label": _LABELS["unranked" if unranked is not None else verdict_word],
+        "verdict_text": _verdict_sentence(econ, bench, rank),
         "quirks": quirks,
     }
 
@@ -603,7 +658,10 @@ def headline(row: Mapping[str, Any]) -> list[str]:
 
 def audit(root: str | Path) -> dict[str, Any]:
     """``numbers.json``'s document for the library at ``root``."""
-    rows = [number_row(pb, bench) for pb, bench in read_library(root).values()]
+    ranking = read_ranking(root)
+    rows = [
+        number_row(pb, bench, ranking.get(pid)) for pid, (pb, bench) in read_library(root).items()
+    ]
     return {
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "notes": list(NOTES),
