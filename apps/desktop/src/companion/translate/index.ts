@@ -204,6 +204,16 @@ export function translate(entry: TranscriptEntry, ctx: TurnContext = EMPTY_CONTE
       sub: `${reason.charAt(0).toUpperCase()}${reason.slice(1)}. Nothing was changed.`,
     };
   }
+  // Held before it ran (ADR 0101, `lib/execute.ts` heldBefore): its last call never answered, so it
+  // may already have happened. Not a failure, and never "Nothing was changed".
+  if (/^held:\s*/.test(out)) {
+    return {
+      ...step,
+      tone: "blocked",
+      title: `Held back: ${t.verb} ${objectPhrase(t, true)}${appSuffix(t)}`.replace(/\s+/g, " ").trim(),
+      sub: "Its last call never answered, so it may already have run. It waits for your answer.",
+    };
+  }
   const parsed = readJson(out);
   const c = composeTool(t, parsed === undefined ? out : parsed, entry.ok !== false, ctx);
   const sub = late ? [c.sub, `answered ${late[2]} s late`].filter(Boolean).join(" · ") : c.sub;

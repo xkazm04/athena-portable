@@ -330,3 +330,15 @@ test("a call that answered late reads as its answer, with how late, never as the
   const src = readFileSync(new URL("../../stores/run.ts", import.meta.url), "utf8");
   expect(src).toContain("const line = `${answer.name} finished ${seconds} s late: ${said}`;");
 });
+
+// `lib/execute.ts` heldBefore (ADR 0101): a call whose last run never answered is held, not failed.
+test("a held call says it may already have run, and is neither a failure nor 'Nothing was changed'", () => {
+  const exec = readFileSync(new URL("../../lib/execute.ts", import.meta.url), "utf8");
+  const line = /line: "(held: [^"]*)"/.exec(exec)?.[1];
+  expect(line).toBeDefined();
+  const m = translate({ id: "h", kind: "tool", tier: 1, ok: false, text: `host.ledgerbox.send_reminder → ${line}` });
+  expect(m.tone).toBe("blocked");
+  expect(m.title).toBe("Held back: send a reminder in Ledgerbox");
+  expect(m.sub).toContain("may already have run");
+  expect(m.sub).not.toContain("Nothing was changed");
+});

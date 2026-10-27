@@ -1100,6 +1100,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): a call that answered late reads as its answer and how late, not as raw JSON under a tool name.` Stabilize 2026-10-27 (desktop-companion-surfaces, parity-auditor): the translator reads `stores/run.ts` late()'s `<tool> finished N s late: <answer>`; translate.test.ts.
 - `fix(companion): the docked tab's working light sweeps by transform, not by animating top.` Stabilize 2026-10-27 (desktop-companion-surfaces, ui-perfectionist): `seal-sweep` looped a layout property for as long as she works; seal.css.test.ts holds every infinite seal animation to transform and opacity.
 - `fix(companion): the back of an unflipped decision card is inert, so Tab never lands on a button nobody can see.` Stabilize 2026-10-27 (desktop-companion-surfaces, accessibility-checker): `.sl-back` paired aria-hidden with focusable buttons; slip.test.tsx.
+- `fix(companion): a call held because its last run never answered reads "Held back", not "Could not".` Stabilize 2026-10-27 (desktop-companion-surfaces, state-coverage): the translator reads ADR 0101's `held:` line and never says "Nothing was changed" for it; translate.test.ts reads the line from `lib/execute.ts`.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
