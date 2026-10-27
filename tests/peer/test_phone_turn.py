@@ -43,6 +43,8 @@ def test_turn_js_is_served_and_app_js_delegates_to_it() -> None:
     assert "The answer stopped before it finished." not in script
     # A reload re-attaches to the open turn.
     assert "pendingTurn(" in script
+    # The five-second cards poll redraws only when the cards changed.
+    assert "if (sameCards(chat.cards, polled)) return;" in script
 
 
 def test_turn_js_never_writes_html_from_a_string() -> None:

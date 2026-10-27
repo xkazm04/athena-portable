@@ -258,6 +258,20 @@ export function createTurnReader({ text = "" } = {}) {
   };
 }
 
+/**
+ * Whether a cards poll returned exactly the cards already drawn: the same ids in the same order,
+ * each with the same action, reason, params and options (everything app.js draws). The poll runs
+ * every five seconds; redrawing an unchanged list would collapse an open "Read it first", take the
+ * focus off a button and replay every card's entrance each time.
+ */
+export function sameCards(drawn, polled) {
+  const shape = (cards) =>
+    JSON.stringify(
+      (cards || []).map((card) => [card.id, card.action ?? null, card.rationale ?? null, card.params ?? null, card.options ?? null]),
+    );
+  return shape(drawn) === shape(polled);
+}
+
 /** What the page says when a turn ends in `state`, or `null` when the events already said it. */
 export function turnMessage(state, { beacon = "your computer", status = null } = {}) {
   if (state === "expired") return `That conversation ended on ${beacon} before it finished.`;

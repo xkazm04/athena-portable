@@ -1033,6 +1033,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(adopt): a malformed warm answer whose retry falls back to a cold call still sends the prompt.` scan-sweep stabilize (adopt-engine, bounty-hunter): a warm interviewer that died on the JSON retry used to hand a fresh `claude -p` the retry note alone; the cold fallback now gets the prompt and the note.
 - `fix(chores): a send the daemon refused no longer leaves the studio's brief stale, so Approve opens again.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, bounty-hunter): the stale mark is kept per send (`staleBy`) and a refused card or composer line takes back its own; studio.test.tsx cases 7, 8 and a mixed-send guard.
 - `fix(face): a sentence whose mouth shapes failed is forgotten, not kept for the helper's life.` Stabilize 2026-10-27 (voice-face-sidecar, bounty-hunter): `FaceHelper` dropped a job on a visemes answer but never on a visemes error when no motion was coming, so each sentence the helper could not shape stayed in `_jobs` until the helper stopped; the error path now forgets it too (fake helper mode `badvisemes`).
+- `fix(peer): the phone's five-second cards poll no longer redraws cards that did not change.` Stabilize 2026-10-27 (peer-devices, ux-reviewer): an unchanged poll used to rebuild every card, collapsing an open "Read it first", dropping focus, replaying the entrance and re-announcing the list; `sameCards` in `mobile/turn.js` keeps them; turn.test.mjs cards 9-10.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

@@ -17,7 +17,7 @@
 // A turn is followed by turn.js: it resumes with `from=<n>` whenever the beacon's stream ends open
 // (its 15 s quiet, a card waiting on the person, a dropped network) and re-attaches after a reload.
 
-import { TURN_KEY, createTurnReader, followTurn, pendingTurn, plainAction, turnMessage } from "./turn.js";
+import { TURN_KEY, createTurnReader, followTurn, pendingTurn, plainAction, sameCards, turnMessage } from "./turn.js";
 
 const TOKEN_KEY = "athena.peer.v1"; // localStorage: {token, peer_id, device_id, beacon_name}
 const CLAIM_KEY = "athena.claim.v1"; // sessionStorage: the claim in flight
@@ -536,7 +536,10 @@ async function loadCards() {
   if (answer.status !== 200) return;
   const body = answer.body;
   const rows = Array.isArray(body.pending) ? body.pending : Array.isArray(body.decisions) ? body.decisions : [];
-  chat.cards = rows.filter((row) => row && typeof row.id === "string");
+  const polled = rows.filter((row) => row && typeof row.id === "string");
+  // Unchanged: leave the drawn cards alone (an open "Read it first" stays open, focus stays put).
+  if (sameCards(chat.cards, polled)) return;
+  chat.cards = polled;
   renderCards();
 }
 

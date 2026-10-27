@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createTurnReader, followTurn, pendingTurn, turnMessage, TURN_KEY } from "../../../src/athena/peer/mobile/turn.js";
+import { createTurnReader, followTurn, pendingTurn, sameCards, turnMessage, TURN_KEY } from "../../../src/athena/peer/mobile/turn.js";
 
 const RID = "job_0123456789ab";
 
@@ -279,4 +279,25 @@ test("guard 8: a data line that is not JSON is skipped and the next frame still 
   const { final, events } = await run([ok(text)]);
   assert.equal(final, "finished");
   assert.deepEqual(events.map((e) => e.text), ["ok"]);
+});
+
+// --- the cards poll ------------------------------------------------------------------------------
+
+test("cards 9: a poll that returns the cards already drawn changes nothing", () => {
+  const card = { id: "apr_1", action: "connector.setup.firewall_allow", rationale: "so the phone can reach", params: { port: 17491 }, options: ["approve", "decline"] };
+  // The same rows, freshly parsed: a redraw here would collapse an open "Read it first", drop the
+  // focus off a button and replay every card's entrance, every five seconds.
+  assert.equal(sameCards([card], [JSON.parse(JSON.stringify(card))]), true);
+  assert.equal(sameCards([], []), true);
+});
+
+test("cards 10: a new, gone, reordered or changed card is a change", () => {
+  const a = { id: "apr_1", action: "x.y", params: { n: 1 } };
+  const b = { id: "apr_2", action: "x.z" };
+  assert.equal(sameCards([a], [a, b]), false);
+  assert.equal(sameCards([a, b], [a]), false);
+  assert.equal(sameCards([a, b], [b, a]), false);
+  assert.equal(sameCards([a], [{ ...a, params: { n: 2 } }]), false);
+  assert.equal(sameCards([a], [{ ...a, rationale: "now with a reason" }]), false);
+  assert.equal(sameCards([a], [{ ...a, options: ["approve"] }]), false);
 });
