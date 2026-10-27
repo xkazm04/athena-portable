@@ -1191,6 +1191,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(adopt): a chore adopted from a project carries that project's id to POST /adopt.` `AdoptApi.start` sends `space_id` for a new chore when a project is active (never in core, never with a `case_id`, which keeps its own project); `live-deps.ts` reads the spaces glance (`lib/adopt-client.ts`, `lib/adopt.ts`).
 - fix(brain): making a project's memory core's and erasing a project now reach paired PCs: a promotion is a new core memory that supersedes the stamped one (`promoted_from`), and an erase writes a retired `erased:<space>` tombstone first, which a peer applies as its own erase and which keeps a re-pair from pulling the project back; nothing replicated is rewritten in place (ADR 0234, scan-sweep Lane C, owner-approved).
 - `fix(console): the dock's due line says the chore's missed count and the other chores waiting in different words.` Owner-approved Lane C: "Chore a is due, missed twice since · 1 other chore due" in place of two different "more"s.
+- `fix(setup): Setup's engine count divides by the engines the desktop can launch, not every row the daemon reports.` Stabilize Lane B: "none of the 4 can be used yet" named nebius and muse_code, which the shell cannot start; `engineStateOf` now counts only `ENGINE_IDS`.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

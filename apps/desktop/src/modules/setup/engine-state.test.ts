@@ -152,6 +152,23 @@ test("guard case 6: before the first daemon reading there is no start failure, a
       }
 });
 
+test("the count is of the engines this desktop can launch, not of every row the daemon reports", () => {
+  // The daemon also reports an API engine and a Python-only one; the shell starts only claude_code and codex.
+  const rows = (claude: EngineProbe["state"], codex: EngineProbe["state"]): EngineProbe[] => [
+    { id: "claude_code", state: claude, detail: "" },
+    { id: "codex", state: codex, detail: "" },
+    { id: "nebius", state: "found", detail: "key set" },
+    { id: "muse_code", state: "found", detail: "installed" },
+  ];
+  const none = engineStateOf(selectSetup(sources({ probes: rows("not_found", "not_found") })));
+  expect(none).toMatchObject({ kind: "not-installed", summary: "none of the 2 can be used yet" });
+  const other = engineStateOf(selectSetup(sources({ probes: rows("not_found", "found") })));
+  expect(other).toMatchObject({ kind: "other-chosen", summary: "1 of 2 ready, but another is chosen" });
+  // Only engines it cannot launch were reported: Athena was told of no engines it could use.
+  const foreign: EngineProbe[] = [{ id: "nebius", state: "found", detail: "key set" }];
+  expect(engineStateOf(selectSetup(sources({ probes: foreign }))).summary).toBe("Athena was told of no engines at all");
+});
+
 test("guard case 7: every fixture reads as it did before the union", () => {
   const read = Object.fromEntries(
     Object.entries(fixtures).map(([name, m]) => [

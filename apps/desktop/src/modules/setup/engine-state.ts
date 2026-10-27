@@ -15,7 +15,7 @@
  * view-model's `startFailure` and `pendingEngine` are projections of this.
  */
 import type { DaemonHealth } from "@/lib/daemon";
-import { engineLabel, probeOf, usable, type EngineProbe } from "@/lib/engines";
+import { engineLabel, isEngineId, probeOf, usable, type EngineProbe } from "@/lib/engines";
 
 import type { Standing } from "./readiness";
 
@@ -62,7 +62,9 @@ export interface EngineInputs {
 }
 
 export function engineStateOf(m: EngineInputs): EngineState {
-  const { engine, daemonEngine: running, daemonHealth: health, loaded, probes } = m;
+  const { engine, daemonEngine: running, daemonHealth: health, loaded } = m;
+  // The daemon reports every engine its harness offers; the count is of the ones this desktop can start.
+  const probes = m.probes?.filter((p) => isEngineId(p.id)) ?? null;
   const at = (kind: EngineStateKind, move: EngineMove, standing: Standing, summary: string): EngineState => ({
     kind,
     move,
