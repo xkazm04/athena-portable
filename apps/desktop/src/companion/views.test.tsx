@@ -164,7 +164,7 @@ test("welcome: who she is, the three promises, the engine, and the two buttons w
   expect(out).toContain("Athena is here.");
   expect(out).toContain("She reads the page you are on.");
   expect(out).toContain("She asks first.");
-  expect(out).toContain("It all runs on this machine.");
+  expect(out).toContain("Her memory is kept on this machine.");
   expect(out).toContain("Engine: Claude Code, ready.");
   expect(out).toContain("She never asks for a key.");
   expect(out).toContain("Open your first app");
@@ -426,6 +426,17 @@ test("welcome: a failed start shows the reason and a Try again button that resta
   expect(out).toMatch(/<button[^>]*data-act="retry-engine"[^>]*>Try again</);
   expect(out).toContain("Use Codex");
   expect(out).not.toContain("Check again in a moment");
+});
+
+test("the welcome tells the truth about where data goes: her engine is a hosted model (public-claim-provenance)", () => {
+  const out = html("welcome");
+  // It was "Nothing leaves it unless you say so" and "No account, no cloud": every turn is a model call.
+  expect(out).not.toMatch(/no cloud/i);
+  expect(out).not.toContain("Nothing leaves it");
+  expect(out).not.toContain("all runs on this machine");
+  expect(out).toContain("Its text goes to her engine, the model you chose.");
+  expect(out).toContain("Her memory is kept on this machine.");
+  expect(out).toContain("No Athena account, no telemetry.");
 });
 
 test("the engine line's live region announces the state, not the buttons beside it", () => {

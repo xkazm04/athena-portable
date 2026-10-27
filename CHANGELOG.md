@@ -1192,6 +1192,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - fix(brain): making a project's memory core's and erasing a project now reach paired PCs: a promotion is a new core memory that supersedes the stamped one (`promoted_from`), and an erase writes a retired `erased:<space>` tombstone first, which a peer applies as its own erase and which keeps a re-pair from pulling the project back; nothing replicated is rewritten in place (ADR 0234, scan-sweep Lane C, owner-approved).
 - `fix(console): the dock's due line says the chore's missed count and the other chores waiting in different words.` Owner-approved Lane C: "Chore a is due, missed twice since · 1 other chore due" in place of two different "more"s.
 - `fix(setup): Setup's engine count divides by the engines the desktop can launch, not every row the daemon reports.` Stabilize Lane B: "none of the 4 can be used yet" named nebius and muse_code, which the shell cannot start; `engineStateOf` now counts only `ENGINE_IDS`.
+- `fix(companion): the welcome says what runs on this machine and what is sent to her engine.` It no longer promises "no cloud" and "nothing leaves it": the page text she reads goes to her engine, her memory is kept on this machine, and there is no Athena account and no telemetry (`companion/welcome.tsx`; owner-approved wording).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

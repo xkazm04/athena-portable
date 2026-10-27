@@ -60,7 +60,7 @@ export function Welcome({ model }: { model: CompanionModel }) {
           <li>
             <Icon name="eye" />
             <span>
-              <b>She reads the page you are on.</b> Nothing leaves it unless you say so.
+              <b>She reads the page you are on.</b> Its text goes to her engine, the model you chose.
             </span>
           </li>
           <li>
@@ -72,7 +72,7 @@ export function Welcome({ model }: { model: CompanionModel }) {
           <li>
             <Icon name="lock" />
             <span>
-              <b>It all runs on this machine.</b> No account, no cloud, no telemetry.
+              <b>Her memory is kept on this machine.</b> No Athena account, no telemetry.
             </span>
           </li>
         </ul>
