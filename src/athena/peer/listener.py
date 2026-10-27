@@ -26,8 +26,9 @@ the person opened a setup conversation here in the last :data:`~athena.peer.setu
 seconds, and closes it when none holds. The last is what lets two computers that are both being
 set up find each other's Athena before either has a pairing window open: a stranger still gets
 401 from everything but the two pairing steps, and those still need a window. The lifecycle
-tick (every :data:`TICK_S`) reaps expired rows, expires windows, retries a pair-back delivery and
-polls an outgoing join, then reconciles. With no
+tick (every :data:`TICK_S`) reaps expired rows, expires windows, then reconciles; the calls out
+(retrying a pair-back delivery, polling an outgoing join) run beside it on their own thread, so an
+unreachable computer cannot hold the tick back. With no
 overlay address (``overlay.state`` ``absent`` or ``logged_out``) the listener stays down, whatever
 is wanted.
 
@@ -421,6 +422,7 @@ class PeerHost:
         self._server: PeerServer | None = None
         self._serve_thread: threading.Thread | None = None
         self._tick_thread: threading.Thread | None = None
+        self._outbound_thread: threading.Thread | None = None
         self._stop = threading.Event()
         self._overlay: tuple[float, Overlay] | None = None
         #: Is each paired PC there right now (``presence`` on ``GET /devices``); runs from
@@ -529,22 +531,60 @@ class PeerHost:
 
     def start(self) -> None:
         """Reconcile now, then tick every :attr:`tick_s` until :meth:`close`; start the presence
-        probe beside the tick."""
-        self.tick()
+        probe and the outbound worker beside the tick."""
+        self._housekeeping()
         if self._tick_thread is not None:
             return
         self._tick_thread = threading.Thread(target=self._ticking, name="peer-tick", daemon=True)
         self._tick_thread.start()
+        self._outbound_thread = threading.Thread(
+            target=self._reaching, name="peer-outbound", daemon=True
+        )
+        self._outbound_thread.start()
         self.presence.start()
 
     def _ticking(self) -> None:
         while not self._stop.wait(self.tick_s):
             try:
-                self.tick()
+                self._housekeeping()
             except Exception as exc:  # the tick's bug must not end the tick
                 _log(f"tick raised {type(exc).__name__}")
 
+    def _reaching(self) -> None:
+        """The calls out to other computers, on their own thread: each blocks for up to
+        :data:`~athena.peer.client.CALL_TIMEOUT_S`, and an unreachable one must not hold the
+        tick's reaping and reconciling back by that much."""
+        while not self._stop.wait(self.tick_s):
+            try:
+                if self._reach():
+                    self.publish("peer.changed", peer_id=None)
+            except Exception as exc:
+                _log(f"outbound raised {type(exc).__name__}")
+
     def tick(self) -> None:
+        """One whole beat, inline: the housekeeping, then the outbound calls. The threads run
+        the two halves apart; a test (or a caller that wants the answer now) runs this."""
+        changed = self._expire()
+        if self._reach():
+            changed = True
+        self._settle(changed)
+
+    def _reach(self) -> bool:
+        """Deliver approved pair-backs and poll outgoing joins. ``True`` if anything changed."""
+        changed = False
+        for record in self.pairings.undelivered():
+            if self.deliver(record):
+                changed = True
+        if self._poll_joins():
+            changed = True
+        return changed
+
+    def _housekeeping(self) -> None:
+        """Expire windows and rows, publish what changed, and bind or close the listener."""
+        self._settle(self._expire())
+
+    def _expire(self) -> bool:
+        """Revoke the rows of lapsed approvals and reap expired ones. ``True`` if any went."""
         changed = False
         for record in self.pairings.sweep():
             if record.peer_id is not None and self.registry.revoke(record.peer_id):
@@ -558,20 +598,18 @@ class PeerHost:
         for peer_id in self.registry.reap():
             self.audit.record("lapse", cause="expired", peer_id=peer_id)
             changed = True
-        for record in self.pairings.undelivered():
-            if self.deliver(record):
-                changed = True
-        if self._poll_joins():
-            changed = True
+        return changed
+
+    def _settle(self, changed: bool) -> None:
         if changed:
             self.publish("peer.changed", peer_id=None)
         self.reconcile()
 
     def close(self) -> None:
         self._stop.set()
-        thread = self._tick_thread
-        if thread is not None:
-            thread.join(timeout=5)
+        for thread in (self._tick_thread, self._outbound_thread):
+            if thread is not None:
+                thread.join(timeout=5)
         self.presence.close()
         with self._lock:
             self._close_server()
@@ -602,6 +640,11 @@ class PeerHost:
 
     def deliver(self, record: PairingRecord) -> bool:
         """Hand an approved pair-back token to the PC that asked for it. ``True`` on delivery."""
+        # Read again, now: an approval that lapsed since the caller listed it holds no token.
+        current = self.pairings.get(record.pairing_id)
+        if current is None or current.state != "approved" or current.expires_at <= self._now():
+            return False
+        record = current
         if record.peer_id is None or not record.deliver_to or not record.token:
             return False
         presented = self.keys.token(record.peer_id)

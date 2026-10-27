@@ -1151,6 +1151,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - fix(proving): the adopt-tiers audit row counts the same legs in usage and in latency; `audit p50` now includes the brief writer, as the ledger trigger `adopt.audit` already did (scan-sweep Lane B).
 - `fix(voice): the motion worker forgets a cancelled sentence id once its job is skipped, answered or gone.` Stabilize Lane B (bounty-hunter): `MotionWorker.cancelled` grew by every cancel for the life of the helper; it now holds only ids still queued or running (5 ids left after one scripted round before, 0 now).
 - `fix(voice): the face helper counts the phones it has no viseme for instead of shaping them E in silence.` Stabilize Lane B (observability-auditor): `visemes_of` collects the unknown symbols; the helper's `visemes` answer carries `unknown: {count, symbols}` and stderr one line (0 places reported one before); the E fallback shape is unchanged.
+- `fix(peer): the tick reaps and reconciles without waiting on its outbound pair-back and join calls.` Stabilize Lane B (risk-assessor): delivery and join polling (5 s timeout each) moved to a `peer-outbound` thread; with a peer that accepts and never answers the listener closed 0.92 s late (1.2 s call timeout in the probe) before and 0.02 s after; `tick()` still runs both halves inline and a delivery re-checks its approval is live.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
