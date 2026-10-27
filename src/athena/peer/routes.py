@@ -71,9 +71,18 @@ def _text(body: Any, key: str) -> str:
     return value if isinstance(value, str) else ""
 
 
-def _refused(refusal: PairingRefused) -> Reply:
+#: The refusals that say someone without the means is trying the pairing doors (audited).
+PRE_TRUST_REFUSALS = frozenset({"wrong_code", "wrong_nonce", "wrong_secret", "window_taken"})
+
+
+def _refused(host: PeerHost, request: Request, refusal: PairingRefused) -> Reply:
     if refusal.status == 202:
         return 202, {"ok": True, "state": "pending"}
+    address = request.client if isinstance(request, PeerRequest) else ""
+    if refusal.error in PRE_TRUST_REFUSALS:
+        host.audit.refusal(
+            refusal.error, address=address, pairing_id=_text(request.body, "pairing_id")
+        )
     return peer_error(refusal.status, refusal.error, refusal.detail, state=refusal.state)
 
 
@@ -97,7 +106,7 @@ def pair_request(host: PeerHost, request: Request) -> Reply:
             requested_grants=list(grants or []),
         )
     except PairingRefused as refusal:
-        return _refused(refusal)
+        return _refused(host, request, refusal)
     except ValueError as exc:
         return peer_error(400, "bad_request", str(exc))
     view = record.pending_view()
@@ -127,7 +136,12 @@ def pair_claim(host: PeerHost, request: Request) -> Reply:
         if refusal.error == "claim_spent":
             pairing = _text(body, "pairing_id") or "(by code)"
             _log(f"claim_spent: a second claim of {pairing} was refused")
-        return _refused(refusal)
+            host.audit.record(
+                "claim_spent",
+                pairing_id=_text(body, "pairing_id") or None,
+                address=request.client if isinstance(request, PeerRequest) else None,
+            )
+        return _refused(host, request, refusal)
     row = host.registry.get(record.peer_id or "")
     if row is None:
         # Revoked between the approval and the claim: the token admits nobody, so it is not given.
@@ -140,6 +154,13 @@ def pair_claim(host: PeerHost, request: Request) -> Reply:
             "name": me.name,
             "requested_grants": list(record.granted),
         }
+    host.audit.record(
+        "claim",
+        pairing_id=record.pairing_id,
+        peer_id=row.peer_id,
+        kind=record.kind,
+        address=request.client if isinstance(request, PeerRequest) else None,
+    )
     host.publish("peer.changed", peer_id=row.peer_id)
     return 200, {
         "ok": True,

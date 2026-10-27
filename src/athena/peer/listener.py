@@ -73,6 +73,7 @@ from athena.daemon.routes import (
     RouteTable,
 )
 from athena.daemon.server import IDLE_TIMEOUT_S, PEER_PORT, BodyCap, DaemonServer
+from athena.peer.audit import AuditLog
 from athena.peer.classify import peer_class
 from athena.peer.client import PeerKeys, call
 from athena.peer.events import EventBus
@@ -285,6 +286,10 @@ def build_peer_handler(host: PeerHost) -> type[BaseHTTPRequestHandler]:
         def do_DELETE(self) -> None:
             self._dispatch("DELETE")
 
+        def _unauthorized(self, path: str) -> None:
+            host.audit.refusal("unauthorized", address=str(self.client_address[0]), path=path)
+            self._send(*peer_error(401, "unauthorized", "a peer token is required"))
+
         def _dispatch(self, method: str) -> None:
             origin = self.headers.get("Origin") or ""
             if origin and origin not in host.own_origins():
@@ -296,14 +301,14 @@ def build_peer_handler(host: PeerHost) -> type[BaseHTTPRequestHandler]:
             row = host.registry.authenticate(self._bearer())
             if route is None:
                 if row is None:
-                    self._send(*peer_error(401, "unauthorized", "a peer token is required"))
+                    self._unauthorized(url.path)
                 else:
                     status = 405 if host.routes.knows(url.path) else 404
                     self._send(*peer_error(status, "not_found", f"no {method} {url.path}"))
                 return
             if not isinstance(route, PeerRoute) or not route.open:
                 if row is None:
-                    self._send(*peer_error(401, "unauthorized", "a peer token is required"))
+                    self._unauthorized(url.path)
                     return
                 grant = route.grant if isinstance(route, PeerRoute) else None
                 if grant is not None and grant not in row.grants:
@@ -398,6 +403,7 @@ class PeerHost:
         self.tick_s = tick_s
         self.identity = IdentityStore(root)
         self.registry = PeerRegistry(root, now=self._now)
+        self.audit = AuditLog(root, now=self._now)
         self.pairings = PairingBook(now=self._now)
         self.keys = PeerKeys(root, seal or (lambda: select_seal(root / "keys")))
         self.bus = EventBus()
@@ -542,8 +548,15 @@ class PeerHost:
         changed = False
         for record in self.pairings.sweep():
             if record.peer_id is not None and self.registry.revoke(record.peer_id):
+                self.audit.record(
+                    "lapse",
+                    cause="unclaimed_approval",
+                    peer_id=record.peer_id,
+                    pairing_id=record.pairing_id,
+                )
                 changed = True
-        if self.registry.reap():
+        for peer_id in self.registry.reap():
+            self.audit.record("lapse", cause="expired", peer_id=peer_id)
             changed = True
         for record in self.pairings.undelivered():
             if self.deliver(record):
@@ -582,6 +595,7 @@ class PeerHost:
         gone = self.registry.revoke(peer_id)
         self.keys.forget(peer_id)
         if gone:
+            self.audit.record("revoke", peer_id=peer_id)
             self.publish("peer.changed", peer_id=peer_id)
         self.reconcile()
         return gone

@@ -129,6 +129,9 @@ def answer_pending(host: PeerHost, request: Request, pairing_id: str) -> Reply:
     try:
         if choice == "decline":
             record = host.pairings.decline(pairing_id)
+            host.audit.record(
+                "decline", pairing_id=record.pairing_id, kind=record.kind, name=record.name
+            )
             host.publish("peer.changed", peer_id=None)
             return 200, {"ok": True, "state": record.state, "peer": None}
         days = body.get("expires_days")
@@ -147,6 +150,14 @@ def answer_pending(host: PeerHost, request: Request, pairing_id: str) -> Reply:
     except ValueError as exc:
         return error(400, "validator_failed", str(exc))
     row = host.admit(record)
+    host.audit.record(
+        "approve",
+        pairing_id=record.pairing_id,
+        peer_id=row.peer_id,
+        kind=record.kind,
+        name=record.name,
+        grants=list(record.granted),
+    )
     host.reconcile()
     if record.direction == "pair_back":
         host.deliver(record)
