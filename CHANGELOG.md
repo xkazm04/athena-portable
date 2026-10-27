@@ -1182,6 +1182,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(mind): the online link's flow and the Done tick no longer animate stroke-dashoffset.` Stabilize Lane B (touches motion; run `pnpm perf`): the Devices sky's flow breathes by opacity on four `--dur-settle` (still off under Calm) instead of a 2.8 s linear dash offset, and the Done mark settles in by opacity and scale on the existing settle tokens; a source guard pins no `stroke-dashoffset` in `mind.css`.
 - `fix(task-runner): the tab-open and tools-wait deadlines read the runner's injectable clock, not Date.now.` Stabilize Lane B: `bind()` slept through `deps.wait` but timed out on the real clock, so the "tab never appeared" failure could not be tested without ten real seconds; both loops now read `deps.now`, and two cases drive them in milliseconds.
 - `fix(chores): a failed close of an adopt or intake session leaves a trace.` One `closeQuietly` helper (`scenes/chores/adopt/session.ts`) replaces the eight swallowed `.catch(() => {})` closes in the studio and front-door hooks; a refused close is logged as `[athena] adopt: closing session ...`, an already-closed (404) one stays quiet.
+- `fix(companion): the task strip says why a delegated task never starts when a claim fails.` Stabilize Lane B: `useTaskRunner.problem` had no reader; the strip now says it, quietly, while a task is queued (`stripProblem` in `companion/tasks.tsx`).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

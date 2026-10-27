@@ -18,6 +18,7 @@ import { useEffect, useId, useState } from "react";
 import TaskRow from "@/components/TaskRow";
 import type { TaskView } from "@/lib/tasks";
 import { useRun } from "@/stores/run";
+import { useTaskRunner } from "@/stores/task-runner";
 import { askAbout, shownTasks, startTasks, stopTask, summaryOf, useTasks, useTasksNow } from "@/stores/tasks";
 
 import "./tasks.css";
@@ -25,6 +26,15 @@ import "./tasks.css";
 /** Ask her about a task, as if the person had typed it: now when she is free, in line when not. */
 export function askHer(task: Pick<TaskView, "title">): void {
   void useRun.getState().send(askAbout(task));
+}
+
+/**
+ * The one problem the strip says: the mirror's when it has one, else why the last claim failed
+ * (`useTaskRunner.problem`) - but only while a task is queued, so a failed poll with nothing waiting
+ * on it stays as quiet as the strip is meant to be.
+ */
+export function stripProblem(mirror: string | null, runner: string | null, shown: readonly TaskView[]): string | null {
+  return mirror ?? (runner && shown.some((t) => t.status === "queued") ? runner : null);
 }
 
 export interface TaskStripProps {
@@ -81,13 +91,15 @@ export function TaskStripView({ shown, problem, held, now, open, onToggle, onSto
 
 export function TaskStrip() {
   const { tasks, problem, held } = useTasks();
+  const runnerProblem = useTaskRunner((s) => s.problem);
   const [open, setOpen] = useState(false);
   const now = useTasksNow(tasks.some((t) => t.status === "running"));
   useEffect(() => startTasks(), []);
+  const shown = shownTasks(tasks, now);
   return (
     <TaskStripView
-      shown={shownTasks(tasks, now)}
-      problem={problem}
+      shown={shown}
+      problem={stripProblem(problem, runnerProblem, shown)}
       held={held}
       now={now}
       open={open}

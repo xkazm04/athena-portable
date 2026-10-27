@@ -4,14 +4,15 @@
  */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { classifyMidTurn } from "@/lib/midturn";
 import type { TaskView } from "@/lib/tasks";
 import { useRun } from "@/stores/run";
+import { resetRunnerForTests, setRunnerDeps, tickRunner, useTaskRunner, type RunnerDeps } from "@/stores/task-runner";
 import { askAbout } from "@/stores/tasks";
 
-import { TaskStripView, askHer } from "./tasks";
+import { TaskStripView, askHer, stripProblem } from "./tasks";
 
 const NOW = Date.parse("2026-10-24T12:10:00Z");
 
@@ -95,6 +96,32 @@ describe("the strip", () => {
     // Nothing in line: the gate holds nothing a person is waiting on, so nothing is said.
     expect(strip({ shown: [task(1)], held })).not.toContain("aw-tasks__held");
     expect(strip({ shown: SHOWN, held: null })).not.toContain("aw-tasks__held");
+  });
+});
+
+describe("a claim that failed", () => {
+  afterEach(() => resetRunnerForTests());
+
+  it("is said by the strip while a task is queued: the runner's sentence, not a silent \"#1 in line\"", async () => {
+    // The daemon answers the claim with a 500: the runner records why, as its loop does.
+    setRunnerDeps({
+      api: () => ({ claimTask: () => Promise.reject(new Error("the daemon answered 500")) }) as unknown as ReturnType<RunnerDeps["api"]>,
+      wait: async () => {},
+    } as unknown as RunnerDeps);
+    await tickRunner();
+    const runner = useTaskRunner.getState().problem;
+    expect(runner).toBe("A delegated task could not be started: the daemon answered 500");
+
+    const out = strip({ shown: SHOWN, problem: stripProblem(null, runner, SHOWN) });
+    expect(out).toContain("1 in line");
+    expect(out).toContain("A delegated task could not be started: the daemon answered 500");
+  });
+
+  it("stays quiet when nothing is queued, and never hides the mirror's own problem", () => {
+    const runner = "A delegated task could not be started: boom";
+    expect(stripProblem(null, runner, [task(1)])).toBeNull();
+    expect(stripProblem(null, null, SHOWN)).toBeNull();
+    expect(stripProblem("Could not read her tasks: locked", runner, SHOWN)).toBe("Could not read her tasks: locked");
   });
 });
 
