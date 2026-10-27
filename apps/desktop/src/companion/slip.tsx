@@ -329,7 +329,9 @@ export function Slip({ model }: { model: CompanionModel }) {
           }
         />
         {sheet ? null : (
-          <div className="sl-face sl-back" aria-hidden={!back}>
+          // Turned away it is hidden from the reader and from Tab alike: aria-hidden alone left its
+          // buttons focusable behind the front.
+          <div className="sl-face sl-back" aria-hidden={!back} inert={!back}>
             <div className="sl-back-head">
               <span className="eyebrow human">{card.words.letter ? "The letter that will be sent" : "What this will do"}</span>
               <button type="button" className="aw-btn aw-btn-ghost aw-btn-sm" data-act="front" onClick={() => setFlipped(null)}>

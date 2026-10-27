@@ -46,3 +46,12 @@ test("standing: a record read without a note shows only the quiet as-of line, an
   const unread = front(slipAbout("inv_999"));
   expect(unread.querySelector("[data-standing-note], [data-standing-asof]")).toBeNull();
 });
+
+test("the back of an unflipped card is inert, so Tab never lands on a button nobody can see", () => {
+  const doc = new DOMParser().parseFromString(renderToStaticMarkup(createElement(Slip, { model: fixtures.slip() })), "text/html");
+  const back = doc.querySelector(".sl-back")!;
+  expect(back.getAttribute("aria-hidden")).toBe("true");
+  expect(back.querySelectorAll("button").length).toBeGreaterThan(0);
+  expect(back.hasAttribute("inert")).toBe(true);
+  expect(doc.querySelector(".sl-front")!.hasAttribute("inert")).toBe(false);
+});
