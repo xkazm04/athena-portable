@@ -247,6 +247,16 @@ describe("the journal", () => {
     expect(failed).toContain("Could not read the journal: not found");
   });
 
+  it("says she is falling asleep only until the cycle that answer began is read back", () => {
+    const base = sleepFixtures.typical!;
+    const asked = (cycleId: string) =>
+      render({ ...base, state: { ...base.state, answer: { admitted: true, reason: "forced", text: "", cycle_id: cycleId } } });
+    // Admitted, and the read has not shown that cycle yet: she is on her way to sleep.
+    expect(asked("cyc_00000000c099")).toContain("She is falling asleep.");
+    // The read shows it as her last sleep, finished: the answer is history, not news.
+    expect(asked("cyc_00000000c001")).not.toContain("She is falling asleep.");
+  });
+
   it("reads a running row the app closed on as stopped, never as still going", () => {
     const base = sleepFixtures.sleeping!;
     const live = base.state.cycles.find((c) => c.status === "running")!;

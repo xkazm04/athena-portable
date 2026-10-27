@@ -284,7 +284,9 @@ function Sleep({ model, view, opening }: { model: SleepModel; view: SleepView; o
               {answer.text}
             </span>
           ) : null}
-          {answer?.admitted && !sleeping ? (
+          {/* Until the read shows the cycle this answer began: once it is her last sleep, the
+              answer is history, and the state line above says what came of it. */}
+          {answer?.admitted && !sleeping && view.last?.id !== answer.cycle_id ? (
             <span className="typo-caption" role="status">
               She is falling asleep.
             </span>
