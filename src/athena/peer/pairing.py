@@ -240,7 +240,11 @@ class PairingBook:
             if record.state == PENDING and not by_nonce and not _secret_ok(record, claim_secret):
                 self._wrong(record)
                 raise PairingRefused(409, "window_taken", "another device asked first")
-            secret = claim_secret if record.state == PENDING and claim_secret else ""
+            # A presented secret is kept only when it is the one this book holds: one echoed back
+            # unchecked (the nonce path skips the check above) would not match the digest, and
+            # the requester's every claim would then be ``wrong_secret``.
+            keep = record.state == PENDING and _secret_ok(record, claim_secret)
+            secret = claim_secret if keep else ""
             if not secret:
                 secret = secrets.token_urlsafe(32)
                 record.claim_secret_sha = _digest(secret)

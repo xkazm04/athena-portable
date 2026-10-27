@@ -126,3 +126,29 @@ def test_an_unclaimed_approval_lapses_and_is_handed_back_for_its_row() -> None:
     assert record.token == "" and not book.active()
     expired = _refused(book.claim, pairing_id=window.pairing_id, nonce=window.nonce)
     assert (expired.status, expired.state) == (410, "expired")
+
+
+def test_a_refresh_by_nonce_never_hands_back_a_claim_secret_it_did_not_check() -> None:
+    # The nonce proves the requester; a claim secret it sends along is only kept if it is the one
+    # the book holds. Echoing an unchecked one back would leave the requester holding a secret
+    # whose digest is not the record's, and every claim it then makes would be ``wrong_secret``.
+    book = PairingBook(now=Clock())
+    window = book.open_window("phone")
+    _, first = book.request(
+        pairing_id=window.pairing_id, nonce=window.nonce, name="P", kind="phone"
+    )
+    _, kept = book.request(
+        pairing_id=window.pairing_id, nonce=window.nonce, claim_secret=first, name="P", kind="phone"
+    )
+    assert kept == first
+    _, fresh = book.request(
+        pairing_id=window.pairing_id,
+        nonce=window.nonce,
+        claim_secret="not-the-secret-this-book-gave",
+        name="P",
+        kind="phone",
+    )
+    assert fresh != "not-the-secret-this-book-gave"
+    book.approve(window.pairing_id, [], None)
+    claimed = book.claim(pairing_id=window.pairing_id, nonce=window.nonce, claim_secret=fresh)
+    assert claimed.token
