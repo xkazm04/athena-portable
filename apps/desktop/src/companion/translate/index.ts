@@ -120,6 +120,7 @@ function noun(verb: string, object: string, target: string): string {
  */
 const OWN_LINE = /^(stopped|interrupted|not run|waiting|sheet of \d+|(?:approved|declined) on [^:\n]+): ([\s\S]*)$/;
 const ANSWERED = /^(approved|declined) on (.+)$/;
+const LATE = /^(\S+) finished (\d+) s late: ([\s\S]*)$/;
 const TOOL_NAME = /\b(?:host|connector)\.[a-z0-9_-]+\.[a-z0-9_]+|\b(?:tabs|core)\.[a-z0-9_]+/gi;
 
 /** A tool's name inside a sentence, said as its verb, object and app. */
@@ -187,8 +188,12 @@ export function translate(entry: TranscriptEntry, ctx: TurnContext = EMPTY_CONTE
   const at = text.indexOf(ARROW);
   const own = at < 0 ? OWN_LINE.exec(text) : null;
   if (own) return ownLine(base, own[1]!, own[2]!, entry.ok !== false);
-  const t = parseTool(at >= 0 ? text.slice(0, at) : text);
-  const out = at >= 0 ? text.slice(at + ARROW.length) : "";
+  // A call that answered after its time ran out: the store amends its row, or writes one, as
+  // `<tool> finished N s late: <answer>` (`stores/run.ts` late()). The answer is read as any other.
+  const lateAt = LATE.exec(at >= 0 ? text.slice(at + ARROW.length) : text);
+  const late = lateAt && (at < 0 || lateAt[1] === text.slice(0, at)) ? lateAt : null;
+  const t = parseTool(late ? late[1]! : at >= 0 ? text.slice(0, at) : text);
+  const out = late ? late[3]! : at >= 0 ? text.slice(at + ARROW.length) : "";
   const step = { ...base, ...laneOf(t, entry.tier), tool: t.name, role: "step" as const };
   if (/^not (run|read):\s*/i.test(out)) {
     const reason = out.replace(/^not (run|read):\s*/i, "");
@@ -201,7 +206,8 @@ export function translate(entry: TranscriptEntry, ctx: TurnContext = EMPTY_CONTE
   }
   const parsed = readJson(out);
   const c = composeTool(t, parsed === undefined ? out : parsed, entry.ok !== false, ctx);
-  return { ...step, tone: c.tone, title: c.title, sub: c.sub, detail: c.detail };
+  const sub = late ? [c.sub, `answered ${late[2]} s late`].filter(Boolean).join(" · ") : c.sub;
+  return { ...step, tone: c.tone, title: c.title, sub, detail: c.detail };
 }
 
 /** A turn's entries, each translated against what came before, and failed steps that later worked marked. */

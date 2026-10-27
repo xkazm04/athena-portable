@@ -318,3 +318,15 @@ test("the oldest row's age reads in the same words as its cell: 1 day, not 1 day
   expect(m.sub).toBe("longest: Acme, 1 day overdue");
   if (m.detail.kind === "table") expect(m.detail.rows[0]!.cells).toContain("1 day");
 });
+
+// `stores/run.ts` late(): a timed-out call's row is amended, or written, when its answer comes.
+test("a call that answered late reads as its answer, with how late, never as the store's raw line", () => {
+  const items = '{"items":[{"id":"inv_1","client":"Acme","balance":100}]}';
+  const amended = translate({ id: "l", kind: "tool", tier: 1, ok: true, text: `host.ledgerbox.read_inbox → host.ledgerbox.read_inbox finished 12 s late: ${items}` });
+  expect(amended).toMatchObject({ tone: "ok", title: "Read 1 invoice in Ledgerbox", sub: "$100 balance · answered 12 s late" });
+  expect(amended.detail.kind).toBe("table");
+  const written = translate({ id: "m", kind: "tool", tier: 1, ok: false, text: "host.ledgerbox.send_reminder finished 3 s late: the tab closed" });
+  expect(written).toMatchObject({ tone: "fail", title: "Could not send a reminder in Ledgerbox", sub: "The tab closed · answered 3 s late" });
+  const src = readFileSync(new URL("../../stores/run.ts", import.meta.url), "utf8");
+  expect(src).toContain("const line = `${answer.name} finished ${seconds} s late: ${said}`;");
+});

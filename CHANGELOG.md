@@ -1097,6 +1097,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(tasks): the desktop's task caps and statuses are read against the daemon's, so a changed cap or a new status fails a test.` Stabilize 2026-10-27 (desktop-tasks-and-due, parity-auditor): `lib/tasks.ts` and `TaskRow`'s words restated `daemon/tasks.py` by hand with nothing holding them; `src/lib/tasks.test.ts` reads the Python.
 - `fix(devices): Copy under the phone's address says when it could not copy, instead of doing nothing.` ADR 0140 (scan-sweep stabilize, desktop-mind-devices-sleep, error-handler): with no clipboard the optional chain made the press a no-op, and a refusal only reset the label; both now say "Could not copy it; select the address and copy it by hand." Test: devices.test.tsx driven case, seeded red.
 - `fix(chores): the dock's due line names the review panel it opens, as her task strip's summary does.` Stabilize 2026-10-27 (desktop-tasks-and-due, accessibility-checker): `aria-controls` from the line to the panel while it is open (`console/due-notice.tsx`).
+- `fix(companion): a call that answered late reads as its answer and how late, not as raw JSON under a tool name.` Stabilize 2026-10-27 (desktop-companion-surfaces, parity-auditor): the translator reads `stores/run.ts` late()'s `<tool> finished N s late: <answer>`; translate.test.ts.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
