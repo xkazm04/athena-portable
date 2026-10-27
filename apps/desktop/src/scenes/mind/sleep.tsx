@@ -52,7 +52,7 @@ import { Refusal } from "./wizard";
 
 /** What the section reads: the store's mirror, the clock, and the acts. */
 export interface SleepModel {
-  state: Pick<SleepState, "view" | "cycles" | "proposals" | "loaded" | "missing" | "problem" | "journals" | "busy" | "errors" | "answer" | "staged" | "committing">;
+  state: Pick<SleepState, "view" | "cycles" | "proposals" | "loaded" | "missing" | "problem" | "journals" | "busy" | "errors" | "answer" | "answeredAfter" | "staged" | "committing">;
   now: number;
   actions: {
     load: () => Promise<void>;
@@ -279,7 +279,8 @@ function Sleep({ model, view, opening }: { model: SleepModel; view: SleepView; o
           >
             Sleep now
           </Button>
-          {answer && !answer.admitted ? (
+          {/* A refusal is about the moment it came: once she has slept past it, it is history. */}
+          {answer && !answer.admitted && (view.last?.id ?? null) === state.answeredAfter ? (
             <span className="typo-caption" role="status">
               {answer.text}
             </span>

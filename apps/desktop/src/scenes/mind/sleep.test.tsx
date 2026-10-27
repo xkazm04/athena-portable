@@ -98,6 +98,14 @@ describe("now", () => {
   it("refused: the daemon's own sentence beside the button", () => {
     expect(html("refused")).toContain("Waiting for room: RAM is at 93% (resumes below 85%).");
   });
+
+  it("refused: the sentence goes once she has slept past the cycle that was her last when it came", () => {
+    const base = sleepFixtures.refused!;
+    const later = { ...base.state.view!, last: { ...base.state.view!.last!, id: "cyc_00000000c002" } };
+    expect(render({ ...base, state: { ...base.state, view: later } })).not.toContain("Waiting for room");
+    expect(render({ ...base, state: { ...base.state, view: { ...base.state.view!, last: null } } })).not.toContain("Waiting for room");
+    expect(render(base)).toContain("Waiting for room");
+  });
 });
 
 describe("the last sleep", () => {

@@ -262,6 +262,14 @@ describe("the acts", () => {
     expect(daemon.reads()).toBe(1);
   });
 
+  it("Sleep now keeps the cycle that was her last when the answer came", async () => {
+    wire({ run: () => json({ admitted: false, reason: "no_room", text: "Waiting for room.", cycle_id: null }) });
+    useSleep.setState({ view: { ...VIEW, last: cycle(1) } });
+    await sleepNow();
+    expect(useSleep.getState().answeredAfter).toBe(cycle(1).id);
+    expect(useSleep.getState().answer?.admitted).toBe(false);
+  });
+
   it("Sleep now says a refusal of the request itself in one sentence", async () => {
     wire({ run: () => json({ ok: false, reason: "internal", detail: "the scheduler is not running" }, 500) });
     await sleepNow();

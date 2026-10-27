@@ -83,6 +83,8 @@ export interface SleepState {
   errors: Readonly<Record<string, string>>;
   /** The daemon's answer to the last "Sleep now"; `null` before one. */
   answer: SleepRunAnswer | null;
+  /** The id of her last cycle when that answer came (`null`: none yet); a refusal is current only while it is still her last. */
+  answeredAfter: string | null;
   /** The answers waiting behind the Undo; `null` when none are. */
   staged: StagedBatch | null;
   /** The proposals whose staged answer is being sent: drawn nowhere until the read after it. */
@@ -129,6 +131,7 @@ export const EMPTY_SLEEP: SleepState = {
   busy: {},
   errors: {},
   answer: null,
+  answeredAfter: null,
   staged: null,
   committing: {},
 };
@@ -267,9 +270,10 @@ export async function sleepNow(): Promise<void> {
   }
   mark("run", true);
   say("run", null);
-  useSleep.setState({ answer: null });
+  useSleep.setState({ answer: null, answeredAfter: null });
   try {
-    useSleep.setState({ answer: await client.sleepRun(true) });
+    const answer = await client.sleepRun(true);
+    useSleep.setState((s) => ({ answer, answeredAfter: s.view?.last?.id ?? null }));
   } catch (error) {
     say("run", sentenceOf("ask her to sleep", error));
   } finally {
