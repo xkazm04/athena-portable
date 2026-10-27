@@ -538,15 +538,21 @@ def _judge_into(
     ledger = rig.ledger(f"{dump['pair']}/judge")
     runner = rig.runner(ledger)
     turns = int(dump["onboarding"].get("cards") or 0)
-    result = runner.run_leg(
-        "judge",
-        JUDGE_SYSTEM,
-        judge_prompt(character, playbook, _numbers_row(rig, playbook), dump, case),
-        json_schema=JUDGE_SCHEMA,
-        tier=JUDGE_TIER,
-        check=check_judge(character.criteria, turns),
-        conversation=f"chores-uat/{dump['pair']}/judge",
-    )
+    try:
+        result = runner.run_leg(
+            "judge",
+            JUDGE_SYSTEM,
+            judge_prompt(character, playbook, _numbers_row(rig, playbook), dump, case),
+            json_schema=JUDGE_SCHEMA,
+            tier=JUDGE_TIER,
+            check=check_judge(character.criteria, turns),
+            conversation=f"chores-uat/{dump['pair']}/judge",
+        )
+    except Exception as exc:  # the judge step's bug is the judge's failure, never a lost dump
+        _book(dump, ledger.snapshot())
+        dump["judge"] = None
+        dump["failure"] = f"judge: {type(exc).__name__}: {exc}"[:500]
+        return
     _book(dump, ledger.snapshot())
     if result.ok and result.value is not None:
         dump["judge"] = judge_view(result.value, character.criteria)

@@ -300,6 +300,36 @@ def test_a_failed_judge_is_judged_again_on_its_own(tmp_path: Path) -> None:
     assert len(model.prompts("interview")) == interviews  # nothing re-onboarded
 
 
+def test_a_judge_step_that_raises_leaves_the_dump_and_is_judged_again_on_its_own(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A bench bug in the judge step (here: the page's numbers row cannot be built) is the
+    judge's failure, written beside the paid onboarding, never a lost dump that re-runs it."""
+    from athena.proving.chores_uat import run as run_module
+
+    def broken(*_args: Any, **_kw: Any) -> str:
+        raise RuntimeError("the page cannot be built")
+
+    model = FakeModel(clearing_script())
+    rig = make_rig(tmp_path, model, rehearse=stub_rehearsal())
+    with monkeypatch.context() as m:
+        m.setattr(run_module, "judge_prompt", broken)
+        failed = run_pairs(rig, [Job(ROSA, "pair")], _loader, echo=lambda _: None)
+    assert [pid for pid, _ in failed] == [ROSA.id]
+    path = dump_path(rig.run_dir, ROSA.id)
+    assert path.is_file()
+    dump = json.loads(path.read_text("utf-8"))
+    assert dump["failure"] == "judge: RuntimeError: the page cannot be built"
+    assert dump["judge"] is None and dump["onboarding"]["approved"]
+    jobs, _ = plan_jobs(rig.run_dir, [ROSA])
+    assert [j.kind for j in jobs] == ["judge"]
+    interviews = len(model.prompts("interview"))
+    run_pairs(rig, jobs, _loader, echo=lambda _: None)
+    dump = json.loads(path.read_text("utf-8"))
+    assert dump["complete"]
+    assert len(model.prompts("interview")) == interviews  # nothing re-onboarded
+
+
 def test_the_cap_stops_scheduling_new_pairs(tmp_path: Path) -> None:
     model = FakeModel(clearing_script())
     rig = make_rig(tmp_path, model, rehearse=stub_rehearsal())
