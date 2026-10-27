@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -161,10 +160,6 @@ class CliDialect:
 
     def decode(self, record: Mapping[str, Any]) -> Decoded | None:
         raise NotImplementedError
-
-    def law(self, static_text: str) -> str:
-        """The static half as this CLI is told it; a dialect may add an engine-specific line."""
-        return static_text
 
     def classify(
         self, status: ExitStatus, outcome: Decoded | None
@@ -344,19 +339,6 @@ MUSE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
 )
 
 
-#: An experiment (2026-10-27): Athena-on-Muse read and priced everything, then ended its turns with
-#: a summary and no proposals (roll-call 0/20, paper 6/9). Set to ``1``, Muse is told one more law
-#: line; it is measured against the same chores without it before it is ever on by default.
-MUSE_ACT_LAW_ENV = "ATHENA_MUSE_ACT_LAW"
-MUSE_ACT_LAW = (
-    "## Acting\n\n"
-    "When the person asks you to do something and you already have what it needs, propose it in "
-    "this same reply: one `OP:` line per item. Reading again what you already read, or ending "
-    "with a summary or a plan, is not progress. Proposing is safe - every act waits on a card "
-    "for the person's yes."
-)
-
-
 @dataclass(frozen=True)
 class MuseDialect(CliDialect):
     """``muse exec --json --prompt-file <file>``: Meta's Muse Code CLI on the person's plan.
@@ -416,11 +398,6 @@ class MuseDialect(CliDialect):
                 said=_text(payload.get("reason")) if failed else "",
             )
         return None
-
-    def law(self, static_text: str) -> str:
-        if os.environ.get(MUSE_ACT_LAW_ENV, "").strip() != "1":
-            return static_text
-        return f"{static_text.rstrip()}\n\n{MUSE_ACT_LAW}\n"
 
 
 CLAUDE = ClaudeDialect(name="claude_code", executable="claude", signatures=CLAUDE_SIGNATURES)
@@ -586,7 +563,7 @@ class CliHarness(RoundHarness):
             stdin = history[-1]
         if self.dialect.stdin_as_file:
             if resume is None and not self.dialect.system_on_stdin:
-                stdin = "\n\n---\n\n".join([self.dialect.law(static_text).rstrip(), stdin])
+                stdin = "\n\n---\n\n".join([static_text.rstrip(), stdin])
             prompt_file = self._write_prompt(f"{conversation_id}-turn", stdin)
             stdin = ""
         return CliRequest(
