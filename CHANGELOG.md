@@ -1046,6 +1046,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(avatar): the face's shared types say the mirror runs at 40 Hz, as ADR 0027's amendment set it.` Stabilize 2026-10-27 (desktop-avatar, copy-auditor): `avatar/types.ts` still said "at most 30 times a second" after a57677d5 raised the face cap to `FACE_MIRROR_HZ` = 40.
 - `fix(face): faceTimeline's doc comment sits on faceTimeline, not stacked on FaceLineSink's.` Stabilize 2026-10-27 (desktop-avatar, documentation-auditor): an orphaned doc block in `lib/face-timeline.ts` moved onto the function it describes.
 - `fix(chores): one chore whose cadence file cannot be written no longer holds back every chore after it.` scan-sweep stabilize (adopt-engine, error-handler): `ChoreClock.tick` reconciles each cadence in its own try; a write that fails (a file held open on Windows) is one stderr line for that chore, and the chores after it still come due.
+- `fix(chores): a take that could not be heard says why and frees the microphone, instead of "Hearing it..." forever.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, error-handler): Hold to talk handles a rejected `dictation.stop()`; studio.test.tsx.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

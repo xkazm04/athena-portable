@@ -296,13 +296,22 @@ export function Mic({
     if (!dictation || !holding.current) return;
     holding.current = false;
     setPhase("hearing");
-    void dictation.stop().then((out) => {
-      setPhase("idle");
-      if (out.ok) {
-        if (out.text.trim()) onHeard(out.text.trim());
-        else setProblem("Nothing was heard. Hold a little longer.");
-      } else setProblem(out.reason);
-    });
+    void dictation.stop().then(
+      (out) => {
+        setPhase("idle");
+        if (out.ok) {
+          if (out.text.trim()) onHeard(out.text.trim());
+          else setProblem("Nothing was heard. Hold a little longer.");
+        } else setProblem(out.reason);
+      },
+      // A take that could not be heard at all (the recorder or the listener threw) says so too.
+      (error: unknown) => {
+        setPhase("idle");
+        setProblem(
+          `The take could not be heard: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      },
+    );
   };
 
   if (reason !== null) {

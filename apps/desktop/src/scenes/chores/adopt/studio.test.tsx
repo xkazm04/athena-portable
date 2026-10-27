@@ -1041,6 +1041,24 @@ describe("leaving, and the voice", () => {
     ]);
   });
 
+  it("says why when hearing the take failed, and lets the microphone be held again", async () => {
+    dictation.stop = vi.fn(() => Promise.reject(new Error("the listener stopped answering")));
+    await show();
+    const mic = q(".ad-mic")!;
+    act(() => {
+      mic.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    });
+    await flush();
+    act(() => {
+      mic.dispatchEvent(new Event("pointerup", { bubbles: true }));
+    });
+    await flush();
+    expect(q(".ad-mic")!.getAttribute("data-phase")).toBe("idle");
+    expect(text(".ad-mic")).toContain("Hold to talk");
+    expect(text(".ad-mic__problem")).toContain("the listener stopped answering");
+    expect(q<HTMLTextAreaElement>("#ad-say")!.value).toBe("");
+  });
+
   it("disables the microphone with the reason when voice is not available", async () => {
     dictation.check = () =>
       Promise.resolve("Set up a listener in Mind → Voice first");
