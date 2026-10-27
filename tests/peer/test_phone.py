@@ -111,3 +111,13 @@ def test_the_offline_shell_precaches_every_served_file() -> None:
     cached = set(re.findall(r'"([^"]+)"', match.group(1)))
     assert cached - {"./"} == set(FILES) - {"sw.js"}
     assert "./" in cached
+
+
+def test_a_hidden_element_stays_hidden_whatever_its_display() -> None:
+    # app.js hides the empty cards list and the banner with the `hidden` attribute, and `.cards`
+    # sets `display: flex`, which beats the browser's own `[hidden] { display: none }`: the empty
+    # "Waiting on you" region would still take its row and gap and be exposed to a screen reader.
+    css = (MOBILE_DIR / "app.css").read_text(encoding="utf-8")
+    script = (MOBILE_DIR / "app.js").read_text(encoding="utf-8")
+    assert ".hidden = " in script and "hidden: true" in script
+    assert re.search(r"\[hidden\]\s*\{[^}]*display:\s*none\s*!important", css)

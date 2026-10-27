@@ -22,6 +22,11 @@
   box-sizing: border-box;
 }
 
+/* `hidden` hides, whatever display a class gives (`.cards` is a flex column). */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
