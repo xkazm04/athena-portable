@@ -1532,52 +1532,51 @@
       "context": "voice-channel",
       "subject": "structured-output",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:39:19.473Z",
+      "worker": "1b1b3f78-c2f3-4463-a910-d00c82828031",
       "techniques": [
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "deviation",
+          "evidence": "src/athena/channels/voice/backends.py:461 A missing or malformed field is turned into \"\" (a legal 'no words' value) instead of an extraction failure, which is the 'failure spelled as empty' trap."
+        },
+        {
+          "technique": "display-vs-machine-channels",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/tts.py:43 Speech reads the TTS: line that the harness already lifted into its own field (turn.finished.tts). It never re-parses the visible text to find it, and the visible text is only a spoken fallback that passes through the speakable door."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/commands.py:158 Recogniser output becomes an act only by an exact match against a closed vocabulary (stop words, approve/decline) and against the waiting card's own option ids. Anything else is a message (commands.py:11), never an action."
+        },
         {
           "technique": "extraction-strategies",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/whisper.py:174 Whisper stdout is cleaned into a transcript string; there is no ordered ladder from prose to a candidate object."
-        },
-        {
-          "technique": "schema-validation-and-repair",
-          "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/backends.py:387 The OpenAI call returns a transcript string; a missing text field becomes empty speech, and this function has no artifact schema or repair loop."
+          "evidence": "src/athena/channels/voice/whisper.py:174 Whisper stdout is cleaned into a transcript string; there is no ordered ladder from prose to a candidate object.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "output-budget-signal",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/tts.py:10 Spoken text is cut to a fixed cap and the cut is announced; that is not a measurement of a model output-token ceiling."
-        },
-        {
-          "technique": "op-grammar-allowlisting",
-          "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/commands.py:3 The closed word lists classify a person's utterance, not an operation the model proposed."
+          "evidence": "src/athena/channels/voice/tts.py:10 Spoken text is cut to a fixed cap and the cut is announced; that is not a measurement of a model output-token ceiling.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "artifact-lifecycle",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/install.py:5 The install phases including extracting unpack pinned engine archives; they are not a model-artifact run."
-        },
-        {
-          "technique": "display-vs-machine-channels",
-          "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/tts.py:3 Both products are human-facing prose; this module does not separate a validated machine artifact from display text."
+          "evidence": "src/athena/channels/voice/install.py:5 The install phases including extracting unpack pinned engine archives; they are not a model-artifact run.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "enumerable-domain-decoding",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/commands.py:13 Membership is exact string match on a person's words, not a constrained decoder over a value domain."
+          "evidence": "src/athena/channels/voice/commands.py:13 Membership is exact string match on a person's words, not a constrained decoder over a value domain.",
+          "carriedFrom": "2026-10-15"
         }
-      ],
-      "withdrawn": {
-        "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
-        "state": "not-applicable",
-        "at": "2026-10-15T22:22:26.067539+00:00",
-        "reason": "reviewer (sonnet): The anchor (__init__.py:26, 'voice is a transport and not a feature') does not show the precondition is absent. tts.py:1-10 shows the context consumes a model-authored `TTS:` first-line artifact and caps it, so the 'never extracts a machine artifact from model text' claim is not supported. The parse"
-      }
+      ]
     },
     "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/structured-output": {
       "context": "ledgerbox-domain-lib",
