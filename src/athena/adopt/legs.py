@@ -534,13 +534,15 @@ class LegRunner:
         workdir = cwd or str(self.prompt_dir)
         system_file = self.system_file(system)
 
-        def once(text: str) -> _Attempt:
+        def once(text: str, cold_text: str | None = None) -> _Attempt:
+            """``text`` to the warm process; a cold call (none, or it died) gets ``cold_text``,
+            which a retry needs: a cold process never saw the prompt the note refers to."""
             got = warm.ask(text, wait) if warm is not None else None
             if got is None:
                 argv = cli_argv(
                     chosen, system_file=system_file, allowed_tools=allowed_tools, add_dirs=add_dirs
                 )
-                got = self._cold(argv, text, workdir, wait, system_file)
+                got = self._cold(argv, cold_text or text, workdir, wait, system_file)
             return got
 
         first = once(prompt)
@@ -561,8 +563,8 @@ class LegRunner:
         )
         note = RETRY_NOTE.format(problem=problem)
         # A warm process remembers its own wrong answer; a cold call is told the prompt again.
-        retry_text = note if first.warm else f"{prompt}\n\n{note}"
-        second = once(retry_text)
+        cold_retry = f"{prompt}\n\n{note}"
+        second = once(note if first.warm else cold_retry, cold_retry)
         if second.error_reason is not None:
             result = self._result(kind, chosen, second, attempts=2)
             self._account(result, conversation, on_usage)

@@ -177,6 +177,23 @@ def test_a_warm_process_that_dies_falls_back_to_a_cold_call(tmp_path: Path) -> N
     assert spawn.spawned[0].killed and warm.deaths == 1
 
 
+def test_a_warm_retry_that_falls_back_cold_still_carries_the_prompt(tmp_path: Path) -> None:
+    # The warm answer is malformed; the warm process dies on the retry, so the retry goes cold.
+    # A cold call has no memory of the first answer: it must be told the prompt again.
+    model = FakeModel(script={"other": ["no json", '{"n": 3}']})
+    spawn = WarmFactory(model, die_on=2)
+    transport = FakeTransport(model)
+    door = runner(tmp_path, transport, spawn_warm=spawn)
+    warm = door.warm_session("interview", "warm system", str(tmp_path))
+    result = door.run_leg(
+        "interview", "warm system", "the prompt", json_schema=SCHEMA, session=warm
+    )
+    assert result.ok and result.value == {"n": 3} and not result.warm
+    (cold,) = transport.requests
+    assert cold.stdin.startswith("the prompt")
+    assert "could not be used" in cold.stdin
+
+
 def test_a_warm_session_at_another_tier_is_not_used(tmp_path: Path) -> None:
     model = FakeModel(script={"other": ['{"n": 1}']})
     spawn = WarmFactory(model)
