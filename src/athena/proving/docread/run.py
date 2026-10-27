@@ -32,6 +32,7 @@ from athena.proving.docread.dry import dry_reading, is_dry
 from athena.proving.docread.read import claude_tier, read_claude, read_vl
 from athena.proving.docread.report import render_markdown
 from athena.proving.docread.score import Reading, proof, score_readers, score_unit
+from athena.proving.forge.store import restore_budget
 from athena.proving.report import RUNS_DIRNAME, new_run_dir, write_report
 from athena.proving.roles import RoleCaller, Runner, subprocess_runner
 from athena.proving.runlog import RunLog
@@ -112,7 +113,12 @@ def run_read(run: Run, *, echo: Callable[[str], None] = print) -> tuple[Budget, 
     """Read every unit with each reader. Void readings are retried on the next run."""
     config = run.config
     budget = Budget(caps={NEMOTRON: config.nemotron_cap, CLAUDE: config.claude_cap})
-    log = RunLog(None if config.dry else run.root / "ledger.jsonl")
+    ledger = run.root / "ledger.jsonl"
+    if not config.dry:
+        # The caps are per run, not per session: a resumed ``read --run`` starts from what the
+        # run's own ledger says was already spent (as the forge does), not from a full purse.
+        restore_budget(budget, ledger)
+    log = RunLog(None if config.dry else ledger)
     caller = RoleCaller(budget, log)
     by_id = {s.id: s for s in run.scenarios}
     # A fixture answer is not done for a live read (nor a live one for a dry read): a live

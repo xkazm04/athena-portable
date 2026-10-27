@@ -237,3 +237,27 @@ def test_a_live_read_does_not_take_a_dry_answer_as_done(tmp_path: Path, monkeypa
     run_read(live, echo=lambda _s: None)
     assert len(post.sent) == len(live.units) == 3
     assert run_score(live)["dry"] is False
+
+
+def test_a_resumed_read_keeps_the_spend_its_ledger_already_holds(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    monkeypatch.setenv("NEBIUS_API_KEY", "k")  # the post below is a fake; nothing leaves
+    config = Config(
+        scenarios=("easy-data-broker",),
+        degradations=("clean",),
+        readers=("vl",),
+        nemotron_cap=0.5,
+        out=str(tmp_path),
+    )
+    post = Post(_vl_body("{}"))
+    run = open_run(config, post=post)
+    for unit in run.units:
+        (run.corpus / unit.image).parent.mkdir(parents=True, exist_ok=True)
+        (run.corpus / unit.image).write_bytes(_png(800, 1100))
+    # An earlier session of this run already spent more than the cap, then was killed.
+    row = {"role": "docread.vl", "engine": NEMOTRON, "model": SUPER_VL_MODEL, "cost_usd": 0.6}
+    (run.root / "ledger.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    budget, _ = run_read(run, echo=lambda _s: None)
+    assert post.sent == []
+    assert budget.spent(NEMOTRON) >= 0.6
