@@ -229,6 +229,50 @@ def test_a_proposal_is_decided_and_said_on_the_bus(rig: Rig) -> None:
     assert rig.call("POST", f"/sleep/proposals/{proposal.id}", {"action": 3})[0] == 400
 
 
+def test_a_keep_racing_a_forget_on_one_proposal_waits_and_is_refused(
+    rig: Rig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Decisions arrive on a threading server: a keep that lands while a forget is writing its
+    marker must not close the proposal as kept over a memory the forget has just retired."""
+    import athena.core.sleep.proposals as proposals
+
+    (episode,) = _episodes(rig.brain, 1)
+    fact = rig.brain.write_fact("fax", "The user likes fax.", sources=[episode])
+    proposal = rig.service.book.open_proposal(
+        "cyc_000000000000", "forget", [fact.id], "Forget it?", now="2026-10-24T00:00:00+00:00"
+    )
+    assert proposal is not None
+    real_retire = proposals.retire
+    entered, release = threading.Event(), threading.Event()
+
+    def slow_retire(*args: Any, **kwargs: Any) -> str:
+        entered.set()
+        release.wait(10)
+        return real_retire(*args, **kwargs)
+
+    monkeypatch.setattr(proposals, "retire", slow_retire)
+    answers: dict[str, Any] = {}
+    path = f"/sleep/proposals/{proposal.id}"
+    forget = threading.Thread(
+        target=lambda: answers.update(forget=rig.call("POST", path, {"action": "forget"}))
+    )
+    keep = threading.Thread(
+        target=lambda: answers.update(keep=rig.call("POST", path, {"action": "keep"}))
+    )
+    forget.start()
+    assert entered.wait(5)
+    keep.start()
+    keep.join(0.5)
+    release.set()
+    forget.join(10)
+    keep.join(10)
+    assert answers["forget"][0] == 200
+    assert answers["forget"][1]["proposal"]["status"] == "forgotten"
+    assert answers["keep"][0] == 409, "the keep waited for the forget and found it decided"
+    decided = rig.service.book.proposal(proposal.id)
+    assert decided is not None and decided.status == "forgotten"
+
+
 def test_two_runs_at_once_start_one_cycle(tmp_path: Path) -> None:
     started: list[threading.Thread] = []
 

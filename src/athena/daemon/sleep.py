@@ -136,6 +136,10 @@ class SleepService:
         #: The last verdict the check thread was given, refusals included.
         self.last_verdict: Verdict | None = None
         self._guard = threading.Lock()
+        #: One proposal decision at a time, and never beside the sweep: the server is threaded,
+        #: and a forget writes a replicated marker before it closes its proposal, so a keep (or a
+        #: second forget, or an expiry) landing in between would close it over a retired memory.
+        self._deciding = threading.Lock()
         self._window: Window | None = None
         self._phase: str | None = None
         self._current: str | None = None
@@ -214,7 +218,8 @@ class SleepService:
 
     def check(self) -> Verdict:
         """One tick of the check thread: sweep the proposals, ask admission, run what it admits."""
-        expired, dismissed = self.book.sweep(self.clock())
+        with self._deciding:
+            expired, dismissed = self.book.sweep(self.clock())
         if expired or dismissed:
             self._changed()
         admission = self.admission.admit(False)
@@ -397,7 +402,8 @@ class SleepService:
         if node_id is not None and not isinstance(node_id, str):
             return error(400, "validator_failed", "node_id must be a string or null")
         try:
-            row = decide(self.brain, self.book, proposal_id, action, node_id, clock=self.clock)
+            with self._deciding:
+                row = decide(self.brain, self.book, proposal_id, action, node_id, clock=self.clock)
         except ProposalRefused as exc:
             return error(exc.status, exc.reason, str(exc))
         self._changed()
