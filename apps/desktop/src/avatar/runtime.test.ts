@@ -111,6 +111,23 @@ describe("the face's loop", () => {
     expect(drawn.every((p) => p.open === 0)).toBe(true);
   });
 
+  it("under Calm a stream of signals draws the still frame once, not once per signal", () => {
+    // Her own window hands every face a signal each frame while she speaks: under Calm that was a
+    // GPU render of the same rest frame 60 times a second.
+    const { driver, loop, drawn } = rig(true);
+    loop.wake();
+    for (let i = 0; i < 60; i++) {
+      driver.setSignal(say({ phase: "speaking", level: (i % 10) / 10, viseme: i % 2 ? "aa" : "PP" }));
+      loop.wake();
+    }
+    expect(drawn).toHaveLength(1);
+    loop.redraw(); // the canvas was resized and cleared: the still frame is drawn again
+    expect(drawn).toHaveLength(2);
+    loop.setCalm(false);
+    loop.setCalm(true);
+    expect(drawn[drawn.length - 1].open).toBe(0);
+  });
+
   it("turning Calm on mid-speech stops the loop on a still; turning it off resumes", () => {
     const { h, driver, loop, drawn } = rig();
     driver.setSignal(say({ phase: "speaking", level: 0.9, viseme: "aa" }));

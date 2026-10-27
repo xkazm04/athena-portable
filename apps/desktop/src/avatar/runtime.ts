@@ -36,6 +36,8 @@ export interface FaceLoop {
   setVisible(visible: boolean): void;
   /** Calm turned on or off. */
   setCalm(calm: boolean): void;
+  /** The canvas was cleared (a resize): draw again, the still frame included. */
+  redraw(): void;
   /** Whether a frame subscription is live. */
   readonly running: boolean;
   dispose(): void;
@@ -57,6 +59,8 @@ export function createFaceLoop(opts: {
   let visible = true;
   let unsubscribe: (() => void) | null = null;
   let disposed = false;
+  /** Under Calm the rest frame is on the canvas: a signal changes nothing there, so draws nothing. */
+  let stillDrawn = false;
 
   const state = (s: "running" | "still") => opts.onState?.(s);
 
@@ -75,6 +79,7 @@ export function createFaceLoop(opts: {
       state("still");
       return false;
     }
+    stillDrawn = false;
     draw(driver.step(delta / 1000));
     if (driver.settled) {
       unsubscribe = null;
@@ -87,6 +92,8 @@ export function createFaceLoop(opts: {
   const wake = () => {
     if (disposed) return;
     if (calm) {
+      if (stillDrawn) return;
+      stillDrawn = true;
       draw(driver.rest());
       state("still");
       return;
@@ -107,7 +114,12 @@ export function createFaceLoop(opts: {
     setCalm(c) {
       if (c === calm) return;
       calm = c;
+      stillDrawn = false;
       if (c) stop();
+      wake();
+    },
+    redraw() {
+      stillDrawn = false;
       wake();
     },
     get running() {
@@ -255,7 +267,7 @@ export function startFace(opts: {
       size(s);
       if (renderer) {
         renderer.resize();
-        loop?.wake();
+        loop?.redraw();
       }
     },
     dispose() {
