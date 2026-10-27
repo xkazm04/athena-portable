@@ -51,7 +51,6 @@ const dropped = new Set<number>();
 
 const KNOWN = new Set<string>(VISEMES);
 
-/** The line being spoken, or `null`. */
 /** What the voice store feeds a line's face timeline with (`stores/voice.ts` `setFaceLineSink`). */
 export interface FaceLineSink {
   beginLine(generation: number, sampleRate: number): void;
@@ -72,6 +71,7 @@ export const FACE_LINE_SINK: FaceLineSink = {
   clearLine: (g) => clearLine(g),
 };
 
+/** The line being spoken, or `null`. */
 export function faceTimeline(): FaceTimeline | null {
   return current;
 }
