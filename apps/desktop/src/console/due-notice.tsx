@@ -42,9 +42,9 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
     return () => document.removeEventListener("visibilitychange", stamp);
   }, [notice, shown]);
   if (!notice) return null;
-  const since = notice.missed ? ` (and ${notice.missed} more since)` : "";
+  const since = notice.missed ? `, missed ${notice.missed === 1 ? "once" : notice.missed === 2 ? "twice" : `${notice.missed} times`} since` : "";
   const line = notice.ask_slow ? `${notice.title} is due again: pause or slow it?` : `${notice.title} is due${since}`;
-  const queued = more ? ` · ${more} more due` : "";
+  const queued = more ? ` · ${more} other ${more === 1 ? "chore" : "chores"} due` : "";
   const openChore = () => {
     dismiss();
     go({ root: "chores", item: notice.playbook_id });

@@ -257,13 +257,23 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
 
   it("says how many more are due, and the count falls as each is handled", async () => {
     await mount([notice("a"), notice("b"), notice("c")]);
-    expect(line()?.textContent).toBe("Chore a is due · 2 more due");
+    expect(line()?.textContent).toBe("Chore a is due · 2 other chores due");
     await press(line());
     await press(button("Later"));
-    expect(line()?.textContent).toBe("Chore b is due · 1 more due");
+    expect(line()?.textContent).toBe("Chore b is due · 1 other chore due");
     await press(line());
     await press(button("Later"));
     expect(line()?.textContent).toBe("Chore c is due");
+  });
+
+  it("counts the chore's own missed occurrences and the other chores waiting in two different phrasings", async () => {
+    await mount([notice("a", { missed: 2 }), notice("b")]);
+    expect(line()?.textContent).toBe("Chore a is due, missed twice since · 1 other chore due");
+  });
+
+  it("says once, twice, then the count for a chore that came and went, and no other count in its own words", async () => {
+    await mount([notice("c", { missed: 1 })]);
+    expect(line()?.textContent).toBe("Chore c is due, missed once since");
   });
 
   it("a review that cannot be read: one sentence, the notice stays, and Open the chore still goes to the chore's page", async () => {
