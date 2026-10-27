@@ -253,7 +253,7 @@ describe("a computer's room (ADR 0143)", () => {
     expect(d).not.toContain("data-high");
   });
 
-  it("a tight computer: no GPU found is 'none', battery and its level, the RAM past the line in the warning hue", () => {
+  it("a tight computer: no GPU found is 'none', battery and its level; RAM at 86% is tight, not held, so no warning hue", () => {
     const d = drawer("typical", "dev_0000000000a2");
     expect(d).toContain("tight");
     expect(d).toContain("1 task slot<");
@@ -262,7 +262,9 @@ describe("a computer's room (ADR 0143)", () => {
     expect(d).toContain("8 GB free");
     expect(d).toContain("3 turns, 0 blank");
     expect(d).toContain("never slept");
-    expect(d).toMatch(/class="vmeter" data-high="1"><span class="vmeter__bar" role="meter" aria-label="RAM"/);
+    // The hue is the gate's hold line (92%), not the slot arithmetic's 85%: between them work still runs.
+    expect(d).toMatch(/class="vmeter"><span class="vmeter__bar" role="meter" aria-label="RAM"/);
+    expect(d).not.toContain("data-high");
   });
 
   it("held: the gate's sentence under the facts; what was not measured is 'unknown' or left out, never 0", () => {
@@ -270,6 +272,7 @@ describe("a computer's room (ADR 0143)", () => {
     expect(d).toContain('<p class="vitals__held typo-body">Waiting for room: memory is 94% used; tasks start again under 85%.</p>');
     expect(d).toContain("full");
     expect(d).toContain("0 task slots");
+    expect(d).toMatch(/class="vmeter" data-high="1"><span class="vmeter__bar" role="meter" aria-label="RAM"/);
     expect(d).toContain("CPU unknown");
     expect(d).not.toContain('aria-label="CPU"');
     expect(d).toContain('aria-label="RAM"');

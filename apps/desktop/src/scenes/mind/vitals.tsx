@@ -25,8 +25,14 @@ import type { GpuVitals, Room, RunsSummary, SleepSummary, Vitals } from "@/lib/v
 /** The gate's word for a computer's room, as a node's caption says it. */
 export const ROOM_WORD: Readonly<Record<Room, string>> = { ok: "room ok", tight: "tight", full: "full" };
 
-/** The hold lines the gate uses (`athena/vitals/gate.py`): a bar past one is drawn in the warning hue. */
-const RAM_ROOM_PCT = 85;
+/**
+ * The lines at which the gate holds background work (`athena/vitals/__init__.py`: `RAM_HOLD_PCT`,
+ * `CPU_HOLD_PCT`): a bar at one is drawn in the warning hue. Not the 85% slot line
+ * (`RAM_ROOM_PCT`): between the two the room is "tight" (no further task fits) but work still
+ * runs, and the Room fact says so. CPU holds only after three samples in a row above its line, so
+ * one reading at it means "about to hold", never "held"; the held sentence says when it is.
+ */
+const RAM_HOLD_PCT = 92;
 const CPU_HOLD_PCT = 90;
 
 /** The room word for a caption, or `null` when the room is unknown or nothing was measured. */
@@ -75,7 +81,7 @@ export function Meter({
   value: number | null;
   /** The figure in words, shown beside the bar and read as its value. */
   text: string;
-  /** Past the line where the gate holds work: the bar takes the warning hue. */
+  /** At the line where the gate holds work: the bar takes the warning hue. */
   high?: boolean;
   wide?: boolean;
 }) {
@@ -187,7 +193,7 @@ export function VitalsFacts({ vitals, presence, now }: { vitals: Vitals | null |
             label="RAM"
             value={v.ram_pct === null ? null : v.ram_pct / 100}
             text={ramText}
-            high={v.ram_pct !== null && v.ram_pct >= RAM_ROOM_PCT}
+            high={v.ram_pct !== null && v.ram_pct >= RAM_HOLD_PCT}
           />
         </span>
       </Fact>
