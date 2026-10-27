@@ -1185,6 +1185,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): the task strip says why a delegated task never starts when a claim fails.` Stabilize Lane B: `useTaskRunner.problem` had no reader; the strip now says it, quietly, while a task is queued (`stripProblem` in `companion/tasks.tsx`).
 - `fix(chores): a composer line the daemon refused is drawn not sent and can be sent again.` Feed `you` lines carry `sent|failed`; a refused one reads "Not sent" with "Send again" in the studio and the front door, and `hasSaid`, `needOf` and the park count skip it (`scenes/chores/adopt/{state,session,conversation,park}`, `intake/{state,session,intake}`).
 - `fix(mind): a paired PC that removed this one, or has sent no key, no longer reads as not checked yet.` Stabilize Lane B (ADR 0140 "Link state", desktop side only): `lib/fleet.ts` mirrors the `link` that `GET /devices` already sends, and the Devices constellation draws `removed_there`, `awaiting_key` and `stale` with their own line, caption, legend key and a drawer sentence naming the mend (revoke it here, then pair it again); a phone and an older daemon read as before.
+- `fix(chores): the case panel says "confirmed" only for confirmed slots and names a research lane's state in words.` The headline reads "1 of 4 confirmed, 1 guessed" instead of counting guesses as known; lanes read waiting / looking / done / could not finish / not needed (`scenes/chores/adopt/casepanel.tsx`).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

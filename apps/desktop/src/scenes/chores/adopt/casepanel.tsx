@@ -36,6 +36,13 @@ const SOURCE_WORD: Record<SlotSource, string> = {
   account: "account",
   default: "the playbook",
 };
+const LANE_WORD: Record<LaneStatus, string> = {
+  queued: "waiting",
+  running: "looking",
+  done: "done",
+  failed: "could not finish",
+  skipped: "not needed",
+};
 const LANE_TONE: Record<LaneStatus, Tone> = {
   queued: "neutral",
   running: "pending",
@@ -67,8 +74,8 @@ export function SlotsBoard({
         </h2>
         {slots.length ? (
           <p className="ad-count">
-            <span className="ad-count__n">{t.confirmed + t.guessed}</span>
-            <span className="ad-count__of">{` of ${slots.length} known`}</span>
+            <span className="ad-count__n">{t.confirmed}</span>
+            <span className="ad-count__of">{` of ${slots.length} confirmed${t.guessed ? `, ${t.guessed} guessed` : ""}`}</span>
           </p>
         ) : null}
       </div>
@@ -191,7 +198,7 @@ export function ResearchTray({ lanes }: { lanes: readonly Lane[] }) {
                 {l.title}
                 <span className="ad-lane__status">
                   <StatusDot tone={LANE_TONE[l.status]} />
-                  {l.status}
+                  {LANE_WORD[l.status]}
                 </span>
               </p>
               {l.status === "running" ? (

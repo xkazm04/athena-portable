@@ -323,7 +323,8 @@ describe("the session", () => {
     expect(text(".ad-card__round")).toBe("Round 1");
 
     await feed({ kind: "adopt.slots", slots: SLOTS });
-    expect(text(".ad-count")).toBe("2 of 4 known");
+    // Only a confirmed slot is counted as known; the guess is named beside it, as the legend names it.
+    expect(text(".ad-count")).toBe("1 of 4 confirmed, 1 guessed");
     expect(qa(".ad-meter .ad-meter__seg").map((s) => s.dataset.status)).toEqual(
       ["confirmed", "guessed", "open", "open"],
     );
@@ -380,6 +381,8 @@ describe("the session", () => {
     expect(text(".ad-harvest")).toBe(
       "1 of 2 lanes done · 1 failed (rules: timeout)",
     );
+    // A lane's state is a word for people, not the wire's enum.
+    expect(qa(".ad-lane__status").map((s) => s.textContent)).toEqual(["could not finish", "done"]);
     const link = q<HTMLAnchorElement>(".ad-findings a")!;
     expect(link.href).toBe("https://www.transportation.gov/x");
     expect(link.target).toBe("_blank");
