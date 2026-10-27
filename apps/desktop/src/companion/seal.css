@@ -73,7 +73,8 @@
 .seal-tab[data-counted="1"] .seal-count { visibility: visible; animation: seal-inkpulse var(--seal-ink) ease-out 3; }
 .seal-tab .seal-light { position: absolute; left: 3px; top: 36px; width: 2px; height: 22px; border-radius: 2px; background: var(--seal-line); opacity: 0; }
 .seal-tab[data-seal="working"] .seal-light { opacity: 1; animation: seal-sweep var(--seal-tab-sweep) ease-in-out infinite; }
-@keyframes seal-sweep { 0% { top: 10px; } 50% { top: 64px; } 100% { top: 10px; } }
+/* the light rests at 36px; the sweep runs it from 10px to 64px by transform, never by top */
+@keyframes seal-sweep { 0% { transform: translateY(-26px); } 50% { transform: translateY(28px); } 100% { transform: translateY(-26px); } }
 
 /* ---- calm: nothing travels, nothing loops; every state still reads by colour and shape ---- */
 @media (prefers-reduced-motion: reduce) {
