@@ -29,6 +29,8 @@ const PENDING: PendingView = {
   requested_grants: ["chat", "approve"],
   expires_at: "2026-10-24T12:05:00Z",
   pair_back: false,
+  address: "100.64.0.21",
+  replaces: null,
 };
 
 function view(over: Partial<DevicesView> = {}): DevicesView {

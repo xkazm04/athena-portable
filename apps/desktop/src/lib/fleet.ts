@@ -79,6 +79,10 @@ export interface PendingView {
   requested_grants: Grant[];
   expires_at: string;
   pair_back: boolean;
+  /** Where the request came from, as the daemon's socket said (never the body's); `null` when unknown. */
+  address: string | null;
+  /** The paired device approving this would overwrite (its token dies), else `null`. */
+  replaces: { peer_id: string; name: string } | null;
 }
 
 /** `Join.view()`: this PC asking another to let it in. */

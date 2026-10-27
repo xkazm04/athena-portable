@@ -239,6 +239,20 @@ describe("a node's drawer", () => {
     expect(on).toContain("Listening at 100.64.0.7:17491");
   });
 
+  it("for a request: the card names the address that asked and, when it would replace a paired device, says so", () => {
+    const base = deviceFixtures["pending-armed"]!;
+    const plain = render(base, { selected: "pair_0000000000b1" });
+    expect(plain).toContain("Asking from 100.64.0.21");
+    expect(plain).not.toContain("replaces");
+    const view = base.state.view!;
+    const row = { ...view.pending[0]!, replaces: { peer_id: "dev_0000000000a2", name: "Laptop" } };
+    const model = { ...base, state: { ...base.state, view: { ...view, pending: [row] } } };
+    expect(render(model, { selected: "pair_0000000000b1" })).toContain("Approving replaces your paired device Laptop");
+    const none = { ...row, address: null, replaces: null };
+    const blank = { ...base, state: { ...base.state, view: { ...view, pending: [none] } } };
+    expect(render(blank, { selected: "pair_0000000000b1" })).toContain("address unknown");
+  });
+
   it("for a request: the approve card, which cannot be approved in its first moment", () => {
     const fresh = html("pending-new", { selected: "pair_0000000000b1" });
     expect(fresh).toContain("Kitchen phone asks to be let in");
@@ -512,7 +526,7 @@ describe("the wizard: a computer", () => {
   it("moves on to Approve when the computer it joined asks back", () => {
     const base = deviceFixtures.typical!;
     const view = base.state.view!;
-    const back = { pairing_id: "pair_0000000000f9", name: "Office PC", kind: "pc" as const, requested_grants: ["chat" as const], expires_at: "2026-10-24T12:10:00Z", pair_back: true };
+    const back = { pairing_id: "pair_0000000000f9", name: "Office PC", kind: "pc" as const, requested_grants: ["chat" as const], expires_at: "2026-10-24T12:10:00Z", pair_back: true, address: "100.64.0.9", replaces: null };
     const model = { ...base, state: { ...base.state, view: { ...view, pending: [back] } } };
     const h = render(model, { wizard: "pc", branch: "join" });
     expect(h).toContain('data-step="approve"');

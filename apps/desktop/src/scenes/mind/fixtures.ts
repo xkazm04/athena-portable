@@ -159,6 +159,8 @@ const PENDING: DevicesView["pending"] = [
     requested_grants: ["chat", "approve"],
     expires_at: "2026-10-24T12:05:00Z",
     pair_back: false,
+    address: "100.64.0.21",
+    replaces: null,
   },
 ];
 
@@ -335,6 +337,8 @@ export const deviceFixtures: Record<string, DevicesModel> = {
           requested_grants: ["chat", "approve"],
           expires_at: PHONE_WINDOW.expires_at,
           pair_back: false,
+          address: "100.64.0.21",
+          replaces: null,
         },
       ],
     },

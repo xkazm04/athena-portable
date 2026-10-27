@@ -184,8 +184,14 @@ export function PendingCard({
     <div className="devices__card" data-armed={armed ? "1" : undefined}>
       <p className="typo-heading">{who}</p>
       <p className="typo-caption">
-        {KIND_WORD[row.kind]}. The request lapses at {clockOf(row.expires_at)} if nobody answers.
+        {KIND_WORD[row.kind]}. {row.address ? `Asking from ${row.address}.` : "Its address unknown."} The request lapses at{" "}
+        {clockOf(row.expires_at)} if nobody answers.
       </p>
+      {row.replaces && (
+        <p className="typo-caption">
+          Approving replaces your paired device {row.replaces.name}: its access ends and this one takes its place.
+        </p>
+      )}
       <div className="pill-group" role="group" aria-label={`What ${row.name} may do`}>
         {GRANTS.filter((g) => row.requested_grants.includes(g)).map((grant) => (
           <button
