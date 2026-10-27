@@ -4,6 +4,8 @@
  * `TTS:` lines in her text). The port was checked line for line against the winner's `translator.js`
  * before these sentences were written down.
  */
+import { readFileSync } from "node:fs";
+
 import { expect, test } from "vitest";
 
 import type { TranscriptEntry } from "@/stores/run";
@@ -234,4 +236,44 @@ test("an empty list reads as a read that found nothing, and never throws", () =>
   expect(m.title).toBe("Listed the overdue in Ledgerbox");
   expect(m.sub).toBe("Nothing found.");
   expect(m.detail).toEqual({ kind: "none" });
+});
+
+// The run store writes some tool entries in its own words, with no tool arrow (`stores/run.ts`).
+const own = (text: string, ok = false) => translate({ id: "o", kind: "tool", ok, text });
+
+test("the run store's own lines say what happened: a stop, a remote message, a sheet, a card answered on a phone", () => {
+  expect(own("stopped: you stopped her. Nothing more runs until your next message.")).toMatchObject({
+    tone: "blocked",
+    title: "You stopped her",
+    sub: "Nothing more runs until your next message.",
+  });
+  expect(own("interrupted: you said something new, so she stopped.").title).toBe("You said something new, so she stopped");
+  expect(own("not run: open ledgerbox on this computer first")).toMatchObject({
+    tone: "blocked",
+    title: "Did not run",
+    sub: "Open ledgerbox on this computer first. Nothing was changed.",
+  });
+  expect(own("waiting: the message from Pixel 8 runs first", true)).toMatchObject({ tone: "info", title: "The message from Pixel 8 runs first" });
+  expect(own("sheet of 3: ran 3 of 3", true)).toMatchObject({ title: "Ran 3 of 3", where: "From a sheet of 3" });
+  const stopped = own("sheet of 3: ran 1 of 3; stopped at row 2: host.ledgerbox.send_reminder did not run: tab closed. The rows after it are still waiting.");
+  expect(stopped.title).toBe("Ran 1 of 3");
+  expect(stopped.sub).toBe("Stopped at row 2: send reminder in Ledgerbox did not run: tab closed. The rows after it are still waiting.");
+  const declined = own("declined on Pixel 8: host.ledgerbox.void_invoice");
+  expect(declined).toMatchObject({ role: "declined", tone: "blocked", title: "Declined on Pixel 8: void invoice in Ledgerbox", sub: "Nothing was changed." });
+  expect(own("approved on Pixel 8: host.ledgerbox.void_invoice", true)).toMatchObject({ role: "step", tone: "ok", title: "Approved on Pixel 8: void invoice in Ledgerbox" });
+});
+
+test("every arrowless line the run store writes is read as its own line, never as a tool call", () => {
+  const src = readFileSync(new URL("../../stores/run.ts", import.meta.url), "utf8");
+  const written = [
+    ...[...src.matchAll(/kind: "tool", text: `([^`]*)`/g)].map((m) => m[1]!),
+    ...[...src.matchAll(/"((?:interrupted|stopped): [^"]*)"/g)].map((m) => m[1]!),
+  ].filter((t) => !t.startsWith("${row.name} →") && !t.startsWith("declined: "));
+  expect(written.length).toBeGreaterThanOrEqual(7);
+  for (const shape of written) {
+    const line = shape.replace(/\$\{verb\}/g, "declined").replace(/\$\{n\}/g, "2").replace(/\$\{[^}]*\.action\}/g, "host.ledgerbox.void_invoice").replace(/\$\{[^}]*\}/g, "Pixel 8");
+    const m = own(line);
+    // Read as a call, these said "Ran", "Voided invoice in Ledgerbox" or "...firsted".
+    expect(m.title, line).not.toMatch(/^(Ran|Voided)\b|(first|\d)ed$/);
+  }
 });

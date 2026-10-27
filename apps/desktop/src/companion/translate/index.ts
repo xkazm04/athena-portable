@@ -16,6 +16,7 @@ import {
   appSuffix,
   article,
   brand,
+  cap,
   clock,
   gerund,
   isObj,
@@ -111,6 +112,56 @@ function noun(verb: string, object: string, target: string): string {
   return DIRECT.has(verb) ? object + (target ? " " + target : "") : object + (target ? " for " + target : "");
 }
 
+/**
+ * The run store's own lines (`stores/run.ts`), which carry no tool arrow: a stop, an interruption, a
+ * message from another device that was not run or waits its turn, a sheet's tally, and a card
+ * answered on another device. Read as tool calls they said "Ran" for a stop and "Voided invoice"
+ * for a void declined on a phone.
+ */
+const OWN_LINE = /^(stopped|interrupted|not run|waiting|sheet of \d+|(?:approved|declined) on [^:\n]+): ([\s\S]*)$/;
+const ANSWERED = /^(approved|declined) on (.+)$/;
+const TOOL_NAME = /\b(?:host|connector)\.[a-z0-9_-]+\.[a-z0-9_]+|\b(?:tabs|core)\.[a-z0-9_]+/gi;
+
+/** A tool's name inside a sentence, said as its verb, object and app. */
+const toolWords = (name: string): string => {
+  const t = parseTool(name);
+  return `${t.verb} ${noun(t.verb, t.object, "")}${appSuffix(t)}`.replace(/\s+/g, " ").trim();
+};
+
+function ownLine(base: Omit<PlainMessage, "role" | "tone" | "title">, head: string, rest: string, ok: boolean): PlainMessage {
+  const answered = ANSWERED.exec(head);
+  if (answered) {
+    const t = parseTool(rest.trim());
+    const declined = answered[1] === "declined";
+    return {
+      ...base,
+      ...laneOf(t, 1),
+      tool: t.name,
+      role: declined ? "declined" : "step",
+      tone: declined ? "blocked" : "ok",
+      title: `${cap(answered[1]!)} on ${answered[2]}: ${toolWords(t.name)}`,
+      sub: declined ? "Nothing was changed." : "",
+    };
+  }
+  const said = rest.replace(TOOL_NAME, toolWords).trim();
+  if (head === "not run") {
+    return { ...base, role: "step", tone: "blocked", title: "Did not run", sub: `${cap(said.replace(/\.$/, ""))}. Nothing was changed.` };
+  }
+  // The first clause is the title, the rest of what the store said the line under it.
+  const cut = /[.;]\s/.exec(said);
+  const first = (cut ? said.slice(0, cut.index) : said).replace(/\.$/, "");
+  const after = cut ? said.slice(cut.index + 1).trim() : "";
+  const sheet = /^sheet of (\d+)$/.exec(head);
+  return {
+    ...base,
+    role: "step",
+    tone: ok ? "info" : "blocked",
+    title: cap(first),
+    sub: cap(after),
+    where: sheet ? `From a sheet of ${sheet[1]}` : "",
+  };
+}
+
 /** One entry as a person reads it. */
 export function translate(entry: TranscriptEntry, ctx: TurnContext = EMPTY_CONTEXT): PlainMessage {
   const base = { id: entry.id, time: clock(entry.at), raw: entry.text, tool: "", recovered: false, lane: null, where: "", sub: "", detail: { kind: "none" } as Detail };
@@ -134,6 +185,8 @@ export function translate(entry: TranscriptEntry, ctx: TurnContext = EMPTY_CONTE
   }
 
   const at = text.indexOf(ARROW);
+  const own = at < 0 ? OWN_LINE.exec(text) : null;
+  if (own) return ownLine(base, own[1]!, own[2]!, entry.ok !== false);
   const t = parseTool(at >= 0 ? text.slice(0, at) : text);
   const out = at >= 0 ? text.slice(at + ARROW.length) : "";
   const step = { ...base, ...laneOf(t, entry.tier), tool: t.name, role: "step" as const };
