@@ -1,0 +1,182 @@
+{
+ "context": "core-brain-memory",
+ "files_read": 19,
+ "loc": 6934,
+ "registry": "software-engineering/agent-memory, software-engineering/companion-identity, software-engineering/sync-replication",
+ "techniques": [
+  "projection-security",
+  "decay-and-forgetting"
+ ],
+ "deviations": 1,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "adcf1a4b",
+   "title": "a memory another device sends may close only memories of its own space",
+   "lens": "parity-auditor",
+   "red_before": "test_a_received_memory_may_close_only_its_own_spaces_memories: DID NOT RAISE ValueError",
+   "after": "refused; 0 supersede rows over core; same-space closer filed before and after its target"
+  },
+  {
+   "sha": "ba94892f",
+   "title": "a recall use mark the index refuses is logged",
+   "lens": "observability-auditor",
+   "red_before": "test_a_use_mark_the_index_refuses_is_let_go_and_logged: no log record",
+   "after": "one warning naming the table; returns False"
+  },
+  {
+   "sha": "eb2982d0",
+   "title": "fact/procedural writers no longer take tags every rebuild dropped",
+   "lens": "parity-auditor",
+   "red_before": "test_a_distilled_writer_takes_nothing_a_rebuild_cannot_restore: AssertionError; probe: 4 fingerprint rows differ after rebuild",
+   "after": "parameter gone (0 callers); TypeError at a call"
+  },
+  {
+   "sha": "d99a824e",
+   "title": "a recall's use mark waits no longer on another connection's write",
+   "lens": "code-optimizer",
+   "red_before": "test_a_use_mark_never_waits_out_another_connections_write: waited 5.53s",
+   "after": "re-measured 0.35s, no warning (changelog figure corrected in e93ca32a)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Brain.counts() 'live' includes superseded memories",
+   "before": "cli/proving read counts as a population; no consumer asks for live-in-recall",
+   "after": "same consumers, churn only"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "parity-auditor",
+   "checked": "receive_file vs _require_supersedable (built adcf1a4b); write_fact/write_procedural vs reconcile.index_file row parity (built eb2982d0); recall NOT_SUPERSEDED vs sleep _LIVE (identical)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "note_recalled swallowed sqlite3.Error (built ba94892f); recall unavailable_trace logs once"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "note_recalled BEGIN IMMEDIATE under another connection stalled 5.53s (built d99a824e); NOT_SUPERSEDED subquery and erase_space disk walk judged fine"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "unstamp/erase vs write-once replication cursor (card C)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "forged supersedes across the wall at receive; closer arriving before its target; unstamp of a closed memory (probe, card B)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "promote flow: 200 then the memory is served nowhere (card B, probe)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "erase_space reach over cycles/ and .peer/conflicts (card C); replicated_path refusals already tested"
+  },
+  {
+   "key": "error-handler",
+   "checked": "receive_file refusal classes vs replicate._apply routing (ProvenanceError deferred, ValueError refused); unstamp None on unreadable file"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "retired/superseded/unknown-space/unavailable states across always, keyword, episodes, space_always - covered by tests"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "refusal messages of _require_supersedable/_require_provenance; promote's 404 copy for a closed memory (in card B)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "erase_space table list vs test _rows_naming, both hand-kept, no gap vs SCHEMA today; 4 tests added"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "agent-memory deviations already recorded in registry-map; nothing restated"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "use marks are the only usage signal; their failure is now logged; no metric surface in this lib"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "store.py owns writers, replication door and wall acts; no split proposed"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "dead tags parameter removed (eb2982d0)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "replicate.py:7 'no rewrite path' premise false since ADR 0225 (card C)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "replication door contract re-checked: path, header, provenance, supersede wall"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "stdlib-only core held: logging is stdlib"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "nothing real: recall's value model already ranks by use and fade"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "nothing real inside the declared scope"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "accessibility-checker",
+   "why": "pure Python library, no rendered UI"
+  },
+  {
+   "key": "visual-craft",
+   "why": "no visual surface"
+  },
+  {
+   "key": "render-path",
+   "why": "no UI render path"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no viewport"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no onboarding flow"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "internal storage library, no product funnel"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or build config in this context"
+  }
+ ],
+ "findings": 8,
+ "lanes": "A:4/B:1/C:2",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <changed files>": 0,
+  "uv run ruff format --check <changed files>": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/core/test_brain*.py tests/core/test_recall.py tests/core/test_memory_wall.py tests/core/sleep tests/peer tests/daemon/test_space_memory.py -m 'not provider and not eval'": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "re-sweep: 4 built on receive/rebuild/recall pairs, 3 cards",
+ "notes": "Re-walked ADR 0140/0143/0225 since 2026-10-16: recall, rebuild and sleep honour retired, supersedes and space; receive did not honour the supersede wall (built). Unstamp of a closed memory and unstamp/erase vs write-once replication are carded (they reach spaces/routes.py and peer/replicate.py). src/athena/core/brain/value.py is not in context-map file_paths (map drift). d99a824e body says ~0.26s; re-measured 0.35s (CHANGELOG corrected e93ca32a). Foreign dirty paths seen (apps/desktop fleet/midturn, tests/proving/chores_uat) - untouched."
+}

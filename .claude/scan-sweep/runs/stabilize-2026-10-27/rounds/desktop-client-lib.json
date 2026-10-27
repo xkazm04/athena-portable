@@ -1,0 +1,196 @@
+{
+ "context": "desktop-client-lib",
+ "files_read": 28,
+ "loc": 4838,
+ "registry": "software-engineering/mcp-tools, software-engineering/voice-io, software-engineering/talking-avatar, software-engineering/multi-provider-gateway-plane",
+ "techniques": [
+  "untrusted-result-handling",
+  "tool-identity-vs-tool-name",
+  "face-signal-across-surfaces"
+ ],
+ "deviations": 0,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "40267a84",
+   "title": "an engine the daemon reports but the desktop cannot launch is never counted as one to switch to",
+   "lens": "parity-auditor",
+   "red_before": "engines.test.ts new case: usable() returned [codex, nebius, muse_code]",
+   "after": "[codex]; desktop suite 3133/3133 green"
+  },
+  {
+   "sha": "da842e01",
+   "title": "a hyphenated word that starts with a cue queues instead of stopping her turn",
+   "lens": "bounty-hunter",
+   "red_before": "midturn.test.ts: 'stop-loss orders...', 'wait-list...', 'cancel-by...' classified interrupt (3 red)",
+   "after": "all queue; 26 interrupt cases unchanged"
+  },
+  {
+   "sha": "0864dd2a",
+   "title": "a bus reader that throws is logged and costs one frame, instead of silently ending the stream",
+   "lens": "observability-auditor",
+   "red_before": "fleet.test.ts: frame after the throw never delivered (seen [] vs ['dev_good']), nothing logged",
+   "after": "1 connect, next frame delivered, 1 console.error"
+  },
+  {
+   "sha": "9f63737a",
+   "title": "drop cliOf, an exported engine-to-binary map nothing calls",
+   "lens": "tech-debt-tracker",
+   "red_before": "git grep cliOf: 1 hit (its definition), 0 consumers",
+   "after": "0 hits; typecheck/lint/test green"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "clockOf's hour12:false renders midnight as 24:05",
+   "before": "probe: new Date(2026,0,1,0,5) under en-US/en-GB/cs-CZ/ja-JP/default = 00:05 with hour12:false",
+   "after": "00:05 with hourCycle h23 - identical, no defect on this ICU"
+  },
+  {
+   "title": "Fold hands.ts tierOf's bare-name split and execute.ts bareName into one helper",
+   "before": "2 identical 2-line splits, both correct",
+   "after": "1 helper - same behaviour, pure churn"
+  },
+  {
+   "title": "api.ts globalFetch comment names 3 production callers of the default fetch",
+   "before": "comment lists stores/connectors.ts, run.ts, voice.ts; git grep finds 9 `new DaemonApi(` sites",
+   "after": "a reworded comment changes no behaviour and no gate can see it; left for the next edit of the file"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "architecture-analyst",
+   "checked": "the four followBus call sites (devices, sleep, tasks, run) and which window mounts each -> card: one stream per store, not per window"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "apps/desktop/package.json @tauri-apps/api ^2.11.1 (installed 2.11.1) vs src-tauri Cargo.lock tauri 2.11.5, @athena/bridge workspace:*: same minor, nothing real"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "five private daemon json() doors (api, chores-client, adopt-client, intake-client, spaces) -> card; cliOf zero consumers -> built 9f63737a"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "doc claims vs code: hands.ts 'ten hands' (hands.rs asserts 10, true), events.ts 'Thirteen events' (13, true), companion.ts 'eight named states' (8, true), api.ts:56-58 caller list (3 named vs 9 real, rejected as comment-only)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "engines.ts remedyFor/engineLine sentences and the Setup count they feed (engine-state.ts) -> the usable() fix and the denominator card"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "motion.ts Calm resolution and its readers (stores/settings.ts media listener, avatar/runtime.ts observer, Console.tsx render-time read) -> card"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "motion.ts clock: one rAF, drop-on-false, hidden pause and delta reset on visible, throw isolation; no CSS or durations in lib/ - nothing real. motion.ts not touched"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "lib/ has no rendering; companion.ts SIZES/MARGIN/HOUSE are pinned to ADR 0026 by companion.test.ts - nothing real"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "api.ts EnginePage state union vs routes.py engine_row (found/not_found/not_logged_in, matches); muse_code commit says desktop list unchanged on purpose"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "events.ts turn.summary (tokens, cost, rounds) is the record; no product analytics belongs in a client lib - nothing real"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "engines.ts vs Python ENGINES: muse_code/nebius absent from ENGINE_IDS by design (0af7ed7b 'Python-only for now'); exposing them is a direction, not proposed"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "midturn.ts heuristic classifier: stays a heuristic by its own contract; no model call proposed"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "engines.test.ts reads daemon.rs KNOWN_ENGINES and rust-mirrors.test.ts pins DaemonStatus/Tab/STORE_TABLES; unpinned HandReply/Snap mirrors read field-for-field against hands.rs:304 and companion.rs:226 - consistent"
+  },
+  {
+   "key": "business-strategist",
+   "checked": "setup engine copy and the muse_code plan engine: a desktop choice of Muse is a product call, not a lib defect"
+  },
+  {
+   "key": "render-path",
+   "checked": "lib/ files on Main's first frame (api, events, motion, ipc): no lazy boundary belongs in a client lib; first-paint test green after all four commits"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "midturn.ts cue boundaries (hyphen -> built), sseFrames BOUNDARY with CRLF splits, hostOfDerivedId hex decode, manifestBodyOf positional runner marker vs gate.js manifestOf (1:1 map, safe)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "engines.ts usable()/ENGINE_IDS vs harness ENGINES (built 40267a84 + denominator card); ChoresApi vs DaemonApi failure mapping (card)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "followBus catch-all around the handler (built), DaemonApi.json non-JSON 200 and fetch TypeError (card), hands.ts takeCapture race and sweep catch"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "followBus silent swallow (built 0864dd2a); motion.ts and hands.ts already log their swallows"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "concurrent /events streams vs the per-host connection pool (card); execute.ts unsure-set cap and localStorage mirror"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "turnFrameFromJson parses each relayed frame twice; execute.isUnsure spreads the map per call (<=32 entries) - both negligible, not proposed"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "engineLine on probes null / [] / missing id / unknown, overlayWords exhaustive, chores-client defaults for absent fields"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "engines.ts remedies (jargon test), execute.ts held/outcome lines, hands.ts capture 'why' sentences - nothing new"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "modules without a co-located test (bridge, chores-client, contract, daemon, sheet, store) each have consumer tests (tools, due/yours, contracts, daemon store, companion model, appearance-follow); added 5 cases"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "url.ts normaliseUrl passes javascript:/file: through; the only model-influenced opener (task-runner addressOf) admits https? only; manifest.ts registrable host parse; contract.ts neutral() invisible ranges"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "mcp-tools untrusted-result-handling: registry-map's recorded deviation (bridge.ts:83 no pin/diff) is answered today by contract.ts hashing + driftOf (ADR 0100); verdict is stale, not re-judged here (.ai is the director's)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "desktop Tauri client library; no viewport or touch surface in lib/"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "lib/ holds no onboarding flow; Setup's copy lives in modules/setup (its own context)"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface in these files"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, referral or notification surface in a client library"
+  }
+ ],
+ "findings": 11,
+ "lanes": "A:4/B:4/C:0",
+ "fp": 0,
+ "gates": {
+  "apps/desktop pnpm typecheck": 0,
+  "apps/desktop pnpm lint": 0,
+  "apps/desktop pnpm test": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "re-sweep: 4 built (engines x2, midturn, fleet), 4 Lane B cards",
+ "notes": "Desktop suite 216 files / 3133 tests green after every commit (3128 + 5 new); first-paint test green (the test prints no figure; motion.ts NOT touched; changes are a filter clause, a lookahead char, one try/catch with a log line, and a deleted function). Foreign dirty paths seen and not touched: src/athena/core/brain/store.py, src/athena/proving/docread/*, tests/core/test_brain_device.py, tests/proving/*. registry-map: the mcp-tools 'deviation' on this context (bridge.ts:83, no pin/diff of tool descriptions) looks answered by lib/contract.ts (ADR 0100 contract hashing) - worth a /conform --stale. muse_code is deliberately absent from ENGINE_IDS (0af7ed7b); only its effect on Setup's counts was a defect."
+}

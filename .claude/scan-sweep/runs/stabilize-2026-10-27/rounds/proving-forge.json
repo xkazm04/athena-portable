@@ -1,0 +1,255 @@
+{
+ "context": "proving-forge",
+ "contexts": [
+  "proving-forge",
+  "proving-docread"
+ ],
+ "files_read": 22,
+ "loc": 3945,
+ "registry": "software-engineering/eval-harness, software-engineering/model-call-outcome-integrity, software-engineering/cost-metering (via registry_query; .ai/registry-map.json has no row for either context)",
+ "techniques": [
+  "outcome-conditioned-cost",
+  "the-measurement-runs-the-served-configuration",
+  "resolution-precondition"
+ ],
+ "deviations": 5,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "b1d98787",
+   "title": "docread verdict taken on exact counts, not rounded rates",
+   "lens": "bounty-hunter",
+   "red_before": "test_proof_judges_the_counts_not_the_rounded_rates: VL 3/5 vs Claude 2/3 read MIXED",
+   "after": "PASS, accuracy_ratio 0.9"
+  },
+  {
+   "sha": "95f1ab65",
+   "title": "docread dryness comes from the readings, not the verb's flag",
+   "lens": "parity-auditor",
+   "red_before": "two tests: score without --dry wrote dry false; live read sent 0 of 3 units",
+   "after": "dry true; 3 of 3 units read live"
+  },
+  {
+   "sha": "ecb10d7c",
+   "title": "docread resume restores spend from its ledger",
+   "lens": "risk-assessor",
+   "red_before": "test_a_resumed_read_keeps_the_spend...: 3 VL calls sent over a spent $0.50 cap",
+   "after": "0 calls sent, spent >= 0.6"
+  },
+  {
+   "sha": "96589a0d",
+   "title": "forge bench that raises leaves a ledger row and an unpriced charge",
+   "lens": "observability-auditor",
+   "red_before": "test_a_bench_that_raises...: 0 ledger rows",
+   "after": "1 bench row is_error, 1 unpriced Claude call"
+  },
+  {
+   "sha": "55083feb",
+   "title": "forge report and purse read one ledger alike (torn line, refusals)",
+   "lens": "parity-auditor",
+   "red_before": "test_the_report_and_the_purse_read_one_ledger_alike: JSONDecodeError",
+   "after": "1 call and $0.25 in both readers"
+  },
+  {
+   "sha": "70cb2b80",
+   "title": "forge audit cut by the purse is not saved as done",
+   "lens": "error-handler",
+   "red_before": "test_an_audit_the_purse_cut_short...: audit file written with unasked items",
+   "after": "not written, 'audit stopped' noted"
+  },
+  {
+   "sha": "e675d6bb",
+   "title": "forge report flip denominators match what was counted",
+   "lens": "parity-auditor",
+   "red_before": "test_the_markdown_divides...: KeyError, md read '0 of 1'",
+   "after": "'0 of 0 ... comparable base'"
+  },
+  {
+   "sha": "309b9146",
+   "title": "docread report names the Claude model that answered",
+   "lens": "parity-auditor",
+   "red_before": "test_the_report_names_the_claude_model_that_answered: today's tier stamped",
+   "after": "recorded model kept; effort only when the tier still names it"
+  },
+  {
+   "sha": "797c5bc6",
+   "title": "forge run directory is dry or live for good",
+   "lens": "parity-auditor",
+   "red_before": "test_a_dry_run_directory_stays_dry...: report.json lost 'dry'",
+   "after": "dry true; live bench over dry dir exits 2"
+  },
+  {
+   "sha": "6e4a7994",
+   "title": "forge validator refuses eligible entries without why/expect",
+   "lens": "parity-auditor",
+   "red_before": "planted eligible-no-why / eligible-no-expect: not refused",
+   "after": "eligible-incomplete"
+  },
+  {
+   "sha": "55490832",
+   "title": "docread read killed mid-line resumes and scores",
+   "lens": "error-handler",
+   "red_before": "test_a_read_killed_mid_line_resumes_and_scores: JSONDecodeError",
+   "after": "every unit scored once; newline guard proven load-bearing by probe"
+  },
+  {
+   "sha": "ccd3d2b6",
+   "title": "docread render that cannot run exits 2",
+   "lens": "error-handler",
+   "red_before": "test_a_render_that_cannot_run_exits_2...: RuntimeError escaped main",
+   "after": "exit 2, reason echoed"
+  },
+  {
+   "sha": "b8cb3127",
+   "title": "forge dead helpers removed (Stage, dumps, work_root)",
+   "lens": "code-optimizer",
+   "red_before": "zero-consumer git grep: 3 definitions, 0 consumers",
+   "after": "0 definitions; gates green"
+  },
+  {
+   "sha": "97f65ecb",
+   "title": "docread accuracy carries its Wilson 95% interval into the report",
+   "lens": "test-strategist",
+   "red_before": "test_each_accuracy_carries...: KeyError accuracy_ci95",
+   "after": "accuracy_ci95 in stats and a 95% CI column in report.md"
+  }
+ ],
+ "rejected": [],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "docread proof() rounding (built), score_unit/score_readers counts, stated_ids deal, forge baseline 2*short>=n tie rule, pick take() fill arithmetic (clean)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "dry flag vs readings/run dir (2 built), forge report vs purse ledger readers (built), printed flip denominators vs counted (built), validator vs forge_prompt (built), report model vs recorded model (built), docread vs forge purse restore (built)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "audit purse cut (built), torn answers.jsonl (built), render RuntimeError exit code (built), forge_one call failures (carded B), ClaudeDocRole timeout/OSError paths (clean)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "every RoleCaller path leaves a row (clean), bench raise path (built), read_vl over-edge row (carded B), run_score swallowed tiers.json OSError (now said in the line, 309b9146)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "dry never reaches a provider: DryRole/dry_bench/dry_reading, conftest offline_lane refuses sockets and claude spawns; budget caps across resume (built for docread; forge already restores); live stage over a dry dir (built)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "dead helpers (built); dry base loading of all 100 playbooks timed 0.5 s incl. interpreter (not real); pick Base equality (negligible)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "wilson() with zero callers (built); test_every_code_has_a_planted_variant derives from CODES (sound); failed-call test pins a choice (carded)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "forge/audit prompts fence model-written data (wrap_untrusted), VL_SYSTEM marks the picture untrusted, Claude doc lane is Read-only in a temp dir, key never printed or in the body: clean"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "__main__ docstrings vs exit codes (render exit fixed), refusal messages in forge __main__, docread/forge report headings and DRY banners"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "report states: dry, NOT_RUN, n-a proof, void readings, unaudited items, bench void; partial audit state was unreachable-to-finish (built)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "eval-harness outcome-conditioned-cost (card 1), served-configuration (309b9146, 95f1ab65), resolution-precondition (card 3)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "module docstrings vs behaviour: run.py resume promise (torn line built), score.wilson promise (built), forge __init__/dry/store docstrings (accurate)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "docread now imports forge.store.restore_budget; the shared home would be proving/budget.py (out of write set); noted, not a finding"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of private names across packages (spec._norm, roles._claude_reply): pre-existing, used consistently; no new deps"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "dead Stage/dumps/work_root removed; docread __main__ passes a constant-None tier (trivial, left)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Nebius VisionCall and claude CLI seams go through RoleCaller; cli_argv reuse keeps the doc lane's flag set (clean)"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "ledger rows per role carry engine/model/cost/ms/error_reason; bench rows carry variant (clean)"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "verdict without interval (carded C direction)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "ux-reviewer",
+   "why": "CLI benches with no interactive surface; CLI messages covered by copy-auditor"
+  },
+  {
+   "key": "visual-craft",
+   "why": "no UI; the docread HTML templates are test fixtures rendered for a reader model"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no UI surface"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no UI surface"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no UI surface"
+  },
+  {
+   "key": "render-path",
+   "why": "no UI surface"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "operator-only bench CLIs"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "internal benches"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "internal benches"
+  },
+  {
+   "key": "business-strategist",
+   "why": "internal benches"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy; no forward item proposed"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or deploy code in these contexts"
+  }
+ ],
+ "findings": 17,
+ "lanes": "A:14/B:2/C:1",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files>": 0,
+  "uv run ruff format --check <touched files>": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/proving/forge tests/proving/docread -m \"not provider and not eval\"": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "14 built; ledger, dry/live and resume seams of both benches hardened",
+ "notes": "Over budget by one (17 vs 16): the third card is a direction. forge/dossier.py is in forge/** but not in the context map's file_paths; read it. docread now imports restore_budget from forge.store (a shared home would be proving/budget.py, outside this write set). Foreign dirty paths seen, untouched: apps/desktop/src/lib/{engines,fleet,midturn}*, src/athena/core/brain/store.py, tests/core/test_brain_*.py, tests/proving/adopt_tiers/test_pick.py, tests/proving/chores_uat/test_numbers.py. No sibling red in the scoped gates. Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"eval-harness\",\"model-call-outcome-integrity\",\"cost-metering\"],\"techniques\":[\"outcome-conditioned-cost\",\"the-measurement-runs-the-served-configuration\",\"resolution-precondition\"],\"deviations\":5}"
+}
