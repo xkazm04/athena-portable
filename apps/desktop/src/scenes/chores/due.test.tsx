@@ -219,3 +219,75 @@ describe("the dock's notice", () => {
     expect(answer).toHaveBeenCalledWith(CASE, DUE, "seen");
   });
 });
+
+describe("When it comes due, on the chore's page", { timeout: 15_000 }, () => {
+  const cadence = {
+    id: "cad_1",
+    case_id: CASE,
+    enabled: true,
+    rule: { kind: "weekly", weekday: 0, day: 1, every_days: 0, start: "", at: "09:00" },
+    timezone: "UTC",
+    next_run_at: "2026-10-26T09:00:00+00:00",
+    last_run_at: "",
+    created: "",
+    updated_at: "",
+    review: null,
+    unanswered: 0,
+    log: [],
+    log_total: 0,
+  };
+  const reply = {
+    ok: true,
+    case_id: CASE,
+    cadence,
+    rule_text: "every Monday at 09:00",
+    zone_note: "",
+    suggested: null,
+    suggested_text: "",
+    suggested_basis: "",
+    upcoming: [],
+    log: [],
+    showing: 0,
+    total: 0,
+    footer: "",
+  };
+
+  async function mountDue(chores: Partial<ChoresApi>) {
+    const { default: Due } = await import("./due");
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    await act(async () =>
+      root.render(<Due chores={chores as ChoresApi} caseId={CASE} actions={{ open: () => {}, hand: () => {} }} />),
+    );
+    await vi.waitFor(() => expect(host.textContent).toContain("When it comes due"), { timeout: 5_000 });
+    const press = async (text: string) => {
+      const b = [...host.querySelectorAll("button")].find((x) => x.textContent === text);
+      expect(b).toBeTruthy();
+      await act(async () => b!.click());
+    };
+    return { host, root, press };
+  }
+
+  it("a refusal is not left on the page once the same change is saved", async () => {
+    let refuse = true;
+    const setCadence = vi.fn(async () => {
+      if (refuse) throw new Error("the daemon is not running");
+      return reply;
+    });
+    const { host, root, press } = await mountDue({
+      cadence: vi.fn(async () => reply),
+      review: vi.fn(async () => review()),
+      setCadence,
+      answer: vi.fn(async () => null),
+    } as unknown as Partial<ChoresApi>);
+    await press("Pause");
+    await vi.waitFor(() => expect(host.textContent).toContain("That was not saved"), { timeout: 5_000 });
+    refuse = false;
+    await press("Pause");
+    await vi.waitFor(() => expect(setCadence).toHaveBeenCalledTimes(2), { timeout: 5_000 });
+    await vi.waitFor(() => expect(host.textContent).not.toContain("That was not saved"), { timeout: 5_000 });
+    act(() => root.unmount());
+    host.remove();
+  });
+});

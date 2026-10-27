@@ -222,9 +222,11 @@ export default function Due({
   }, [chores, caseId]);
   useEffect(() => load(), [load]);
 
+  // A change or an answer that went through clears what an earlier refusal said.
   const change = (body: { rule?: CadenceRule; timezone?: string; enabled?: boolean }) =>
     void chores.setCadence(caseId, body).then(
       () => {
+        setSaid("");
         setEditing(false);
         load();
       },
@@ -291,8 +293,12 @@ export default function Due({
           onPause={() => change({ enabled: false })}
           onSlow={() => setEditing(true)}
           onSkip={() =>
-            void chores.answer(caseId, open.review!.due_at, "skip").then(load, (error: unknown) =>
-              setSaid(`That was not saved: ${failure(error)}.`),
+            void chores.answer(caseId, open.review!.due_at, "skip").then(
+              () => {
+                setSaid("");
+                load();
+              },
+              (error: unknown) => setSaid(`That was not saved: ${failure(error)}.`),
             )
           }
           onPrepare={() =>
