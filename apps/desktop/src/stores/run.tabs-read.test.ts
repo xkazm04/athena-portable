@@ -430,6 +430,18 @@ describe("tabs_read refused", () => {
     expect(handsLog).toEqual({});
   });
 
+  it("the rail's line for a refused read names no tool, while the model's error still does", async () => {
+    for (const params of [{}, { url: LEDGER_URL }, { url: `${BANK}/statements/2026-08` }]) {
+      const { result } = await refusedRead(params);
+      const row = useRun.getState().transcript.filter((t) => t.text.includes("→ not read: ")).at(-1);
+      const said = row!.text.split("→ not read: ")[1]!;
+      expect(said).not.toMatch(/[a-z]+_[a-z]+/);
+      expect(said.length).toBeGreaterThan(10);
+      if ("url" in params && params.url === LEDGER_URL) expect(String(result.error)).toMatch(/page_read/);
+      if (!("url" in params)) expect(String(result.error)).toMatch(/tabs_read needs the url/);
+    }
+  });
+
   it("the pure check fails closed on a table that has not loaded", () => {
     const open = openTabOf(BANK_URL, TABS, {}, { records, known: [BANK], loaded: false, problem: null });
     expect(open?.trusted).toBe(false);

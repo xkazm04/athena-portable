@@ -332,12 +332,12 @@ export function tabReadRefusal(
   params: Readonly<Record<string, unknown>>,
   focused: TabRef | null,
   open: OpenTab | null,
-): { reason: "validator_failed" | "unknown_ref" | "foreign_origin"; detail: string } | null {
+): { reason: "validator_failed" | "unknown_ref" | "foreign_origin"; detail: string; said?: string } | null {
   const url = typeof params.url === "string" ? params.url.trim() : "";
-  if (!url) return { reason: "validator_failed", detail: "tabs_read needs the url of an open tab" };
+  if (!url) return { reason: "validator_failed", detail: "tabs_read needs the url of an open tab", said: "it needs the address of an open tab" };
   if (!open) return { reason: "unknown_ref", detail: `no open tab is at ${url}; the open tabs are listed in host state` };
   if (focused && open.tabId === focused.tabId) {
-    return { reason: "validator_failed", detail: "that is the tab this turn is on; read it with page_read" };
+    return { reason: "validator_failed", detail: "that is the tab this turn is on; read it with page_read", said: "that is the tab she is already on" };
   }
   if (!open.trusted) {
     return {
@@ -1217,7 +1217,7 @@ export const useRun = create<RunState>((set, get) => {
       if (refused) {
         const why = `${refused.reason}: ${refused.detail}`;
         outstanding.push(resultRow(row, false, "", why, 2));
-        push({ id: row.call_id, kind: "tool", text: `${row.name} → not read: ${refused.detail}`, tier: 2, ok: false });
+        push({ id: row.call_id, kind: "tool", text: `${row.name} → not read: ${refused.said ?? refused.detail}`, tier: 2, ok: false });
         return { ok: false, error: why };
       }
       source = opened;
