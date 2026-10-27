@@ -977,7 +977,11 @@
           "revision": 7,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:19 The variant is a pure render of static model data passed in as props, and all of its state is short-lived React UI state (useState/useReducer for theme, story turn, zoom in Drawing.tsx). Searching archify-lanes/ and examples/atlas/test/ for snapshot, restore, rollback, lineage, promote and prune found nothing. The only 'version' hits are prose (\"the decorative version of this feature\") and references to archify's 'schema v2'. No entity has durable saved states, so none of the subject's promises applies here.",
+          "evaluatedAt": "2026-10-27",
+          "evaluatedAgainst": "sha256-b2:e895b228981cf506",
+          "evaluatedRevision": 7
         },
         {
           "subject": "quality-gates",

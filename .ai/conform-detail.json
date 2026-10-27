@@ -4872,47 +4872,44 @@
       "context": "atlas-lanes-drawing",
       "subject": "versioning-snapshots",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-19",
-      "evaluatedTs": "2026-10-19T09:34:16.090Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:17:40.044Z",
+      "worker": "7c040d49-fe54-4f9d-a330-2ce11fdc5325",
       "techniques": [
-        {
-          "technique": "lineage-and-variants",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/copy.ts:7 These are rendering presets, not saved-state branches requiring parent edges."
-        },
-        {
-          "technique": "promotion-lifecycle",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:18 Mounting a preset does not create or promote a durable version."
-        },
-        {
-          "technique": "restore-semantics",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:67 The operation changes the story cursor and playback flags; it does not restore saved content."
-        },
-        {
-          "technique": "retention-and-pruning",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:227 The plans are fixed layout alternatives, not accumulated historical records requiring retention."
-        },
         {
           "technique": "snapshot-scope",
           "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:242 The drawing derives its current layout from navigation state rather than capturing a durable entity graph."
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:181 The only stateful entity is the story turn, an in-memory reducer that is never captured or persisted as a version."
         },
         {
           "technique": "version-identity",
           "verdict": "not-applicable",
-          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:46 The supplied number selects an existing script position; it is not a caller-supplied version number."
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:2 'v2' names an external schema's shape, which falls under migrations, not a per-entity version number."
+        },
+        {
+          "technique": "restore-semantics",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:173 UI state resets on mount and has no restore path. Anything like that would be undo-history, not versioning."
+        },
+        {
+          "technique": "lineage-and-variants",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:4 'Variant' and 'baseline' here mean code variants in a design round recorded in git, not data versions with parent edges."
+        },
+        {
+          "technique": "promotion-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:18 Mounting a preset does not create or promote a durable version.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "retention-and-pruning",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:227 The plans are fixed layout alternatives, not accumulated historical records requiring retention.",
+          "carriedFrom": "2026-10-19"
         }
-      ],
-      "withdrawn": {
-        "worker": "792bf6ed-4a0c-41e7-a7d1-c6d137b73f10",
-        "state": "not-applicable",
-        "at": "2026-10-19T09:34:44.497744+00:00",
-        "reason": "reviewer (sonnet): The primary anchor Tools.tsx:21 is only an `import { useWebMCPTool }` line and shows nothing about missing versioning. The 'writes nothing, no database' comment sits on lines 19-20, which are not the cited line. The technique anchors (copy.ts:7, index.tsx:18, turn.ts:67, geometry.ts:227) are real bu"
-      }
+      ]
     },
     "52d712c5-d73a-4ce4-b53d-e581d78fbef6/versioning-snapshots": {
       "context": "atlas-shell-and-styles",

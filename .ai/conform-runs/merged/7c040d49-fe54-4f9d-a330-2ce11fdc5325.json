@@ -1,0 +1,66 @@
+{
+ "schema": "conform-run/1",
+ "worker": "7c040d49-fe54-4f9d-a330-2ce11fdc5325",
+ "subject": "versioning-snapshots",
+ "evaluatedAt": "2026-10-27T22:17:40.044519+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "atlas-lanes-drawing",
+   "subject": "versioning-snapshots",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:19 The variant is a pure render of static model data passed in as props, and all of its state is short-lived React UI state (useState/useReducer for theme, story turn, zoom in Drawing.tsx). Searching archify-lanes/ and examples/atlas/test/ for snapshot, restore, rollback, lineage, promote and prune found nothing. The only 'version' hits are prose (\"the decorative version of this feature\") and references to archify's 'schema v2'. No entity has durable saved states, so none of the subject's promises applies here.",
+   "techniques": [
+    {
+     "technique": "snapshot-scope",
+     "verdict": "not-applicable",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:181 The only stateful entity is the story turn, an in-memory reducer that is never captured or persisted as a version."
+    },
+    {
+     "technique": "version-identity",
+     "verdict": "not-applicable",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:2 'v2' names an external schema's shape, which falls under migrations, not a per-entity version number."
+    },
+    {
+     "technique": "restore-semantics",
+     "verdict": "not-applicable",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:173 UI state resets on mount and has no restore path. Anything like that would be undo-history, not versioning."
+    },
+    {
+     "technique": "lineage-and-variants",
+     "verdict": "not-applicable",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:4 'Variant' and 'baseline' here mean code variants in a design round recorded in git, not data versions with parent edges."
+    }
+   ],
+   "absenceTerms": [
+    "snapshot",
+    "restore",
+    "rollback",
+    "lineage",
+    "prune"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-27T22:17:40.044519+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "versioning-snapshots"
+   ],
+   "techniques": [
+    "lineage-and-variants",
+    "restore-semantics",
+    "snapshot-scope",
+    "version-identity"
+   ],
+   "deviations": 0,
+   "context": "atlas-lanes-drawing",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}
