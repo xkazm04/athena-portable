@@ -1137,6 +1137,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(sleep): a failed cycle stamped ahead of the clock says so instead of "failed 1 min ago".` Stabilize Lane B (copy-auditor): the failure sentence now carries the floor sentence's wording for a stamp in this computer's future, one-failure and N-in-a-row forms; the backoff hold is unchanged.
 - `fix(vitals): a probe that cannot read RAM says so once, and says when it is back.` Stabilize Lane B (observability-auditor): the gate still fails open on an unknown figure, but the sampler now writes one stderr line when RAM turns unknown and one when it recovers (0 lines across 10 broken readings before, 1 and 1 now).
 - fix(proving): a session the store refuses is that job's recorded failure, not a leaked root. `run_pair`, `run_interview` and `run_shape` create the session inside the try; the finally tolerates none (scan-sweep Lane B).
+- `fix(vitals): a sampler that keeps failing says so once with its message, and once when it clears.` Stabilize Lane B (observability-auditor): the loop printed the exception type every 5 s (720 lines/hour, none with a message); it now prints "Type: message" on the first failure and on a changed one, and one line on recovery (20 failing ticks: 20 lines before, 2 now).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

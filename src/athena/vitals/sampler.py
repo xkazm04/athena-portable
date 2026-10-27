@@ -45,6 +45,7 @@ class Sampler:
         self._lock = threading.Lock()
         self._gpu_at: float | None = None
         self._ram_unknown = False
+        self._failing: str | None = None
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -93,8 +94,16 @@ class Sampler:
             try:
                 self.sample()
             except Exception as exc:  # a reading's bug must not end the loop
-                with suppress(Exception):
-                    print(f"[vitals] a reading raised {type(exc).__name__}", file=sys.stderr)
+                # A persistent fault is said once, with its message; a different one is said
+                # again, and so is the recovery. Not one line per tick.
+                what = f"{type(exc).__name__}: {exc}"
+                if what != self._failing:
+                    self._failing = what
+                    _say(f"[vitals] a reading raised {what}")
+            else:
+                if self._failing is not None:
+                    self._failing = None
+                    _say("[vitals] readings are working again")
             if self._stop.wait(self.every_s):
                 return
 

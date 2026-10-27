@@ -268,6 +268,36 @@ def test_a_memory_reader_that_breaks_is_said_once_and_its_recovery_once(
     assert "readable again" in lines[1]
 
 
+def test_a_persistent_fault_is_said_once_with_its_message_and_its_clearing_once(
+    brain: Brain,
+    probe: Probe,
+    told: list[dict[str, Any]],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    service = _service(brain, probe, told)
+    calls: list[int] = []
+
+    class Broken(Sampler):
+        def sample(self) -> Any:
+            calls.append(1)
+            if len(calls) <= 20:
+                raise RuntimeError("provider bug")
+            return super().sample()
+
+    sampler = Broken(probe, service.gate, every_s=0.001)
+    sampler.start()
+    try:
+        deadline = time.monotonic() + 5
+        while len(calls) < 25 and time.monotonic() < deadline:
+            time.sleep(0.005)
+    finally:
+        sampler.stop()
+    lines = capsys.readouterr().err.strip().splitlines()
+    assert len(lines) == 2, lines
+    assert "RuntimeError: provider bug" in lines[0]
+    assert "working again" in lines[1]
+
+
 # -- the fleet, with a peer host ----------------------------------------------------------------
 
 
