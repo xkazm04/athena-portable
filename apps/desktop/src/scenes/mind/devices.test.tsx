@@ -612,6 +612,42 @@ describe("driven", () => {
     }
   }, 15_000);
 
+  it("a refused join keeps the code that was typed, and Ask to join waits while one is out", () => {
+    const base = deviceFixtures.empty!;
+    const join = vi.fn(async () => {});
+    const model = { ...base, actions: { ...base.actions, join } };
+    const opening = { wizard: "pc" as const, branch: "join" as const };
+    const showJoin = (m: DevicesModel) => act(() => root.render(<DevicesLevel model={m} opening={opening} />));
+    showJoin(model);
+    const [address, code] = [...host.querySelectorAll<HTMLInputElement>(".cwizard__join input")];
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    const type = (input: HTMLInputElement, value: string) =>
+      act(() => {
+        set.call(input, value);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    type(address!, "100.64.0.7");
+    type(code!, "123456");
+    const ask = () => [...host.querySelectorAll<HTMLButtonElement>(".cwizard__join button")].find((b) => b.textContent === "Ask to join")!;
+    press(ask());
+    expect(join).toHaveBeenCalledWith("100.64.0.7", "123456");
+    // In flight: the spent code is not sent twice.
+    showJoin({ ...model, state: { ...model.state, busy: { join: true } } });
+    press(ask());
+    expect(join).toHaveBeenCalledTimes(1);
+    // Refused: the code stays in its field, under the daemon's sentence, to correct and send again.
+    showJoin({ ...model, state: { ...model.state, busy: {}, errors: { join: "That code is not right." } } });
+    expect([...host.querySelectorAll<HTMLInputElement>(".cwizard__join input")].map((i) => i.value)).toEqual(["100.64.0.7", "123456"]);
+    expect(host.textContent).toContain("That code is not right.");
+    // Sent again and accepted: the spent code goes.
+    // (The store clears the old sentence and marks busy in the same turn as the press.)
+    showJoin({ ...model, state: { ...model.state, busy: {}, errors: {} } });
+    press(ask());
+    showJoin({ ...model, state: { ...model.state, busy: { join: true } } });
+    showJoin({ ...model, state: { ...model.state, busy: {}, errors: {} } });
+    expect([...host.querySelectorAll<HTMLInputElement>(".cwizard__join input")].map((i) => i.value)).toEqual(["100.64.0.7", ""]);
+  });
+
   it("keeps Tab inside the wizard", () => {
     show(withSpies(deviceFixtures.typical!));
     press(byLabel("Add a computer"));

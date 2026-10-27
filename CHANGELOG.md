@@ -1172,6 +1172,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): her depth pages are announced once, in the words on screen.` The Record and apps levels labelled both the section and its scrolling region "Record" / "Origins"; the section is now unnamed and the region reads "The record" / "The apps she may act on" (`companion/pages.tsx`).
 - `fix(companion): the welcome's engine line announces the engine state, not its own buttons.` The `role="status"` span wrapped "Check again" / "Try again" / "Use <engine>"; it now holds the sentence only and the buttons sit beside it (`companion/welcome.tsx`).
 - `fix(companion): flipping a decision card moves keyboard focus to the face turned toward the person.` "Read it first" focuses "Back to the decision" and the front face is inert while flipped; "Back to the decision" returns focus to "Read it first" (`companion/slip.tsx`, jsdom test in `views.dom.test.tsx`).
+- `fix(mind): a refused join keeps the code that was typed, and Ask to join waits while one is out.` Stabilize Lane B: the join form emptied the code field on the press, so a mistyped or expired code showed its refusal under an empty field, and the store's `busy.join` was read nowhere; the spent code now goes only when the ask came back without a refusal, and the button reads "Asking..." while one is out.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

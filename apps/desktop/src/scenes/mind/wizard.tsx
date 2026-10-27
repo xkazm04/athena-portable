@@ -620,7 +620,17 @@ function Join({ model, onBack }: { model: DevicesModel; onBack: () => void }) {
   const view = model.state.view!;
   const [address, setAddress] = useState("");
   const [code, setCode] = useState("");
-  const ready = address.trim() !== "" && code.trim() !== "";
+  const joining = Boolean(model.state.busy.join);
+  const ready = address.trim() !== "" && code.trim() !== "" && !joining;
+  // A code is spent once sent, but a refusal (a mistyped or expired code) must leave it in the
+  // field to correct: it goes when the ask has been through and came back without a refusal.
+  const [sent, setSent] = useState<"out" | "seen" | null>(null);
+  const refusal = model.state.errors.join ?? null;
+  if (sent === "out" && (joining || refusal)) setSent(joining ? "seen" : null);
+  else if (sent === "seen" && !joining) {
+    setSent(null);
+    if (!refusal) setCode("");
+  }
   const picks = joinPicks(model.state.overlay);
   const columns: Column<{ name: string; ip: string }>[] = [
     { key: "name", head: "Computer", render: (p) => p.name },
@@ -647,15 +657,15 @@ function Join({ model, onBack }: { model: DevicesModel; onBack: () => void }) {
       </FormField>
       <FormField
         label="The code it shows"
-        error={model.state.errors.join ?? null}
+        error={refusal}
         action={
           <Button
             size="sm"
             variant={ready ? "primary" : "secondary"}
-            disabledReason={ready ? undefined : "Type the address and the code first."}
+            disabledReason={joining ? "Asking…" : ready ? undefined : "Type the address and the code first."}
             onClick={() => {
+              setSent("out");
               void model.actions.join(address, code);
-              setCode("");
             }}
           >
             Ask to join
