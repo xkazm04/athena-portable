@@ -1144,8 +1144,12 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown",
-          "priorNotApplicable": 4
+          "state": "deviation",
+          "priorNotApplicable": 4,
+          "evidence": "examples/atlas/components/atlas/chrome/Claims.tsx:74 Each claim's full statement is shown only through the native title attribute on the lens-rail button. The standard names that attribute as a tooltip temptation signature: there is no delay, keyboard or touch cannot reach it, and essential content is hidden behind hover. A grep found the claim text rendered nowhere else in the UI; the only other use is the agent tool read.ts:159.",
+          "evaluatedAt": "2026-10-27",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "repository-landing-document",

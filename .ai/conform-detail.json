@@ -7878,6 +7878,32 @@
         "at": "2026-10-27T22:30:10.231857+00:00",
         "reason": "reviewer (sonnet): Both claims rest on 'no browser command surface', but the code contradicts that: the daemon gates host tools and emits `tool.call` and `execute` instructions for the page to run (routes.py:38, decisions.py:48, registry.py:10), and gateway.py:46-48 relays those same calls and the `tool_result` replie"
       }
+    },
+    "52d712c5-d73a-4ce4-b53d-e581d78fbef6/ui-controls": {
+      "context": "atlas-shell-and-styles",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:44:08.845Z",
+      "worker": "45e6d0ac-c6ac-4d2c-8a8c-6c725e57ea25",
+      "techniques": [
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/components/atlas/Mast.tsx:225 The [ / ] keyboard shortcut is documented only in a native title on a span that cannot take focus. Claims.tsx:74 and Mast.tsx:124 (title={v.blurb}) do the same, giving 7 title= uses in the context's TSX. The tooltip contract says a tooltip is never the only carrier of essential information and that a native title is not a tooltip."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "conformant",
+          "evidence": "examples/atlas/components/atlas/Mast.tsx:60 The segmented switchers build on the kit's roving-focus behaviour primitive and do not re-implement the arrow-key logic. Pane.tsx:71 does the same with the kit's useOverlayEscape. This is wrapping, not forking, at the behaviour layer."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/Shell.tsx:357 None of the context's components (Mast, Claims, Pane, AtlasTools) accepts a className or style passthrough, and call sites pass only data and handlers. The precondition (a shared control with a styling passthrough) does not hold here."
+        }
+      ]
     }
   }
 }
