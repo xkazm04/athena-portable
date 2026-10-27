@@ -36,15 +36,13 @@ import { create } from "zustand";
 import { ApiError, DaemonApi } from "@/lib/api";
 import { followBus } from "@/lib/fleet";
 import { parseStamp } from "@/lib/time";
-import { TASKS_RUNNING_CAP, isActive, type TaskView } from "@/lib/tasks";
+import { isActive, type TaskView } from "@/lib/tasks";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
 export interface TasksState {
   tasks: TaskView[];
-  cap: number;
   /** Why queued tasks wait for room, a sentence for a person; `null` when nothing holds them. */
   held: string | null;
-  loaded: boolean;
   problem: string | null;
 }
 
@@ -88,7 +86,7 @@ export function setTasksDeps(next: TasksDeps): void {
   deps = next;
 }
 
-const EMPTY_TASKS: TasksState = { tasks: [], cap: TASKS_RUNNING_CAP, held: null, loaded: false, problem: null };
+const EMPTY_TASKS: TasksState = { tasks: [], held: null, problem: null };
 
 export const useTasks = create<TasksState>(() => ({ ...EMPTY_TASKS }));
 
@@ -201,13 +199,13 @@ async function readOnce(client: DaemonApi): Promise<void> {
   framed = false;
   try {
     const view = await client.tasks();
-    useTasks.setState({ tasks: view.tasks, cap: view.cap, held: view.held ?? null, loaded: true, problem: null });
+    useTasks.setState({ tasks: view.tasks, held: view.held ?? null, problem: null });
     ear?.(view.tasks);
   } catch (error) {
     // No `/tasks` on this daemon: it has no tasks to show, which is not a fault to tell anyone.
     useTasks.setState(
       error instanceof ApiError && error.status === 404
-        ? { tasks: [], held: null, loaded: true, problem: null }
+        ? { tasks: [], held: null, problem: null }
         : { problem: sentenceOf("read her tasks", error) },
     );
   }
@@ -235,7 +233,7 @@ export async function loadTasks(): Promise<void> {
 /** One `task.changed`, applied in place. */
 export function applyTask(task: TaskView): void {
   framed = true;
-  useTasks.setState((s) => ({ tasks: upsertTask(s.tasks, task), loaded: true }));
+  useTasks.setState((s) => ({ tasks: upsertTask(s.tasks, task) }));
   ear?.(null, task);
 }
 

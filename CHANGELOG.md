@@ -1089,6 +1089,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): a call that failed in words reads "Could not send a reminder", not "Sent a reminder".` Stabilize 2026-10-27 (desktop-companion-surfaces, copy-auditor): a non-JSON failure fell to the past-tense fallback title; translate.test.ts.
 - `fix(devices): a refused approval whose request is gone is titled "was not let in", as the Done step's body already says.` ADR 0140 (scan-sweep stabilize, desktop-mind-devices-sleep, copy-auditor): the title read the choice alone and the body read choice-and-no-refusal, so a refusal over a lapsed request drew "Kitchen phone is in" above "Nothing was let in."; both read one `letIn` rule now. Test: devices.test.tsx driven case, seeded red.
 - `fix(companion): her own tools read as a verb and an object, not "Tasksed 1 memory".` Stabilize 2026-10-27 (desktop-companion-surfaces, parity-auditor): `CORE_WORDS` in translate/words.ts for the five core tools whose names are not verb_object; translate.test.ts reads them from `core/catalog.py`.
+- `fix(tasks): the tasks mirror holds only what a surface draws - the cap and the loaded flag no surface read are gone from Main's first frame.` Stabilize 2026-10-27 (desktop-tasks-and-due, code-optimizer): `stores/tasks.ts` kept `cap` and `loaded` with zero consumers outside its test; first paint 167,241 -> 167,214 B gz.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

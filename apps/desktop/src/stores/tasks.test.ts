@@ -154,12 +154,12 @@ describe("the reducer", () => {
 });
 
 describe("the mirror", () => {
-  it("reads the list, the cap, and marks it loaded", async () => {
+  it("reads the list, and holds only what a surface draws: the rows, the gate's reason, the problem", async () => {
     wire(() => json(page([task(1, { position: 1 })])));
     await loadTasks();
     const s = useTasks.getState();
-    expect(s.loaded).toBe(true);
-    expect(s.cap).toBe(3);
+    // Main's first frame carries this store: a field no surface reads is bytes for nothing.
+    expect(Object.keys(s).sort()).toEqual(["held", "problem", "tasks"]);
     expect(s.tasks.map((t) => t.id)).toEqual([task(1).id]);
     expect(s.problem).toBeNull();
   });
@@ -188,7 +188,7 @@ describe("the mirror", () => {
   it("reads an older daemon's 404 as no tasks, not as a problem", async () => {
     wire(() => json({ ok: false, reason: "unknown_ref", detail: "/tasks" }, 404));
     await loadTasks();
-    expect(useTasks.getState()).toMatchObject({ tasks: [], loaded: true, problem: null });
+    expect(useTasks.getState()).toMatchObject({ tasks: [], problem: null });
   });
 
   it("says a failed read in one plain sentence and keeps what it had", async () => {
@@ -205,7 +205,7 @@ describe("the mirror", () => {
   it("does nothing, and says nothing, before the daemon is up", async () => {
     setTasksDeps({ api: () => null, now: () => clock });
     await loadTasks();
-    expect(useTasks.getState()).toMatchObject({ loaded: false, problem: null });
+    expect(useTasks.getState()).toMatchObject({ tasks: [], problem: null });
   });
 
   it("puts a task.changed row in place without a read, and reads again on a reconnect", async () => {
