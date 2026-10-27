@@ -45,9 +45,12 @@ Read across: all three miss 02's hold letter (LT-1) - a chore finding, not an en
 Muse both reach 9/9 on 04 with one false claim. Muse's failure mode is **writing one act where many are due**:
 on 03 it priced all 20 lines, wrote "filing the 20 still-owned lines" and one `OP:` line, its
 reasoning summary saying it chose "single-line submissions to avoid parse errors" (Muse's own
-session log); on 01 it saw three bills and filed none of them. A law line telling it to act
-(`ATHENA_MUSE_ACT_LAW`, withdrawn) did not move 03 (0/20) and cost the guard chore 05 eleven
-duplicate cards. Single-shot
+session log); on 01 it saw three bills and filed none of them. Two law lines were measured and
+withdrawn: one telling it to act (03 stayed 0/20; guard 05 gained eleven duplicates) and one telling
+it OP lines are parsed one by one (it then batched 4-6 per message, but 03 stayed 0/20 and 05 fell to
+3/6). What still breaks 03 is the carry across a scene change: at the insurer's portal Muse recalls
+its archive review, re-reads the claim and summarises, where Claude files all 20 from the same
+recall. Single-shot
 (no session resume) it re-read one pile 1,412 times over 79 turns.
 
 ## Tomorrow, with a key
