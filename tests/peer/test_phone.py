@@ -121,3 +121,12 @@ def test_a_hidden_element_stays_hidden_whatever_its_display() -> None:
     script = (MOBILE_DIR / "app.js").read_text(encoding="utf-8")
     assert ".hidden = " in script and "hidden: true" in script
     assert re.search(r"\[hidden\]\s*\{[^}]*display:\s*none\s*!important", css)
+
+
+def test_read_it_first_is_a_tap_target_a_thumb_can_hit() -> None:
+    # A card's "Read it first" <summary> is the only way to see what Sign would run. At the card's
+    # 13px text and 1.45 line height it was a 19px-tall target; every button here is 44px.
+    css = (MOBILE_DIR / "app.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.card summary\s*\{([^}]*)\}", css)
+    assert rule is not None
+    assert re.search(r"min-height:\s*44px", rule.group(1))

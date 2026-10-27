@@ -1060,6 +1060,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(adopt): a reopened case's retried card is trimmed to the reopened slots like its first card.` scan-sweep stabilize (adopt-engine, parity-auditor): the loop's retry on an empty card used to ask a reopened case about slots she had left a guess at approval; one trim (`_only`) now covers both cards.
 - `fix(peer): the /events bus doc names all eight kinds it carries and says pair.opened carries the claim nonce.` Stabilize 2026-10-27 (peer-devices, copy-auditor): `events.py` listed two kinds and promised no payload held a nonce while `pair.opened` carries the QR's; tests/peer/test_events.py derives the kinds from every publisher.
 - `fix(chores): the front door's refusals are said in words, not as "nothing_said:" and "decided:" code.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, copy-auditor): `why()` in `adopt/session.ts` says the two ADR 0098 refusals plainly beside `busy:` and `stale_rev:`; intake.test.tsx.
+- `fix(peer): a phone card's "Read it first" is a 44px tap target like every button beside it.` Stabilize 2026-10-27 (peer-devices, mobile-specialist): the summary that reveals what Sign runs was ~19px tall; `mobile/app.css` gives it 44px; test_phone.py.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

@@ -210,6 +210,13 @@ button:disabled {
   color: var(--muted);
 }
 
+/* A thumb's target, like every button here; stays a list item so it keeps its marker. */
+.card summary {
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
 .card pre {
   white-space: pre-wrap;
   word-break: break-word;
