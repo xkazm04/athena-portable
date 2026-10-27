@@ -100,9 +100,14 @@ export function cliOf(id: string): string {
   return id === "codex" ? "codex" : "claude";
 }
 
-/** Probes whose binary answered *and* that are usable. The only ones worth choosing. */
+/**
+ * Probes whose binary answered, that are usable, and that this desktop can launch. The only ones
+ * worth choosing. The daemon reports every engine its harness offers (an API engine, an engine
+ * still Python-only), and the shell starts only {@link ENGINE_IDS}, so a found engine outside them
+ * is never an "other" a person could switch to.
+ */
 export function usable(probes: readonly EngineProbe[]): EngineProbe[] {
-  return probes.filter((p) => p.state === "found");
+  return probes.filter((p) => p.state === "found" && isEngineId(p.id));
 }
 
 /** One probe by id, or `null`. Used to say what the chosen engine's own standing is. */
