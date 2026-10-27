@@ -11,8 +11,9 @@
  */
 import Badge from "@/components/Badge";
 import type { Tone } from "@/components/StatusDot";
-import type { FeaturedStatus, Sense } from "@/lib/playbooks";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
+
+import { SHIPPED_PROOFS, featuredOf, type Featured, type FeaturedStatus, type ProofsFiles, type Sense } from "./featured-model";
 
 /** The status in the house's words and its dot. Only `proven` is good news. */
 export const STATUS_WORDS: Record<FeaturedStatus, { label: string; tone: Tone; why: string }> = {
@@ -41,11 +42,22 @@ export const SENSE_WORDS: Record<Sense, { label: string; why: string }> = {
 
 const ORDER: readonly FeaturedStatus[] = ["proven", "rehearsed", "failing", "unproven"];
 
-/** The featured chores, proven first, then rehearsed, failing and unproven; within a status the
- *  model's own order (the edge). Pure. */
-export function featuredRows(model: PlaybooksModel): PlaybookView[] {
-  const rank = (v: PlaybookView) => ORDER.indexOf(v.playbook.featured!.status);
-  return model.items.filter((v) => v.playbook.featured !== null).sort((a, b) => rank(a) - rank(b));
+/** A featured chore on the band: its view and what its proofs earn. */
+export interface FeaturedRow {
+  view: PlaybookView;
+  featured: Featured;
+}
+
+/** The featured chores, each earned from `files` (the shipped proofs by default), proven first, then
+ *  rehearsed, failing and unproven; within a status the model's own order (the edge). Pure. */
+export function featuredRows(model: PlaybooksModel, files: ProofsFiles = SHIPPED_PROOFS): FeaturedRow[] {
+  const rows: FeaturedRow[] = [];
+  for (const view of model.items) {
+    const featured = featuredOf(view.playbook, files);
+    if (featured) rows.push({ view, featured });
+  }
+  const rank = (r: FeaturedRow) => ORDER.indexOf(r.featured.status);
+  return rows.sort((a, b) => rank(a) - rank(b));
 }
 
 /** "3 of 4 proofs passed", or "No proofs yet". */
@@ -57,12 +69,15 @@ export function proofsLine(p: { passed: number; total: number }): string {
 export default function FeaturedBand({
   model,
   open,
+  files,
 }: {
   model: PlaybooksModel;
   /** What a press does: the same as picking the chore's ledger row. */
   open: (view: PlaybookView) => void;
+  /** The proofs files by playbook id; the shipped ones when absent. */
+  files?: ProofsFiles;
 }) {
-  const rows = featuredRows(model);
+  const rows = featuredRows(model, files);
   if (rows.length === 0) return null;
   return (
     <section className="pa-featured" aria-labelledby="pa-featured-h">
@@ -70,8 +85,7 @@ export default function FeaturedBand({
         Featured chores
       </h2>
       <ul className="pa-cases">
-        {rows.map((v) => {
-          const f = v.playbook.featured!;
+        {rows.map(({ view: v, featured: f }) => {
           const s = STATUS_WORDS[f.status];
           return (
             <li key={v.id} className={`pa-case pa-featured__row pa-featured__row--${f.status}`}>

@@ -1101,6 +1101,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): the docked tab's working light sweeps by transform, not by animating top.` Stabilize 2026-10-27 (desktop-companion-surfaces, ui-perfectionist): `seal-sweep` looped a layout property for as long as she works; seal.css.test.ts holds every infinite seal animation to transform and opacity.
 - `fix(companion): the back of an unflipped decision card is inert, so Tab never lands on a button nobody can see.` Stabilize 2026-10-27 (desktop-companion-surfaces, accessibility-checker): `.sl-back` paired aria-hidden with focusable buttons; slip.test.tsx.
 - `fix(companion): a call held because its last run never answered reads "Held back", not "Could not".` Stabilize 2026-10-27 (desktop-companion-surfaces, state-coverage): the translator reads ADR 0101's `held:` line and never says "Nothing was changed" for it; translate.test.ts reads the line from `lib/execute.ts`.
+- `fix(chores): the featured band earns its status off Main's first frame, so first paint is back under its 167,000 B ceiling.` Stabilize 2026-10-27 (desktop-tasks-and-due, code-optimizer; ADR 0226): `Playbook.featured` is the authored block; the status rule and an eager proofs glob live in `scenes/chores/featured-model.ts`; first paint 167,239 -> 166,780 B gz.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

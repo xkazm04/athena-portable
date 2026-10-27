@@ -11,7 +11,7 @@ import type { Path } from "@/depth/model";
 import type { CaseSummary, CasesReply, DueReview } from "@/lib/adopt";
 import { ApiError } from "@/lib/api";
 import type { ChoresClient } from "@/lib/chores-client";
-import { featuredStatus, type Featured, type Playbook } from "@/lib/playbooks";
+import type { Playbook } from "@/lib/playbooks";
 import type { CategoryId, JobId } from "@/lib/playbook-taxonomy";
 import { selectPlaybooks, type PlaybooksModel } from "@/modules/playbooks/model";
 import {
@@ -95,50 +95,10 @@ function ledgerFixture(): PlaybooksModel {
   return selectPlaybooks(playbooks, typical.actions);
 }
 
-/** The featured band on the catalogue (ADR 0226). */
+/** The featured band on the catalogue (ADR 0226): the shipped set, whose featured chores' standing
+ *  is earned from their real `senses/proofs.json` (`featured-model.ts`). The invented statuses the
+ *  band's tests need are handed to it as files there, not laid on the preview. */
 export const FEATURED_FIXTURE = "ledger-featured";
-
-/** An invented `senses/proofs.json`: `passed` of `total` proofs passed, the reader on `reader`. */
-const proofsFile = (passed: number, total: number, reader: "fixture" | "meta") => ({
-  passed: passed === total,
-  backends: { segmenter: "fixture", reader },
-  proofs: Array.from({ length: total }, (_, i) => ({
-    id: `F${i + 1}`,
-    question: "invented for the preview",
-    measured: i < passed ? 1 : 0,
-    bar: 1,
-    op: ">=",
-    passed: i < passed,
-    n: 12,
-  })),
-});
-
-/** A `featured` block as the reader builds it, its status by the same rule, from an invented file. */
-function featured(senses: Featured["senses"], spike: string, file: unknown): Featured {
-  const rows = (file as { proofs?: { passed: boolean }[] } | null)?.proofs ?? [];
-  return {
-    senses,
-    spike,
-    since: "2026-10-26",
-    status: featuredStatus(file),
-    proofs: { passed: rows.filter((r) => r.passed).length, total: rows.length },
-  };
-}
-
-/** Each invented playbook given a featured block, in three of the four statuses (`unproven` is no
- *  file): refunds rehearsed on fixtures, chargebacks proven on Meta, flights with a proof failing. */
-const FEATURED: Record<string, Featured> = {
-  "carrier-refunds": featured(["paper"], "01-paper-flip", proofsFile(4, 4, "fixture")),
-  "chargeback-evidence": featured(["paper", "call"], "02-appeal-kin", proofsFile(5, 5, "meta")),
-  "flight-compensation": featured(["walk"], "04-renovation-witness", proofsFile(2, 3, "meta")),
-};
-
-/** The ledger fixture with `FEATURED` laid on, re-selected so every derived figure follows. */
-function featuredFixture(): PlaybooksModel {
-  const ledger = ledgerFixture();
-  const books = ledger.items.map((v) => ({ ...v.playbook, featured: FEATURED[v.id] ?? null }));
-  return selectPlaybooks(books, ledger.actions);
-}
 
 /** "Your chores" on the catalogue: the shipped set, with two saved cases, one of them due. */
 export const YOURS_FIXTURE = "ledger-yours";
@@ -218,7 +178,7 @@ export function yoursDepsFor(fixture: FixtureId): AdoptDeps | undefined {
 export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
   ...Object.fromEntries(IDS.map((id) => [id, moduleFixtures[id]!])),
   ledger: ledgerFixture(),
-  [FEATURED_FIXTURE]: featuredFixture(),
+  [FEATURED_FIXTURE]: moduleFixtures.shipped!,
   [YOURS_FIXTURE]: moduleFixtures.shipped!,
   // The Adopt studio plays a scripted session over a shipped playbook (ADR 0097).
   ...Object.fromEntries(ADOPT_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
