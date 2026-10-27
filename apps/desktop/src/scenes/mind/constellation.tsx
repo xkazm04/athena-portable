@@ -499,10 +499,18 @@ function ThisComputer({ model }: { model: DevicesModel }) {
   const value = draft ?? view.self.name;
   const typed = draft?.trim() ?? "";
   const dirty = draft !== null && typed !== "" && typed !== view.self.name;
+  const renaming = Boolean(model.state.busy.rename);
+  // The draft is kept until the list reads the name it asked for: a refused rename leaves the
+  // words in the box, under the daemon's sentence, rather than putting the old name back.
+  const name = view.self.name;
+  const [named, setNamed] = useState(name);
+  if (named !== name) {
+    setNamed(name);
+    if (draft !== null && draft.trim() === name) setDraft(null);
+  }
   const commit = () => {
-    if (!dirty) return;
+    if (!dirty || renaming) return;
     void model.actions.rename(typed);
-    setDraft(null);
   };
   const on = view.beacon.on;
   return (
@@ -528,7 +536,7 @@ function ThisComputer({ model }: { model: DevicesModel }) {
           <Button
             size="sm"
             variant={dirty ? "primary" : "secondary"}
-            disabledReason={dirty ? undefined : model.state.busy.rename ? "Renaming…" : "Type a new name first."}
+            disabledReason={renaming ? "Renaming…" : dirty ? undefined : "Type a new name first."}
             onClick={commit}
           >
             Rename

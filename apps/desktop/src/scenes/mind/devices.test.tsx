@@ -636,6 +636,36 @@ describe("driven", () => {
     expect(host.querySelector("#cwizard-title")!.textContent).toBe("Kitchen phone was not let in");
   });
 
+  it("a refused rename keeps the name the person typed, and Rename waits while one is out", () => {
+    const base = deviceFixtures.typical!;
+    const rename = vi.fn(async () => {});
+    const model = { ...base, actions: { ...base.actions, rename } };
+    show(model);
+    press(byLabel("Study PC, this computer"));
+    const input = host.querySelector<HTMLInputElement>(".cdrawer input")!;
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    act(() => {
+      set.call(input, "Attic PC");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const button = () => [...host.querySelectorAll<HTMLButtonElement>(".cdrawer button")].find((b) => b.textContent === "Rename")!;
+    press(button());
+    expect(rename).toHaveBeenCalledWith("Attic PC");
+    // In flight: the same name is not sent twice.
+    show({ ...model, state: { ...model.state, busy: { rename: true } } });
+    press(button());
+    expect(rename).toHaveBeenCalledTimes(1);
+    // Refused: the words stay in the box, under the daemon's sentence, to fix and send again.
+    show({ ...model, state: { ...model.state, busy: {}, errors: { rename: "A name is at most 40 characters." } } });
+    expect(host.querySelector<HTMLInputElement>(".cdrawer input")!.value).toBe("Attic PC");
+    expect(host.textContent).toContain("A name is at most 40 characters.");
+    // Accepted: the list reads the new name, and the box is the name again, nothing pending.
+    const view = { ...model.state.view!, self: { ...model.state.view!.self, name: "Attic PC" } };
+    show({ ...model, state: { ...model.state, errors: {}, view } });
+    expect(host.querySelector<HTMLInputElement>(".cdrawer input")!.value).toBe("Attic PC");
+    expect(button().getAttribute("aria-disabled") === "true" || button().disabled).toBe(true);
+  });
+
   it("a node opens its drawer and a second press closes it", () => {
     show(withSpies(deviceFixtures.typical!));
     press(byLabel("Laptop"));
