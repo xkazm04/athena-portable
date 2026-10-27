@@ -1155,6 +1155,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - test(proving): the chores numbers audit's mirrored tables (`PER`, `PERIODS`, verdict labels, `KIND_WORD`, `INSTEAD`, states, the example-case tag) are read back from the desktop's TS source, so a desktop change turns the audit red (scan-sweep Lane B).
 - `fix(adopt): a closed adopt session's in-flight round starts no more model legs.` Stabilize Lane B (risk-assessor): after DELETE or expiry the running round still ran the brief leg and the retry interview as billed cold calls; `AdoptSession.run_leg` now answers `cancelled` with no transport call once the session is closed, and the loop returns at its next step.
 - `fix(peer): pre-trust refusals are answered after a fixed 0.25 s delay.` Stabilize Lane B (security-auditor, device-pairing/timing-defenses): a wrong code, nonce or claim secret, a taken window, an unknown pairing id and a tokenless request each take at least `REFUSAL_DELAY_S` from arrival (1-8 ms before, 259-280 ms after, a 202 or other success untouched; 32 concurrent refusals overlap on 32 handler threads).
+- `fix(vitals): this PC's gate no longer trusts a reading older than 90 s.` A sampler that stalls used to leave the last figure deciding `held()` and every task claim for ever; past ADR 0143's `VITALS_STALE_S` the local reading now counts as unknown (each figure null, no hold, slots at the cap), as a peer's already did.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

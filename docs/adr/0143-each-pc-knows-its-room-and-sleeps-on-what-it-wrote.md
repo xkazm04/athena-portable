@@ -288,3 +288,5 @@ said, and the next try waits out the failed-cycle backoff.
 - `no_answer` and `usage_limit` are new values a surface may meet in `turn.error.reason`; the
   JavaScript copy of the vocabulary (`packages/athena-bridge/gate.js`) and the panel's plain
   sentences change with them.
+
+*Amended 2026-10-27 (owner-approved):* this PC's own latest reading is held to the same 90 s line as a peer's. Older than `VITALS_STALE_S` it is unknown - each figure `null`, `room` `null`, no hold, `slots` at the cap - so a stalled sampler can neither hold sleep or tasks for ever on a frozen "RAM 95%" nor admit work on a frozen "ok". This loosens a stale hold on purpose; the next fresh reading restores it.

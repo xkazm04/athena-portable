@@ -153,6 +153,7 @@ class Gate:
         self._clock = clock
         self._lock = threading.Lock()
         self._reading: Reading | None = None
+        self._reading_at: float | None = None  # the gate clock when ``_reading`` arrived
         self._ram_held = False
         self._cpu_high = 0
         self._cpu_held = False
@@ -169,6 +170,7 @@ class Gate:
         self._refresh_slow()
         with self._lock:
             self._reading = reading
+            self._reading_at = self._clock()
             # An unknown figure holds nothing (``_held`` reads it as open), but it is not a reading
             # below the resume line either: the hold state is kept across it, so one probe gap
             # inside a hold does not reopen the gate halfway down the hysteresis band.
@@ -222,8 +224,19 @@ class Gate:
         with self._lock:
             return self._held(sleep=sleep)
 
+    def _fresh(self) -> Reading | None:
+        """The latest reading, or ``None`` when there is none or it is older than
+        ``VITALS_STALE_S`` (ADR 0143, amended 2026-10-27): a stale reading is unknown, so a
+        wedged sampler neither holds work forever nor admits it on a figure that has gone old.
+        Call with the lock held."""
+        if self._reading is None or self._reading_at is None:
+            return None
+        if self._clock() - self._reading_at > VITALS_STALE_S:
+            return None
+        return self._reading
+
     def _held(self, *, sleep: bool) -> str | None:
-        reading = self._reading
+        reading = self._fresh()
         if reading is None:
             return None
         if self._ram_held and reading.ram_pct is not None:
@@ -259,11 +272,30 @@ class Gate:
         running = self._running()
         sleep = _guarded(self.sleep)
         with self._lock:
-            reading = self._reading
-            if reading is None:
+            latest = self._reading
+            if latest is None:
                 return None
+            reading = self._fresh()
             held = self._held(sleep=False)
             charge, runs = self._charge, self._runs
+        if reading is None:  # stale: every figure unknown, the slots at the cap
+            return {
+                "at": latest.at,
+                "cpu_pct": None,
+                "cores": None,
+                "ram_total_mb": None,
+                "ram_free_mb": None,
+                "ram_pct": None,
+                "gpus": None,
+                "power": None,
+                "battery_pct": None,
+                "disk_free_mb": None,
+                "room": None,
+                "slots": TASKS_RUNNING_CAP,
+                "held": None,
+                "runs": runs,
+                "sleep": sleep,
+            }
         slots = slots_for(reading.ram_total_mb, reading.ram_free_mb, running, charge)
         return {
             "at": reading.at,
@@ -295,7 +327,7 @@ class Gate:
         extra = max(0, _guarded(self.extra_running) or 0)
         running = max(0, tasks_running) + extra
         with self._lock:
-            reading = self._reading
+            reading = self._fresh()
             held = self._held(sleep=False)
             charge = self._charge
         if reading is None:

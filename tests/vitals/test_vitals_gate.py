@@ -20,6 +20,7 @@ from athena.vitals import (
     RAM_RESUME_PCT,
     RAM_ROOM_PCT,
     TASK_CHARGE_DEFAULT_MB,
+    VITALS_STALE_S,
     VitalsView,
 )
 from athena.vitals.gate import RUNS_EVERY_S, TASKS_RUNNING_CAP, Gate, clean_view, slots_for
@@ -381,3 +382,37 @@ def test_a_peer_view_is_rebuilt_key_by_key() -> None:
     assert view["runs"] is not None and view["runs"]["turns"] == 0
     assert view["sleep"] is None
     assert clean_view("not a view") is None and clean_view(None) is None
+
+
+def test_the_staleness_line_is_ninety_seconds() -> None:
+    assert VITALS_STALE_S == 90.0
+
+
+def test_a_reading_older_than_the_staleness_line_is_unknown() -> None:
+    """ADR 0143 (amended 2026-10-27): this PC's own reading is held to the line peers' are."""
+    clock = Clock()
+    gate = Gate(clock=clock)
+    gate.observe(reading(ram_pct=95.0))
+    assert gate.held(sleep=True) is not None and gate.held() is not None
+    clock.now += VITALS_STALE_S  # exactly at the line: still fresh
+    assert gate.held(sleep=True) is not None
+    clock.now += 1
+    assert gate.held(sleep=True) is None, "a frozen RAM hold fails open"
+    assert gate.held() is None
+    assert gate.task_room(0) == (TASKS_RUNNING_CAP, None, False)
+    view = gate.vitals()
+    assert view is not None
+    figures = ("cpu_pct", "cores", "ram_total_mb", "ram_free_mb", "ram_pct", "gpus")
+    figures += ("power", "battery_pct", "disk_free_mb", "room", "held")
+    assert all(view[k] is None for k in figures)  # type: ignore[literal-required]
+    gate.observe(reading(ram_pct=40.0))  # a fresh reading is believed again
+    assert gate.vitals()["ram_pct"] == 40.0  # type: ignore[index]
+
+
+def test_a_stale_ok_does_not_admit_work() -> None:
+    clock = Clock()
+    gate = Gate(clock=clock)
+    gate.observe(reading(ram_pct=10.0))
+    assert gate.task_room(0).slots == 3
+    clock.now += VITALS_STALE_S + 1
+    assert gate.task_room(0) == (TASKS_RUNNING_CAP, None, False)
