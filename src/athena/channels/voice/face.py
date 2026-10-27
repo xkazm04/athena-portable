@@ -564,6 +564,8 @@ class FaceHelper:
                 job._end()
             else:
                 job._resolve_visemes(None)
+                if not job.on_motion:  # nothing more will come for it: forget it, as an answer is
+                    self._forget(job)
 
     def _forget(self, job: FaceJob) -> None:
         with self._lock:

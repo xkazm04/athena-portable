@@ -250,6 +250,28 @@ def test_a_helper_that_never_says_hello_is_broken_at_its_deadline(tmp_path: Path
     assert found.state == "broken" and "hello" in (found.reason or "")
 
 
+def test_a_sentence_whose_shapes_failed_is_forgotten_not_kept_for_the_helpers_life(
+    tmp_path: Path,
+) -> None:
+    helper, _ = _helper(tmp_path, "badvisemes")
+    _ready(helper)
+    for _ in range(3):
+        job = helper.submit(
+            tokens=[[0, 5, 0]],
+            raw_samples=4,
+            time_map=[(0, 4, 0, 4)],
+            pcm=bytes(8),
+            sample_rate=SR,
+            sid=0,
+            on_motion=lambda fps, frames: None,
+        )
+        assert job is not None
+        assert job.wait_visemes(5.0) is None
+        assert job.settled.is_set()  # no motion was asked of a visemes-only helper
+    assert helper._jobs == {}
+    helper.stop()
+
+
 # -- kokoro with and without her face ------------------------------------------------------------
 
 

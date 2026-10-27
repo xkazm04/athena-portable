@@ -11,6 +11,7 @@ Modes:
 
 - ``ok``: hello with visemes and motion; motion ``<delay_s>`` after the visemes.
 - ``visemes``: hello with visemes only.
+- ``badvisemes``: hello with visemes only, and every sentence's visemes answered with an error.
 - ``slow``: answers the visemes ``<delay_s>`` late.
 - ``crash2``: answers the first sentence, then exits 3 on the second.
 - ``fatal``: says it cannot run, and exits.
@@ -103,7 +104,8 @@ def main() -> int:
                 }
             )
     else:
-        send({"type": "hello", "protocol": 1, "visemes": True, "motion": mode != "visemes"})
+        motion = mode not in ("visemes", "badvisemes")
+        send({"type": "hello", "protocol": 1, "visemes": True, "motion": motion})
     seen = 0
     for raw in sys.stdin:
         message = json.loads(raw)
@@ -120,6 +122,9 @@ def main() -> int:
         ident = message["id"]
         if mode == "slow":
             time.sleep(delay)
+        if mode == "badvisemes":
+            send({"type": "error", "id": ident, "op": "visemes", "reason": "durations"})
+            continue
         send({"type": "visemes", "id": ident, "visemes": [["sil", 0, n // 2], ["aa", n // 2, n]]})
         if message.get("motion"):
             frames = [{"t": 0.0, "head": {"yaw": 1.0}}, {"t": 0.5, "head": {"yaw": -1.0}}]
