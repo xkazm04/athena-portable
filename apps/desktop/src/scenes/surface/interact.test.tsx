@@ -83,6 +83,8 @@ describe("the ask row", () => {
     expect(bell.getAttribute("aria-label")).toBe("Show Athena's window");
     act(() => bell.click());
     expect(toggle).toHaveBeenCalledOnce();
+    // It names where the illustration is, so a show comes up there.
+    expect(toggle.mock.calls[0]![0]).toEqual({ x: expect.any(Number), y: expect.any(Number) });
     expect(summon).not.toHaveBeenCalled();
     // Rust says she is out on `athena:status`; the model follows, and so does the name.
     act(() => root.render(<SurfaceView model={{ ...base, windowVisible: true, actions: { ...base.actions, toggle, summon } }} />));

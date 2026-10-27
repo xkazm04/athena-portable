@@ -171,7 +171,7 @@ describe("the look", () => {
 
   it("switches the style by the skin chosen, and shows the one she wears", () => {
     const a = mount("typical", PATHS.look!);
-    expect(radio("athena")?.getAttribute("aria-checked")).toBe("true");
+    expect(radio("wavefront")?.getAttribute("aria-checked")).toBe("true"); // the default
     click(radio("loop tide"));
     expect(a.setSkin).toHaveBeenCalledExactlyOnceWith("loop-tide");
   });

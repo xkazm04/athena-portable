@@ -19,7 +19,7 @@
  * view-model with inert actions, so there is nothing here to stub. If a view ever needs a stub, the
  * view is wrong.
  *
- * `&skin=loop-tide` paints any of them in a skin (ADR 0142); the default is her own teal.
+ * `&skin=loop-tide` (or `wavefront`) paints any of them in a skin (ADR 0142); the default is her own teal.
  *
  * `?picker=1` draws a bar to change the scene, the fixture and the theme; the default is no bar,
  * which is the shape a screenshot of a design and the performance gate are taken in.

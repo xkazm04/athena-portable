@@ -32,8 +32,10 @@ export interface SurfaceActions {
   /**
    * Show her window if it is put away, put it away if it is shown (fleet-surfaces D2). Her
    * illustration is the switch. Rust's own `visible` decides which, not `windowVisible` below.
+   * `at` is the illustration's centre in the page's px: a show brings her there, so the person
+   * does not have to look for her window.
    */
-  toggle: () => void;
+  toggle: (at?: { x: number; y: number }) => void;
   /** Go to a place below the surface: a depth's field, or straight to the item that needs you. */
   dive: (to: Path) => void;
 }

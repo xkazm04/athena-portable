@@ -36,7 +36,7 @@ renders without Tauri in `preview.html?scene=<depth>&fixture=&theme=`.
 | **Chores** | the playbooks' edge map as the hero, a drawing for every chore, a chore's own scene with its facets, and the replay of a run as a place of its own. A chore's page names your saved case and "Open your case" reopens the studio on it at `chores/<id>/case/<proj>` (ADR 0123); under it, "Your runs" lists each run's receipt, and "Start for real" stamps the run's every turn under the case (`case_id`, each tab keeping its own conversation), closed by "done" on her project chip (ADR 0124, ADR 0127). "When it comes due" sets the case's cadence; a due review is one line in Main's dock, and "Open and prepare" opens its tabs and fills her composer, sending nothing (ADR 0131). The shipped set loads lazily (2.7 MB of JSON). See [playbooks.md](playbooks.md). |
 | **Accounts** | a drawing per connector, a staged connect, the gated writes switch, the allow-list, a records notice that cannot be dismissed ([connectors.md](connectors.md)) |
 | **Voice** | the studio as a staged act and settings as two instruments, with the keys and one frame loop (ADR 0092) |
-| **Mind** | the engine, the brain, the look (style, theme, text size and Calm motion; the style is a skin such as Loop Tide, ADR 0142), the data and the microphone; the first act (Mind, Reach, Voice) opens the same scene on first run |
+| **Mind** | the engine, the brain, the look (style, theme, text size and Calm motion; the style is a skin such as Loop Tide or Wavefront, ADR 0142), the data and the microphone; the first act (Mind, Reach, Voice) opens the same scene on first run |
 
 ## The card
 

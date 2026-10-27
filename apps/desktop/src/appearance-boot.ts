@@ -32,7 +32,7 @@ export function bootAppearance(win: BootWindow): void {
     if (
       !s ||
       !ok(s.theme, ["system", "light", "dark"]) ||
-      !ok(s.skin, ["athena", "loop-tide"]) ||
+      !ok(s.skin, ["athena", "loop-tide", "wavefront"]) ||
       !ok(s.typeScale, ["compact", "comfortable", "large"]) ||
       !ok(s.motion, ["system", "calm", "full"])
     )

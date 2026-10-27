@@ -9,8 +9,9 @@
  * costs nothing. It runs on the window's one shared clock (`lib/motion.ts`), and under Calm it is
  * drawn once and never moves.
  *
- * Under the Loop Tide skin (ADR 0142) a fifth layer joins them under the vignette: the loop current
- * (`LoopCurrent.tsx`), which keeps the same rule - it asks for frames only while there is a reason.
+ * Under a skin that draws its own water (ADR 0142) a fifth layer joins them under the vignette: Loop
+ * Tide's loop current (`LoopCurrent.tsx`) or Wavefront's field (`WavefrontField.tsx`). Each keeps the
+ * same rule - it asks for frames only while there is a reason.
  */
 import { Suspense, lazy, useEffect, useRef } from "react";
 
@@ -19,8 +20,9 @@ import type { Move } from "@/depth/model";
 import { frames } from "@/lib/motion";
 import { useShell } from "@/stores/shell";
 
-// Only Loop Tide draws it, so it is fetched when that skin is worn, never in the first frame's bytes.
-const LoopCurrent = lazy(() => import("./LoopCurrent"));
+// Only their skin draws them, so they are fetched when such a skin is worn, never in the first
+// frame's bytes; one loader serves every skin's water (`SkinWater.tsx`).
+const SkinWater = lazy(() => import("./SkinWater"));
 
 const FLAKES = 70;
 const MAX_DPR = 1.5;
@@ -57,7 +59,7 @@ export default function Backdrop({
   move: Move;
   seq: number;
   calm: boolean;
-  /** How she is carrying herself; the loop current flows while she is busy. */
+  /** How she is carrying herself; the loop current flows and the field rings while she is busy. */
   pose?: Pose;
 }) {
   const skin = useShell((s) => s.skin);
@@ -157,9 +159,9 @@ export default function Backdrop({
         <i />
       </div>
       <canvas ref={canvas} className="backdrop__snow" />
-      {skin === "loop-tide" && (
+      {skin !== "athena" && (
         <Suspense fallback={null}>
-          <LoopCurrent pose={pose} move={move} seq={seq} calm={calm} />
+          <SkinWater skin={skin} pose={pose} move={move} seq={seq} calm={calm} />
         </Suspense>
       )}
       <i className="backdrop__vignette" />

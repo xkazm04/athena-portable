@@ -6,7 +6,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { expect, test } from "vitest";
 
-import { DEFAULT_SKIN, SKINS, THEMES } from "@/stores/shell";
+import { BASE_SKIN, SKINS, THEMES } from "@/stores/shell";
 
 import { bindingSets, checkThemeContract } from "./theme-contract";
 
@@ -20,8 +20,8 @@ const skinSheets = Object.fromEntries(sheetIds.map((id) => [id, read(`./skins/${
 const realSets = bindingSets(sheetIds);
 
 test("binding sets are derived from THEMES x SKINS against the sheets, and a gap fails naming it", () => {
-  expect(realSets.map((s) => s.id)).toEqual(["athena/dark", "athena/light", "loop-tide/dark", "loop-tide/light"]);
-  expect(() => bindingSets(sheetIds, { themes: THEMES, skins: [...SKINS, "ember"], defaultSkin: DEFAULT_SKIN })).toThrow(
+  expect(realSets.map((s) => s.id)).toEqual(["athena/dark", "athena/light", "loop-tide/dark", "loop-tide/light", "wavefront/dark", "wavefront/light"]);
+  expect(() => bindingSets(sheetIds, { themes: THEMES, skins: [...SKINS, "ember"], baseSkin: BASE_SKIN })).toThrow(
     'SKINS entry "ember" has no styles/skins/ember.css',
   );
   expect(() => bindingSets([...sheetIds, "dusk"])).toThrow("styles/skins/dusk.css has no SKINS entry");
@@ -31,7 +31,7 @@ test("every text pair clears 4.5:1 and every graphic pair 3:1 in all four sets o
   expect(checkThemeContract({ base, skins: skinSheets, sets: realSets })).toEqual([]);
 });
 
-const fixtureSets = bindingSets(["x"], { themes: THEMES, skins: [DEFAULT_SKIN, "x"], defaultSkin: DEFAULT_SKIN });
+const fixtureSets = bindingSets(["x"], { themes: THEMES, skins: [BASE_SKIN, "x"], baseSkin: BASE_SKIN });
 
 test("negative control: a role the skin binds in its dark block only is reported as taking the dark value in light", () => {
   const x = ':root[data-skin="x"] {\n  --status-info: #5cb4ff;\n}\n:root[data-skin="x"][data-theme="light"] {\n  --focus: #0064e0;\n}\n';

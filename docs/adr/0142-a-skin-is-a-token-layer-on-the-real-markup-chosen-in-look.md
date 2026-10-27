@@ -48,3 +48,30 @@ seal) and asked for it to be switchable in the appearance settings.
   budget for it, which is a later ADR's call, not this one's.
 - Not skinned: the halo window (`halo.css`), which the contest had no state for. A second skin is one
   more sheet in `styles/skins/` and one more entry in `SKINS`.
+
+## Addendum 2026-10-27: the second skin, Wavefront
+The athena-nvidia-theme contest (NVIDIA's models served from Nebius) ran on fresh captures of the
+preview harness in the product's own skin, and asked every entry for this ADR's skin form. The owner
+chose **Wavefront** (A/3): NVIDIA's green and Nebius's lime as one chartreuse on midnight ink, the
+cluster as a lattice of points through which her bell's tideline travels as a wave, and her window
+in black lacquer with a light-pipe in its lower rim. It landed as the Consequences said: one sheet
+(`styles/skins/wavefront.css`, held by `wavefront.css.test.ts` and the theme contract in both themes)
+and one `SKINS` entry, plus the boot mirror and the Look label.
+
+- **The field keeps the water's rule.** The prototype's script lit every point every frame. Ported
+  (`stage/WavefrontField.tsx`, `stage/wavefront.ts`), the field at rest is drawn once into a buffer,
+  points are sorted by distance, and a frame copies the buffer and lights only the band each front is
+  crossing. It runs on the window's one clock only while a wave is on the field - three as the stage
+  arrives, one per move, one when the pointer comes to the bell or a depth's light, one per beat
+  while she is busy - then lets the clock go. Under Calm it is a standing wave, drawn once. Lazy, so
+  the first paint keeps its ceiling.
+- **One departure, for the product's shape:** the prototype greeted only a page load; in the product
+  the stage is mounted once, so a move (a new scene arriving) sends one wave.
+- Held to the winner: 0 computed-style deviations across 70 role checks (surface dark and light, her
+  window's slip dark and light, seal and tape); the unskinned app shows 35 and 15 against the same
+  contract. `pnpm perf:wavefront` passes with no long task, one loop per frame and 0 idle frame
+  requests.
+- **Wavefront is the default** (owner, 2026-10-27). `DEFAULT_SKIN` is what a person wears until they
+  choose, and `BASE_SKIN` (`athena`) is the skin `app.css` binds with no sheet; the theme contract
+  reads the second. A saved `skin` row still wins, so a person who chose her teal keeps it. The HTML
+  entries carry `data-skin="wavefront"`, so a first launch's first frame is already in it.

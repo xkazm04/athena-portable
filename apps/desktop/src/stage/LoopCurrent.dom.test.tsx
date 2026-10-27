@@ -62,7 +62,7 @@ async function render(props: { pose?: Pose; seq?: number; move?: "none" | "down"
     root!.render(
       <Backdrop depth={0} move={props.move ?? "none"} seq={props.seq ?? 0} calm={props.calm ?? false} pose={props.pose ?? "resting"} />,
     );
-    await import("./LoopCurrent");
+    await import("./SkinWater");
   });
   await act(async () => {
     await Promise.resolve();
@@ -84,7 +84,7 @@ it("is Loop Tide's alone: her own teal water has no current", async () => {
   expect(host!.querySelector(".backdrop__current")).toBeNull();
   await act(async () => {
     useShell.setState({ skin: "loop-tide" });
-    await import("./LoopCurrent");
+    await import("./SkinWater");
   });
   await act(async () => {
     await Promise.resolve();

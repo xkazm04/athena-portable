@@ -95,11 +95,6 @@ function ledgerFixture(): PlaybooksModel {
   return selectPlaybooks(playbooks, typical.actions);
 }
 
-/** The featured band on the catalogue (ADR 0226): the shipped set, whose featured chores' standing
- *  is earned from their real `senses/proofs.json` (`featured-model.ts`). The invented statuses the
- *  band's tests need are handed to it as files there, not laid on the preview. */
-export const FEATURED_FIXTURE = "ledger-featured";
-
 /** "Your chores" on the catalogue: the shipped set, with two saved cases, one of them due. */
 export const YOURS_FIXTURE = "ledger-yours";
 
@@ -178,7 +173,6 @@ export function yoursDepsFor(fixture: FixtureId): AdoptDeps | undefined {
 export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
   ...Object.fromEntries(IDS.map((id) => [id, moduleFixtures[id]!])),
   ledger: ledgerFixture(),
-  [FEATURED_FIXTURE]: moduleFixtures.shipped!,
   [YOURS_FIXTURE]: moduleFixtures.shipped!,
   // The Adopt studio plays a scripted session over a shipped playbook (ADR 0097).
   ...Object.fromEntries(ADOPT_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
@@ -191,7 +185,6 @@ export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
 export const fixtureIds: readonly FixtureId[] = [
   ...IDS,
   "ledger",
-  FEATURED_FIXTURE,
   YOURS_FIXTURE,
   ...ADOPT_FIXTURES,
   ...CASE_FIXTURES,

@@ -10,6 +10,8 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
+import { useShell } from "@/stores/shell";
+
 import Backdrop from "./Backdrop";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -23,6 +25,8 @@ let host: HTMLElement | null = null;
 let fills: string[] = [];
 
 beforeEach(() => {
+  // The snow is her own water's; a skin's layer (the default wears one) is not under test here.
+  useShell.setState({ skin: "athena" });
   fills = [];
   const ctx = {
     setTransform: () => {},

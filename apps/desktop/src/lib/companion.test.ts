@@ -52,16 +52,20 @@ test("a command called without a shell rejects with a sentence, never an undefin
   await expect(athenaPin(true)).rejects.toThrow(/athena_pin/);
 });
 
-test("the toggle asks Rust, with nothing on the wire, and answers whether she is visible after", async () => {
+test("the toggle asks Rust, with nothing or the illustration's centre on the wire, and answers whether she is visible after", async () => {
   await expect(athenaToggle()).rejects.toThrow(/athena_toggle needs the Tauri window/);
   const g = globalThis as { window?: unknown };
   g.window = { __TAURI_INTERNALS__: {} };
   try {
     await expect(athenaToggle()).resolves.toBe(true);
+    await expect(athenaToggle({ x: 300, y: 250 })).resolves.toBe(true);
   } finally {
     delete g.window;
   }
-  expect(invoked).toEqual([{ command: "athena_toggle", args: {} }]);
+  expect(invoked).toEqual([
+    { command: "athena_toggle", args: {} },
+    { command: "athena_toggle", args: { at: { x: 300, y: 250 } } },
+  ]);
 });
 
 test("a press is a drag only after four pixels", () => {

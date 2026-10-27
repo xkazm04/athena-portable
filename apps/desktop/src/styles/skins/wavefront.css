@@ -1,0 +1,264 @@
+/*
+ * Wavefront, a skin - README section 3.1, ADR 0142. The winner of the athena-nvidia-theme contest
+ * (A/3), ported from its one theme layer.
+ *
+ * What NVIDIA and Nebius sell together is not one chip but many working as one: accelerators linked
+ * into a cluster and served from a cloud. That is drawn as a field - a close-packed lattice of
+ * points, one per accelerator - through which her bell's tideline travels as a wave, so the whole
+ * cluster answers in order of distance (`stage/WavefrontField.tsx`). NVIDIA's green and Nebius's lime
+ * meet as one chartreuse on midnight ink. Her window takes the finish of hardware: black lacquer
+ * with a light-pipe set in its lower rim, shaped as her own tidelines. No mark of either company is
+ * drawn or traced.
+ *
+ * Every selector starts at `:root[data-skin="wavefront"]`, written by `applySkin` alone. Nothing here
+ * changes a size, a position, a font size or a word: real elements get tokens, opacity or isolation;
+ * the decorative layers are pseudo-elements and the field's canvas. Untouched on purpose:
+ * --role-human, --role-agent, --role-external and --status-success/-warning/-error/-pending.
+ */
+
+/* ---- 1. the palette: chartreuse on midnight ink -----------------------------------------------
+ * The second selector of each pair repaints anything that re-scopes a theme on its own root (the
+ * light and dark miniatures in Mind > Look), so a miniature shows the skin it sits in. */
+:root[data-skin="wavefront"],
+:root[data-skin="wavefront"] [data-theme="dark"] {
+  --background: #04080d;
+  --foreground: #eaf3ec;
+  --muted-foreground: #a8bfae;
+  --muted: #718c7a;
+  --card-bg: #0a1118;
+  --card-raised: #101a22;
+  --recessed: #020407;
+  --primary: #a8e03a;
+  --primary-fg: #0d1a00;
+  --accent: #9fd83a;
+  --accent-text: #b6e650;
+  --btn-primary: #a8e03a;
+  --on-primary: #0d1a00;
+  --border-subtle: rgba(168, 191, 174, 0.09);
+  --border-default: rgba(168, 191, 174, 0.17);
+  --border-emphasis: rgba(168, 191, 174, 0.36);
+  --hover-wash: rgba(168, 224, 58, 0.07);
+  --status-info: #5cc8f5;
+  --role-highlight: #76b900;
+  --focus: #d4f77a;
+  --glow: rgba(168, 224, 58, 0.22);
+  --scrim: rgba(2, 4, 7, 0.6);
+  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.45);
+
+  --wave-dot: rgba(168, 224, 58, 0.2);
+  --wave-crest: rgba(230, 255, 170, 1);
+  --pipe: #c6f25a;
+  --pipe-glow: rgba(168, 224, 58, 0.3);
+}
+
+:root[data-skin="wavefront"][data-theme="light"],
+:root[data-skin="wavefront"] [data-theme="light"] {
+  --background: #eef1f2;
+  --foreground: #0b1410;
+  --muted-foreground: #3c4a44;
+  --muted: #53635b;
+  --card-bg: #f8fafa;
+  --card-raised: #ffffff;
+  --recessed: #e1e6e6;
+  --primary: #3b6a06;
+  --primary-fg: #ffffff;
+  --accent: #5b9410;
+  --accent-text: #39660a;
+  --btn-primary: #3b6a06;
+  --on-primary: #ffffff;
+  --border-subtle: rgba(11, 20, 16, 0.08);
+  --border-default: rgba(11, 20, 16, 0.15);
+  --border-emphasis: rgba(11, 20, 16, 0.34);
+  --hover-wash: rgba(59, 106, 6, 0.07);
+  --status-info: #1d4ed8;
+  --role-highlight: #3b6a06;
+  --focus: #3b6a06;
+  --glow: rgba(91, 148, 16, 0.2);
+  --scrim: rgba(238, 241, 242, 0.6);
+  --shadow-elevation-1: 0 1px 2px rgba(11, 20, 16, 0.12);
+
+  --wave-dot: rgba(59, 106, 6, 0.16);
+  --wave-crest: rgba(40, 80, 0, 0.95);
+  --pipe: #5b9410;
+  --pipe-glow: rgba(91, 148, 16, 0.26);
+}
+
+/* ---- 2. the field: one point per accelerator, drawn by stage/WavefrontField.tsx -------------- */
+/* the water's lit surface leans to midnight ink, not olive: the field's green is the only green */
+:root[data-skin="wavefront"] .stage {
+  --depth-0: color-mix(in srgb, var(--primary) 6%, #0b1828);
+  --depth-1: color-mix(in srgb, var(--primary) 3%, #07101c);
+}
+:root[data-skin="wavefront"][data-theme="light"] .stage {
+  --depth-0: color-mix(in srgb, var(--primary) 12%, var(--background));
+  --depth-1: color-mix(in srgb, var(--primary) 6%, var(--background));
+}
+:root[data-skin="wavefront"] .backdrop__shafts {
+  opacity: 0.2;
+}
+:root[data-skin="wavefront"] .backdrop__wavefront {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---- 3. her window: black lacquer, a light-pipe in the lower rim ------------------------------ */
+:root[data-skin="wavefront"] .aw {
+  --faint: #a2b9a9;
+  --ink-accent: #c6f25a;
+  --glass:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0, transparent 1.5px),
+    linear-gradient(180deg, #0e161e 0%, #080d13 52%, #04070b 100%);
+  --glass-solid: #080d13;
+  --edge: rgba(198, 242, 90, 0.18);
+  --recess: rgba(1, 2, 4, 0.55);
+  --raised: rgba(20, 30, 38, 0.82);
+  --wash: rgba(168, 224, 58, 0.08);
+  --shadow: 0 18px 38px rgba(0, 0, 0, 0.58), 0 2px 6px rgba(0, 0, 0, 0.45);
+  --ray: rgba(198, 242, 90, 0.06);
+  --face-well: transparent;
+
+  --seal-dome-a: #2b3d14;
+  --seal-dome-b: #05080b;
+  --seal-line: #b6e650;
+  --seal-glow: rgba(168, 224, 58, 0.34);
+  --seal-gleam: rgba(255, 255, 255, 0.42);
+  --seal-mark: #f3ffe0;
+  --seal-orb-core: #c6f25a;
+  --seal-orb-edge: #3b6a06;
+
+  --gloss: rgba(255, 255, 255, 0.07);
+  --points: rgba(198, 242, 90, 0.08);
+}
+:root[data-skin="wavefront"][data-theme="light"] .aw {
+  --faint: #4b5953;
+  --ink-accent: var(--accent-text);
+  --glass:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0, transparent 1.5px),
+    linear-gradient(180deg, #ffffff 0%, #f1f4f3 50%, #e3e9e7 100%);
+  --glass-solid: #f1f4f3;
+  --edge: rgba(59, 106, 6, 0.32);
+  --recess: rgba(11, 20, 16, 0.05);
+  --raised: rgba(255, 255, 255, 0.88);
+  --wash: rgba(59, 106, 6, 0.08);
+  --shadow: 0 12px 28px rgba(10, 25, 20, 0.24), 0 2px 5px rgba(10, 25, 20, 0.18);
+  --ray: rgba(255, 255, 255, 0.85);
+  --face-well: #05080b;
+
+  --seal-dome-a: #4f7d16;
+  --seal-dome-b: #1c3304;
+  --seal-line: #3b6a06;
+  --seal-glow: rgba(59, 106, 6, 0.26);
+  --seal-gleam: rgba(255, 255, 255, 0.5);
+  --seal-mark: #f6ffe8;
+  --seal-orb-core: #c6f25a;
+  --seal-orb-edge: #3b6a06;
+
+  --gloss: rgba(255, 255, 255, 0.6);
+  --points: rgba(59, 106, 6, 0.09);
+}
+:root[data-skin="wavefront"] .aw .aw-water {
+  isolation: isolate;
+}
+/* lacquer: one long gloss across the upper glass, and the cluster's points fading in from the right */
+:root[data-skin="wavefront"] .aw .aw-water::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(158deg, transparent 18%, var(--gloss) 30%, transparent 42%),
+    radial-gradient(circle, var(--points) 1px, transparent 1.6px) 0 0 / 10px 10px,
+    radial-gradient(circle, var(--points) 1px, transparent 1.6px) 5px 5px / 10px 10px;
+  -webkit-mask-image: linear-gradient(255deg, #000 0%, rgba(0, 0, 0, 0.5) 40%, transparent 75%), linear-gradient(158deg, transparent 18%, #000 30%, transparent 42%);
+  mask-image: linear-gradient(255deg, #000 0%, rgba(0, 0, 0, 0.5) 40%, transparent 75%), linear-gradient(158deg, transparent 18%, #000 30%, transparent 42%);
+}
+/* the light-pipe: her tidelines as a lit line set into the lower rim, glowing up into the glass */
+:root[data-skin="wavefront"] .aw .aw-water::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='10'><path d='M0 3 q6 7 12 0 q6 7 12 0' fill='none' stroke='%23c6f25a' stroke-width='1.6' stroke-linecap='round'/></svg>") 0 calc(100% - 6px) / 24px 10px repeat-x,
+    linear-gradient(0deg, var(--pipe-glow), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 34px, #000 calc(100% - 34px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 34px, #000 calc(100% - 34px), transparent 100%);
+  opacity: 0.85;
+}
+:root[data-skin="wavefront"][data-theme="light"] .aw .aw-water::after {
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='10'><path d='M0 3 q6 7 12 0 q6 7 12 0' fill='none' stroke='%235b9410' stroke-width='1.6' stroke-linecap='round'/></svg>") 0 calc(100% - 6px) / 24px 10px repeat-x,
+    linear-gradient(0deg, var(--pipe-glow), transparent 100%);
+}
+/* the docked tab and the bare seal carry no pipe */
+:root[data-skin="wavefront"] .aw[data-form="seal"] .aw-water::after,
+:root[data-skin="wavefront"] .aw[data-form="tab"] .aw-water::after {
+  opacity: 0;
+}
+/* while she works or hears, a bead of light runs the pipe: the wave reaching her window */
+:root[data-skin="wavefront"] .aw::after {
+  content: "";
+  position: absolute;
+  left: var(--margin);
+  top: calc(var(--margin) + var(--form-h) - 16px);
+  width: 90px;
+  height: 14px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--wave-crest), var(--pipe-glow) 45%, transparent);
+  opacity: 0;
+}
+:root[data-skin="wavefront"] .aw[data-form="tape"]::after,
+:root[data-skin="wavefront"] .aw[data-form="hear"]::after {
+  animation: wf-bead 2.2s var(--ease) infinite;
+}
+@keyframes wf-bead {
+  0% { opacity: 0; transform: translateX(10px); }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(calc(var(--form-w) - 100px)); }
+}
+/* the seal: two of her tidelines, set round the dome as rings; working, they travel outward */
+:root[data-skin="wavefront"] .seal::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--seal-line) 45%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--seal-line) 10%, transparent), 0 0 16px var(--seal-glow);
+  opacity: 0.8;
+}
+:root[data-skin="wavefront"] .seal[data-seal="working"]::before,
+:root[data-skin="wavefront"] .seal[data-seal="hearing"]::before,
+:root[data-skin="wavefront"] .seal[data-seal="speaking"]::before {
+  animation: wf-ring 1.6s var(--ease-out) infinite;
+}
+:root[data-skin="wavefront"] .seal[data-seal="quiet"]::before {
+  opacity: 0.35;
+}
+@keyframes wf-ring {
+  0% { opacity: 0.9; transform: scale(0.96); }
+  100% { opacity: 0; transform: scale(1.32); }
+}
+
+/* ---- 4. calm and reduced motion: the bead and the rings stand still ---------------------------- */
+:root[data-motion="calm"][data-skin="wavefront"] .aw::after,
+:root[data-motion="calm"][data-skin="wavefront"] .seal::before {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin="wavefront"] .aw::after,
+  :root[data-skin="wavefront"] .seal::before {
+    animation: none !important;
+  }
+}

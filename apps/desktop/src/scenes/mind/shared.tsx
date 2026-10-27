@@ -22,11 +22,12 @@ export const THEME_HINTS: Record<ThemeChoice, string> = {
 };
 
 /** The skin's name as a person reads it, and what it changes (ADR 0142). */
-export const SKIN_LABELS: Record<Skin, string> = { athena: "athena", "loop-tide": "loop tide" };
+export const SKIN_LABELS: Record<Skin, string> = { athena: "athena", "loop-tide": "loop tide", wavefront: "wavefront" };
 
 export const SKIN_HINTS: Record<Skin, string> = {
   athena: "Her own teal water and the bell's tidelines.",
   "loop-tide": "Cobalt: a loop current runs through her water and an arc of light round her window.",
+  wavefront: "Chartreuse on midnight: her tideline crosses a field of points, and a light-pipe glows in her window's rim.",
 };
 
 export const TYPE_SCALE_HINTS: Record<TypeScale, string> = {

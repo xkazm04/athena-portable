@@ -128,10 +128,16 @@
   border: 1.5px dashed var(--border-subtle);
 }
 .orrery[data-lonely] .orrery__plane::before {
-  width: 53%;
+  width: 40%;
 }
 .orrery[data-lonely] .orrery__plane::after {
-  width: 80%;
+  width: 60%;
+}
+/* With no ring to hold, the system is the core and its guides: it is only as tall as the outer guide,
+ * so the first project's field is not pushed below an empty sky. */
+.orrery[data-lonely] {
+  height: calc(var(--u) * 60 * var(--k) + 4.5rem);
+  min-height: 12rem;
 }
 
 /* A ring: a circle on the tilted plane, turning. Its halo is a shadow on both sides of the line,

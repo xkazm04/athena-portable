@@ -123,9 +123,9 @@ test("the avatar defaults to the halo, is written under its key, and an unknown 
   expect(useSettings.getState().avatar).toBe("halo");
 });
 
-test("the skin is painted before it is stored, every window reads it, and an unknown row reads as her own", async () => {
-  const { useShell } = await import("@/stores/shell");
-  expect(useSettings.getState().skin).toBe("athena");
+test("the skin is painted before it is stored, every window reads it, and an unknown row reads as the default", async () => {
+  const { DEFAULT_SKIN, useShell } = await import("@/stores/shell");
+  expect(useSettings.getState().skin).toBe(DEFAULT_SKIN);
 
   await useSettings.getState().setSkin("loop-tide");
   expect(painted.get("data-skin")).toBe("loop-tide");
@@ -140,8 +140,8 @@ test("the skin is painted before it is stored, every window reads it, and an unk
 
   harness.rows.set("settings/skin", "neon");
   await readRows();
-  expect(useSettings.getState().skin).toBe("athena");
-  expect(painted.get("data-skin")).toBe("athena");
+  expect(useSettings.getState().skin).toBe(DEFAULT_SKIN);
+  expect(painted.get("data-skin")).toBe(DEFAULT_SKIN);
 });
 
 test("the text size is painted before it is stored, and an unknown row reads as comfortable", async () => {

@@ -713,14 +713,78 @@ pub fn toggle_plan(visible: bool) -> Toggle {
 /// Main's illustration of her was pressed (fleet-surfaces D2): show her if she is put away, put
 /// her away if she is shown. `Inner.visible` is the authority, the same fact `athena:status`
 /// mirrors to the chrome, so the label the person read is the act they get. A show is the user's
-/// own (focused), as the tray's and the pill's are. Returns whether she is visible afterwards.
-pub fn toggle(app: &AppHandle) -> bool {
+/// own (focused), as the tray's and the pill's are. With `at` (the illustration's centre, in the
+/// chrome webview's px) a show brings her seal onto the illustration first, so she comes up where
+/// the person pressed instead of wherever she was last put. Returns whether she is visible
+/// afterwards.
+pub fn toggle(app: &AppHandle, at: Option<Anchor>) -> bool {
     let visible = app.state::<Companion>().lock().visible;
     match toggle_plan(visible) {
-        Toggle::Show => show_with(app, true),
+        Toggle::Show => {
+            if let Some(centre) = at.and_then(|a| chrome_point_on_screen(app, Point { x: a.x, y: a.y })) {
+                come_to(app, centre);
+            }
+            show_with(app, true)
+        }
         Toggle::Hide => hide(app),
     }
     app.state::<Companion>().lock().visible
+}
+
+/// A point on Main's illustration of her, in the chrome webview's CSS px (logical).
+#[derive(Clone, Copy, Debug, Deserialize)]
+pub struct Anchor {
+    pub x: f64,
+    pub y: f64,
+}
+
+/// Where her seal goes to come up on her illustration in Main: centred on `centre` (a screen point),
+/// kept a margin inside the work area. Pure.
+pub fn seal_at(centre: Point, work: &Rect) -> Point {
+    let clamp = |v: f64, lo: f64, hi: f64| v.min(hi).max(lo);
+    Point {
+        x: clamp(centre.x - SEAL / 2.0, work.x + MARGIN, work.x + work.width - MARGIN - SEAL),
+        y: clamp(centre.y - SEAL / 2.0, work.y + MARGIN, work.y + work.height - MARGIN - SEAL),
+    }
+}
+
+/// A point in the chrome webview's logical px, on the screen: Main's client origin plus the
+/// webview's place in it.
+fn chrome_point_on_screen(app: &AppHandle, p: Point) -> Option<Point> {
+    let main = app.get_window(crate::MAIN_WINDOW)?;
+    let scale = main.scale_factor().ok()?;
+    let inner = main.inner_position().ok()?;
+    let web = app.get_webview(crate::CHROME_WEBVIEW)?.position().ok()?;
+    Some(Point {
+        x: (inner.x + web.x) as f64 / scale + p.x,
+        y: (inner.y + web.y) as f64 / scale + p.y,
+    })
+}
+
+/// Move her seal onto `centre` (a screen point) at her current form, free of any dock or of Main's
+/// edge, and tell the page what changed.
+fn come_to(app: &AppHandle, centre: Point) {
+    let (Some(window), Some(main)) = (window_of(app), app.get_window(crate::MAIN_WINDOW)) else {
+        return;
+    };
+    let work = work_area(&main);
+    let companion = app.state::<Companion>();
+    let mut inner = companion.lock();
+    let previous = inner.orient;
+    inner.snap = Snap::Free;
+    // A docked tab undocks to its seal; the page follows on `athena:snap`.
+    let name = if inner.name == "tab" { "seal" } else { inner.name.as_str() };
+    let size = size_of(name).unwrap_or((92.0, 92.0));
+    let (r, o) = place(seal_at(centre, &work), size, inner.orient, &work);
+    inner.orient = o;
+    inner.seal = seal_origin(&r, o);
+    put(&mut inner, &window, r);
+    let orient = inner.orient;
+    drop(inner);
+    if orient != previous {
+        emit_athena(app, "athena:orient", orient);
+    }
+    emit_athena(app, "athena:snap", serde_json::json!({ "to": Snap::Free.as_str(), "docked": null }));
 }
 
 /// Put her away. Hiding stops drawing, not listening: the webview lives on and the daemon's
@@ -1021,8 +1085,8 @@ pub async fn athena_hide(app: AppHandle) -> Result<(), String> {
 /// Show her or put her away, whichever she is not; answers whether she is visible afterwards.
 /// The chrome's: Main's illustration of her is the switch (fleet-surfaces D2).
 #[tauri::command(rename_all = "snake_case")]
-pub async fn athena_toggle(app: AppHandle) -> Result<bool, String> {
-    Ok(toggle(&app))
+pub async fn athena_toggle(app: AppHandle, at: Option<Anchor>) -> Result<bool, String> {
+    Ok(toggle(&app, at))
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1091,6 +1155,14 @@ mod tests {
         let r = window_rect(Point { x: 1000.0, y: 500.0 }, (488.0, 316.0), RIGHT_UP);
         assert_eq!(r.x + r.width, 1000.0 + SEAL + MARGIN);
         assert_eq!(r.y + r.height, 500.0 + SEAL + MARGIN);
+    }
+
+    #[test]
+    fn a_seal_brought_to_her_illustration_is_centred_on_it_and_stays_on_the_screen() {
+        let s = seal_at(Point { x: 400.0, y: 300.0 }, &WORK);
+        assert_eq!(s, Point { x: 400.0 - SEAL / 2.0, y: 300.0 - SEAL / 2.0 });
+        let corner = seal_at(Point { x: 2.0, y: 1039.0 }, &WORK);
+        assert_eq!(corner, Point { x: MARGIN, y: WORK.height - MARGIN - SEAL });
     }
 
     #[test]

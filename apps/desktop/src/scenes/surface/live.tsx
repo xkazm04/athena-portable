@@ -48,10 +48,10 @@ const ACTIONS: SurfaceActions = {
     }),
   // Her illustration is the switch (fleet-surfaces D2). Rust answers with where she ended up and
   // says it on `athena:status` too, which is what moves the label; a plain browser has no window
-  // of hers, so the press is skipped there, not failed.
-  toggle: () => {
+  // of hers, so the press is skipped there, not failed. A show comes up on the illustration.
+  toggle: (at) => {
     if (!hasShell()) return;
-    athenaToggle().catch((e: unknown) => console.error(`[surface] toggle: ${String(e)}`));
+    athenaToggle(at).catch((e: unknown) => console.error(`[surface] toggle: ${String(e)}`));
   },
   dive: (to) => useDepth.getState().go(to),
 };

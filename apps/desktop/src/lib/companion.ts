@@ -99,9 +99,10 @@ export const athenaHide = () => call<void>("athena_hide");
  * Show her if she is put away, put her away if she is shown; resolves to whether she is visible
  * afterwards. Main imports this: her illustration on the surface is the switch (fleet-surfaces
  * D2). Rust's own `visible` decides, not the page's mirror of it, so a stale mirror cannot invert
- * the press.
+ * the press. `at` (the illustration's centre, in Main's chrome px) makes a show bring her seal
+ * there; without it she comes up where she was last put.
  */
-export const athenaToggle = () => call<boolean>("athena_toggle");
+export const athenaToggle = (at?: { x: number; y: number }) => call<boolean>("athena_toggle", at ? { at } : {});
 
 /** Always on top, or not. */
 export const athenaPin = (on: boolean) => call<void>("athena_pin", { on });

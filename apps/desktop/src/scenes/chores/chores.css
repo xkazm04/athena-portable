@@ -251,30 +251,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Featured chores (ADR 0226): the chores a Meta sense reads for, proven first, above the areas. The
- * rows are case rows; the status is a Badge, its word in ink and its hue on the dot. */
-.pa-featured {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
-  padding: 20px 24px;
-  border-radius: 14px;
-  border: 1px solid var(--border-default);
-  background: var(--card-raised);
-}
-.pa-featured .pa-kpi__label {
-  margin: 0;
-}
-.pa-featured__chore {
-  font-weight: 600;
-}
-.pa-featured__senses {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 /* -- The ledger ----------------------------------------------------------------------------- */
 .pa-ledger .table caption {
   position: absolute;

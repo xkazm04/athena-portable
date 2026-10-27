@@ -79,7 +79,10 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
           type="button"
           className="surface__bell focus-ring"
           aria-label={model.windowVisible ? "Put Athena's window away" : "Show Athena's window"}
-          onClick={() => model.actions.toggle()}
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            model.actions.toggle({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+          }}
         >
           {model.avatar === "halo" ? (
             bell

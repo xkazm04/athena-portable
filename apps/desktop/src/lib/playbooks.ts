@@ -275,10 +275,6 @@ export interface Playbook {
   /** Where the bench's committed ranking puts it (ADR 0056); `null` when the ranking does not name
    *  it, or ranks a run other than the one `bench` holds (ADR 0213). */
   rank: Rank | null;
-  /** The `featured` block as `playbook.json` authors it (ADR 0226), unread here: its senses, spike
-   *  and date, and the standing its `senses/proofs.json` earns, are read where the band is drawn
-   *  (`scenes/chores/featured-model.ts`), off the first frame. `null` when the file carries none. */
-  featured: Readonly<Record<string, unknown>> | null;
 }
 
 /**
@@ -657,7 +653,6 @@ export function parsePlaybook(
     bench: parseBench(bench),
     evidence,
     rank: null,
-    featured: isRaw(raw.featured) ? raw.featured : null,
   };
 }
 

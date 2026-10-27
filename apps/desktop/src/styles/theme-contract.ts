@@ -15,7 +15,7 @@
  * Pure: it takes the sheets' text, so a test can hand it a fixture and watch it go red. It never
  * returns an empty, green answer for nothing — no theme block, no set, is a thrown error.
  */
-import { DEFAULT_SKIN, SKINS, THEMES } from "@/stores/shell";
+import { BASE_SKIN, SKINS, THEMES } from "@/stores/shell";
 
 export interface BindingSet {
   skin: string;
@@ -52,19 +52,19 @@ export const PAIRS: readonly Pair[] = [
 ];
 
 /**
- * Every theme times every skin, against the sheets on disk (their ids, without `.css`). The default
+ * Every theme times every skin, against the sheets on disk (their ids, without `.css`). The base
  * skin is the product's own and is bound by app.css, so it needs no sheet; every other skin does,
  * and every sheet needs its skin. Either gap throws, naming it.
  */
 export function bindingSets(
   sheets: readonly string[],
-  shell: { themes?: readonly string[]; skins?: readonly string[]; defaultSkin?: string } = {},
+  shell: { themes?: readonly string[]; skins?: readonly string[]; baseSkin?: string } = {},
 ): BindingSet[] {
   const themes = shell.themes ?? THEMES;
   const skins = shell.skins ?? SKINS;
-  const defaultSkin = shell.defaultSkin ?? DEFAULT_SKIN;
+  const baseSkin = shell.baseSkin ?? BASE_SKIN;
   const gaps = [
-    ...skins.filter((s) => s !== defaultSkin && !sheets.includes(s)).map((s) => `SKINS entry "${s}" has no styles/skins/${s}.css`),
+    ...skins.filter((s) => s !== baseSkin && !sheets.includes(s)).map((s) => `SKINS entry "${s}" has no styles/skins/${s}.css`),
     ...sheets.filter((s) => !skins.includes(s)).map((s) => `styles/skins/${s}.css has no SKINS entry`),
   ];
   if (gaps.length > 0) throw new Error(gaps.join("; "));
