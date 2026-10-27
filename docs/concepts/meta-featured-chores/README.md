@@ -42,9 +42,12 @@ resumed); its cost is plan allowance, not dollars.
 | `care-circle` | exceeds: 6/6, 9 turns, 2.4 min, $1.42 | exceeds: 5/6, 10 turns, 3.5 min, $3.93 | exceeds: 6/6, 11 turns, 8.0 min |
 
 Read across: all three miss 02's hold letter (LT-1) - a chore finding, not an engine one; Opus and
-Muse both reach 9/9 on 04 with one false claim. Muse's failure mode is **stopping short of the act**:
-on 03 it priced all 20 lines in the archive, then re-read the claim in the insurer's portal and
-ended with a summary and no cards; on 01 it saw three bills and filed none of them. Single-shot
+Muse both reach 9/9 on 04 with one false claim. Muse's failure mode is **writing one act where many are due**:
+on 03 it priced all 20 lines, wrote "filing the 20 still-owned lines" and one `OP:` line, its
+reasoning summary saying it chose "single-line submissions to avoid parse errors" (Muse's own
+session log); on 01 it saw three bills and filed none of them. A law line telling it to act
+(`ATHENA_MUSE_ACT_LAW`, withdrawn) did not move 03 (0/20) and cost the guard chore 05 eleven
+duplicate cards. Single-shot
 (no session resume) it re-read one pile 1,412 times over 79 turns.
 
 ## Tomorrow, with a key
