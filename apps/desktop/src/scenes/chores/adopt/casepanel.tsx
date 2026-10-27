@@ -157,7 +157,8 @@ export function SlotsBoard({
           {compact ? (
             <button
               type="button"
-              className="ad-link ad-slots__more"
+              className="ad-link focus-ring ad-slots__more"
+              aria-expanded={all}
               onClick={() => setAll((v) => !v)}
             >
               {all ? "Fold the slots" : `Show every slot (${slots.length})`}

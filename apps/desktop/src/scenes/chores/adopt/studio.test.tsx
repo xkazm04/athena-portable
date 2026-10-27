@@ -412,8 +412,13 @@ describe("the session", () => {
       "Window",
       "Own changes",
     ]);
-    await click(button("Show every slot (4)"));
+    // The toggle says whether the slots are open, and shows focus like its sibling links.
+    const more = button("Show every slot (4)")!;
+    expect(more.getAttribute("aria-expanded")).toBe("false");
+    expect(more.classList.contains("focus-ring")).toBe(true);
+    await click(more);
     expect(qa(".ad-tile")).toHaveLength(4);
+    expect(button("Fold the slots")!.getAttribute("aria-expanded")).toBe("true");
     await feed({ kind: "adopt.clear", rev: 1 });
     expect(button("Approve")!.hasAttribute("disabled")).toBe(false);
 

@@ -1056,6 +1056,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): the desktop adopt contract names the Python module it mirrors, which had moved.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, copy-auditor): `lib/adopt.ts`'s header said `src/athena/adopt/contract.py`; it is `src/athena/contracts/adopt.py`, held by `tests/contracts/test_adopt_parity.py`.
 - `fix(adopt): a case file's run line says its dollars are a floor when ledger rows are unpriced, as the chore page does.` scan-sweep stabilize (adopt-engine, parity-auditor): `receipt_line` now carries the desktop costLine's "(N rows unpriced, so at least this)" and "K of them failed or refused", and says "1 ledger row".
 - `fix(peer): a turn stream's from= that is not ASCII digits resumes from the start instead of a 500.` Stabilize 2026-10-27 (peer-devices, bounty-hunter): `"²".isdigit()` is true and `int("²")` raises, in the peer route and the loopback relay alike; one `resume_index` in `remote.py`; test_remote.py.
+- `fix(chores): "Show every slot" says whether the slots are open and shows keyboard focus like its sibling links.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, accessibility-checker): `aria-expanded` and `focus-ring` on the studio's slot fold toggle; studio.test.tsx.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
