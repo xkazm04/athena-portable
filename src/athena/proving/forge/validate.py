@@ -32,6 +32,7 @@ CODES: tuple[str, ...] = (
     "id-not-a-row",
     "overlap",
     "value-not-number",
+    "eligible-incomplete",
     "trap-reason",
     "loader",
     "few-new-traps",
@@ -154,9 +155,32 @@ def _derived(base: Base) -> set[str]:
     return out
 
 
+def _expecting(base: Base) -> set[str]:
+    """The target tools whose every eligible entry carries ``expect`` params in the base truth.
+
+    The prompt tells the generator to keep them; a variant that drops them lets the scorer take
+    a card with any params as right, so it would be an easier world, not a varied one.
+    """
+    out: set[str] = set()
+    for raw in base.truth.get("targets", []):
+        eligible = raw.get("eligible") if isinstance(raw, Mapping) else None
+        if (
+            isinstance(raw, Mapping)
+            and isinstance(eligible, Mapping)
+            and eligible
+            and all(
+                isinstance(v, Mapping) and isinstance(v.get("expect"), Mapping)
+                for v in eligible.values()
+            )
+        ):
+            out.add(str(raw.get("tool")))
+    return out
+
+
 def _facts(base: Base, world: Mapping[str, Any], truth: Mapping[str, Any]) -> list[str]:
     found: list[str] = []
     derived = _derived(base)
+    expecting = _expecting(base)
     for raw in truth.get("targets", []):
         if not isinstance(raw, Mapping):
             found.append("bad-truth: a target is not an object")
@@ -179,6 +203,13 @@ def _facts(base: Base, world: Mapping[str, Any], truth: Mapping[str, Any]) -> li
                 amount = value.get("value_usd") if isinstance(value, Mapping) else None
                 if isinstance(amount, bool) or not isinstance(amount, int | float):
                     found.append(f"value-not-number: {tool} {item} value_usd is {amount!r}")
+                why = value.get("why") if isinstance(value, Mapping) else None
+                if not isinstance(why, str) or not why.strip():
+                    found.append(f"eligible-incomplete: {tool} {item} has no why")
+                if tool in expecting and not (
+                    isinstance(value, Mapping) and isinstance(value.get("expect"), Mapping)
+                ):
+                    found.append(f"eligible-incomplete: {tool} {item} lost its expect params")
         traps = raw.get("traps")
         if isinstance(traps, Mapping):
             for item, why in traps.items():

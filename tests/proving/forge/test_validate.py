@@ -142,6 +142,20 @@ def plant_value_bool(base: Base) -> Any:
     return v
 
 
+def plant_eligible_no_why(base: Base) -> Any:
+    v = good(base)
+    next(iter(_first_target(v)["eligible"].values()))["why"] = ""
+    return v
+
+
+def plant_eligible_no_expect(base: Base) -> Any:
+    """The prompt says every eligible entry keeps its expect params; without them the scorer
+    takes a card with any params as right, and the variant is easier than its base."""
+    v = good(base)
+    del next(iter(_first_target(v)["eligible"].values()))["expect"]
+    return v
+
+
 def plant_empty_reason(base: Base) -> Any:
     v = good(base)
     trap = next(iter(_first_target(v)["traps"]))
@@ -184,6 +198,8 @@ PLANTED: list[tuple[str, Callable[[Base], Any], str]] = [
     ("overlap", plant_overlap, "overlap"),
     ("value-string", plant_value_string, "value-not-number"),
     ("value-bool", plant_value_bool, "value-not-number"),
+    ("eligible-no-why", plant_eligible_no_why, "eligible-incomplete"),
+    ("eligible-no-expect", plant_eligible_no_expect, "eligible-incomplete"),
     ("empty-reason", plant_empty_reason, "trap-reason"),
     ("one-new-trap", plant_one_new_trap, "few-new-traps"),
     ("loader-only", plant_loader_only, "loader"),
