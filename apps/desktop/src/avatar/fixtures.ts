@@ -9,7 +9,7 @@
  * holds her eyes shut, and `none` is a face at rest in whatever phase the page names.
  */
 import type { FacePhase, FaceSignal, Viseme } from "./types";
-import { mouthTarget, VISEME_SHAPES, VOWELS } from "./visemes";
+import { floorClosures, mouthTarget, VISEME_SHAPES, VOWELS } from "./visemes";
 
 /** [viseme, start s, end s], ordered and covering 0..CALM_DURATION (the timeline's own numbers). */
 export const CALM_VISEMES: readonly (readonly [Viseme, number, number])[] = [
@@ -40,8 +40,15 @@ export function fixtureDuration(f: Fixture): number {
   return f === "calm" || f === "level" ? CALM_DURATION : 0;
 }
 
-function segmentAt(t: number): readonly [Viseme, number, number] | null {
-  for (const s of CALM_VISEMES) if (t >= s[1] && t < s[2]) return s;
+/**
+ * The line as her face draws it: the producer holds each closure for `CLOSURE_FLOOR_S`
+ * (`lib/face-timeline.ts` floors every sentence it receives), so the harness does too. The raw
+ * timeline above is what the daemon sends; the tests feed that to the producer.
+ */
+const CALM_DRAWN = floorClosures(CALM_VISEMES, 1);
+
+function segmentAt(t: number, line: readonly (readonly [Viseme, number, number])[] = CALM_VISEMES): readonly [Viseme, number, number] | null {
+  for (const s of line) if (t >= s[1] && t < s[2]) return s;
   return null;
 }
 
@@ -62,7 +69,7 @@ export function fixtureSignal(f: Fixture, t: number, phase: FacePhase): FaceSign
   if (f === "none") return rest;
   if (t >= CALM_DURATION) return { ...rest, phase: "idle", generation: 1 };
   const level = calmLevel(t);
-  const seg = segmentAt(t);
+  const seg = segmentAt(t, CALM_DRAWN);
   const viseme = f === "calm" && seg ? seg[0] : null;
   return {
     phase: "speaking",
