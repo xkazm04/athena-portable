@@ -27,6 +27,26 @@ computed status (`proven` needs a role on `meta`). Bench results are in each cho
 Not measured anywhere yet: every V* proof (Character onboarding and rehearsal through
 `proving/chores_uat`), R1-style cross-person variance, the sense Gauntlet, and anything on Meta.
 
+## Engines compared (2026-10-27, one run each, `--no-write`)
+
+Athena on three engines over the same five chores, fixtures for every sense. Muse runs through
+Muse Code on the plan (`--engine muse_code --model muse-spark-1.3`, Contributor mode off, session
+resumed); its cost is plan allowance, not dollars.
+
+| Chore | Claude Sonnet | Claude Opus | Muse Spark 1.3 |
+|---|---|---|---|
+| `paper-flip-through` | exceeds: 9/9, 0 false, 13 turns, 3.7 min, $1.96 | exceeds: 9/9, 0 false, 12 turns, 5.2 min, $5.69 | short: 6/9, 1 false, 2 dup, 17 turns, 13.1 min |
+| `prior-auth-denial-appeal` | short: 2/3, 14 turns, 2.2 min, $1.49 | short: 2/3, 11 turns, 3.9 min, $4.51 | short: 2/3, 13 turns, 5.1 min |
+| `roll-call-inventory` | exceeds: 20/20, 11 turns, 2.6 min, $2.54 | 20/20 then over the $4 cap ($7.06) | short: **0/20**, 13 turns, 4.4 min |
+| `renovation-witness` | short: 7/9, 2 false, $0.82 | short: 9/9, 1 false, 7 turns, 2.3 min, $1.93 | short: 9/9, 1 false, 6 turns, 2.1 min |
+| `care-circle` | exceeds: 6/6, 9 turns, 2.4 min, $1.42 | exceeds: 5/6, 10 turns, 3.5 min, $3.93 | exceeds: 6/6, 11 turns, 8.0 min |
+
+Read across: all three miss 02's hold letter (LT-1) - a chore finding, not an engine one; Opus and
+Muse both reach 9/9 on 04 with one false claim. Muse's failure mode is **stopping short of the act**:
+on 03 it priced all 20 lines in the archive, then re-read the claim in the insurer's portal and
+ended with a summary and no cards; on 01 it saw three bills and filed none of them. Single-shot
+(no session resume) it re-read one pile 1,412 times over 79 turns.
+
 ## Tomorrow, with a key
 
 1. `set META_API_KEY=...` then `uv run python -m athena.harness.meta probe` - one call per model
