@@ -1174,6 +1174,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): flipping a decision card moves keyboard focus to the face turned toward the person.` "Read it first" focuses "Back to the decision" and the front face is inert while flipped; "Back to the decision" returns focus to "Read it first" (`companion/slip.tsx`, jsdom test in `views.dom.test.tsx`).
 - `fix(mind): a refused join keeps the code that was typed, and Ask to join waits while one is out.` Stabilize Lane B: the join form emptied the code field on the press, so a mistyped or expired code showed its refusal under an empty field, and the store's `busy.join` was read nowhere; the spent code now goes only when the ask came back without a refusal, and the button reads "Asking..." while one is out.
 
+- fix(adopt): a case file keeps its latest 20 receipts and moves older ones, whole, to an append-only `goals/<proj>.runs.txt`; the runs route and the file's own "Your runs" say `(showing N of M)` over the whole history; ADR 0233 (scan-sweep Lane C, owner-approved).
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.

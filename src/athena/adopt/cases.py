@@ -22,6 +22,15 @@ reader takes the **last** marker, so a brief that quotes one cannot stand in for
 Everything in the block is the person's case and the model's brief: untrusted text, to be fenced
 by whoever puts it in a prompt.
 
+**Runs.** The block keeps the latest :data:`~athena.adopt.receipts.KEPT_RECEIPTS` receipts
+(ADR 0233). When a ``done`` would push the list past that, the oldest are first appended to
+``goals/<proj>.runs.txt`` (a readable line, then an ``athena:receipt {json}`` line, each entry
+once and never rewritten) and only then cut from the block, so a crash between the two leaves a
+receipt in both places and never in neither. ``runs_archived`` in the block counts the file's
+entries, which lets every list of receipts say ``(showing N of M)``. A case written before the cap
+reads whole and is trimmed by its next ``done``. The file is ``.txt``, not ``.md``, so a brain
+rebuild does not take it for a goal.
+
 **Provenance.** Each approval is an episode (role ``user``, in the case's conversation
 ``conv_proj_…``, marked ``[adopt] [project:proj_…]``), and every slot the person confirmed in
 this session becomes a fact (scope ``project``) citing that episode, through
@@ -47,6 +56,7 @@ about a chore filed in a project is remembered inside it, and a core chore's in 
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 from collections.abc import Mapping, Sequence
@@ -99,6 +109,20 @@ QUOTE_CAP = 400
 _SOURCES: tuple[SlotSource, ...] = ("user", "research", "memory", "document", "account", "default")
 _STATUSES: tuple[SlotStatus, ...] = ("open", "guessed", "confirmed")
 _OWNED = frozenset(f.name for f in fields(Case))
+#: The block key counting the receipts moved to the runs file (ADR 0233), and that file's suffix.
+ARCHIVED_KEY = "runs_archived"
+RUNS_SUFFIX = ".runs.txt"
+_ARCHIVE_PREFIX = "athena:receipt "
+
+
+def archived_count(extra: Mapping[str, Any]) -> int:
+    """How many receipts the case's runs file holds, as the block says; ``0`` for junk."""
+    held = extra.get(ARCHIVED_KEY)
+    return held if isinstance(held, int) and not isinstance(held, bool) and held > 0 else 0
+
+
+def _entry_json(entry: Any) -> str:
+    return json.dumps(entry, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
 class CaseUnreadable(ValueError):
@@ -164,7 +188,14 @@ def render_case(case: Case, extra: Mapping[str, Any] | None = None) -> str:
     kept = runs.stored(extra or {})
     if kept:
         # The runs as a person reads them; the block below is what the code reads (ADR 0124).
-        parts += ["## Your runs", "\n".join(runs.receipt_line(r) for r in kept)]
+        lines = [runs.receipt_line(r) for r in kept]
+        archived = archived_count(extra or {})
+        if archived:
+            lines.append(
+                f"(showing {len(kept)} of {len(kept) + archived}; the older {archived} are in "
+                f"goals/{case.id}{RUNS_SUFFIX})"
+            )
+        parts += ["## Your runs", "\n".join(lines)]
     data = {**{k: v for k, v in dict(extra or {}).items() if k not in _OWNED}, **asdict(case)}
     block = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
     parts.append(f"{CASE_MARKER}\n{_OPEN}\n{block}\n{_CLOSE}")
@@ -477,7 +508,13 @@ class CaseBook:
             _, body = frontmatter.parse(path.read_text(encoding="utf-8"))
             case, extra = parse_case(body)
             held = extra.get("receipts")
-            extra["receipts"] = [*(held if isinstance(held, list) else []), runs.as_dict(receipt)]
+            every = [*(held if isinstance(held, list) else []), runs.as_dict(receipt)]
+            if len(every) > runs.KEPT_RECEIPTS:
+                # Move first, cut second: the runs file has them before the case file loses them.
+                older = every[: -runs.KEPT_RECEIPTS]
+                extra[ARCHIVED_KEY] = self._archive(case_id, older)
+                every = every[-runs.KEPT_RECEIPTS :]
+            extra["receipts"] = every
             self.brain.write_goal(
                 case_id,
                 case.title or case.playbook_id,
@@ -486,6 +523,41 @@ class CaseBook:
                 created=case.created,
             )
             return case
+
+    def receipt_total(self, case_id: str) -> int:
+        """Every receipt the case has: the ones its file keeps and the ones moved to its runs file
+        (ADR 0233), for the ``M`` of ``(showing N of M)``."""
+        extra = self._extra(case_id)
+        return len(runs.stored(extra)) + archived_count(extra)
+
+    def _archive(self, case_id: str, older: Sequence[Any]) -> int:
+        """Append ``older`` receipts (raw block entries, parseable or not) to the runs file, each
+        entry once, and return how many entries the file holds. An entry already in the file (a
+        move that crashed before the case file was cut) is not written again."""
+        path = self.brain.root / "goals" / f"{case_id}{RUNS_SUFFIX}"
+        text = path.read_text(encoding="utf-8") if path.is_file() else ""
+        have = {
+            x[len(_ARCHIVE_PREFIX) :] for x in text.splitlines() if x.startswith(_ARCHIVE_PREFIX)
+        }
+        out: list[str] = []
+        if not text:
+            out.append(f"Runs moved out of goals/{case_id}.md, oldest first. Append-only.")
+        for entry in older:
+            raw = _entry_json(entry)
+            if raw in have:
+                continue
+            have.add(raw)
+            receipt = runs.receipt_of(entry)
+            out.append(runs.receipt_line(receipt) if receipt is not None else "- (unreadable run)")
+            out.append(_ARCHIVE_PREFIX + raw)
+        if out:
+            if text and not text.endswith("\n"):
+                out.insert(0, "")
+            with path.open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write("\n".join(out) + "\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+        return len(have)
 
     def set_space(self, case_id: str, space_id: str) -> Case:
         """Link the case to project ``space_id``, or with ``""`` return it to core (ADR 0225), and

@@ -50,6 +50,7 @@ __all__ = [
     "AMOUNT_PARAMS",
     "ASKED_CEILING",
     "CARDS_CAP",
+    "KEPT_RECEIPTS",
     "NOTES_CAP",
     "PARAMS_CAP",
     "PARAM_TEXT_CAP",
@@ -67,6 +68,11 @@ __all__ = [
 #: The parameters a card names its money in, in the order they are looked for. The bench's own
 #: ``AMOUNT_PARAMS`` (``tests/adopt/test_receipts.py`` holds the two equal).
 AMOUNT_PARAMS = ("amount_usd", "amount_disputed_usd")
+#: How many receipts the case file's block keeps (ADR 0233). The newest are kept; older ones are
+#: moved, never dropped, to ``goals/<proj>.runs.txt``. 20 is what ``GET /adopt/cases/<proj>/runs``
+#: has always answered at most, so the cap hides nothing a surface showed, and the block stays under
+#: about 20 x 3 KB (the receipt caps below) however long the chore has run.
+KEPT_RECEIPTS = 20
 #: How many cards a receipt lists; past it the receipt says ``(showing N of M)``.
 CARDS_CAP = 20
 #: How many "may have completed" calls a receipt lists.

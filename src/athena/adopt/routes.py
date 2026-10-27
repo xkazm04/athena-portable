@@ -24,8 +24,9 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     ``open`` is the run since the last receipt, folded now from the approval table, the episodes
     and the ledger by the turns stamped under the case (ADR 0127; a
     :class:`~athena.contracts.adopt.Receipt`), or ``null`` when nothing ran in it; ``receipts``
-    are the ones the case file keeps, latest first, at most :data:`MAX_RECEIPTS`. An unknown case
-    is 404 ``unknown_ref``.
+    are the ones the case file keeps, latest first, at most :data:`MAX_RECEIPTS`; ``total`` counts
+    the older ones moved to the runs file too (ADR 0233), so ``footer`` reads ``(showing N of M)``.
+    An unknown case is 404 ``unknown_ref``.
 ``POST /adopt/cases/<proj>/done`` (ADR 0124)
     The person pressed done on the active playbook: the open run is folded with ``until`` now and
     appended to the case file's block -> ``{ok, receipt, saved, problem}``. ``receipt`` is
@@ -122,7 +123,7 @@ ADOPT_PREFIX = "/adopt/"
 CASES_PATH = "/adopt/cases"
 CASES_PREFIX = "/adopt/cases/"
 #: The most stored receipts ``GET /adopt/cases/<proj>/runs`` answers, latest first.
-MAX_RECEIPTS = 20
+MAX_RECEIPTS = runs.KEPT_RECEIPTS
 INTAKE_PATH = "/intake"
 INTAKE_PREFIX = "/intake/"
 HEARTBEAT_S = 15.0
@@ -265,7 +266,7 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
             daemon.brain, daemon.approvals, daemon.ledger, daemon.case_turns, case_id, since=since
         )
         latest = [runs.as_dict(r) for r in reversed(kept)][:MAX_RECEIPTS]
-        reply = announced(latest, len(kept), "receipts")
+        reply = announced(latest, book.receipt_total(case_id), "receipts")
         reply["case_id"] = case_id
         reply["open"] = None if runs.empty(current) else runs.as_dict(current)
         return 200, reply

@@ -360,3 +360,26 @@ def test_a_turn_under_a_case_with_a_stored_run_dates_an_old_yes_and_composes_no_
         r"You approved this exact call at \d\d:\d\d and it may already have run\.",
         str(card["rationale"]),
     ), card
+
+
+def test_the_runs_route_says_how_many_of_the_whole_history_it_shows(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    from athena.adopt import receipts as runs
+    from athena.contracts.adopt import Receipt
+
+    case_id = _case(daemon)
+    book = CaseBook(daemon.brain)
+    stamp = datetime(2026, 1, 5, 9, 0, tzinfo=UTC)
+    for n in range(1, 31):
+        day = iso(stamp + timedelta(days=7 * n))
+        book.append_receipt(
+            case_id,
+            Receipt(
+                case_id=case_id, conversation_id="", until=day, closed_by="done", closed_at=day
+            ),
+        )
+    body = live.request(f"/adopt/cases/{case_id}/runs").body
+    assert body["showing"] == runs.KEPT_RECEIPTS == len(body["receipts"])
+    assert body["total"] == 30
+    assert body["footer"] == f"(showing {runs.KEPT_RECEIPTS} of 30)"
