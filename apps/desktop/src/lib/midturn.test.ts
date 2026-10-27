@@ -48,6 +48,9 @@ describe("classifyMidTurn", () => {
     "cancellation fees for last month",
     "Thanks!",
     "also look at the contacts page and tell me who is new",
+    "stop-loss orders for March next",
+    "wait-list the new signups after this",
+    "cancel-by dates for the open invoices",
   ];
 
   it.each(interrupts)("interrupts on %j", (text) => {

@@ -69,7 +69,8 @@ export function classifyMidTurn(text: string): MidTurn {
 function leadsWithCue(rest: string): boolean {
   // "no" is a cue only on its own: "no," "no." "no!" or the whole message. "no problem" is not.
   if (/^no(?:[,.!]|$)/.test(rest)) return true;
-  return LEADS.some((cue) => rest === cue || new RegExp(`^${escape(cue)}(?![a-z'])`).test(rest));
+  // A hyphen joins the cue into another word ("stop-loss", "wait-list"), so it ends no cue either.
+  return LEADS.some((cue) => rest === cue || new RegExp(`^${escape(cue)}(?![a-z'-])`).test(rest));
 }
 
 /**
