@@ -1,5 +1,6 @@
 /**
- * The Adopt studio's wire contract on the desktop side — mirrors src/athena/adopt/contract.py (ADR 0097).
+ * The Adopt studio's wire contract on the desktop side — mirrors src/athena/contracts/adopt.py (ADR 0097),
+ * and tests/contracts/test_adopt_parity.py holds the two to each other.
  *
  * Absent values: an optional string is "", an optional number or object is null, a list is []; a key is
  * never omitted. Every event carries `seq`; a reconnect asks `GET /adopt/<sid>/events?after=<seq>`.
