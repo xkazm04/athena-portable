@@ -6,7 +6,9 @@ delta the operator used to assemble by hand:
 
 - **Matched pairs only.** A pair present in one run is named (``only_in_base``/``only_in_head``)
   and left out of every number; every section says ``over N matched pairs`` (a re-run is a
-  second sample, so its n and its set are part of the figure).
+  second sample, so its n and its set are part of the figure). A matched pair judged on one side
+  only (its judge failed) is named (``unjudged``) and left out of the judge-derived sections,
+  whose ``over`` counts the pairs judged on both sides: a side with no verdict is not a loss.
 - **Flips per pair.** A criterion that went fail->pass is ``+n``, pass->fail ``-n``, so one loss
   and one gain under an unchanged total stay visible. A ``null`` criterion is not evaluable:
   null->value counts in ``became_evaluable`` and value->null in ``became_unevaluable``, never as
@@ -65,6 +67,8 @@ class Comparison:
     instrument_head: Mapping[str, Any] | None
     instrument_moved: tuple[str, ...]
     mixed: bool
+    #: Matched pairs judged on one side only: out of the criteria, adopt and findings numbers.
+    unjudged: tuple[str, ...] = ()
     criteria: dict[str, Any] = field(default_factory=dict)
     pairs: list[dict[str, Any]] = field(default_factory=list)
     adopt: dict[str, Any] = field(default_factory=dict)
@@ -84,6 +88,7 @@ class Comparison:
             "matched": list(self.matched),
             "only_in_base": list(self.only_in_base),
             "only_in_head": list(self.only_in_head),
+            "unjudged": list(self.unjudged),
             "instrument": {
                 "base": dict(self.instrument_base) if self.instrument_base else "unknown",
                 "head": dict(self.instrument_head) if self.instrument_head else "unknown",
@@ -180,11 +185,17 @@ def compare(base_dir: Path, head_dir: Path) -> Comparison:
     over = _over(len(matched))
     before = [base[p] for p in matched]
     after = [head[p] for p in matched]
+    # The judge-derived sections read only the pairs both runs judged.
+    judged = tuple(p for p in matched if _judge(base[p]) and _judge(head[p]))
+    unjudged = tuple(p for p in matched if p not in judged)
+    over_judged = _over(len(judged))
+    judged_before = [base[p] for p in judged]
+    judged_after = [head[p] for p in judged]
 
     pairs: list[dict[str, Any]] = []
     totals = Counter[str]()
     adopt_changed: list[dict[str, Any]] = []
-    for pid in matched:
+    for pid in judged:
         old, new = _criteria(base[pid]), _criteria(head[pid])
         row: dict[str, Any] = {
             "pair": pid,
@@ -247,11 +258,12 @@ def compare(base_dir: Path, head_dir: Path) -> Comparison:
         instrument_head=inst_head,
         instrument_moved=moved,
         mixed=mixed,
+        unjudged=unjudged,
         criteria={
-            "over": over,
+            "over": over_judged,
             "mixed": mixed,
-            "before": _counts(before),
-            "after": _counts(after),
+            "before": _counts(judged_before),
+            "after": _counts(judged_after),
             "fail_to_pass": totals["fail_to_pass"],
             "pass_to_fail": totals["pass_to_fail"],
             "became_evaluable": totals["became_evaluable"],
@@ -259,17 +271,17 @@ def compare(base_dir: Path, head_dir: Path) -> Comparison:
         },
         pairs=pairs,
         adopt={
-            "over": over,
+            "over": over_judged,
             "mixed": mixed,
-            "before": adopt_side(before),
-            "after": adopt_side(after),
+            "before": adopt_side(judged_before),
+            "after": adopt_side(judged_after),
             "changed": adopt_changed,
         },
         findings={
-            "over": over,
+            "over": over_judged,
             "mixed": mixed,
-            "before": findings_side(before),
-            "after": findings_side(after),
+            "before": findings_side(judged_before),
+            "after": findings_side(judged_after),
         },
         brief={
             "over": over,
@@ -329,6 +341,12 @@ def compare_md(c: Comparison) -> str:
             "",
             f"Left out of every number: only in base {_names(c.only_in_base)}; "
             f"only in head {_names(c.only_in_head)}.",
+        ]
+    if c.unjudged:
+        lines += [
+            "",
+            f"Left out of the criteria, adopt and findings numbers, judged on one side only: "
+            f"{_names(c.unjudged)}.",
         ]
 
     crit = c.criteria

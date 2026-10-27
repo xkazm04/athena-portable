@@ -164,3 +164,29 @@ def test_findings_and_known_cost_each_side(tmp_path: Path) -> None:
     assert "known_usd" not in c.cost["before"] and c.cost["before"]["unpriced_pairs"] == 1
     assert c.cost["after"] == {"known_usd": 0.5, "unpriced_pairs": 0}
     json.dumps(c.as_dict())
+
+
+def test_a_pair_judged_on_one_side_only_is_named_and_left_out_of_the_judge_numbers(
+    tmp_path: Path,
+) -> None:
+    """A head pair whose judge failed has no criteria: counting its side anyway reads as three
+    passes lost "over 1 matched pair" when nothing was measured on that side."""
+    unjudged = _dump("b--tom", [])
+    unjudged["judge"] = None
+    unjudged["complete"] = False
+    unjudged["failure"] = "judge: timeout"
+    base = _run(
+        tmp_path, "base", [_dump("a--rosa", [True, False]), _dump("b--tom", [True, True, True])]
+    )
+    head = _run(tmp_path, "head", [_dump("a--rosa", [True, True]), unjudged])
+    c = compare(base, head)
+    assert c.n == 2 and c.unjudged == ("b--tom",)
+    assert c.criteria["over"] == "over 1 matched pair"
+    assert c.criteria["before"] == {"pass": 1, "fail": 1, "not_evaluable": 0}
+    assert c.criteria["after"] == {"pass": 2, "fail": 0, "not_evaluable": 0}
+    assert c.adopt["before"]["maybe"] == c.adopt["after"]["maybe"] == 1
+    assert c.as_dict()["unjudged"] == ["b--tom"]
+    md = compare_md(c)
+    assert "judged on one side only" in md and "b--tom" in md
+    # The brief and the cost read the dumps, not the judge: still over both matched pairs.
+    assert c.brief["over"] == c.cost["over"] == "over 2 matched pairs"
