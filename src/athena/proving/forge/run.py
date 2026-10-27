@@ -6,7 +6,6 @@ disk and stops cleanly, saying ``(showing N of M)``, when a purse is spent.
 
 from __future__ import annotations
 
-import json
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,9 +24,7 @@ from athena.proving.playbooks.spec import PlaybookError
 from athena.proving.report import announce
 from athena.proving.roles import RoleCaller, RoleClient
 
-__all__ = ["Forge", "Stage"]
-
-Stage = str
+__all__ = ["Forge", "purse"]
 
 
 @dataclass
@@ -237,7 +234,3 @@ def purse(caps: Mapping[str, float], runlog: Path) -> Budget:
     budget = Budget(caps={NEMOTRON: caps[NEMOTRON], CLAUDE: caps[CLAUDE]})
     restore_budget(budget, runlog)
     return budget
-
-
-def dumps(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False)

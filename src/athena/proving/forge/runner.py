@@ -16,7 +16,6 @@ import json
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
-from pathlib import Path
 from typing import Any
 
 from athena.proving.budget import CLAUDE, Budget
@@ -164,7 +163,3 @@ def bench_variants(
         word = kept.get("verdict", {}).get("word", "?")
         out.lines.append(f"{name}: {word}, ${cost if cost is not None else '?'}")
     return out
-
-
-def work_root(store: ForgeDir) -> Path:
-    return store.work
