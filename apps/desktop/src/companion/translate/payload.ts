@@ -352,6 +352,17 @@ export function composeTool(t: ToolName, p: Json, ok: boolean, ctx: TurnContext)
       tone: "fail",
     };
   }
+  // A call that failed in words rather than JSON (a thrown error, "refused"): it did not happen, so
+  // it never reads in the past tense of what it would have done.
+  if (!ok && (typeof p === "string" || p === null)) {
+    const said = typeof p === "string" ? p.trim() : "";
+    return {
+      title: `Could not ${t.verb} ${objectPhrase(t, true)}${sfx}`.replace(/\s+/g, " ").trim(),
+      sub: said ? cap(said.length > 140 ? said.slice(0, 137) + "..." : said) : "The app reported a problem.",
+      detail: { kind: "none" },
+      tone: "fail",
+    };
+  }
   const tone = ok ? "ok" : "fail";
   const list = mainArray(p);
   if (list) return { ...composeList(t, p, list.rows, list.key), tone };

@@ -277,3 +277,10 @@ test("every arrowless line the run store writes is read as its own line, never a
     expect(m.title, line).not.toMatch(/^(Ran|Voided)\b|(first|\d)ed$/);
   }
 });
+
+test("a call that failed in words never reads as done", () => {
+  const thrown = translate({ id: "f", kind: "tool", tier: 1, ok: false, text: "host.ledgerbox.send_reminder → Error: the tab closed" });
+  expect(thrown).toMatchObject({ tone: "fail", title: "Could not send a reminder in Ledgerbox", sub: "Error: the tab closed" });
+  const refused = translate({ id: "g", kind: "tool", tier: 1, ok: false, text: "host.ledgerbox.void_invoice → refused" });
+  expect(refused).toMatchObject({ tone: "fail", title: "Could not void invoice in Ledgerbox", sub: "Refused" });
+});
