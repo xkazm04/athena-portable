@@ -226,3 +226,12 @@ test("standing guard 7: every fixture message reads byte for byte as it did (pro
   expect(all).toHaveLength(31);
   expect(fnv(JSON.stringify(all))).toBe("324f76fe");
 });
+
+// The kit's page shape with nothing in it (`{items: [], showing: 0, of: 0}`) is an ordinary answer.
+test("an empty list reads as a read that found nothing, and never throws", () => {
+  const m = translate({ id: "e", kind: "tool", tier: 1, ok: true, text: 'host.ledgerbox.list_overdue → {"items":[],"showing":0,"of":0}' });
+  expect(m.tone).toBe("ok");
+  expect(m.title).toBe("Listed the overdue in Ledgerbox");
+  expect(m.sub).toBe("Nothing found.");
+  expect(m.detail).toEqual({ kind: "none" });
+});

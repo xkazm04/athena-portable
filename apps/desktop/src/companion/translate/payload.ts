@@ -264,6 +264,8 @@ export interface Composed {
 
 function composeList(t: ToolName, p: JsonObject | Json, rows: JsonObject[], key: string): Composed {
   const sfx = appSuffix(t);
+  // The kit's page with nothing on it (`{items: [], showing: 0, of: 0}`): a read that found nothing.
+  if (!rows.length) return { title: `${past(t.verb)} ${objectPhrase(t, true)}${sfx}`.replace(/\s+/g, " ").trim(), sub: "Nothing found.", detail: { kind: "none" }, tone: "ok" };
   const cmp = key === "items" ? null : compareDetail(rows);
   if (cmp) {
     const rank = (r: CompareRow) => (r.delta === Infinity ? 1e9 : Math.abs(r.delta));
