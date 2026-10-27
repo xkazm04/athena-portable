@@ -69,6 +69,13 @@ function el(tag, props = {}, ...children) {
 
 function show(...nodes) {
   app.replaceChildren(...nodes);
+  // <main> is not a live region (every streamed delta would be read out); a new panel is announced
+  // by taking focus on its heading instead.
+  const heading = app.querySelector(".panel h2, h2");
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  }
 }
 
 function setStatus(text, off = false) {
@@ -374,8 +381,11 @@ async function hello() {
 function renderChat() {
   title.textContent = `Athena on ${chat.beacon}`;
   const bannerNode = el("p", { class: "banner", hidden: true, role: "alert" });
-  const cards = el("section", { class: "cards", "aria-label": "Waiting on you" });
-  const log = el("section", { class: "log", "aria-label": "Conversation" });
+  // Cards redraw only when they change (sameCards), so a polite region says each one once.
+  const cards = el("section", { class: "cards", "aria-label": "Waiting on you", "aria-live": "polite" });
+  const log = el("section", { class: "log", role: "log", "aria-label": "Conversation" });
+  // Her answer is read once, finished, from here; while it streams its message is aria-hidden.
+  const said = el("p", { class: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" });
   const input = el("textarea", { rows: "1", placeholder: "Ask Athena", "aria-label": "Message", enterkeyhint: "send" });
   const send = el("button", { type: "submit" }, "Send");
   const composer = el(
@@ -399,8 +409,8 @@ function renderChat() {
     input.style.height = "auto";
     input.style.height = `${Math.min(input.scrollHeight, 160)}px`;
   });
-  chat.nodes = { banner: bannerNode, cards, log, input, send };
-  show(bannerNode, cards, log, composer);
+  chat.nodes = { banner: bannerNode, cards, log, input, send, said };
+  show(bannerNode, cards, log, composer, said);
   for (const entry of chat.log) log.append(messageNode(entry));
   if (!chat.log.length) log.append(el("p", { class: "note" }, `Ask Athena on ${chat.beacon} anything you would ask her there.`));
   renderCards();
@@ -421,6 +431,19 @@ function say(who, text) {
   chat.nodes.log.append(node);
   node.scrollIntoView({ block: "end", behavior: "smooth" });
   return { entry, node };
+}
+
+/** Keep a streaming message out of the reader's way, then read it once when the turn is done. */
+function hold(said) {
+  said.node.setAttribute("aria-hidden", "true");
+  said.held = true;
+}
+
+function release(said) {
+  if (!said || !said.held) return;
+  said.held = false;
+  said.node.removeAttribute("aria-hidden");
+  if (chat.nodes) chat.nodes.said.textContent = said.entry.text;
 }
 
 function settle(said, text) {
@@ -482,6 +505,11 @@ async function follow(requestId, open = null) {
   const reader = createTurnReader({ text: open ? open.text || "" : "" });
   let her = open && open.text ? lastHer() : null;
   let refused = null;
+  let streaming = null; // the message whose words are still being held back
+  if (her) {
+    hold(her);
+    streaming = her;
+  }
   const final = await followTurn({
     token: chat.saved.token,
     requestId,
@@ -490,14 +518,25 @@ async function follow(requestId, open = null) {
     memo: () => ({ text: reader.text }),
     onEvent: (event) => {
       for (const op of reader.apply(event)) {
-        if (op.op === "say" && op.who === "her") her = say("her", op.text);
+        if (op.op === "say" && op.who === "her") {
+          her = say("her", op.text);
+          hold(her);
+          streaming = her;
+        }
         else if (op.op === "say") say(op.who, op.text);
         else if (op.op === "settle") {
           if (her) settle(her, op.text);
-          else her = say("her", op.text);
+          else {
+            her = say("her", op.text);
+            hold(her);
+            streaming = her;
+          }
         } else if (op.op === "cards") loadCards();
       }
-      if (event.kind === "turn.finished") her = null;
+      if (event.kind === "turn.finished") {
+        release(her);
+        her = null;
+      }
       // A card now waits on the person: the composer is theirs again while the turn waits.
       if (event.kind === "decision.requested") busy(false);
     },
@@ -507,6 +546,7 @@ async function follow(requestId, open = null) {
       refused = info && typeof info.status === "number" ? info.status : null;
     },
   });
+  release(streaming); // a turn that ended without turn.finished still gets its words read, once
   if (final === "revoked") return revoked();
   const words = turnMessage(final, { beacon: chat.beacon, status: final === "error" ? refused : null });
   if (words) say("trouble", words);

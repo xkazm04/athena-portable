@@ -104,3 +104,62 @@ test("a phone the beacon removed sends nothing more with its dead token when the
   assert.deepEqual(knocks, [], "requests carrying the revoked bearer after the wake");
   phone.close();
 });
+
+// --- a streamed answer is announced once ----------------------------------------------------------
+
+/** Whether a node is inside a live region a screen reader announces, as the ARIA tree says. */
+function announced(node) {
+  for (let at = node.nodeType === 1 ? node : node.parentElement; at; at = at.parentElement) {
+    if (at.getAttribute("aria-hidden") === "true") return false;
+    const live = at.getAttribute("aria-live");
+    if (live === "off") return false;
+    if (live === "polite" || live === "assertive") return true;
+    if (["log", "status", "alert"].includes(at.getAttribute("role"))) return true;
+  }
+  return false;
+}
+
+test("a streamed answer reaches a screen reader once, not once per delta", { skip }, async () => {
+  const words = Array.from({ length: 20 }, (_, index) => `ans${index} `);
+  const events = [...words.map((text) => ({ kind: "text.delta", text })), { kind: "turn.finished", text: words.join("") }];
+  const phone = await page({
+    route: (method, path) => {
+      if (path === "/peer/hello") return json(200, { name: "Desk" });
+      if (path === "/peer/decisions") return json(200, { pending: [] });
+      if (path === "/peer/message") return json(200, { request_id: "job_0123456789ab" });
+      if (path.startsWith("/peer/turns/")) return sse(events);
+      return json(404, {});
+    },
+  });
+  await until(() => phone.document.querySelector(".composer"), "the chat view");
+  let heard = 0;
+  const watcher = new phone.window.MutationObserver((records) => {
+    for (const record of records) {
+      const added = record.type === "characterData" ? [record.target] : [...record.addedNodes].filter((node) => announced(node));
+      const text = record.type === "characterData" ? record.target.data : added.map((node) => node.textContent).join("");
+      if (text.includes("ans") && announced(record.target)) heard += 1;
+    }
+  });
+  watcher.observe(phone.document.body, { childList: true, characterData: true, subtree: true });
+  phone.document.querySelector(".composer textarea").value = "hello";
+  phone.document.querySelector(".composer").dispatchEvent(new phone.window.Event("submit", { cancelable: true }));
+  await until(() => phone.requests.some((request) => request.path.startsWith("/peer/turns/")), "the turn");
+  await until(() => !phone.document.querySelector(".composer button").disabled, "the turn to finish");
+  await quiet();
+  watcher.disconnect();
+  assert.ok(phone.document.querySelector(".msg.her").textContent.includes("ans19"), "the answer is on the page");
+  assert.equal(phone.document.querySelector(".msg.her").hasAttribute("aria-hidden"), false, "and readable once finished");
+  assert.equal(heard, 1, "announcements of her answer");
+  assert.equal(phone.document.getElementById("app").hasAttribute("aria-live"), false, "<main> must not be one big live region");
+  phone.close();
+});
+
+test("a waiting card is drawn inside a live region, so the person hears that Athena is waiting", { skip }, async () => {
+  const card = { id: "dec_1", action: "connector.setup.install_overlay", rationale: "r", params: {}, options: ["approve", "decline"] };
+  const phone = await page({
+    route: (method, path) => (path === "/peer/decisions" ? json(200, { pending: [card] }) : json(200, { name: "Desk" })),
+  });
+  const drawn = await until(() => phone.document.querySelector("article.card"), "the card");
+  assert.equal(announced(drawn), true, "a card the person must answer is in a live region");
+  phone.close();
+});

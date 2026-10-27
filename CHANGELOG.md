@@ -1141,6 +1141,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(peer): a phone the beacon removed forgets its token in memory too and stops knocking on every wake.` Stabilize Lane B (error-handler): `forget()` left `chat.saved`, so each wake sent GET /peer/hello and /peer/decisions with the revoked bearer (2 per wake before, 0 after); the new jsdom suite `tests/peer/phone/app.test.mjs` runs under pytest.
 - `fix(adopt): approving the same rev twice in one session writes one approval, not two.` Stabilize Lane B (bounty-hunter): a double click or retried approve POST appended a second approval and episode; the session now remembers the rev it saved and answers the case unchanged. A reopened case still takes a new approval.
 - fix(proving): the legs-per-interview formula is kept once (`interview_legs`) and counted off the scripted adopt loop at 1, 3 and MAX_ROUNDS cards, so the `--dry` estimates follow the loop (scan-sweep Lane B).
+- `fix(peer): the phone page reads a streamed answer to a screen reader once, not once per delta.` Stabilize Lane B (accessibility-checker): `<main>` is no longer a live region; the conversation is `role=log`, a streaming message is `aria-hidden` and its finished text is announced once from a status node, cards keep a polite region and a new panel takes focus on its heading (20 announcements of one answer before, 1 after, jsdom harness).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
