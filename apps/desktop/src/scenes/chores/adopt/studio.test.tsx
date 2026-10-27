@@ -35,6 +35,7 @@ import { adoptPath, chorePath } from "../model";
 import ChoresView from "../view";
 import type { AdoptDeps, Dictation } from "./deps";
 import { PARK_LIMIT_MS, forgetParked, parked } from "./park";
+import { MAX_TRIES } from "./session";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -451,6 +452,13 @@ describe("the session", () => {
     expect(host.textContent).toContain(
       "This conversation has ended (idle for two hours)",
     );
+  });
+
+  it("counts its reconnects against the hook's own limit", async () => {
+    await show({ client, dictation, wait: () => new Promise(() => {}) });
+    client.live.push(new Error("reset"));
+    await flush();
+    expect(text(".ad-banner")).toBe(`The stream dropped. Reconnecting (try 1 of ${MAX_TRIES})…`);
   });
 
   it("follows a dropped stream again from the last seq, backing off, and gives up after five tries with a Retry", async () => {

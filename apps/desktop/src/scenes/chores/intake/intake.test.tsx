@@ -20,6 +20,7 @@ import type { IntakeClient } from "@/lib/intake-client";
 import type { PlaybooksModel } from "@/modules/playbooks/model";
 
 import type { AdoptDeps, Dictation } from "../adopt/deps";
+import { MAX_TRIES } from "../adopt/session";
 import { fixtures } from "../fixtures";
 import { adoptPath, chorePath, newChorePath } from "../model";
 import ChoresView from "../view";
@@ -585,6 +586,14 @@ describe("the states, in words, each with a way back", () => {
     await show();
     expect(text()).toContain("Reading what she already knows");
     expect(button("Close")).not.toBeNull();
+  });
+
+  it("counts its reconnects against the hook's own limit", async () => {
+    await show({ deps: deps({ wait: () => new Promise(() => {}) }) });
+    await feed({ kind: "adopt.say", text: "Hi" });
+    intake.live.push(new Error("reset"));
+    await flush();
+    expect(text()).toContain(`The stream dropped. Reconnecting (try 1 of ${MAX_TRIES})…`);
   });
 
   it("says reconnecting, then gives up with Retry that follows again", async () => {

@@ -1064,6 +1064,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): "Leave anyway?" takes the keyboard focus on Stay, in the studio and the front door.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, accessibility-checker): the inline alertdialog moves focus into itself on open; studio.test.tsx and intake.test.tsx.
 - `fix(adopt): a brief leg the engine failed is said beside the fallback brief, as a failed audit is.` scan-sweep stabilize (adopt-engine, observability-auditor): a timeout or engine error on the brief leg now emits `adopt.error` before the playbook's floor brief; a malformed brief stays counted and silent.
 - `fix(chores): the studio's file picker offers the document kinds the refusal admits, from one list instead of two.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the DropZone's `accept` reads `DOCUMENT_MIMES`; studio.test.tsx, seeded red with a new kind against the old literal.
+- `fix(chores): the reconnect banner counts against the session hook's own limit, not a 5 typed twice beside it.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the studio's and the front door's banners read `MAX_TRIES`; seeded red with a changed limit against the old literal.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

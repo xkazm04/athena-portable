@@ -26,7 +26,7 @@ import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 import { BriefCard, ResearchTray, SlotsBoard } from "./casepanel";
 import Conversation from "./conversation";
 import type { AdoptDeps } from "./deps";
-import { useAdoptSession } from "./session";
+import { MAX_TRIES, useAdoptSession } from "./session";
 import Showcase from "./showcase";
 import { approval, dayOf, phase } from "./state";
 import "./adopt.css";
@@ -219,7 +219,7 @@ export default function Studio({
           <p
             className="ad-banner"
             role="status"
-          >{`The stream dropped. Reconnecting (try ${s.tries} of 5)…`}</p>
+          >{`The stream dropped. Reconnecting (try ${s.tries} of ${MAX_TRIES})…`}</p>
         ) : null}
         {s.conn === "lost" ? (
           <div className="ad-banner ad-banner--lost">

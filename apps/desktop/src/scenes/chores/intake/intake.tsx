@@ -20,6 +20,7 @@ import type { PlaybooksModel } from "@/modules/playbooks/model";
 import type { AdoptDeps } from "../adopt/deps";
 import Conversation, { type ConversationWords } from "../adopt/conversation";
 import "../adopt/adopt.css";
+import { MAX_TRIES } from "../adopt/session";
 import { useIntakeSession } from "./session";
 import { hasSaid } from "./state";
 import VerdictCard from "./verdict";
@@ -158,7 +159,7 @@ export default function Intake({
           <p
             className="ad-banner"
             role="status"
-          >{`The stream dropped. Reconnecting (try ${s.tries} of 5)…`}</p>
+          >{`The stream dropped. Reconnecting (try ${s.tries} of ${MAX_TRIES})…`}</p>
         ) : null}
         {s.conn === "lost" ? (
           <div className="ad-banner ad-banner--lost">
