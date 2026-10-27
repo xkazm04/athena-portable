@@ -63,10 +63,16 @@ import { gzipSync } from "node:zlib";
  * (0a0279fa), and two measured fixes wait on room - one shared daemon request door (+46 B) and the
  * console catching an OS reduced-motion change (+72 B). The ~80 B left over is working room, to
  * lower at the next measurement.
+ *
+ * Raised 2026-10-27 to 167,350 B (+150 B), owner-approved after the Wavefront round (786abb45)
+ * measured 167,325 B: removing the Chores featured band costs +164 B on its own, because the
+ * bundler then splits `StatusDot` into a shared chunk of its own instead of inlining it; the seal
+ * coming to the avatar costs +57 B; folding the two skins' water into one lazy `SkinWater` module
+ * saved 45 B. The 25 B left over is working room, to lower at the next measurement.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 167_200,
+  ceilingBytes: 167_350,
   targetBytes: 125_000,
 };
 
