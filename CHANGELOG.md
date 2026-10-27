@@ -1170,6 +1170,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - fix(peer): a code that matches no pairing window counts against the windows open when it was typed, so yesterday's typos no longer close today's window; the fifth wrong code a window faces still closes it, and the lifetime counter is gone (scan-sweep Lane C, owner-approved).
 - `fix(mind): the Undo bar says what it will keep or forget, with its separator outside the live region.` Stabilize Lane B: the staged-answer bar announced "Forgetting 1 ·" - a bare count and a dangling dot; it now reads "Forgetting 1 memory", "Keeping 3 memories" or "Keeping both" (one contradiction kept whole), built from the proposals the batch names, and the dot is hidden from assistive tech.
 - `fix(companion): her depth pages are announced once, in the words on screen.` The Record and apps levels labelled both the section and its scrolling region "Record" / "Origins"; the section is now unnamed and the region reads "The record" / "The apps she may act on" (`companion/pages.tsx`).
+- `fix(companion): the welcome's engine line announces the engine state, not its own buttons.` The `role="status"` span wrapped "Check again" / "Try again" / "Use <engine>"; it now holds the sentence only and the buttons sit beside it (`companion/welcome.tsx`).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

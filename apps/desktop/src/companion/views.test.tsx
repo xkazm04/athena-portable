@@ -428,6 +428,25 @@ test("welcome: a failed start shows the reason and a Try again button that resta
   expect(out).not.toContain("Check again in a moment");
 });
 
+test("the engine line's live region announces the state, not the buttons beside it", () => {
+  const model = fixtures["welcome"]();
+  model.welcome.engineView = {
+    state: "missing",
+    text: "Athena could not start on Claude Code.",
+    sub: "spawn exited with code 1",
+    offer: { id: "codex", label: "Codex" },
+    reason: "spawn exited with code 1",
+    retry: { id: "claude_code", label: "Try again" },
+    checking: false,
+  };
+  const out = renderToStaticMarkup(createElement(CompanionView, { model }));
+  const status = /<span role="status">(.*?)<\/span>/s.exec(out);
+  expect(status?.[1]).toContain("Athena could not start on Claude Code.");
+  expect(status?.[1]).not.toContain("<button");
+  expect(out).toContain('data-act="retry-engine"');
+  expect(out).toContain('data-act="use-engine"');
+});
+
 test("each scrollable tab the keyboard can focus is a named region, as Talk's log is", () => {
   expect(html("ledger")).toContain('role="log" aria-label="Conversation"');
   // In the words on screen, and once: the section is not a second landmark of the same name.

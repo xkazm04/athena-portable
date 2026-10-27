@@ -14,8 +14,10 @@ function EngineFact({ view, actions }: { view: EngineView; actions: CompanionMod
   return (
     <li className="wl-engine" data-engine={view.state}>
       <Icon name={icon} className={view.state === "ready" ? "ok" : view.state === "missing" ? "warn" : "wait"} />
-      <span role="status">
-        <b>{view.text}</b> {view.sub}
+      <div>
+        <span role="status">
+          <b>{view.text}</b> {view.sub}
+        </span>
         {view.state === "missing" ? (
           <span className="wl-engine-act">
             {view.retry ? (
@@ -34,7 +36,7 @@ function EngineFact({ view, actions }: { view: EngineView; actions: CompanionMod
             ) : null}
           </span>
         ) : null}
-      </span>
+      </div>
     </li>
   );
 }
