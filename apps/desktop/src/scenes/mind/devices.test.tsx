@@ -589,6 +589,29 @@ describe("driven", () => {
     expect(host.querySelector("svg.qr")).not.toBeNull();
   });
 
+  it("says so when the address could not be copied, rather than nothing", async () => {
+    const model = withSpies(deviceFixtures["pairing-phone"]!);
+    const phone = { ...model.state.opened.phone!, expires_at: "2999-01-01T00:00:00Z" };
+    show({ ...model, state: { ...model.state, opened: { phone } } });
+    press(byLabel("Add a phone"));
+    const copy = () => [...host.querySelectorAll("button")].find((b) => b.textContent === "Copy" || b.textContent === "Copied")!;
+    const clipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+    try {
+      // Refused (no permission, an insecure origin): a sentence, never a silent press.
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } });
+      press(copy());
+      await vi.waitFor(() => expect(host.textContent).toContain("Could not copy it; select the address and copy it by hand."), { timeout: 5000 });
+      // Copied: the sentence goes and the button says so.
+      Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.resolve() } });
+      press(copy());
+      await vi.waitFor(() => expect(copy().textContent).toBe("Copied"), { timeout: 5000 });
+      expect(host.textContent).not.toContain("Could not copy it");
+    } finally {
+      if (clipboard) Object.defineProperty(navigator, "clipboard", clipboard);
+      else delete (navigator as { clipboard?: unknown }).clipboard;
+    }
+  }, 15_000);
+
   it("keeps Tab inside the wizard", () => {
     show(withSpies(deviceFixtures.typical!));
     press(byLabel("Add a computer"));

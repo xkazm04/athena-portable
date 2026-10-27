@@ -510,20 +510,25 @@ function PhoneCode({ model, now, spent, onMint }: { model: DevicesModel; now: nu
 
 /** The phone's address on one small line, to copy when no camera is at hand. */
 function AddressLine({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<boolean | null>(null);
   const copy = () => {
-    void navigator.clipboard
-      ?.writeText(url)
-      .then(() => setCopied(true))
-      .catch(() => setCopied(false));
+    // No clipboard (an insecure origin) or a refusal is said, never a press that does nothing.
+    const write = navigator.clipboard?.writeText(url) ?? Promise.reject(new Error("no clipboard"));
+    void write.then(
+      () => setCopied(true),
+      () => setCopied(false),
+    );
   };
   return (
-    <div className="cwizard__address">
-      <code className="cwizard__url">{url}</code>
-      <Button size="sm" variant="ghost" onClick={copy}>
-        {copied ? "Copied" : "Copy"}
-      </Button>
-    </div>
+    <>
+      <div className="cwizard__address">
+        <code className="cwizard__url">{url}</code>
+        <Button size="sm" variant="ghost" onClick={copy}>
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+      <Refusal text={copied === false ? "Could not copy it; select the address and copy it by hand." : null} />
+    </>
   );
 }
 
