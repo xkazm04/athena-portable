@@ -28,7 +28,7 @@ from athena.proving.docread.corpus import (
     units_of,
     write_docs,
 )
-from athena.proving.docread.dry import dry_reading
+from athena.proving.docread.dry import dry_reading, is_dry
 from athena.proving.docread.read import claude_tier, read_claude, read_vl
 from athena.proving.docread.report import render_markdown
 from athena.proving.docread.score import Reading, proof, score_readers, score_unit
@@ -115,7 +115,13 @@ def run_read(run: Run, *, echo: Callable[[str], None] = print) -> tuple[Budget, 
     log = RunLog(None if config.dry else run.root / "ledger.jsonl")
     caller = RoleCaller(budget, log)
     by_id = {s.id: s for s in run.scenarios}
-    done = {k: v for k, v in _saved(run.answers).items() if v.values is not None}
+    # A fixture answer is not done for a live read (nor a live one for a dry read): a live
+    # ``read --run`` over a dry folder reads every unit instead of keeping the fixtures.
+    done = {
+        k: v
+        for k, v in _saved(run.answers).items()
+        if v.values is not None and is_dry(v) == config.dry
+    }
     tier: Tier | None = claude_tier() if "claude" in config.readers and not config.dry else None
     for reader in config.readers:
         for unit in run.units:
@@ -143,6 +149,9 @@ def run_score(
     """Score the answers on disk and write ``report.json`` / ``report.md``."""
     config = run.config
     readings = list(_saved(run.answers).values())
+    # Dry is what the answers are, not the flag this ``score`` was given: one fixture answer
+    # among them and the report is a plumbing check, never a measurement.
+    dry = config.dry or any(is_dry(r) for r in readings)
     scenarios = {s.id: s for s in run.scenarios}
     paired = score_readers(scenarios, run.units, readings, paired=True)
     everything = score_readers(scenarios, run.units, readings, paired=False)
@@ -150,7 +159,7 @@ def run_score(
     for name, stats in everything.items():
         if stats.get("model"):
             models[name] = str(stats["model"])
-    if not config.dry:
+    if not dry:
         if "vl" in config.readers:
             models["vl"] = models.get("vl") or SUPER_VL_MODEL
         try:
@@ -161,7 +170,7 @@ def run_score(
             pass
     report: dict[str, Any] = {
         "run_id": run.root.parent.name,
-        "dry": config.dry,
+        "dry": dry,
         "experiment": "docread",
         "scenarios": [s.id for s in run.scenarios],
         "degradations": list(config.degradations),

@@ -207,3 +207,33 @@ def test_live_read_needs_a_key_and_a_cli(tmp_path: Path, monkeypatch: Any) -> No
     monkeypatch.chdir(tmp_path)
     run = tmp_path / "r"
     assert main(["read", "--run", str(run), "--reader", "vl"]) == 2
+
+
+def test_a_dry_runs_answers_are_never_scored_as_a_measurement(tmp_path: Path) -> None:
+    dry = Config(scenarios=("easy-data-broker",), degradations=("clean",), dry=True)
+    run = open_run(Config(**{**dry.__dict__, "out": str(tmp_path)}))
+    run_read(run, echo=lambda _s: None)
+    # `score --run <dir>` without --dry: the fixture answers still make a dry report.
+    rescored = open_run(Config(**{**dry.__dict__, "dry": False, "run": str(run.root.parent)}))
+    report = run_score(rescored, tier=Tier("claude-sonnet-5-5", "low"))
+    assert report["dry"] is True
+    assert "effort" not in report["models"].get("claude", "")
+
+
+def test_a_live_read_does_not_take_a_dry_answer_as_done(tmp_path: Path, monkeypatch: Any) -> None:
+    monkeypatch.setenv("NEBIUS_API_KEY", "k")  # the post below is a fake; nothing leaves
+    dry = Config(
+        scenarios=("easy-data-broker",), degradations=("clean",), readers=("vl",), dry=True
+    )
+    run = open_run(Config(**{**dry.__dict__, "out": str(tmp_path)}))
+    run_read(run, echo=lambda _s: None)
+    post = Post(_vl_body("{}"))
+    live = open_run(
+        Config(**{**dry.__dict__, "dry": False, "run": str(run.root.parent)}), post=post
+    )
+    for unit in live.units:
+        (live.corpus / unit.image).parent.mkdir(parents=True, exist_ok=True)
+        (live.corpus / unit.image).write_bytes(_png(800, 1100))
+    run_read(live, echo=lambda _s: None)
+    assert len(post.sent) == len(live.units) == 3
+    assert run_score(live)["dry"] is False

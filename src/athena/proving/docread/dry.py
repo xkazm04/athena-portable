@@ -13,7 +13,7 @@ from athena.proving.adopt_tiers.scenarios import Scenario
 from athena.proving.docread.corpus import Unit
 from athena.proving.docread.score import Reading
 
-__all__ = ["dry_reading"]
+__all__ = ["DRY_MODELS", "dry_reading", "is_dry"]
 
 #: Per reader and degradation: one in N stated fields is dropped (0 = never).
 _DROP = {
@@ -29,6 +29,13 @@ _DROP = {
 #: One in N units the VL invents a value for a field the document does not state.
 _INVENT = {"vl": 7, "claude": 0}
 _MODEL = {"vl": "dry-fixture-vl", "claude": "dry-fixture-claude"}
+#: The model a dry reading carries: how a run folder's answers say they are fixtures, whatever
+#: flag a later ``read`` or ``score`` is given.
+DRY_MODELS: frozenset[str] = frozenset(_MODEL.values())
+
+
+def is_dry(reading: Reading) -> bool:
+    return reading.model in DRY_MODELS
 
 
 def dry_reading(reader: str, unit: Unit, scenario: Scenario) -> Reading:
