@@ -1149,6 +1149,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - fix(proving): the delta beside an adopt-tiers pick is read over the cells the pick was read over (paired for quality and usage, conditioned for speed), so it agrees with the reason it prints (scan-sweep Lane B).
 - `fix(spaces): promoting a superseded or retired project memory to core answers 409 with the reason instead of 200 and a memory nothing serves.` Stabilize Lane B (ux-reviewer): `Brain.unstamp` refuses a memory a same-project successor closes and a retired forget marker (ADR 0225); recall and the space wall are unchanged.
 - fix(proving): the adopt-tiers audit row counts the same legs in usage and in latency; `audit p50` now includes the brief writer, as the ledger trigger `adopt.audit` already did (scan-sweep Lane B).
+- `fix(voice): the motion worker forgets a cancelled sentence id once its job is skipped, answered or gone.` Stabilize Lane B (bounty-hunter): `MotionWorker.cancelled` grew by every cancel for the life of the helper; it now holds only ids still queued or running (5 ids left after one scripted round before, 0 now).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

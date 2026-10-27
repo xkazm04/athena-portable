@@ -121,16 +121,27 @@ class MotionWorker:
         self.out = out
         self.joyvasa = joyvasa
         self.jobs: queue.Queue[tuple[int, bytes, int] | None] = queue.Queue()
+        #: The ids put and not yet answered or skipped, and the cancelled among them: a cancel is
+        #: kept only while there is a job to skip, so neither set outlives the jobs in flight.
+        self.live: set[int] = set()
         self.cancelled: set[int] = set()
         self.lock = threading.Lock()
         threading.Thread(target=self._run, name="face-motion", daemon=True).start()
 
     def put(self, ident: int, pcm: bytes, sample_rate: int) -> None:
+        with self.lock:
+            self.live.add(ident)
         self.jobs.put((ident, pcm, sample_rate))
 
     def cancel(self, ids: list[int]) -> None:
         with self.lock:
-            self.cancelled.update(ids)
+            self.cancelled.update(i for i in ids if i in self.live)
+
+    def _done(self, ident: int) -> None:
+        """The job is skipped, answered or refused: forget it and any cancel of it."""
+        with self.lock:
+            self.live.discard(ident)
+            self.cancelled.discard(ident)
 
     def _is_cancelled(self, ident: int) -> bool:
         with self.lock:
@@ -142,6 +153,7 @@ class MotionWorker:
             item = self.jobs.get()
             if item is None:
                 return
+            self._done(item[0])
             self.out.send({"type": "error", "id": item[0], "op": "motion", "reason": reason})
 
     def _run(self) -> None:
@@ -201,10 +213,12 @@ class MotionWorker:
                 return
             ident, pcm, sample_rate = item
             if self._is_cancelled(ident):
+                self._done(ident)
                 continue
             try:
                 frames = model.frames(pcm, sample_rate)
             except Exception as exc:
+                self._done(ident)
                 self.out.send(
                     {
                         "type": "error",
@@ -214,7 +228,9 @@ class MotionWorker:
                     }
                 )
                 continue
-            if not self._is_cancelled(ident):
+            answer = not self._is_cancelled(ident)
+            self._done(ident)
+            if answer:
                 self.out.send({"type": "motion", "id": ident, "fps": FPS, "frames": frames})
 
 

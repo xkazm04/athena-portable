@@ -793,6 +793,72 @@ def test_her_motion_leaves_two_logical_cores_to_kokoro() -> None:
     assert cpu_threads(None) == 1
 
 
+# -- the helper's two small honesty fixes (no model: a stub Motion, a made-up phone) --------------
+
+
+class _Sink:
+    def __init__(self) -> None:
+        self.sent: list[dict[str, Any]] = []
+
+    def send(self, message: dict[str, Any]) -> None:
+        self.sent.append(message)
+
+
+def test_the_motion_workers_cancelled_set_is_bounded_by_the_jobs_in_flight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every cancel used to be kept for the life of the helper. Now only a job still queued or
+    running is remembered, and it is forgotten once skipped or finished; a cancel for a job that
+    is gone is not kept at all."""
+    import types
+
+    from athena.channels.voice.face_helper import main as helper_main
+
+    holding, release = threading.Event(), threading.Event()
+
+    class StubMotion:
+        device = "cpu"
+
+        def __init__(self, path: Path) -> None: ...
+
+        def set_steps(self, steps: int) -> None: ...
+
+        def frames(self, pcm: bytes, sample_rate: int) -> list[list[float]]:
+            if pcm == b"hold":
+                holding.set()
+                assert release.wait(5)
+            return [[0.0]]
+
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "athena.channels.voice.face_helper.motion",
+        types.SimpleNamespace(FPS=25, Motion=StubMotion),
+    )
+    sink = _Sink()
+    worker = helper_main.MotionWorker(sink, Path("unused"))  # type: ignore[arg-type]
+    deadline = time.monotonic() + 5
+    while not any(m["type"] == "caps" for m in sink.sent) and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert sink.sent and sink.sent[0]["motion"] is True
+
+    worker.put(1, b"hold", 24_000)
+    assert holding.wait(5)
+    worker.put(2, b"two", 24_000)
+    worker.put(3, b"three", 24_000)
+    worker.cancel([1, 2, 99])  # 1 running, 2 queued, 99 never sent
+    release.set()
+    deadline = time.monotonic() + 5
+    while not [m for m in sink.sent if m["type"] == "motion"] and time.monotonic() < deadline:
+        time.sleep(0.01)
+    worker.cancel([3, 3_000])  # 3 already answered (or about to be), 3000 unknown
+    deadline = time.monotonic() + 5
+    while worker.cancelled and time.monotonic() < deadline:
+        time.sleep(0.01)
+    worker.jobs.put(None)
+    assert [m["id"] for m in sink.sent if m["type"] == "motion"] == [3]
+    assert worker.cancelled == set(), "a cancelled id is forgotten once its job is gone"
+
+
 # -- the real helper, when one is set up -----------------------------------------------------------
 
 
