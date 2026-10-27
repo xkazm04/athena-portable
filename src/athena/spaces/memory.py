@@ -19,7 +19,12 @@ files and must hold its write lock; this module only asks them and shapes the an
 
 **What the counts and the page count.** Every memory the stamp names, live or not: a demoted or
 retired one is still on disk, still in the space, and still goes when the space is erased, so the
-person sees exactly what an erase will take.
+person sees exactly what an erase will take. The one exception is a memory made core's: a
+promotion leaves the stamped original on disk, closed by its core successor (ADR 0234), and it
+has left the project, so neither the counts nor the page show it.
+
+**Both acts replicate** (ADR 0234). A promotion is a new core memory, and an erase writes a
+tombstone first, so a paired PC learns of each the way it learns of any memory.
 """
 
 from __future__ import annotations
@@ -36,6 +41,12 @@ from athena.contracts.spaces import (
 )
 from athena.core.brain.store import Brain
 from athena.core.recall import memory_line, space_always
+
+#: A row of ``n`` that a promotion closed: a successor of another space supersedes it (ADR 0234).
+#: Only a promotion closes across the wall, so this names exactly the memories made core's.
+NOT_PROMOTED = """NOT EXISTS (SELECT 1 FROM companion_supersede s
+    JOIN companion_node c ON c.id = s.node_id
+    WHERE s.superseded_id = n.id AND c.space != n.space)"""
 
 __all__ = [
     "erase_space_memory",
@@ -56,8 +67,8 @@ def space_counts(brain: Brain, space_id: str, *, chores: int = 0) -> SpaceCounts
     marks = ",".join("?" for _ in MEMORY_KINDS)
     with closing(brain.read_connection()) as con:
         rows = con.execute(
-            f"""SELECT kind, COUNT(*) FROM companion_node
-                WHERE space = ? AND kind IN ({marks}) GROUP BY kind""",
+            f"""SELECT n.kind, COUNT(*) FROM companion_node n
+                WHERE n.space = ? AND n.kind IN ({marks}) AND {NOT_PROMOTED} GROUP BY n.kind""",
             (space_id, *MEMORY_KINDS),
         ).fetchall()
     found = {str(kind): int(count) for kind, count in rows}
@@ -95,7 +106,7 @@ def space_memory_page(
     """
     kinds: tuple[str, ...] = (kind,) if kind is not None else MEMORY_KINDS
     marks = ",".join("?" for _ in kinds)
-    where = f"n.space = ? AND n.kind IN ({marks})"
+    where = f"n.space = ? AND n.kind IN ({marks}) AND {NOT_PROMOTED}"
     with closing(brain.read_connection()) as con:
         ((total,),) = con.execute(
             f"SELECT COUNT(*) FROM companion_node n WHERE {where}", (space_id, *kinds)
@@ -120,8 +131,9 @@ def space_memory_page(
 
 
 def promote_to_core(brain: Brain, space_id: str, memory_id: str) -> SpaceMemoryKind | None:
-    """Remove ``space_id``'s stamp from the fact or procedural ``memory_id``, so it is core's from
-    now on; its kind, or ``None`` when no such memory carries that stamp. The caller has already
+    """Make the fact or procedural ``memory_id`` of ``space_id`` core's from now on - a core
+    successor that closes it (ADR 0234) - and answer its kind, or ``None`` when no such memory
+    carries that stamp or it was made core's already. The caller has already
     refused an episode id: an episode is a record of what was said where, and stays where it was.
     Raises :class:`~athena.core.brain.UnstampRefused` for a closed or retired memory.
     """
@@ -145,6 +157,9 @@ def erase_space_memory(brain: Brain, space_id: str) -> tuple[int, int, int]:
     """
     if space_id == CORE:
         return 0, 0, 0
+    # The tombstone first (ADR 0234): it is what carries the erase to every paired PC, so a crash
+    # part way through the erase below still leaves it written.
+    brain.write_erasure(space_id)
     counts = brain.erase_space(space_id)
     return counts["episode"], counts["fact"], counts["procedural"]
 

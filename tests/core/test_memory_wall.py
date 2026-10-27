@@ -417,31 +417,43 @@ def _paths(brain: Brain, node_ids: set[str]) -> list[str]:
     return out
 
 
-def test_promoting_a_fact_moves_it_to_core_with_its_bytes_and_it_outlives_the_erase(
+def test_promoting_a_fact_writes_a_core_successor_and_it_outlives_the_erase(
     brain: Brain,
 ) -> None:
+    """ADR 0234: make core writes a new core memory that closes the stamped one; nothing is
+    rewritten in place, so replication can carry it."""
     world = World(brain)
     a, b = world.a, world.b
     node = brain.node(world.fact[a])
     assert node is not None
-    before = (brain.root / node.file_path).read_text(encoding="utf-8")
+    before = (brain.root / node.file_path).read_bytes()
 
     assert brain.unstamp(world.fact[a], b) is None, "not B's to move"
     assert brain.unstamp(world.ep[a], a) is None, "an episode stays where it was said"
     assert brain.unstamp(world.fact[a], a) == "fact"
 
-    after = (brain.root / node.file_path).read_text(encoding="utf-8")
-    assert after == before.replace(f'{SPACE_KEY}: "{a}"\n', "")
-    moved = brain.node(world.fact[a])
-    assert moved is not None and moved.space == CORE
-    assert world.fact[a] in every_id(recall(brain, "zephyr", space=b))
-    assert world.fact[a] in every_id(recall(brain, "zephyr"))
+    assert (brain.root / node.file_path).read_bytes() == before, "write-once: the original stays"
+    original = brain.node(world.fact[a])
+    assert original is not None and original.space == a
+    with closing(brain.read_connection()) as con:
+        (successor,) = con.execute(
+            "SELECT node_id FROM companion_supersede WHERE superseded_id = ?", (world.fact[a],)
+        ).fetchone()
+    promoted = brain.node(successor)
+    assert promoted is not None and promoted.space == CORE
+    meta, body = frontmatter.parse((brain.root / promoted.file_path).read_text(encoding="utf-8"))
+    assert meta["supersedes"] == [world.fact[a]] and meta["promoted_from"] == a
+    assert meta["key"] == "zephyr detail" and SPACE_KEY not in meta
+    assert body.strip() == "The zephyr invoice is due on Friday."
+    for where in (b, CORE, a):
+        found = every_id(recall(brain, "zephyr", space=where))
+        assert successor in found and world.fact[a] not in found
     assert brain.unstamp(world.fact[a], a) is None, "already core's"
 
     # Its citation of A's episode is kept; erasing A leaves the core fact recalled, still citing.
     brain.erase_space(a)
-    assert brain.sources_of(world.fact[a]) == [world.ep[a]]
-    assert world.fact[a] in every_id(recall(brain, "zephyr", space=b))
+    assert brain.sources_of(successor) == [world.ep[a]]
+    assert successor in every_id(recall(brain, "zephyr", space=b))
     # And a rebuild agrees with the promote.
     fingerprint = index_fingerprint(brain)
     reconcile_from_disk(brain)

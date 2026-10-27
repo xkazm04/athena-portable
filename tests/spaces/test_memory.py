@@ -90,7 +90,10 @@ def test_make_core_moves_a_fact_out_of_the_project_and_another_project_then_reca
     moved = live.request(f"/spaces/{a}/memory/{mine['fact']}/core", method="POST")
     assert moved.status == 200 and moved.body == {"id": mine["fact"], "kind": "fact"}
 
-    assert mine["fact"] in {m.id for m in recall(daemon.brain, "zephyr", space=b).items}
+    # The memory is core's now as a successor that closes the project's copy (ADR 0234).
+    in_b = recall(daemon.brain, "zephyr", space=b).items
+    assert mine["fact"] not in {m.id for m in in_b}
+    assert any(m.kind == "fact" and "zephyr" in m.excerpt for m in in_b)
     assert live.request(f"/spaces/{a}").body["counts"]["facts"] == 1
     again = live.request(f"/spaces/{a}/memory/{mine['fact']}/core", method="POST")
     assert again.status == 404 and again.body["reason"] == "unknown_ref"

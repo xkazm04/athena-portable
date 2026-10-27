@@ -4,9 +4,10 @@ Every device is a full Athena with its own brain, and "one Athena everywhere" me
 them remembers the others come to remember. Not all of a brain can travel that way honestly. A
 goal, a case or a ritual is *rewritten* in place, so two copies of one diverge and a merge has to
 pick a winner - that is versioned last-writer-wins, and it is v2. Episodes, facts and procedurals
-are **write-once** (no rewrite path exists for them in :mod:`athena.core.brain.store`), so a copy
-can never be stale: a device either has a memory, byte for byte, or it does not yet. That is the
-whole of what replicates here, and it is why this is a pull of files rather than a sync protocol.
+are **write-once** (no rewrite path exists for them in :mod:`athena.core.brain.store`; ADR 0234
+makes the memory wall's two acts new records too), so a copy can never be stale: a device either
+has a memory, byte for byte, or it does not yet. That is the whole of what replicates here, and it
+is why this is a pull of files rather than a sync protocol.
 
 **Serving** (grant ``memory``, :func:`peer_routes`):
 
@@ -40,7 +41,13 @@ the rebuild uses. So:
 - a fact or procedural citing an episode that has not arrived: deferred to the next pass, never
   written with a dead source - provenance is not bypassed for a copy;
 - new: written at the path the sender used, which must be the path this brain's own writer would
-  have chosen, so a path cannot climb out of its directory. Its ``device:`` stamp comes with it.
+  have chosen, so a path cannot climb out of its directory. Its ``device:`` stamp comes with it;
+- stamped with a project this brain holds an erase tombstone for, and written at or before it:
+  skipped, so an erase is never pulled back (ADR 0234).
+
+The memory wall's two acts travel as write-once records too (ADR 0234): a promotion is a new core
+memory that closes the stamped one, and an erase is a retired core fact that ``erases`` the space,
+which :meth:`Brain.receive_file` applies to this brain as its own erase.
 
 **The cursor** (``brain/.peer/cursors.json``, ``{peer_id: iso}``) is the newest ``created`` a pass
 saw, held back to the oldest item it could not finish (deferred, or a fetch that failed), minus
@@ -86,7 +93,13 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urlsplit
 
 from athena.contracts import ids
-from athena.core.brain.store import REPLICATED_KINDS, Brain, ProvenanceError, replicated_path
+from athena.core.brain.store import (
+    REPLICATED_KINDS,
+    Brain,
+    ErasedRefused,
+    ProvenanceError,
+    replicated_path,
+)
 from athena.daemon.routes import BinaryReply
 from athena.peer.client import CALL_TIMEOUT_S, call
 from athena.peer.identity import now_iso, write_whole
@@ -561,6 +574,10 @@ class Puller:
             return
         try:
             self.brain.receive_file(item.kind, item.path, data)
+        except ErasedRefused:
+            # A memory of a project erased here, from a peer that has not heard yet (ADR 0234):
+            # not filed, and not a fault - the tombstone reaches that peer on its next pull.
+            result.skipped += 1
         except ProvenanceError:
             result.deferred += 1
             work.hold(item)

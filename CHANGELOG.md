@@ -1189,6 +1189,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): the case panel says "confirmed" only for confirmed slots and names a research lane's state in words.` The headline reads "1 of 4 confirmed, 1 guessed" instead of counting guesses as known; lanes read waiting / looking / done / could not finish / not needed (`scenes/chores/adopt/casepanel.tsx`).
 - `fix(tasks): the task summary stops counting failed and killed tasks as "finished".` Owner-approved Lane C: `summaryOf` names each ended status by its own word, so three failures read "3 failed", not "3 finished".
 - `fix(adopt): a chore adopted from a project carries that project's id to POST /adopt.` `AdoptApi.start` sends `space_id` for a new chore when a project is active (never in core, never with a `case_id`, which keeps its own project); `live-deps.ts` reads the spaces glance (`lib/adopt-client.ts`, `lib/adopt.ts`).
+- fix(brain): making a project's memory core's and erasing a project now reach paired PCs: a promotion is a new core memory that supersedes the stamped one (`promoted_from`), and an erase writes a retired `erased:<space>` tombstone first, which a peer applies as its own erase and which keeps a re-pair from pulling the project back; nothing replicated is rewritten in place (ADR 0234, scan-sweep Lane C, owner-approved).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

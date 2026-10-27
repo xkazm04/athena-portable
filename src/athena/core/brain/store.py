@@ -208,6 +208,14 @@ DEFAULT_CONFIDENCE = 0.7
 #: importance they are on disk, so a rebuild restores them and replication carries them.
 SUPERSEDES_KEY = "supersedes"
 RETIRED_KEY = "retired"
+#: The space a promotion took its memory from (ADR 0234): written after ``supersedes`` on the core
+#: successor that *make core* writes. It widens the wall for that one write and nothing else: its
+#: sources may be episodes the named space can see, and it may close memories of that space.
+PROMOTED_FROM_KEY = "promoted_from"
+#: The space an erase tombstone erased (ADR 0234): a retired core fact keyed
+#: :data:`ERASED_PREFIX` + the space id, citing nothing, that replication carries to every peer.
+ERASES_KEY = "erases"
+ERASED_PREFIX = "erased:"
 #: The kinds a memory may supersede: the distilled ones.
 SUPERSEDABLE_KINDS: tuple[str, ...] = ("fact", "procedural")
 #: How long :meth:`Brain.note_recalled` waits for the write lock before it lets a hit go. A hit is
@@ -221,6 +229,11 @@ BUSY_TIMEOUT_MS = 5000
 
 class ProvenanceError(ValueError):
     """A distilled memory cited a source that is not a live episode of this brain."""
+
+
+class ErasedRefused(ValueError):
+    """A received memory is stamped with a space this brain holds a tombstone for, and was written
+    at or before that erase (ADR 0234): it is not filed, so an erase cannot be pulled back."""
 
 
 class UnstampRefused(ValueError):
@@ -634,6 +647,7 @@ class Brain:
         supersedes: Sequence[str] = (),
         retired: bool = False,
         space: str = CORE,
+        promoted_from: str = CORE,
     ) -> MemoryRef:
         """Write one distilled claim, citing the episodes it was drawn from.
 
@@ -653,8 +667,11 @@ class Brain:
 
         ``space`` is the project the claim was captured in (ADR 0225), ``""`` for core: stamped on
         disk, it may cite only episodes that space can see and close only that space's memories.
+        ``promoted_from`` is :meth:`unstamp`'s (ADR 0234): the core successor of a memory of that
+        space, which may cite what that space can see and must close a memory of it.
         """
         check_space(space)
+        view = _promotion_view(space, promoted_from, supersedes)
         if retired and every_turn:
             raise ValueError("a retired fact cannot ride every turn")
         if scope not in FACT_SCOPES:
@@ -665,8 +682,8 @@ class Brain:
         body = _lf(value).strip()
         if not body:
             raise ValueError("refusing to write an empty fact")
-        cited = self._require_provenance(sources, space)
-        closes = self._require_supersedable(supersedes, space)
+        cited = self._require_provenance(sources, view)
+        closes = self._require_supersedable(supersedes, view)
 
         node_id = ids.mint("fact")
         created_at = now_iso()
@@ -679,7 +696,7 @@ class Brain:
             ("confidence", confidence),
             ("created", created_at),
             ("sources", cited),
-            *_lineage(closes, retired),
+            *_lineage(closes, retired, promoted_from),
         ]
         if every_turn:
             header.append((EVERY_TURN_KEY, True))
@@ -722,13 +739,15 @@ class Brain:
         supersedes: Sequence[str] = (),
         retired: bool = False,
         space: str = CORE,
+        promoted_from: str = CORE,
     ) -> MemoryRef:
         """Write one "when X, do Y" rule, citing the episodes that taught it.
 
         ``supersedes`` and ``retired`` mean what they mean on :meth:`write_fact` (ADR 0143), and so
-        does ``space`` (ADR 0225).
+        do ``space`` (ADR 0225) and ``promoted_from`` (ADR 0234).
         """
         check_space(space)
+        view = _promotion_view(space, promoted_from, supersedes)
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
         _require_finite(confidence)
@@ -737,8 +756,8 @@ class Brain:
         body = _lf(behavior).strip()
         if not body:
             raise ValueError("refusing to write an empty procedural")
-        cited = self._require_provenance(sources, space)
-        closes = self._require_supersedable(supersedes, space)
+        cited = self._require_provenance(sources, view)
+        closes = self._require_supersedable(supersedes, view)
 
         node_id = ids.mint("procedural")
         created_at = now_iso()
@@ -753,7 +772,7 @@ class Brain:
                     ("confidence", confidence),
                     ("created", created_at),
                     ("sources", cited),
-                    *_lineage(closes, retired),
+                    *_lineage(closes, retired, promoted_from),
                 ],
                 space,
             ),
@@ -968,9 +987,17 @@ class Brain:
         :func:`~athena.core.brain.reconcile.index_file`, the function the rebuild runs for each
         file, so a rebuild over the merged tree builds the rows this did.
 
+        Two records carry the memory wall's acts (ADR 0234). A promotion (``promoted_from``) passes
+        both gates through the space it promotes from, as its writer did. A tombstone
+        (``erases``) cites nothing; once filed, this brain runs its own erase of that space over
+        what was written at or before it, and refuses (:class:`ErasedRefused`) every later
+        arrival stamped with the space and written at or before it, so an erase is never pulled
+        back.
+
         Raises :class:`FileExistsError` when the id or the path is already here (the caller
         compares the two copies), :class:`ProvenanceError` for a source that is not a live
-        episode of this brain, and :class:`ValueError` for any other reason the file is refused.
+        episode of this brain, :class:`ErasedRefused` for a memory of an erased project, and
+        :class:`ValueError` for any other reason the file is refused.
         """
         from athena.core.brain import reconcile  # reconcile imports this module
 
@@ -983,20 +1010,29 @@ class Brain:
         meta, body = frontmatter.parse(file_text)
         if str(meta.get("id") or "") != node_id or meta.get("type") != kind:
             raise ValueError(f"{rel}: the header does not name {node_id} as a {kind}")
+        created = str(meta.get("created") or "")
+        stamped = space_of(meta)
+        if stamped not in (CORE, UNKNOWN_SPACE) and self._erased_since(stamped, created):
+            raise ErasedRefused(f"{node_id}: its project was erased on this brain")
+        erases = _tombstone_of(kind, meta)
         confidence = DEFAULT_CONFIDENCE
         if kind != "episode":
             sources = meta.get("sources")
             if not isinstance(sources, list):
                 raise ProvenanceError(f"{rel}: a fact or a procedural must cite its episodes")
-            self._require_provenance([str(source) for source in sources], space_of(meta))
-            closes = meta.get(SUPERSEDES_KEY)
-            if isinstance(closes, list):
+            raw_closes = meta.get(SUPERSEDES_KEY)
+            closes = [str(old) for old in raw_closes] if isinstance(raw_closes, list) else []
+            promoted = meta.get(PROMOTED_FROM_KEY, CORE)
+            if not isinstance(promoted, str):
+                raise ValueError(f"{rel}: promoted_from is not a space id")
+            view = _promotion_view(stamped, promoted, closes)
+            if erases is None:
+                self._require_provenance([str(source) for source in sources], view)
+            if closes:
                 # The supersede wall, as every writer passes it (ADR 0225). A memory named here
                 # that has not arrived yet is let through: replication sends what cites before
                 # what is closed only by the order things were written in.
-                self._require_supersedable(
-                    [str(old) for old in closes], space_of(meta), arriving=True
-                )
+                self._require_supersedable(closes, view, arriving=True)
             checked = reconcile.confidence_of(meta)
             if checked is None:
                 raise ValueError(f"{rel}: confidence is not a number")
@@ -1009,7 +1045,78 @@ class Brain:
                 reconcile.index_file(
                     self, con, node_id, kind, rel, file_text, body, meta, confidence
                 )
+        if erases is not None:
+            # The paired PC's erase, applied here as this brain's own (ADR 0234); no echo.
+            self.erase_space(erases, before=created)
         return MemoryRef(node_id, rel, kind)
+
+    def _erased_since(self, space: str, created: str) -> bool:
+        """Whether a tombstone held here erased ``space`` at or after ``created`` (ADR 0234). An
+        unreadable ``created`` counts as erased: a stamp that cannot be placed is not let back."""
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                """SELECT n.created_at FROM companion_fact f JOIN companion_node n ON n.id = f.id
+                   WHERE f.fact_key = ? AND n.space = '' AND n.importance = 0""",
+                (ERASED_PREFIX + space,),
+            ).fetchall()
+        if not rows:
+            return False
+        written = _when(created)
+        if written is None:
+            return True
+        stamps = [_when(str(row[0])) for row in rows]
+        return any(at is not None and written <= at for at in stamps)
+
+    def write_erasure(self, space: str) -> MemoryRef | None:
+        """Write the tombstone of ``space`` (ADR 0234): a retired core fact keyed
+        :data:`ERASED_PREFIX` + the id, ``erases: <id>``, citing nothing - what it records is an
+        absence. Replication carries it to every paired PC, which erases the space there. Written
+        once: ``None`` when this brain already holds one for the space. Call it before the erase,
+        so a crash part way still leaves the record that travels."""
+        if not ids.is_id("space", space):
+            raise ValueError(f"not a space id: {space!r}")
+        key = ERASED_PREFIX + space
+        with self._write_lock:
+            with closing(self.read_connection()) as con:
+                held = con.execute(
+                    "SELECT 1 FROM companion_fact WHERE fact_key = ? LIMIT 1", (key,)
+                ).fetchone()
+            if held is not None:
+                return None
+            node_id = ids.mint("fact")
+            created_at = now_iso()
+            rel = f"semantic/project/{node_id}_{text.slug(key)}.md"
+            body = "A project was erased; its memories are erased on every paired PC."
+            header: list[tuple[str, Any]] = [
+                ("id", node_id),
+                ("type", "fact"),
+                ("scope", "project"),
+                ("key", key),
+                ("confidence", 1.0),
+                ("created", created_at),
+                ("sources", []),
+                (ERASES_KEY, space),
+                (RETIRED_KEY, True),
+            ]
+            file_text = frontmatter.render(self._stamped(header, CORE), body)
+            self._write_file(rel, file_text)
+            with self.write_txn() as con:
+                self.index_node(
+                    con,
+                    node_id=node_id,
+                    kind="fact",
+                    rel=rel,
+                    file_text=file_text,
+                    body=body,
+                    importance=0,
+                    created_at=created_at,
+                )
+                con.execute(
+                    """INSERT INTO companion_fact (id, scope, fact_key, confidence)
+                       VALUES (?, ?, ?, ?)""",
+                    (node_id, "project", key, 1.0),
+                )
+        return MemoryRef(node_id, rel, "fact")
 
     # -- write plumbing ------------------------------------------------------------------------
 
@@ -1197,66 +1304,96 @@ class Brain:
     # -- the memory wall's two explicit acts (ADR 0225) ------------------------------------------
 
     def unstamp(self, node_id: str, space: str) -> str | None:
-        """Move the fact or procedural ``node_id`` out of ``space`` into core: its file rewritten
-        whole without its ``space:`` line, its row's ``space`` and ``content_hash`` updated.
+        """Make the fact or procedural ``node_id`` of ``space`` core's (ADR 0225, ADR 0234): write
+        its core successor - the same scope, key or trigger, confidence, body, sources and
+        ``every_turn``, with ``supersedes: [node_id]`` and ``promoted_from: <space>`` - through the
+        ordinary writer. The stamped original keeps its bytes and is closed: recall serves the
+        successor in core and every project, never the original. Nothing is rewritten in place,
+        so replication carries the promotion like any other write (ADR 0140).
 
         Answers the memory's kind, or ``None`` when no fact or procedural of that space has that
-        id - on disk, which is the truth: a row that says the space over a file that does not is
-        not moved. Every other byte of the file is kept, so the file is the one its writer would
-        have written in core, plus nothing; every index-only column (importance, fade, use) is
-        kept too, which a reindex would reset. Its citations are kept as they are: a promoted
-        memory may cite what was said in the space, and a core memory's citation of an episode
-        nobody can see is recorded, never followed by recall (the episode block draws on its own).
+        id - on disk, which is the truth - or it was promoted already. Its citations are kept: a
+        promoted memory may cite what was said in the space, and recall never follows a citation.
 
         Raises :class:`UnstampRefused` for a memory that a memory of its own space closes
-        (superseded), and for a retired one (a person's forget marker): moved, the first would be
-        hidden everywhere - the successor that closes it is invisible in core, the case
-        ``_require_supersedable`` refuses at write (ADR 0225) - and the second would bar its key
-        in every project instead of one. Nothing moves.
+        (superseded), for a retired one (a person's forget marker), and for one whose evidence is
+        no longer live (the successor could not cite it): moved, the first would be hidden
+        everywhere and the second would bar its key in every project instead of one.
         """
         if space == CORE or not ids.is_id("space", space):
             return None
         with self._write_lock:
             with closing(self.read_connection()) as con:
                 row = con.execute(
-                    "SELECT kind, file_path, space FROM companion_node WHERE id = ?", (node_id,)
+                    "SELECT kind, file_path, space, importance FROM companion_node WHERE id = ?",
+                    (node_id,),
                 ).fetchone()
             if row is None or row[0] not in SUPERSEDABLE_KINDS or row[2] != space:
                 return None
-            kind, rel = str(row[0]), str(row[1])
+            kind, rel, importance = str(row[0]), str(row[1]), int(row[3])
             try:
                 raw = (self.root / rel).read_bytes().decode("utf-8")
             except (OSError, UnicodeDecodeError):
                 return None
-            moved = _without_space(raw, space)
-            if moved is None:
+            meta, body = frontmatter.parse(raw)
+            if space_of(meta) != space:
                 return None
-            if frontmatter.parse(raw)[0].get(RETIRED_KEY) is True:
+            with closing(self.read_connection()) as con:
+                closers = con.execute(
+                    """SELECT c.space FROM companion_supersede s
+                       JOIN companion_node c ON c.id = s.node_id
+                       WHERE s.superseded_id = ?""",
+                    (node_id,),
+                ).fetchall()
+            if any(str(closer[0] or CORE) != space for closer in closers):
+                return None  # promoted already: only a promotion closes across the wall
+            if meta.get(RETIRED_KEY) is True:
                 raise UnstampRefused(
                     "this is a retired memory (a forget marker); it stays in the project "
                     "whose forget it records"
                 )
-            with closing(self.read_connection()) as con:
-                closer = con.execute(
-                    """SELECT 1 FROM companion_supersede s
-                       JOIN companion_node c ON c.id = s.node_id
-                       WHERE s.superseded_id = ? AND c.space = ? LIMIT 1""",
-                    (node_id, space),
-                ).fetchone()
-            if closer is not None:
+            if closers:
                 raise UnstampRefused(
                     "this memory was superseded by a newer one in this project; "
                     "make the newer one core's instead"
                 )
-            self._write_file(rel, moved)
-            with self.write_txn() as con:
-                con.execute(
-                    "UPDATE companion_node SET space = ?, content_hash = ? WHERE id = ?",
-                    (CORE, sha256(_lf(moved)), node_id),
-                )
+            sources = meta.get("sources")
+            cited = [str(source) for source in sources] if isinstance(sources, list) else []
+            from athena.core.brain import reconcile  # reconcile imports this module
+
+            confidence = reconcile.confidence_of(meta)
+            try:
+                if kind == "fact":
+                    self.write_fact(
+                        str(meta.get("key") or ""),
+                        body,
+                        scope=str(meta.get("scope") or "user"),
+                        sources=cited,
+                        confidence=DEFAULT_CONFIDENCE if confidence is None else confidence,
+                        importance=importance,
+                        every_turn=meta.get(EVERY_TURN_KEY) is True,
+                        supersedes=[node_id],
+                        promoted_from=space,
+                    )
+                else:
+                    self.write_procedural(
+                        str(meta.get("trigger") or ""),
+                        body,
+                        scope=str(meta.get("scope") or "chat"),
+                        sources=cited,
+                        confidence=DEFAULT_CONFIDENCE if confidence is None else confidence,
+                        importance=importance,
+                        supersedes=[node_id],
+                        promoted_from=space,
+                    )
+            except ProvenanceError:
+                raise UnstampRefused(
+                    "the conversation this memory was learned from is no longer live; "
+                    "it cannot be made core's"
+                ) from None
         return kind
 
-    def erase_space(self, space: str) -> dict[str, int]:
+    def erase_space(self, space: str, *, before: str | None = None) -> dict[str, int]:
         """Erase every episode, fact and procedural stamped with ``space``: the files, then every
         index row of them, then the sleep proposals stamped with it. Answers how many of each kind
         went, as ``{"episode": n, "fact": n, "procedural": n}``.
@@ -1265,27 +1402,37 @@ class Brain:
         - a file written and never indexed (a crash between the two) is found by its header, so it
         cannot come back on the next rebuild. The rows are every table that names one of them:
         ``companion_node`` and its FTS row, the fact and procedural sidecars, provenance (the
-        memory's own citations), supersedence (either side), and the use and fade marks. A memory
-        of another space or of core that *cites* an erased episode keeps its citation: the row is
-        that memory's, and what it records is what its file says (a rebuild writes it back).
+        memory's own citations), supersedence (the erased memories' own), and the use and fade
+        marks. A memory of another space or of core that *cites* an erased episode keeps its
+        citation, and a promotion's core successor keeps its row closing the erased original: the
+        row is that memory's, and what it records is what its file says (a rebuild writes it back).
 
         Files go first. A crash part way leaves rows whose files are gone, which the next erase
         finds again in the index and removes; rows first would leave files no index names, which
         an erase pressed again could not see.
+
+        ``before`` is a received tombstone's ``created`` (ADR 0234): only memories written at or
+        before it go (one whose stamp cannot be read goes too), so a memory written in the space
+        after the erase is not the erase's to take. This erase writes no tombstone; the person's
+        erase writes one first (:meth:`write_erasure`).
         """
+        bound = None if before is None else _when(before)
         if not ids.is_id("space", space):
             raise ValueError(f"not a space id: {space!r}")
         with self._write_lock:
             found: dict[str, tuple[str, set[str]]] = {}
             with closing(self.read_connection()) as con:
                 marks = ",".join("?" for _ in STAMPED_KINDS)
-                for node_id, kind, rel in con.execute(
-                    f"""SELECT id, kind, file_path FROM companion_node
+                for node_id, kind, rel, created in con.execute(
+                    f"""SELECT id, kind, file_path, created_at FROM companion_node
                         WHERE space = ? AND kind IN ({marks})""",
                     (space, *STAMPED_KINDS),
                 ).fetchall():
-                    found[str(node_id)] = (str(kind), {str(rel)})
-            for node_id, kind, rel in _stamped_on_disk(self.root, space):
+                    if _due(str(created), before, bound):
+                        found[str(node_id)] = (str(kind), {str(rel)})
+            for node_id, kind, rel, created in _stamped_on_disk(self.root, space):
+                if not _due(created, before, bound):
+                    continue
                 held = found.setdefault(node_id, (kind, set()))
                 held[1].add(rel)
             for _, rels in found.values():
@@ -1309,8 +1456,10 @@ class Brain:
                     ("companion_fact", "id"),
                     ("companion_procedural", "id"),
                     ("companion_provenance", "node_id"),
+                    # Only the erased memories' own closures: a promotion's core successor keeps
+                    # its row naming the erased original, as its file does (ADR 0234), and a
+                    # same-space closer is erased with it, so its row goes by ``node_id``.
                     ("companion_supersede", "node_id"),
-                    ("companion_supersede", "superseded_id"),
                     ("companion_recall_seen", "node_id"),
                     ("companion_fade", "node_id"),
                 ):
@@ -1389,14 +1538,32 @@ def _lf(text: str) -> str:
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
-def _lineage(closes: Sequence[str], retired: bool) -> list[tuple[str, Any]]:
+def _lineage(
+    closes: Sequence[str], retired: bool, promoted_from: str = CORE
+) -> list[tuple[str, Any]]:
     """The supersedence keys of a header, in their order, and only those that are present."""
     pairs: list[tuple[str, Any]] = []
     if closes:
         pairs.append((SUPERSEDES_KEY, list(closes)))
+    if promoted_from != CORE:
+        pairs.append((PROMOTED_FROM_KEY, promoted_from))
     if retired:
         pairs.append((RETIRED_KEY, True))
     return pairs
+
+
+def _promotion_view(space: str, promoted_from: str, supersedes: Sequence[str]) -> str:
+    """The space a write's two gates read through: its own, or for a promotion (ADR 0234) the
+    space it promotes from - which only a core memory closing at least one memory may name."""
+    if promoted_from == CORE:
+        return space
+    if not ids.is_id("space", promoted_from):
+        raise ValueError(f"promoted_from is not a space id: {promoted_from!r}")
+    if space != CORE:
+        raise ValueError("a promotion is written in core")
+    if not supersedes:
+        raise ValueError("a promotion closes the memory it promotes")
+    return promoted_from
 
 
 def _require_finite(confidence: float) -> None:
@@ -1510,11 +1677,51 @@ def _remove_conflict_copies(root: Path, space: str, erased: set[str]) -> None:
         path.unlink(missing_ok=True)
 
 
-def _stamped_on_disk(root: Path, space: str) -> list[tuple[str, str, str]]:
+def _when(stamp: str) -> datetime | None:
+    """A ``created`` stamp as an instant (naive read as UTC), or ``None`` when it is not one."""
+    try:
+        parsed = datetime.fromisoformat(stamp)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def _due(created: str, before: str | None, bound: datetime | None) -> bool:
+    """Whether an erase bounded by ``before`` takes a memory written at ``created``: every one
+    when unbounded, else one written at or before it, and one whose stamp cannot be placed."""
+    if before is None:
+        return True
+    written = _when(created)
+    return written is None or bound is None or written <= bound
+
+
+def _tombstone_of(kind: str, meta: dict[str, Any]) -> str | None:
+    """The space a received tombstone erases (ADR 0234), ``None`` for any other memory. A file
+    that says ``erases`` must be exactly what :meth:`Brain.write_erasure` writes - a retired core
+    fact keyed for that space, citing nothing - or it is refused."""
+    if ERASES_KEY not in meta:
+        return None
+    space = meta.get(ERASES_KEY)
+    exact = (
+        kind == "fact"
+        and isinstance(space, str)
+        and ids.is_id("space", space)
+        and meta.get("key") == ERASED_PREFIX + space
+        and meta.get(RETIRED_KEY) is True
+        and meta.get("sources") == []
+        and space_of(meta) == CORE
+        and SUPERSEDES_KEY not in meta
+    )
+    if not exact or not isinstance(space, str):
+        raise ValueError("an erase tombstone is a retired core fact keyed for its space")
+    return space
+
+
+def _stamped_on_disk(root: Path, space: str) -> list[tuple[str, str, str, str]]:
     """Every episode, fact and procedural file whose header says ``space``, as ``(id, kind,
-    rel)``: what an erase removes beside what the index names. A file that cannot be read, or
-    names no id, is passed over - it is not a memory any reader could reach either."""
-    out: list[tuple[str, str, str]] = []
+    rel, created)``: what an erase removes beside what the index names. A file that cannot be
+    read, or names no id, is passed over - it is not a memory any reader could reach either."""
+    out: list[tuple[str, str, str, str]] = []
     for subdir, kind in _STAMPED_DIRS:
         base = root / subdir
         if not base.is_dir():
@@ -1529,21 +1736,6 @@ def _stamped_on_disk(root: Path, space: str) -> list[tuple[str, str, str]]:
             meta, _ = frontmatter.parse(file_text)
             node_id = str(meta.get("id") or "")
             if node_id and space_of(meta) == space:
-                out.append((node_id, kind, path.relative_to(root).as_posix()))
+                created = str(meta.get("created") or "")
+                out.append((node_id, kind, path.relative_to(root).as_posix(), created))
     return out
-
-
-def _without_space(file_text: str, space: str) -> str | None:
-    """``file_text`` with its ``space:`` header line(s) removed, every other byte kept; ``None``
-    when its header does not say ``space`` (then there is nothing of that space to move)."""
-    meta, _ = frontmatter.parse(file_text)
-    if space_of(meta) != space:
-        return None
-    head_fence = f"{frontmatter.FENCE}\n"
-    text = file_text.removeprefix("﻿")
-    end = text.find(f"\n{frontmatter.FENCE}\n", len(frontmatter.FENCE))
-    if not text.startswith(head_fence) or end == -1:
-        return None
-    head = text[len(head_fence) : end].split("\n")
-    kept = [line for line in head if line.partition(":")[0].strip() != SPACE_KEY]
-    return head_fence + "\n".join(kept) + text[end:]
