@@ -20,6 +20,7 @@ from athena.adopt.prompts import MAX_ROUNDS
 from athena.proving.adopt_tiers.pick import (
     ACCURACY_MARGIN,
     JUDGE_FLOOR,
+    MIN_NOISE_DF,
     TIE_BAND,
     ConfigStats,
     Pick,
@@ -134,6 +135,21 @@ def _deltas(pick: Pick) -> str:
     return text
 
 
+def _noise_text(pick: Pick) -> str:
+    """The margin against the noise band, or why there is no band (ADR 0235)."""
+    if pick.verdict == "unresolved":
+        return (
+            f"not enough runs to rank: {pick.noise_df} degrees of freedom for the noise, "
+            f"need {MIN_NOISE_DF}"
+        )
+    margin = -float(pick.margin_ms or 0.0)
+    label = _SPEED_LABEL.get(pick.role, "p50")
+    return (
+        f"{label} margin {margin:+,.0f} ms against a noise band of "
+        f"+/-{float(pick.noise_ms or 0):,.0f} ms (df {pick.noise_df})"
+    )
+
+
 def pick_line(pick: Pick) -> str:
     """The line ``pick`` prints for a role: what tiers.json holds now, what the bench proposes,
     by how much and over how many runs, and why the incumbent is out if it is."""
@@ -143,11 +159,19 @@ def pick_line(pick: Pick) -> str:
     held = pick.incumbent or pick.incumbent_note
     if pick.config is None:
         return f"{pick.role}: none, tiers.json keeps {held} — {pick.why}"
+    if pick.verdict in ("tie", "unresolved"):
+        head = "tie" if pick.verdict == "tie" else "not enough runs to rank"
+        return (
+            f"{pick.role}: {pick.config} ({head}, incumbent kept) — {pick.proposed} was ahead: "
+            f"{_noise_text(pick)}; {pick.why}"
+        )
     if pick.unchanged:
         return f"{pick.role}: {pick.config} (unchanged){mark} — {pick.why}"
     line = f"{pick.role}: {held} -> {pick.config}{mark}: {_deltas(pick)}"
     if pick.incumbent and pick.incumbent_out:
         line += f"; {pick.incumbent} is out: {'; '.join(pick.incumbent_out)}"
+    if pick.verdict == "ranked":
+        line += f"; {_noise_text(pick)}"
     return f"{line} — {pick.why}"
 
 
@@ -157,9 +181,19 @@ def _incumbent_lines(
     if not pick.compared:
         return []
     held = pick.incumbent or pick.incumbent_note
-    if pick.unchanged:
+    if pick.verdict in ("tie", "unresolved"):
+        what = "a tie" if pick.verdict == "tie" else "not ranked"
+        lines = [
+            "",
+            f"Incumbent in tiers.json: {held}, kept ({what}): {pick.proposed} was ahead by the "
+            f"bench's rule, {_noise_text(pick)}.",
+        ]
+    elif pick.unchanged:
         return ["", f"Incumbent in tiers.json: {held} (unchanged)."]
-    lines = ["", f"Incumbent in tiers.json: {held}."]
+    else:
+        lines = ["", f"Incumbent in tiers.json: {held}."]
+        if pick.verdict == "ranked":
+            lines[-1] += f" The change is ranked: {_noise_text(pick)}."
     if pick.incumbent and pick.incumbent_out:
         lines[-1] += f" {pick.incumbent} is out of this run: {'; '.join(pick.incumbent_out)}."
     if pick.config is None or pick.incumbent is None:
@@ -185,7 +219,7 @@ def _incumbent_lines(
             f"{_signed_u(d.get('usage'), pick.usage_unit)} |"
         )
         return lines
-    x, y = stats.get(pick.incumbent), stats.get(pick.config)
+    x, y = stats.get(pick.incumbent), stats.get(pick.proposed or pick.config)
     if x is None or y is None:
         return lines
     lines += [
@@ -291,7 +325,11 @@ def report_md(
         f"{ACCURACY_MARGIN:g} points under the best, or judge mean under {JUDGE_FLOOR}; then the "
         f"fastest p50 (interview: first text; audit: round), configs within {TIE_BAND:.0%} of it "
         "broken by usage. One config sets interview and audit together, so both roles read the "
-        "same runs' quality.",
+        "same runs' quality. A challenger replaces the incumbent in tiers.json only when its "
+        "speed margin beats the noise band (ADR 0235): the pooled standard deviation, across "
+        "reps, of each cell's p50 of the ranked latency within a config and scenario (fewer than "
+        f"{MIN_NOISE_DF} degrees of freedom: not enough runs to rank). A margin inside the band "
+        "is a tie and the incumbent stays.",
         "",
         "Caveat: fact/trap verdicts are matched by patterns (the fact sheet's keys, accept and "
         "reject); a derived slot whose label matches no key is counted missed for every config "

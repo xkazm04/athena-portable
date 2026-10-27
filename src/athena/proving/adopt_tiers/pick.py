@@ -27,6 +27,12 @@ two roles differ only in which latency ranks them.
 that failed validation or left a portal name unsubstituted; then the fastest p50 wall, usage as
 tiebreak; if all are out, the best pass rate is kept and said so.
 
+**Noise** (ADR 0235): a challenger's margin over the incumbent is a ranking only when it beats the
+run-to-run noise of the cells the pick reads. :func:`noise` is the pooled within-(config, scenario)
+standard deviation of the ranked latency across reps; :func:`against` calls a margin inside it a
+``tie`` that keeps the incumbent, and fewer than :data:`MIN_NOISE_DF` degrees of freedom
+``unresolved`` ("not enough runs to rank"), which also keeps it.
+
 ``--write`` writes the picks into ``src/athena/adopt/tiers.json`` — ``interview``, ``audit``,
 ``shape`` only; ``_note`` and every other kind are kept as they are.
 
@@ -40,6 +46,7 @@ change unless the operator passes ``--accept-fallback``.
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -64,6 +71,7 @@ from athena.proving.adopt_tiers.simulate import CONFIGS, ROLES, read_record
 __all__ = [
     "ACCURACY_MARGIN",
     "JUDGE_FLOOR",
+    "MIN_NOISE_DF",
     "TIE_BAND",
     "ConfigStats",
     "Incumbent",
@@ -76,6 +84,7 @@ __all__ = [
     "changes",
     "incumbent",
     "load_results",
+    "noise",
     "pick_all",
     "pick_bench",
     "pick_role",
@@ -87,6 +96,9 @@ __all__ = [
 ACCURACY_MARGIN = 5.0
 JUDGE_FLOOR = 3.5
 TIE_BAND = 0.05
+#: Fewest degrees of freedom (reps beyond the first, summed over the config x scenario groups)
+#: the noise band is estimated from; below it the pick does not rank (ADR 0235).
+MIN_NOISE_DF = 3
 
 
 @dataclass
@@ -152,6 +164,14 @@ class Pick:
     runs: dict[str, int] = field(default_factory=dict)
     usage_unit: str = "usd"
     compared: bool = False
+    #: Against the noise (ADR 0235): "" (not checked), "ranked" (the margin beats the band),
+    #: "tie" (inside it; the incumbent is kept) or "unresolved" (too few runs to estimate it; the
+    #: incumbent is kept). ``margin_ms`` is incumbent minus challenger speed, ``noise_ms`` the band
+    #: (None when unresolved), ``noise_df`` the degrees of freedom behind it.
+    verdict: str = ""
+    margin_ms: float | None = None
+    noise_ms: float | None = None
+    noise_df: int = 0
 
     @property
     def unchanged(self) -> bool:
@@ -565,12 +585,12 @@ def _delta_stats(
     incumbent_name: str,
     records: Sequence[Mapping[str, Any]],
     scenarios: Sequence[Scenario],
-) -> tuple[ConfigStats, ConfigStats, ConfigStats, ConfigStats] | None:
+) -> tuple[ConfigStats, ConfigStats, ConfigStats, ConfigStats, list[dict[str, Any]]] | None:
     """The incumbent's and the proposal's stats over the cells the pick was read over: quality
     and usage over the paired cells, speed over the ones every survivor ended clear or brief
     (ADR 0145). An incumbent the pick did not pair with is read over the cells it and the
     proposal both completed. ``None`` when either side has no record. Answers
-    ``(incumbent, proposed, incumbent speed, proposed speed)``."""
+    ``(incumbent, proposed, incumbent speed, proposed speed, the records speed was read over)``."""
     known = [r for r in records if str(r.get("config")) in CONFIGS]
     cov = coverage(known)
     proposed = str(pick.config)
@@ -587,8 +607,66 @@ def _delta_stats(
     both = (incumbent_name, proposed)
     body = aggregate(restrict(known, both, cells), scenarios)
     clear = conditioned(known, survivors, cells)
-    timed = aggregate(restrict(known, both, clear), scenarios) if clear else body
-    return body[both[0]], body[both[1]], timed[both[0]], timed[both[1]]
+    timed_records = restrict(known, both, clear) if clear else restrict(known, both, cells)
+    timed = aggregate(timed_records, scenarios) if clear else body
+    return body[both[0]], body[both[1]], timed[both[0]], timed[both[1]], timed_records
+
+
+def noise(
+    role: str,
+    records: Sequence[Mapping[str, Any]],
+    scenarios: Sequence[Scenario],
+) -> tuple[float | None, int]:
+    """The run-to-run noise of the ranked latency in ``records`` (ADR 0235): per record the p50
+    of its legs (first text for ``interview``, rounds for ``audit``), then the pooled standard
+    deviation of those across reps within each (config, scenario). Answers ``(sd, df)``; ``sd``
+    is None below :data:`MIN_NOISE_DF` degrees of freedom."""
+    by_id = {s.id: s for s in scenarios}
+    groups: dict[tuple[str, str], list[float]] = {}
+    for record in records:
+        scenario = by_id.get(str(record.get("scenario")))
+        if scenario is None:
+            continue
+        scored = score_interview(record, scenario)
+        legs = scored["first_text_ms"] if role == "interview" else scored["round_ms"]
+        value = percentile(legs, 50)
+        if value is not None:
+            key = (str(record.get("config")), scenario.id)
+            groups.setdefault(key, []).append(float(value))
+    ss, df = 0.0, 0
+    for values in groups.values():
+        if len(values) < 2:
+            continue
+        mean = sum(values) / len(values)
+        ss += sum((v - mean) ** 2 for v in values)
+        df += len(values) - 1
+    return (math.sqrt(ss / df), df) if df >= MIN_NOISE_DF else (None, df)
+
+
+def _resolve(
+    pick: Pick,
+    held: str,
+    fast: tuple[ConfigStats, ConfigStats],
+    timed: list[dict[str, Any]],
+    scenarios: Sequence[Scenario],
+) -> None:
+    """Hold the pick to the noise (ADR 0235): a challenger whose margin over the incumbent is
+    inside the band, or that cannot be told from it for want of runs, leaves the incumbent."""
+    if pick.role not in ("interview", "audit") or pick.fallback or held in pick.disqualified:
+        return
+    old, new = _speed(pick.role, fast[0]), _speed(pick.role, fast[1])
+    if old is None or new is None:
+        return
+    band, df = noise(pick.role, timed, scenarios)
+    pick.margin_ms, pick.noise_ms, pick.noise_df = round(old - new, 1), band, df
+    if band is None:
+        pick.verdict = "unresolved"
+    elif pick.margin_ms <= band:
+        pick.verdict = "tie"
+    else:
+        pick.verdict = "ranked"
+        return
+    pick.config = held
 
 
 def against(
@@ -629,10 +707,11 @@ def against(
             continue
         x, y = stats.get(inc.config), stats.get(pick.config)
         fast_x, fast_y = x, y
+        timed: list[dict[str, Any]] | None = None
         if records is not None:
             cells = _delta_stats(pick, inc.config, records, scenarios)
             if cells is not None:  # a side with no record keeps the empty stats: no figures
-                x, y, fast_x, fast_y = cells
+                x, y, fast_x, fast_y, timed = cells
         if x is None or y is None or fast_x is None or fast_y is None:
             continue
         pick.delta = {
@@ -643,6 +722,8 @@ def against(
         }
         pick.runs = {"incumbent": x.runs, "proposed": y.runs}
         pick.usage_unit = y.usage_unit
+        if timed is not None:
+            _resolve(pick, inc.config, (fast_x, fast_y), timed, scenarios)
     return list(picks)
 
 
