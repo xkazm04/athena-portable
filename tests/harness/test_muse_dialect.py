@@ -98,3 +98,16 @@ def test_the_engine_defaults_to_the_muse_args_and_strips_a_meta_key(tmp_path: Pa
     assert isinstance(harness, CliHarness) and harness.extra_args == MUSE_EXTRA_ARGS
     assert ENGINE_KEYS["muse_code"] == ("META_API_KEY",)
     assert "META_API_KEY" not in child_env({"PATH": "/bin", "META_API_KEY": "mk"})
+
+
+def test_the_next_turn_resumes_the_session_and_sends_only_its_message(tmp_path: Path) -> None:
+    transport = ScriptedTransport([_records(), _records()])
+    harness = _harness(transport, tmp_path)
+    _drain(harness, [], message="Which invoices are late?")
+    _drain(harness, [], message="And which are paid?", turn_id="turn_000000000002")
+    first, second = transport.requests
+    assert "--session-id" not in first.argv
+    session = json.loads(_records()[0])["stream"]["id"]
+    assert second.argv[second.argv.index("--session-id") + 1] == session
+    prompt = Path(second.argv[second.argv.index("--prompt-file") + 1]).read_text("utf-8")
+    assert "And which are paid?" in prompt and "The law" not in prompt

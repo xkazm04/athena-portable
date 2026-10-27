@@ -63,13 +63,14 @@ CLAUDE_EXTRA_ARGS: tuple[str, ...] = ("--restricted", "--permission-mode", "dont
 #: shell, no writes, no web, no reminder sub-agents, none of the person's Claude Code skills, and
 #: Contributor mode off on every run - a subscription defaults to it, and Athena's law and a
 #: person's page are not training data. ``-c`` keys cannot drop Muse's own ~15k-token base
-#: instructions; that is allowance, not money, on the plan.
+#: instructions; that is allowance, not money, on the plan. The session log stays on: it is what
+#: ``--session-id`` resumes (a single-shot Muse lost its own reads between rounds: the first
+#: muse_code bench re-read one pile 1,412 times over 79 turns).
 MUSE_EXTRA_ARGS: tuple[str, ...] = (
     "--contributor-mode",
     "off",
     "--preset",
     "empty",
-    "--no-session-log",
     "--disable-shell",
     "--disable-write",
     "--disable-web-tools",
@@ -140,7 +141,8 @@ class CliDialect:
     system_on_stdin: bool = False
     resumes: bool = True
     #: The CLI cannot read its prompt from stdin; what would go there is written to a file and
-    #: the file is named on the command line instead (``muse exec --prompt-file``).
+    #: the file is named on the command line instead (``muse exec --prompt-file``). Such a CLI
+    #: has no system-prompt flag either, so an unresumed round's file opens with the law.
     stdin_as_file: bool = False
     #: What this CLI says when it fails, lowercased, first match wins. Dated: a CLI release can
     #: reword any of these, and an unmatched failure is still a failure, read as ``unknown``.
@@ -317,8 +319,12 @@ class CodexDialect(CliDialect):
         return None
 
 
-#: ``muse exec`` 1.4, as of 2026-10-27. It never resumes from ``exec``, so it has no "gone".
+#: ``muse exec`` 1.4, as of 2026-10-27. The "gone" wordings are unverified guesses: no lost
+#: session has been seen yet, and an unmatched one is still ``unknown``.
 MUSE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
+    ("session not found", "gone"),
+    ("no such session", "gone"),
+    ("unknown session", "gone"),
     ("context window", "poisoned"),
     ("context_length", "poisoned"),
     ("not logged in", "auth"),
@@ -337,6 +343,9 @@ MUSE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
 class MuseDialect(CliDialect):
     """``muse exec --json --prompt-file <file>``: Meta's Muse Code CLI on the person's plan.
 
+    It resumes: the session id is the session stream's id (``session.run.linked``), passed back as
+    ``--session-id`` (measured 2026-10-27: a code word given in one run was recalled in the next).
+
     Its stdout is the MSP event stream, and three payloads matter: ``run.output.delta`` is text,
     ``run.usage`` is the tokens per model (read as a usage-only result: the harness adds every
     result's tokens and keeps the last non-error one as the outcome), and ``run.terminal.*`` ends
@@ -353,6 +362,8 @@ class MuseDialect(CliDialect):
         extra_args: Sequence[str],
     ) -> list[str]:
         argv = ["exec", "--json"]
+        if resume:
+            argv += ["--session-id", resume]
         if prompt_file:
             argv += ["--prompt-file", prompt_file]
         if model:
@@ -400,8 +411,6 @@ CODEX = CodexDialect(
 MUSE = MuseDialect(
     name="muse_code",
     executable="muse",
-    system_on_stdin=True,
-    resumes=False,
     stdin_as_file=True,
     signatures=MUSE_SIGNATURES,
 )
@@ -553,6 +562,8 @@ class CliHarness(RoundHarness):
         else:
             stdin = history[-1]
         if self.dialect.stdin_as_file:
+            if resume is None and not self.dialect.system_on_stdin:
+                stdin = "\n\n---\n\n".join([static_text.rstrip(), stdin])
             prompt_file = self._write_prompt(f"{conversation_id}-turn", stdin)
             stdin = ""
         return CliRequest(
