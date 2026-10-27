@@ -35,6 +35,7 @@ __all__ = [
     "proof",
     "score_readers",
     "score_unit",
+    "wilson",
 ]
 
 #: The brief's proof: VL accuracy >= 90% of Claude's AND false-fact rate <= Claude's + 5 pp.
@@ -224,6 +225,8 @@ def score_readers(
             "fields_stated": stated,
             "fields_correct": correct,
             "field_accuracy": _rate(correct, stated),
+            # How wide n leaves the accuracy: the ratio the proof takes is only as sharp as this.
+            "accuracy_ci95": list(wilson(correct, stated) or []) or None,
             "probes": probes,
             "false_facts": false,
             "false_fact_rate": _rate(false, probes),

@@ -135,3 +135,15 @@ def test_proof_judges_the_counts_not_the_rounded_rates() -> None:
     verdict = proof({"vl": _counted(3, 5, 0, 10), "claude": _counted(2, 3, 0, 10)})
     assert verdict["verdict"] == "PASS"
     assert verdict["accuracy_ratio"] == 0.9
+
+
+def test_each_accuracy_carries_its_95_percent_interval_into_the_report() -> None:
+    from athena.proving.docread.report import render_markdown
+    from athena.proving.docread.score import wilson
+
+    readings = [_reading(UNITS[0], {"f-former-name": "Priya Iyer"})]
+    vl = score_readers({S.id: S}, UNITS, readings)["vl"]
+    assert vl["accuracy_ci95"] == list(wilson(vl["fields_correct"], vl["fields_stated"]) or [])
+    md = render_markdown({"paired": {"vl": vl}, "proof": {}})
+    low, high = vl["accuracy_ci95"]
+    assert f"{low * 100:.1f}-{high * 100:.1f}%" in md

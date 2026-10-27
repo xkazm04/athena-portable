@@ -19,6 +19,14 @@ def _num(value: object, fmt: str) -> str:
     return format(value, fmt) if isinstance(value, int | float) else "n/a"
 
 
+def _interval(value: object) -> str:
+    if isinstance(value, list | tuple) and len(value) == 2:
+        low, high = value
+        if isinstance(low, int | float) and isinstance(high, int | float):
+            return f"{low * 100:.1f}-{high * 100:.1f}%"
+    return "n/a"
+
+
 def render_markdown(report: Mapping[str, Any]) -> str:
     proof = report.get("proof", {})
     lines = [
@@ -46,13 +54,14 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         "",
         "## Readers (paired units only)",
         "",
-        "| reader | units | fields (n) | accuracy | false facts / probes | false-fact rate "
-        "| latency p50 | cost / doc |",
-        "|---|---|---|---|---|---|---|---|",
+        "| reader | units | fields (n) | accuracy | 95% CI | false facts / probes "
+        "| false-fact rate | latency p50 | cost / doc |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for name, s in (report.get("paired") or {}).items():
         lines.append(
             f"| {name} | {s['units']} | {s['fields_stated']} | {_pct(s.get('field_accuracy'))} | "
+            f"{_interval(s.get('accuracy_ci95'))} | "
             f"{s['false_facts']} / {s['probes']} | {_pct(s.get('false_fact_rate'))} | "
             f"{_num(s.get('latency_p50_ms'), '.0f')} ms | "
             f"${_num(s.get('cost_per_doc_usd'), '.4f')} |"
