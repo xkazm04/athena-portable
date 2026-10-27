@@ -507,6 +507,19 @@ describe("the conversation", () => {
     expect(intake.routes("decide")).toEqual(["s1"]);
   });
 
+  it("opens Just decide for me again when the daemon refused it", async () => {
+    intake.decide = () => Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+    await show();
+    await feed(CARD);
+    type(q<HTMLTextAreaElement>("#ad-say")!, NEED);
+    await click(sendIn(".ad-composer"));
+    await click(button("Just decide for me"));
+    expect(text()).toContain("not running");
+    expect(
+      (button("Just decide for me") as HTMLButtonElement | null)?.disabled,
+    ).toBe(false);
+  });
+
   it("holds Just decide for me until the person has said something", async () => {
     await show();
     await feed(CARD);

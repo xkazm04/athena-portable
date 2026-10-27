@@ -159,7 +159,11 @@ export function useIntakeSession(
     decide: () => {
       if (!client || !sid.current) return;
       dispatch({ t: "enough" });
-      client.decide(sid.current).catch(fail);
+      client.decide(sid.current).catch((error: unknown) => {
+        // Never recorded: "Just decide for me" opens again.
+        dispatch({ t: "enough", undo: true });
+        fail(error);
+      });
     },
     retry: () => {
       if (!client) return;

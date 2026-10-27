@@ -638,6 +638,16 @@ describe("the brief and the showcase", () => {
     expect(button("Approve")).toBeNull();
   });
 
+  it("opens Good enough again when the daemon refused it, and says why", async () => {
+    client.enough = () => Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+    await show();
+    await feed(BRIEF(1));
+    await click(button("Good enough"));
+    expect(text(".ad-error")).toContain("not running");
+    expect(button("Good enough")!.hasAttribute("disabled")).toBe(false);
+    expect(button("Approve")!.hasAttribute("disabled")).toBe(true);
+  });
+
   it("plays the recorded run with the person's portals at once, and swaps to the rehearsal when it is done", async () => {
     await show();
     await feed(BRIEF(1), { kind: "adopt.clear", rev: 1 });

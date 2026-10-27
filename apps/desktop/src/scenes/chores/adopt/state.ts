@@ -165,7 +165,8 @@ export type Action =
       detail: string;
     }
   | { t: "error"; key: string; reason: string; detail: string }
-  | { t: "enough" }
+  /** "Good enough" (or the front door's "Just decide for me"); `undo` when the daemon refused it. */
+  | { t: "enough"; undo?: boolean }
   | { t: "approved"; rev: number | null }
   | { t: "handed"; rev: number }
   | { t: "saved"; caseId: string; problem: string };
@@ -259,7 +260,7 @@ export function reduce(s: StudioState, a: Action): StudioState {
         ],
       };
     case "enough":
-      return { ...s, enough: true };
+      return { ...s, enough: !a.undo };
     case "approved":
       return { ...s, approvedRev: a.rev };
     case "handed":

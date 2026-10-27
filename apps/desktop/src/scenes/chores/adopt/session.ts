@@ -317,7 +317,11 @@ export function useAdoptSession(
     enough: () => {
       if (!deps || !sid.current) return;
       dispatch({ t: "enough" });
-      deps.client.enough(sid.current).catch(fail);
+      deps.client.enough(sid.current).catch((error: unknown) => {
+        // Never recorded: "Good enough" opens again, and Approve stays on the auditor's word.
+        dispatch({ t: "enough", undo: true });
+        fail(error);
+      });
     },
     approve: (rev) => {
       if (!deps || !sid.current) return;
