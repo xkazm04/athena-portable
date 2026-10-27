@@ -28,9 +28,16 @@ import {
   type RunsReply,
   type FoundReason,
   type Lane,
+  type LaneKind,
+  type LaneStatus,
   type Question,
+  type ShowcaseStatus,
   type Slot,
+  type SlotKind,
+  type SlotSource,
+  type SlotStatus,
   type StartReply,
+  type Verdict,
 } from "@/lib/adopt";
 
 /** What `POST /adopt/<sid>/documents` takes: at most this many bytes before base64. */
@@ -199,15 +206,37 @@ const strings = (v: unknown) => list(v).filter((x): x is string => typeof x === 
 const oneOf = <T extends string>(v: unknown, all: readonly T[], d: T): T =>
   (all as readonly unknown[]).includes(v) ? (v as T) : d;
 
+/**
+ * Every member of one of the contract's closed vocabularies, as a record the compiler holds
+ * complete: a member added to the union in `lib/adopt.ts` (which the Python parity test holds to
+ * the contract) and not here is a type error, never a value the parser quietly reads as the default.
+ */
+const members = <T extends string>(all: Record<T, true>): readonly T[] => Object.keys(all) as T[];
+const SLOT_KINDS = members<SlotKind>({ portal: true, gate: true, fact: true, trap: true });
+const SLOT_STATUSES = members<SlotStatus>({ open: true, guessed: true, confirmed: true });
+const SLOT_SOURCES = members<SlotSource>({
+  user: true,
+  research: true,
+  memory: true,
+  document: true,
+  account: true,
+  default: true,
+});
+const LANE_KINDS = members<LaneKind>({ rules: true, accounts: true, memory: true, document: true });
+const LANE_STATUSES = members<LaneStatus>({ queued: true, running: true, done: true, failed: true, skipped: true });
+const SHOWCASE_STATUSES = members<ShowcaseStatus>({ queued: true, running: true, done: true, failed: true });
+const FOUND_REASONS = members<FoundReason>({ "": true, shaped: true });
+const VERDICT_FITS = members<Verdict["fit"]>({ template: true, custom: true });
+
 export function slotOf(raw: unknown): Slot {
   const r = isRaw(raw) ? raw : {};
   return {
     id: str(r.id),
-    kind: oneOf(r.kind, ["portal", "gate", "fact", "trap"], "fact"),
+    kind: oneOf(r.kind, SLOT_KINDS, "fact"),
     label: str(r.label),
-    status: oneOf(r.status, ["open", "guessed", "confirmed"], "open"),
+    status: oneOf(r.status, SLOT_STATUSES, "open"),
     value: str(r.value),
-    source: oneOf(r.source, ["user", "research", "memory", "document", "account", "default"], "default"),
+    source: oneOf(r.source, SLOT_SOURCES, "default"),
   };
 }
 
@@ -297,9 +326,9 @@ function laneOf(raw: unknown): Lane | null {
   if (!isRaw(raw)) return null;
   return {
     id: str(raw.id),
-    kind: oneOf(raw.kind, ["rules", "accounts", "memory", "document"], "rules"),
+    kind: oneOf(raw.kind, LANE_KINDS, "rules"),
     title: str(raw.title),
-    status: oneOf(raw.status, ["queued", "running", "done", "failed", "skipped"], "queued"),
+    status: oneOf(raw.status, LANE_STATUSES, "queued"),
     summary: str(raw.summary),
     findings: list(raw.findings)
       .filter(isRaw)
@@ -353,12 +382,12 @@ export function parseAdoptEvent(data: string): AdoptEvent | null {
       return {
         kind,
         seq,
-        status: oneOf(raw.status, ["queued", "running", "done", "failed"], "queued"),
+        status: oneOf(raw.status, SHOWCASE_STATUSES, "queued"),
         turn: numOrNull(raw.turn),
         total: numOrNull(raw.total),
         trace: list(raw.trace).filter(isRaw),
         found_usd: numOrNull(raw.found_usd),
-        found_reason: oneOf<FoundReason>(raw.found_reason, ["", "shaped"], ""),
+        found_reason: oneOf(raw.found_reason, FOUND_REASONS, ""),
         detail: str(raw.detail),
       };
     case "adopt.usage":
@@ -375,7 +404,7 @@ export function parseAdoptEvent(data: string): AdoptEvent | null {
       return {
         kind,
         seq,
-        fit: oneOf(raw.fit, ["template", "custom"], "custom"),
+        fit: oneOf(raw.fit, VERDICT_FITS, "custom"),
         playbook_id: str(raw.playbook_id),
         why: str(raw.why),
         differs: str(raw.differs),

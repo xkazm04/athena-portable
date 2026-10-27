@@ -1052,6 +1052,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): a practice run that finished with no turns says so, instead of a showcase that reads as if nothing ran.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, state-coverage): the showcase's status line gains the done-and-empty state beside failed; showcase.test.tsx.
 - `fix(adopt): an accounts lane with nothing connected says no Gmail or Notion account is, not "Gmail not connected".` scan-sweep stabilize (adopt-engine, copy-auditor): the skip line is built from the connectors the lane reads.
 - `fix(peer): a join files the other PC's key only under the device id its request answer named.` Stabilize 2026-10-27 (peer-devices, security-auditor): a claim answer could name any string, or another paired PC, and `_joined` sealed the answering PC's token and address under it; `listener.py` now requires a device id equal to the one first named; test_devices.py.
+- `fix(chores): the adopt event parser's eight closed vocabularies are held complete by the compiler, not hand-kept beside the contract's unions.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): `lib/adopt-client.ts` reads each vocabulary from a `Record<Union, true>`; seeded: a dropped lane status was tsc 0 before, TS2345 after.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
