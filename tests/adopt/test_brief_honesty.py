@@ -385,3 +385,47 @@ def test_a_card_option_naming_the_examples_app_is_dropped(rig: Rig) -> None:
     labels = [o["label"] for o in card["questions"][0]["options"]]
     assert labels == ["Your payroll provider's own website", "Another app - which?"]
     assert session.counters.get("example_option_dropped") == 1
+
+
+def _class_of_origin(text: str) -> str:
+    """The class a brief-writer origin phrase puts a value in."""
+    for phrase, name in (
+        ("earlier answer", "earlier"),
+        ("you said it", "hers"),
+        ("playbook", "playbook"),
+        ("guess", "guess"),
+        ("research", "lane"),
+        ("document", "lane"),
+        ("account", "lane"),
+    ):
+        if phrase in text:
+            return name
+    raise AssertionError(text)
+
+
+def _class_of_mark(mark: str) -> str:
+    """The class a setup-line mark puts a value in."""
+    if not mark:
+        return "hers"
+    for phrase, name in (
+        ("earlier answer", "earlier"),
+        ("playbook", "playbook"),
+        ("guess", "guess"),
+        ("from ", "lane"),
+    ):
+        if phrase in mark:
+            return name
+    raise AssertionError(mark)
+
+
+@pytest.mark.parametrize("status", ["open", "guessed", "confirmed"])
+@pytest.mark.parametrize("source", ["user", "research", "memory", "document", "account", "default"])
+def test_the_brief_writer_and_the_setup_lines_classify_every_value_alike(
+    status: str, source: str
+) -> None:
+    """Two renderings of one rule: ``prompts._origin`` (what the model is told) and
+    ``slots.provenance`` (what the fallback lines and the command print)."""
+    slot = Slot(id="f1", kind="fact", label="x", status=status, value="v", source=source)  # type: ignore[arg-type]
+    told = slots_block([slot], nonce="c0ffee").splitlines()[1]
+    origin = told.split("] ")[0].split(", ", 2)[2] if told.count(", ") >= 2 else ""
+    assert _class_of_origin(origin) == _class_of_mark(provenance(slot)), (told, provenance(slot))

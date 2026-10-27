@@ -159,7 +159,8 @@ Every line speaks to the person as "you" (never "she" or "the person"); a bullet
 
 Marks on a setup line: nothing on their own words; "(from the playbook: <the source it cites>)" \
 or "(from the playbook)" on the playbook's rule; "(from research)", "(from your document)" or \
-"(from your account)" on a lane's reading; "(my guess)" only on your own guess about them.
+"(from your account)" on a lane's reading; "(your earlier answer, to check)" on their words \
+from an earlier case not yet confirmed again; "(my guess)" only on your own guess about them.
 
 Dates: each deadline their case turns on. "when" is a calendar date only when their words, a \
 document or a known date of theirs gives it (work it out from that date and the playbook's \
@@ -343,6 +344,8 @@ def _origin(slot: Slot) -> str:
         return ", the playbook's rule"
     if slot.status != "confirmed" and slot.source in ("default", "user"):
         return ", Athena's guess"
+    if slot.status != "confirmed" and slot.source == "memory":
+        return ", your earlier answer, to check"
     return f", {_ORIGIN.get(slot.source, slot.source)}"
 
 

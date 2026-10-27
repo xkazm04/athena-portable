@@ -364,8 +364,9 @@ def provenance(slot: Slot) -> str:
 
     ``""`` for the person's own words (now, or carried from her approved case); "(from the
     playbook)" for a rule the library states (confirmed, source ``default``); "(from research)"
-    and the like for what a lane read; "(my guess)" only for Athena's own inference about this
-    person.
+    and the like for what a lane read; "(your earlier answer, to check)" for her own words from
+    an earlier case that a reopening turned back into a guess; "(my guess)" only for Athena's
+    own inference about this person.
     """
     if slot.status == "confirmed":
         if slot.source in ("user", "memory"):
@@ -373,6 +374,8 @@ def provenance(slot: Slot) -> str:
         return f" ({_FROM.get(slot.source, 'from the playbook')})"
     if slot.source in _FROM:
         return f" ({_FROM[slot.source]})"
+    if slot.source == "memory":
+        return " (your earlier answer, to check)"
     return " (my guess)"
 
 
