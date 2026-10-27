@@ -114,6 +114,41 @@ def test_wrong_codes_close_the_window() -> None:
     assert closed.error == "wrong_code"
 
 
+def test_yesterdays_typos_do_not_close_todays_window() -> None:
+    """Wrong codes count per window: a new window starts at zero, the fifth still closes it."""
+    clock = Clock()
+    book = PairingBook(now=clock)
+    book.open_window("pc")
+    for _ in range(WRONG_LIMIT - 1):
+        assert _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc").error == "wrong_code"
+    clock.advance(4 * 86400)
+    today = book.open_window("pc")
+    assert _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc").error == "wrong_code"
+    assert book.window_open()
+    for _ in range(WRONG_LIMIT - 2):
+        _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc")
+    assert book.window_open()
+    _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc")
+    assert not book.window_open()
+    assert _refused(book.request, code=today.code, name="x", kind="pc").error == "wrong_code"
+
+
+def test_each_open_window_faces_at_most_the_limit_of_wrong_codes() -> None:
+    clock = Clock()
+    book = PairingBook(now=clock)
+    first = book.open_window("pc")
+    for _ in range(WRONG_LIMIT - 2):
+        _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc")
+    second = book.open_window("pc")
+    for _ in range(2):
+        _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc")
+    states = {first.pairing_id: "expired", second.pairing_id: "open"}
+    assert {k: book.get(k).state for k in states} == states  # type: ignore[union-attr]
+    for _ in range(WRONG_LIMIT - 2):
+        _refused(book.request, code="ZZZZZZZZ", name="x", kind="pc")
+    assert book.get(second.pairing_id).state == "expired"  # type: ignore[union-attr]
+
+
 def test_an_unclaimed_approval_lapses_and_is_handed_back_for_its_row() -> None:
     clock = Clock()
     book = PairingBook(now=clock)

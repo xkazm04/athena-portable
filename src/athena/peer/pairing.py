@@ -15,6 +15,8 @@ requester who only knows the code gets ``window_taken``.
 
 **Wrong guesses close windows.** A code that matches no window, a wrong nonce, a wrong claim
 secret: each is counted, and at :data:`WRONG_LIMIT` the windows it could have been aimed at close.
+The count is per window: a code that matches nothing counts against every window open when it
+was typed, and a window opened later starts at zero, so old typos never close a new window.
 A six-character code from :data:`CODE_ALPHABET` is about thirty bits, which five guesses do not
 reach.
 
@@ -140,6 +142,8 @@ class PairingRecord:
     #: Where the request came from, as the socket said (never the body); ``""`` when unknown.
     address: str = ""
     wrong: int = 0
+    #: Codes typed while this window was open that matched no window (:data:`WRONG_LIMIT` closes).
+    code_misses: int = 0
     resolved_at: datetime | None = None
 
     def pending_view(self, replaces: dict[str, str] | None = None) -> dict[str, Any]:
@@ -165,7 +169,6 @@ class PairingBook:
         self._now = now or (lambda: datetime.now(UTC))
         self._lock = threading.RLock()
         self._records: dict[str, PairingRecord] = {}
-        self._wrong_codes = 0
 
     # -- reading -------------------------------------------------------------------------------
 
@@ -408,11 +411,10 @@ class PairingBook:
             known = record.state in LIVE_STATES or record.state in (CLAIMED, DECLINED)
             if record.direction == "inbound" and typed and record.code == typed and known:
                 return record, False
-        self._wrong_codes += 1
-        if self._wrong_codes >= WRONG_LIMIT:
-            self._wrong_codes = 0
-            for record in self._records.values():
-                if record.state == OPEN:
+        for record in self._records.values():
+            if record.state == OPEN:
+                record.code_misses += 1
+                if record.code_misses >= WRONG_LIMIT:
                     record.state = EXPIRED
                     record.resolved_at = self._now()
         raise PairingRefused(403, "wrong_code", "no open window has that code")

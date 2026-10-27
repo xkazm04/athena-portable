@@ -1167,6 +1167,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): code inside a bold line of her markdown is drawn, not printed with its backticks.` The inside of a `**bold**` span goes through the code split (`companion/rich.tsx`, text nodes only, still no HTML); `**run \`doctor\` now**` was bold text with two literal backticks.
 
 - fix(proving): the docread verdict reads UNRESOLVED when the ratio's 95% paired-bootstrap interval spans its 0.90 (PASS) or 0.70 (KILL) line, and the report prints the interval; run 20261022T195808Z rescored is 0.945 [0.887, 1.000], UNRESOLVED; ADR 0232 (scan-sweep Lane C, owner-approved).
+- fix(peer): a code that matches no pairing window counts against the windows open when it was typed, so yesterday's typos no longer close today's window; the fifth wrong code a window faces still closes it, and the lifetime counter is gone (scan-sweep Lane C, owner-approved).
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.
