@@ -389,6 +389,9 @@ function withdraw(run: Active): void {
   run.cards.clear();
 }
 
+/** The window's clock in ms: `deps.now`, the one the waits are tested against, else the real one. */
+const clockMs = (): number => +(deps.now?.() ?? new Date());
+
 /** The open tab `tabId` as the loop addresses it, read now, or `null` when it closed. */
 function refOf(tabId: number): TabRef | null {
   const tab = deps.tabs().find((t) => t.id === tabId);
@@ -442,14 +445,14 @@ async function bind(run: Active): Promise<void> {
       );
     }
     tabId = await deps.open(url);
-    const until = Date.now() + TAB_OPEN_MS;
+    const until = clockMs() + TAB_OPEN_MS;
     while (!deps.tabs().some((t) => t.id === tabId)) {
       if (run.controller.signal.aborted) throw new Killed();
-      if (Date.now() > until) throw new TaskFailure("no_page", `the tab opened for ${appName(task)} never appeared`);
+      if (clockMs() > until) throw new TaskFailure("no_page", `the tab opened for ${appName(task)} never appeared`);
       await deps.wait(100);
     }
-    const ready = Date.now() + TOOLS_WAIT_MS;
-    while (!deps.tools()[tabId] && Date.now() < ready) {
+    const ready = clockMs() + TOOLS_WAIT_MS;
+    while (!deps.tools()[tabId] && clockMs() < ready) {
       if (run.controller.signal.aborted) throw new Killed();
       await deps.wait(100);
     }

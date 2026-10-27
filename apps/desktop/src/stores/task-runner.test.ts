@@ -318,6 +318,54 @@ describe("the task runner", () => {
     expect(daemon.runs(T1)[0]!.body).toMatchObject({ tab_id: 7 });
   });
 
+  it("reads its tab deadlines from the injected clock: a tab that never appears fails in milliseconds, not in ten seconds", async () => {
+    const daemon = fakeDaemon({ claims: [task(T1)] });
+    let fake = 0;
+    wire(daemon, [tab(1, LEDGER, true)], {
+      open: async () => 7,
+      now: () => new Date(fake),
+      wait: async (ms) => {
+        fake += ms;
+      },
+    });
+
+    const began = Date.now();
+    await tickRunner();
+    await until(() => daemon.finishes().length === 1, 5000);
+
+    expect(Date.now() - began).toBeLessThan(3000);
+    expect(daemon.finishes()[0]).toMatchObject({ status: "failed" });
+    expect(String(daemon.finishes()[0]!.error)).toMatch(/^no_page: the tab opened for .* never appeared/);
+  });
+
+  it("reads its tools wait from the injected clock: a tab whose page never registers is driven after the wait, without real time passing", async () => {
+    const daemon = fakeDaemon({ claims: [task(T1)], runs: { [T1]: [[said("Done."), finished()]] } });
+    const tabs = [tab(1, LEDGER, true)];
+    let fake = 0;
+    wire(daemon, tabs, {
+      tools: () => {
+        const all = tools(tabs);
+        delete all[7];
+        return all;
+      },
+      open: async (url) => {
+        tabs.push(tab(7, `${url}/`));
+        return 7;
+      },
+      now: () => new Date(fake),
+      wait: async (ms) => {
+        fake += ms;
+      },
+    });
+
+    const began = Date.now();
+    await tickRunner();
+    await until(() => daemon.finishes().length === 1, 5000);
+
+    expect(Date.now() - began).toBeLessThan(3000);
+    expect(fake).toBeGreaterThanOrEqual(15_000);
+  });
+
   it("never puts two tasks on one tab", async () => {
     const daemon = fakeDaemon({
       claims: [task(T1), task(T2, { title: "Tidy contacts" })],
