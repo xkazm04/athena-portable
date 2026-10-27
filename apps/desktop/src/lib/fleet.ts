@@ -234,11 +234,23 @@ export interface BusSource {
 /** How long the follower waits before it reconnects: the `retry: 1000` the daemon sends. */
 export const BUS_RETRY_MS = 1000;
 
+type Follower = [on: (event: BusEvent) => void, connected: (() => void) | undefined];
+
+/** The window's one `/events` stream: who listens to it, and what stops it. */
+const followers = new Set<Follower>();
+let halt: AbortController | null = null;
+
 /**
  * Follow `GET /events` for as long as the window lives: reconnect a second after each end (the
  * daemon ends a quiet stream every 15 s, ADR 0011) or failure, and wait while the daemon is not
  * ready. `connected` is called on each (re)connect, which is when a reader re-reads the state it
  * mirrors, because a frame published between two streams is missed. Returns what stops it.
+ *
+ * Every caller in a window shares ONE stream, fanned out here: the devices, sleep, tasks and run
+ * stores would otherwise hold four long-lived connections of the host's pool of six, and a json
+ * call would queue behind nudges. The stream opens with the first follower and closes with the
+ * last. One that joins a live stream has read for itself on starting (every holder does), and hears
+ * the next reconnect with the rest.
  */
 export function followBus(
   source: () => BusSource | null,
@@ -246,34 +258,40 @@ export function followBus(
   connected?: () => void,
   wait: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 ): () => void {
-  let stopped = false;
-  let controller: AbortController | null = null;
-  void (async () => {
-    while (!stopped) {
-      const client = source();
-      if (client) {
-        controller = new AbortController();
-        try {
-          connected?.();
-          for await (const event of client.events(controller.signal)) {
-            if (stopped) break;
-            try {
-              on(event);
-            } catch (error) {
-              // A reader's own bug is said once and costs that frame only: thrown out of this loop
-              // it would end the stream silently, and every frame after it would be lost.
-              console.error(`[athena] bus ${event.kind}: ${error instanceof Error ? error.message : String(error)}`);
+  const me: Follower = [on, connected];
+  followers.add(me);
+  if (!halt) {
+    const stop = (halt = new AbortController());
+    void (async () => {
+      while (!stop.signal.aborted) {
+        const client = source();
+        if (client) {
+          try {
+            for (const f of followers) f[1]?.();
+            for await (const event of client.events(stop.signal)) {
+              if (stop.signal.aborted) break;
+              // A reader's own bug is said once and costs that reader that frame only: thrown out of
+              // this loop it would end the stream for every follower.
+              for (const f of followers) {
+                try {
+                  f[0](event);
+                } catch (error) {
+                  console.error("[athena] bus:", error);
+                }
+              }
             }
+          } catch {
+            // Refused, dropped or aborted: the next pass reconnects, or the loop has been stopped.
           }
-        } catch {
-          // Refused, dropped or aborted: the next pass reconnects, or the loop has been stopped.
         }
+        if (!stop.signal.aborted) await wait(BUS_RETRY_MS);
       }
-      if (!stopped) await wait(BUS_RETRY_MS);
-    }
-  })();
+    })();
+  }
   return () => {
-    stopped = true;
-    controller?.abort();
+    if (followers.delete(me) && !followers.size) {
+      halt?.abort();
+      halt = null;
+    }
   };
 }

@@ -1194,6 +1194,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(setup): Setup's engine count divides by the engines the desktop can launch, not every row the daemon reports.` Stabilize Lane B: "none of the 4 can be used yet" named nebius and muse_code, which the shell cannot start; `engineStateOf` now counts only `ENGINE_IDS`.
 - `fix(companion): the welcome says what runs on this machine and what is sent to her engine.` It no longer promises "no cloud" and "nothing leaves it": the page text she reads goes to her engine, her memory is kept on this machine, and there is no Athena account and no telemetry (`companion/welcome.tsx`; owner-approved wording).
 - `fix(avatar): her face eases in by opacity on the depth tokens instead of cutting in.` Owner-approved Lane C (touches motion; run `pnpm perf`): `avatar.css`, loaded with the lazy runtime, fades the canvas in on `--dur-depth` when `data-face` turns ready; instant under Calm and prefers-reduced-motion.
+- `fix(desktop): a window holds one /events stream however many stores follow the bus.` The devices, sleep, tasks and run stores each opened their own `GET /events` (up to five long-lived connections across Main and her window against the host's pool of six); `followBus` now shares one stream per window, fanned out to each follower, opened with the first and closed with the last.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
