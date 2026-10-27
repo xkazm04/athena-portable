@@ -24,7 +24,15 @@ from athena.proving.chores_uat.rig import ledger_spend, spend_words
 from athena.proving.report import TEXT_ERRORS
 from athena.proving.runlog import RunLog
 
-__all__ = ["criteria_counts", "findings_rows", "load_dumps", "margins", "report_md", "write_report"]
+__all__ = [
+    "criteria_counts",
+    "findings_rows",
+    "load_dumps",
+    "margins",
+    "report_md",
+    "unreadable_dumps",
+    "write_report",
+]
 
 _SEVERITY = {"blocker": 0, "major": 1, "minor": 2, "polish": 3}
 
@@ -38,6 +46,20 @@ def load_dumps(run_dir: Path) -> list[dict[str, Any]]:
             continue
         if isinstance(raw, dict):
             out.append(raw)
+    return out
+
+
+def unreadable_dumps(run_dir: Path) -> list[str]:
+    """The pair dump files :func:`load_dumps` cannot read (not JSON, or not an object): named in
+    the report's header, never dropped from it in silence."""
+    out: list[str] = []
+    for path in sorted((run_dir / "pairs").glob("*.json")):
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            raw = None
+        if not isinstance(raw, dict):
+            out.append(path.name)
     return out
 
 
@@ -179,6 +201,13 @@ def report_md(run_dir: Path, dumps: Sequence[Mapping[str, Any]]) -> str:
         f"{len(dumps)} pairs on disk, {complete} complete. Ledger: {ledger.calls} rows, "
         f"{spend_words(ledger)}. Pair dumps sum to {_dumps_words(dumps)}.",
     ]
+    torn = unreadable_dumps(run_dir)
+    if torn:
+        lines += [
+            "",
+            f"{len(torn)} dump{'' if len(torn) == 1 else 's'} could not be read and "
+            f"{'is' if len(torn) == 1 else 'are'} left out of every number: {', '.join(torn)}.",
+        ]
     instrument = run_meta.get("instrument")
     if isinstance(instrument, Mapping):
         lines += ["", "Instrument: " + ", ".join(f"{k} {v}" for k, v in instrument.items())]

@@ -167,3 +167,18 @@ def test_a_lone_surrogate_in_a_judge_voice_still_writes_the_report(tmp_path: Pat
     md, fj, n = write_report(run_dir)
     assert n == 1 and "\\ud83d" in md.read_text("utf-8")
     assert json.loads(fj.read_text("utf-8"))[0]["title"] == lone
+
+
+def test_an_unreadable_dump_is_named_in_the_header_never_silently_dropped(tmp_path: Path) -> None:
+    """A torn or hand-broken dump is a paid pair the tables cannot read: the header says so, by
+    name, instead of "N pairs on disk" quietly counting one fewer."""
+    run_dir = _write_run(tmp_path, "r1", DUMPS)
+    (run_dir / "pairs" / "torn--pair.json").write_text('{"pair": "torn--pa', "utf-8")
+    (run_dir / "pairs" / "list--pair.json").write_text("[1, 2]", "utf-8")
+    md, _, n = write_report(run_dir)
+    assert n == 3
+    text = md.read_text("utf-8")
+    assert "2 dumps could not be read and are left out of every number: " in text
+    assert "list--pair.json" in text and "torn--pair.json" in text
+    clean = _write_run(tmp_path, "r2", DUMPS)
+    assert "could not be read" not in report_md(clean, DUMPS)
