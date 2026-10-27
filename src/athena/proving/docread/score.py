@@ -16,6 +16,7 @@ out of every rate. An answer the model gave that was not usable JSON is scored a
 from __future__ import annotations
 
 import math
+import random
 import re
 import statistics
 from collections.abc import Iterable, Mapping, Sequence
@@ -28,11 +29,13 @@ from athena.proving.docread.corpus import Unit
 from athena.proving.roles import RoleReply
 
 __all__ = [
+    "BOOTSTRAP_DRAWS",
     "KILL_RATIO",
     "PASS_FALSE_FACT_PP",
     "PASS_RATIO",
     "Reading",
     "proof",
+    "ratio_interval",
     "score_readers",
     "score_unit",
     "wilson",
@@ -43,6 +46,10 @@ PASS_RATIO = 0.90
 PASS_FALSE_FACT_PP = 0.05
 #: ... and its kill: VL accuracy < 70% of Claude's.
 KILL_RATIO = 0.70
+#: The ratio's 95% interval is a paired percentile bootstrap over units: this many draws, from a
+#: fixed seed, so the same readings always give the same verdict.
+BOOTSTRAP_DRAWS = 2000
+_BOOTSTRAP_SEED = 20261027
 
 _NOT_STATED = re.compile(
     r"^\W*(?:(?:n/?a|none|null|nil|unknown|empty)\W*$"
@@ -203,6 +210,7 @@ def score_readers(
         scored = [r for r in mine if r.values is not None and (common is None or r.unit in common)]
         stated = correct = probes = false = 0
         per_deg: dict[str, list[int]] = {}
+        per_unit: dict[str, list[int]] = {}
         for r in scored:
             unit = by_unit[r.unit]
             rows = score_unit(scenarios[unit.scenario].sheet, unit.facts, r.values or {})
@@ -216,6 +224,7 @@ def score_readers(
             bucket[0] += c
             bucket[1] += s
             bucket[2] += 1
+            per_unit[r.unit] = [c, s]
         costs = [r.cost_usd for r in scored if r.cost_usd is not None]
         out[name] = {
             "model": next((r.model for r in mine if r.model), ""),
@@ -227,6 +236,9 @@ def score_readers(
             "field_accuracy": _rate(correct, stated),
             # How wide n leaves the accuracy: the ratio the proof takes is only as sharp as this.
             "accuracy_ci95": list(wilson(correct, stated) or []) or None,
+            # (correct, stated) per unit: the proof resamples units, not fields, because the fields
+            # of one document are not independent draws.
+            "unit_counts": per_unit,
             "probes": probes,
             "false_facts": false,
             "false_fact_rate": _rate(false, probes),
@@ -243,10 +255,15 @@ def score_readers(
 
 
 def proof(scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
-    """The brief's verdict, computed here: PASS / KILL / MIXED, with the figures behind it.
+    """The brief's verdict, computed here: PASS / KILL / MIXED / UNRESOLVED, with the figures.
 
     PASS: VL accuracy >= 90% of Claude's AND VL false-fact rate <= Claude's + 5 pp. KILL: VL
     accuracy < 70% of Claude's. Anything between is MIXED. No verdict without both readers.
+
+    A PASS or KILL claims a side of a threshold, so it must be one n can tell: when the ratio's
+    95% paired-bootstrap interval (over units) spans the line the verdict claims to clear, the
+    verdict is UNRESOLVED and the report says so. MIXED claims no side and is left alone. The
+    false-fact leg is a point comparison; the interval is for the accuracy ratio only.
     """
     vl, claude = scores.get("vl"), scores.get("claude")
     if vl is None or claude is None:
@@ -266,8 +283,18 @@ def proof(scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
     false_ok = vf <= cf + Fraction(str(PASS_FALSE_FACT_PP))
     killed = ratio < Fraction(str(KILL_RATIO))
     verdict = "PASS" if accuracy_ok and false_ok else "KILL" if killed else "MIXED"
+    interval = ratio_interval(vl.get("unit_counts"), claude.get("unit_counts"))
+    resolved_note = None
+    if interval is not None:
+        low, high = interval
+        if verdict == "PASS" and low < PASS_RATIO:
+            verdict, resolved_note = "UNRESOLVED", f"the interval reaches below {PASS_RATIO}"
+        elif verdict == "KILL" and high >= KILL_RATIO:
+            verdict, resolved_note = "UNRESOLVED", f"the interval reaches {KILL_RATIO} or above"
     return {
         "verdict": verdict,
+        "accuracy_ratio_ci95": list(interval) if interval is not None else None,
+        "unresolved_because": resolved_note,
         "accuracy_ratio": round(float(ratio), 4),
         "accuracy_ok": accuracy_ok,
         "false_fact_delta_pp": round(float((vf - cf) * 100), 2),
@@ -277,9 +304,48 @@ def proof(scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
         "rule": (
             f"PASS: ratio >= {PASS_RATIO} and false-fact <= claude + "
             f"{PASS_FALSE_FACT_PP * 100:g}pp;"
-            f" KILL: ratio < {KILL_RATIO}"
+            f" KILL: ratio < {KILL_RATIO};"
+            f" UNRESOLVED: a PASS or KILL whose 95% bootstrap interval for the ratio spans"
+            f" its line"
         ),
     }
+
+
+def ratio_interval(
+    vl_units: Any, claude_units: Any, *, draws: int = BOOTSTRAP_DRAWS
+) -> tuple[float, float] | None:
+    """A 95% paired percentile-bootstrap interval for VL accuracy / Claude accuracy.
+
+    Units both readers answered are resampled together (a unit brings its VL and its Claude
+    counts), so the spread is the spread between documents. ``None`` when the per-unit counts are
+    missing or no unit is shared: no interval is claimed then, and the verdict stays a point one.
+    """
+    if not isinstance(vl_units, Mapping) or not isinstance(claude_units, Mapping):
+        return None
+    shared = sorted(set(vl_units) & set(claude_units))
+    if not shared:
+        return None
+    pairs = [
+        (vl_units[u][0], vl_units[u][1], claude_units[u][0], claude_units[u][1]) for u in shared
+    ]
+    rng = random.Random(_BOOTSTRAP_SEED)
+    ratios: list[float] = []
+    for _ in range(draws):
+        sample = rng.choices(pairs, k=len(pairs))
+        vc = sum(p[0] for p in sample)
+        vs = sum(p[1] for p in sample)
+        cc = sum(p[2] for p in sample)
+        cs = sum(p[3] for p in sample)
+        if vs == 0 or cs == 0 or cc == 0:
+            continue
+        ratios.append((vc / vs) / (cc / cs))
+    if len(ratios) < draws // 2:
+        return None
+    ratios.sort()
+    return (
+        round(ratios[int(0.025 * len(ratios))], 4),
+        round(ratios[min(len(ratios) - 1, int(0.975 * len(ratios)))], 4),
+    )
 
 
 def _exact(stats: Mapping[str, Any], num: str, den: str, rate: str) -> Fraction | None:

@@ -651,14 +651,17 @@ written from the scenario's fact sheet, each at three degradations (clean; skewe
 low-resolution greyscale scan), plus the letter as a PDF. Nemotron 3.5 Super-VL reads each picture
 in one call with reasoning off; the control is the real Claude documents lane (Sonnet, `Read` only).
 Proof: Super-VL's accuracy at least 90% of the control's, and its false-fact rate (a value given
-for a fact the document does not state) at most 5 points above it.
+for a fact the document does not state) at most 5 points above it. The verdicts are PASS, KILL,
+MIXED and UNRESOLVED: a PASS or KILL whose 95% paired-bootstrap interval for the ratio spans its
+line (0.90 or 0.70) is UNRESOLVED and the report says more units are needed (ADR 0232).
 
 | Reader (90 paired documents, 133 stated fields, 230 probes) | field accuracy | false facts | median time | cost per document |
 |---|---|---|---|---|
 | Claude documents lane | 96.2% | 2.2% | 8.6 s | $0.0209 |
 | Nemotron 3.5 Super-VL | 91.0% | 5.2% | 2.0 s | $0.0007 |
 
-Run `20261022T195808Z`: ratio 0.945, false-fact delta +3.05 points, so the proof passes. Super-VL
+Run `20261022T195808Z`: ratio 0.945, false-fact delta +3.05 points: the point ratio passes, but its
+95% interval (0.887 to 1.000) reaches below 0.90, so rescored it reads UNRESOLVED. Super-VL
 held 89.7% at every degradation, the scan included; its misses were mostly on trap entries,
 where it answered "No" or echoed the question instead of the stated value, and one OCR slip. The lane now takes
 it as an opt-in reader for pictures (section 10).

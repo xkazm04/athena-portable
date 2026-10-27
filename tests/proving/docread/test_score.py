@@ -147,3 +147,80 @@ def test_each_accuracy_carries_its_95_percent_interval_into_the_report() -> None
     md = render_markdown({"paired": {"vl": vl}, "proof": {}})
     low, high = vl["accuracy_ci95"]
     assert f"{low * 100:.1f}-{high * 100:.1f}%" in md
+
+
+def _with_units(
+    pairs: list[tuple[int, int, int, int]], false: tuple[int, int] = (0, 0)
+) -> dict[str, dict[str, object]]:
+    """Scores for readers whose unit i held (vl ok, vl stated, claude ok, claude stated)."""
+
+    def side(k: int) -> dict[str, object]:
+        correct = sum(p[2 * k] for p in pairs)
+        stated = sum(p[2 * k + 1] for p in pairs)
+        return {
+            "field_accuracy": round(correct / stated, 4),
+            "fields_correct": correct,
+            "fields_stated": stated,
+            "false_fact_rate": 0.0,
+            "false_facts": false[k],
+            "probes": 100,
+            "units": len(pairs),
+            "unit_counts": {f"u{i}": [p[2 * k], p[2 * k + 1]] for i, p in enumerate(pairs)},
+        }
+
+    return {"vl": side(0), "claude": side(1)}
+
+
+def test_a_pass_the_interval_cannot_resolve_reads_unresolved() -> None:
+    # One whole document missed out of 20: 76/80 = 0.95 on the point.
+    pairs = [(0, 4, 4, 4)] + [(4, 4, 4, 4)] * 19  # 76/80 = 0.95, one whole document missed
+    verdict = proof(_with_units(pairs))
+    assert verdict["accuracy_ratio"] == 0.95 and verdict["accuracy_ok"] is True
+    low, high = verdict["accuracy_ratio_ci95"]
+    assert low < 0.9 <= high
+    assert verdict["verdict"] == "UNRESOLVED"
+    assert "0.9" in verdict["unresolved_because"]
+
+
+def test_a_pass_with_an_interval_clear_of_the_line_stays_a_pass() -> None:
+    pairs = [(19, 20, 20, 20)] * 90  # every document reads 0.95: no spread to hide in
+    verdict = proof(_with_units(pairs))
+    assert verdict["verdict"] == "PASS"
+    assert verdict["accuracy_ratio_ci95"] == [0.95, 0.95]
+
+
+def test_a_kill_whose_interval_reaches_the_kill_line_reads_unresolved() -> None:
+    # 0.667 on the point (below 0.7) over six uneven documents: the interval reaches 0.7.
+    pairs = [(0, 4, 4, 4), (0, 4, 4, 4), (4, 4, 4, 4), (4, 4, 4, 4), (0, 4, 4, 4), (4, 4, 4, 4)]
+    verdict = proof(_with_units(pairs))
+    assert verdict["accuracy_ratio"] < 0.7
+    assert verdict["verdict"] == "UNRESOLVED"
+
+
+def test_a_clear_kill_and_a_mixed_are_left_alone() -> None:
+    assert proof(_with_units([(1, 4, 4, 4)] * 60))["verdict"] == "KILL"
+    assert proof(_with_units([(3, 4, 4, 4)] * 60))["verdict"] == "MIXED"
+
+
+def test_the_interval_is_deterministic() -> None:
+    pairs = [(0, 4, 4, 4)] + [(4, 4, 4, 4)] * 19
+    assert proof(_with_units(pairs)) == proof(_with_units(pairs))
+
+
+def test_score_readers_hands_proof_the_counts_per_unit() -> None:
+    readings = [
+        _reading(UNITS[0], {"f-former-name": "Priya Iyer"}),
+        _reading(UNITS[0], {"f-former-name": "Priya Iyer"}, reader="claude"),
+    ]
+    scored = score_readers({S.id: S}, UNITS, readings)
+    assert scored["vl"]["unit_counts"] == {UNITS[0].id: [1, 2]}
+
+
+def test_the_report_prints_the_interval_and_the_unresolved_reason() -> None:
+    from athena.proving.docread.report import render_markdown
+
+    pairs = [(0, 4, 4, 4)] + [(4, 4, 4, 4)] * 19
+    md = render_markdown({"paired": {}, "proof": proof(_with_units(pairs))})
+    assert "**Verdict: UNRESOLVED**" in md
+    assert "95% paired-bootstrap interval for the ratio" in md
+    assert "more units are needed" in md

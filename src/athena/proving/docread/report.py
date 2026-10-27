@@ -45,6 +45,16 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"(pass <= +5); n = {proof.get('vl_units')} VL / "
             f"{proof.get('claude_units')} Claude paired units"
         )
+        interval = proof.get("accuracy_ratio_ci95")
+        if isinstance(interval, list) and len(interval) == 2:
+            lines.append(
+                f"95% paired-bootstrap interval for the ratio {interval[0]:.3f}-{interval[1]:.3f}"
+            )
+        if proof.get("verdict") == "UNRESOLVED":
+            lines.append(
+                f"UNRESOLVED: {proof.get('unresolved_because')}, so this n cannot say whether "
+                "the point ratio clears its line; more units are needed."
+            )
     elif proof.get("reason"):
         lines.append(str(proof["reason"]))
     lines += ["", "## Models", ""]

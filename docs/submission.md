@@ -175,14 +175,16 @@ The control changed too (Haiku 4.5 then, 5.5 now), so this and the 2026-10-07 ta
 a bill, and the documents lane reads it against the playbook's facts (ADR 0097). `uv run python -m
 athena.proving.docread all` renders documents whose answers are known by construction, up to a
 low-resolution greyscale scan. Proof: accuracy at least 90% of the Claude lane's, false facts at
-most 5 points above it.
+most 5 points above it; a PASS or KILL whose 95% interval for the ratio spans its line reads
+UNRESOLVED (ADR 0232).
 
 | Reader, run `20261022T195808Z` (90 paired documents, 230 probes) | field accuracy | false facts | median time | cost per document |
 |---|---|---|---|---|
 | Claude documents lane (Sonnet, `Read` only) | 96.2% | 2.2% | 8.6 s | $0.0209 |
 | Nemotron 3.5 Super-VL, reasoning off | 91.0% | 5.2% | 2.0 s | $0.0007 |
 
-Ratio 0.945, false-fact delta +3.05 points: the proof passes. The lane now takes Super-VL as an
+Ratio 0.945, false-fact delta +3.05 points: the point ratio passes, but its 95% interval (0.887 to
+1.000) reaches below 0.90, so rescored it is UNRESOLVED. The lane now takes Super-VL as an
 opt-in reader for pictures (`ATHENA_DOCUMENT_READER=nemotron-vl`); a PDF, a larger picture or any
 failure of the call falls back to the Claude leg, so the opt-in can make a read cheaper and never
 make it fail.
