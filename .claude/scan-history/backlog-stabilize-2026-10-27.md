@@ -75,3 +75,11 @@ Run: `.claude/scan-sweep/runs/stabilize-2026-10-27/` (3 waves, 12 rounds, 17 con
 | proving-chores-uat | the numbers audit's desktop mirror is pinned by hand, with no test derived from the TS | M | none | a vitest emitting every shipped playbook's page lines from worth.ts/model.ts to a JSON fixture, and a pytest comparing numbers.headline over |
 | proving-forge | A generator call that failed is a permanent refusal against the model | S | none | a ScriptedRole generator that fails 1 of 4 calls with engine_error, run through stage_forge twice (second as a resume): valid_rate and the c |
 | proving-docread | An oversized picture's no-call row is charged as an unpriced call on resume | XS | none | a ledger.jsonl holding one over-edge docread.vl row: Budget.calls(NEMOTRON) after restore_budget on both arms, plus the live session's figur |
+
+## Owner triage of Lane C - 2026-10-27
+
+Approved to build (14): bound case receipts; promote/erase replicate; erase scrubs journals; adopt keeps project (space_id); gate ignores stale reading; wrong codes age out; docread UNRESOLVED verdict; omitted motion channel = no say; face fades in; judge word range (enforce 80-200); welcome cloud claim; 'known' means confirmed; failed not 'finished'; one 'more' in the due line.
+
+Declined (2): judge drift anchors (both benches); failed-form fallback in the waking Face step.
+
+Dispatch: after Lane B, folded into the same write-set group as the Lane B cards that share their files.
