@@ -7,7 +7,7 @@
  * `offline`. Every field is read to its type with the contract's absent value. Nothing here sends a
  * turn: the review's "Open and prepare" is the desktop's, and the person presses send.
  */
-import { ApiError, globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
+import { daemonJson, globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
 import {
   CHORE_ROUTES,
   type Cadence,
@@ -168,8 +168,6 @@ function dueReplyOf(r: Raw): DueReply {
   };
 }
 
-const offline = (detail: string) => new ApiError(0, "offline", detail);
-
 export class ChoresApi implements ChoresClient {
   constructor(
     private readonly at: () => Endpoint | null,
@@ -200,27 +198,7 @@ export class ChoresApi implements ChoresClient {
     return dueReplyOf(await this.json("GET", CHORE_ROUTES.due));
   }
 
-  private async json(method: string, path: string, body?: unknown): Promise<Raw> {
-    const at = this.at();
-    if (at === null) throw offline("The daemon is not running.");
-    let response: Response;
-    try {
-      response = await this.fetchImpl(`${at.url}${path}`, {
-        method,
-        headers: { "X-Athena-Token": at.token, "Content-Type": "application/json" },
-        body: body === undefined ? undefined : JSON.stringify(body),
-      });
-    } catch (error) {
-      throw offline(error instanceof Error ? error.message : String(error));
-    }
-    let payload: unknown = {};
-    try {
-      payload = await response.json();
-    } catch {
-      // Not JSON: the status is the answer.
-    }
-    const r = isRaw(payload) ? payload : {};
-    if (!response.ok) throw new ApiError(response.status, str(r.reason) || "unknown", str(r.detail));
-    return r;
+  private json(method: string, path: string, body?: unknown): Promise<Raw> {
+    return daemonJson<Raw>(this.at(), this.fetchImpl, method, path, body);
   }
 }

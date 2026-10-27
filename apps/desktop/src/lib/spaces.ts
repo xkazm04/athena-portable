@@ -11,7 +11,7 @@
  * "space_busy"}`), and the error carries it as `word`, as `lib/api.ts` does for a peer's refusal: a
  * surface says "a turn is running in this project" from the word, never by matching the detail.
  */
-import { ApiError, globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
+import { ApiError, daemonJson, globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
 
 // Core's two words live in a module of their own, so the first frame can name core without this
 // client (`lib/space-core.ts`); they are this module's exports as much as that one's.
@@ -155,8 +155,6 @@ export function memoryPageOf(raw: unknown): SpaceMemoryPage {
   return { rows, showing: num(r.showing, rows.length), total: num(r.total, rows.length) };
 }
 
-const offline = (detail: string) => new ApiError(0, "offline", detail);
-
 const missing = (what: string) => new ApiError(502, "bad_reply", `the daemon answered no ${what}`);
 
 export class SpacesApi implements SpacesClient {
@@ -206,27 +204,7 @@ export class SpacesApi implements SpacesClient {
     return str(reply.space_id);
   }
 
-  private async json(method: string, path: string, body?: unknown): Promise<Raw> {
-    const at = this.at();
-    if (at === null) throw offline("The daemon is not running.");
-    let response: Response;
-    try {
-      response = await this.fetchImpl(`${at.url}${path}`, {
-        method,
-        headers: { "X-Athena-Token": at.token, "Content-Type": "application/json" },
-        body: body === undefined ? undefined : JSON.stringify(body),
-      });
-    } catch (error) {
-      throw offline(error instanceof Error ? error.message : String(error));
-    }
-    let payload: unknown = {};
-    try {
-      payload = await response.json();
-    } catch {
-      // Not JSON: the status is the answer.
-    }
-    const r = isRaw(payload) ? payload : {};
-    if (!response.ok) throw new ApiError(response.status, str(r.reason) || "unknown", str(r.detail), str(r.error));
-    return r;
+  private json(method: string, path: string, body?: unknown): Promise<Raw> {
+    return daemonJson<Raw>(this.at(), this.fetchImpl, method, path, body);
   }
 }

@@ -388,13 +388,7 @@ export class DaemonApi {
 
   /** Run a turn and yield its channel events as they arrive. */
   async *run(body: TurnBody, signal?: AbortSignal): AsyncGenerator<ChannelEvent> {
-    const response = await this.fetchImpl(`${this.endpoint.url}/run`, {
-      method: "POST",
-      headers: this.headers(),
-      body: JSON.stringify(body),
-      signal,
-    });
-    if (!response.ok) throw await this.refusal(response);
+    const response = await daemonSend(this.endpoint, this.fetchImpl, "POST", "/run", body, signal);
     if (!response.body) {
       throw new ApiError(response.status, "engine_error", "the daemon streamed no body");
     }
@@ -544,8 +538,7 @@ export class DaemonApi {
    */
   async *turn(peerId: string, requestId: string, from: number, signal?: AbortSignal): AsyncGenerator<TurnFrame> {
     const path = `/devices/${encodeURIComponent(peerId)}/turns/${encodeURIComponent(requestId)}?from=${from}`;
-    const response = await this.fetchImpl(`${this.endpoint.url}${path}`, { method: "GET", headers: this.headers(), signal });
-    if (!response.ok) throw await this.refusal(response);
+    const response = await daemonSend(this.endpoint, this.fetchImpl, "GET", path, undefined, signal);
     if (!response.body) return;
     for await (const frame of sseFrames(response.body)) yield turnFrameFromJson(frame);
   }
@@ -556,8 +549,7 @@ export class DaemonApi {
    * `EventSource` cannot send the token header.
    */
   async *events(signal?: AbortSignal): AsyncGenerator<BusEvent> {
-    const response = await this.fetchImpl(`${this.endpoint.url}/events`, { method: "GET", headers: this.headers(), signal });
-    if (!response.ok) throw await this.refusal(response);
+    const response = await daemonSend(this.endpoint, this.fetchImpl, "GET", "/events", undefined, signal);
     if (!response.body) return;
     for await (const frame of sseFrames(response.body)) {
       const event = busEventFromJson(frame);
@@ -575,36 +567,63 @@ export class DaemonApi {
     return this.json("POST", `/remote/${encodeURIComponent(requestId)}/end`, { reason, detail });
   }
 
-  private headers(): Record<string, string> {
-    return { "X-Athena-Token": this.endpoint.token, "Content-Type": "application/json" };
+  private json<T>(method: string, path: string, body?: unknown): Promise<T> {
+    return daemonJson<T>(this.endpoint, this.fetchImpl, method, path, body);
   }
+}
 
-  private async json<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const response = await this.fetchImpl(`${this.endpoint.url}${path}`, {
+/**
+ * The one door to the daemon, for every client (README section 3.2). A refused connection is
+ * `ApiError(0, "offline")`, a refusal carries the daemon's reason, detail, word and device, and a
+ * caller's own abort is rethrown as itself. `at` is null while no daemon is known.
+ */
+export async function daemonSend(
+  at: Endpoint | null,
+  fetchImpl: FetchLike,
+  method: string,
+  path: string,
+  body?: unknown,
+  signal?: AbortSignal,
+): Promise<Response> {
+  if (at === null) throw new ApiError(0, "offline", "The daemon is not running.");
+  let response: Response;
+  try {
+    response = await fetchImpl(`${at.url}${path}`, {
       method,
-      headers: this.headers(),
+      headers: { "X-Athena-Token": at.token, "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
     });
-    if (!response.ok) throw await this.refusal(response);
-    return (await response.json()) as T;
+  } catch (error) {
+    throw signal?.aborted ? error : new ApiError(0, "offline", error instanceof Error ? error.message : String(error));
   }
+  if (response.ok) return response;
+  let p: { reason?: unknown; detail?: unknown; error?: unknown; name?: unknown } = {};
+  try {
+    p = await response.json();
+  } catch {
+    // A refusal that is not JSON is still a refusal; the status is what the panel shows.
+  }
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  throw new ApiError(response.status, str(p?.reason) || "unknown", str(p?.detail), str(p?.error), str(p?.name));
+}
 
-  private async refusal(response: Response): Promise<ApiError> {
-    let reason = "unknown";
-    let detail = "";
-    let word = "";
-    let device = "";
-    try {
-      const payload = (await response.json()) as { reason?: string; detail?: string; error?: unknown; name?: unknown };
-      reason = payload.reason ?? reason;
-      detail = payload.detail ?? "";
-      word = typeof payload.error === "string" ? payload.error : "";
-      device = typeof payload.name === "string" ? payload.name : "";
-    } catch {
-      // A refusal that is not JSON is still a refusal; the status is what the panel shows.
-    }
-    return new ApiError(response.status, reason, detail, word, device);
+/** `daemonSend`, read as JSON: a 2xx with no object in it (empty, not JSON, `null`) is `{}`. */
+export async function daemonJson<T>(
+  at: Endpoint | null,
+  fetchImpl: FetchLike,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const response = await daemonSend(at, fetchImpl, method, path, body);
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    // Not JSON: the status is the answer.
   }
+  return (typeof payload === "object" && payload !== null ? payload : {}) as T;
 }
 
 /**

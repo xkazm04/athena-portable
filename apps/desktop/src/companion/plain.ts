@@ -66,8 +66,8 @@ export function switchedOffSentence(): string {
 export function reasonOf(error: unknown): string {
   if (typeof error === "object" && error !== null && "reason" in error) {
     const { reason, status } = error as { reason: unknown; status?: unknown };
-    if (typeof reason === "string" && reason !== "unknown") return reason;
     if (status === 0) return "not_ready";
+    if (typeof reason === "string" && reason !== "unknown") return reason;
   }
   if (error instanceof TypeError) return "unreachable";
   return "unknown";

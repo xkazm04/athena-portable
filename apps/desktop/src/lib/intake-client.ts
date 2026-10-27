@@ -8,7 +8,7 @@
  * vocabulary and no endpoint, or a fetch that never got an answer, is `offline`. Nothing here
  * retries: the page's session hook owns the reconnect, because only it knows the last `seq`.
  */
-import { ApiError, globalFetch, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
+import { ApiError, daemonJson, daemonSend, globalFetch, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
 import {
   INTAKE_ROUTES,
   type AdoptEvent,
@@ -36,8 +36,6 @@ export interface IntakeClient {
   decide(sid: string): Promise<void>;
   close(sid: string): Promise<void>;
 }
-
-const offline = (detail: string) => new ApiError(0, "offline", detail);
 
 export class IntakeApi implements IntakeClient {
   constructor(
@@ -94,59 +92,16 @@ export class IntakeApi implements IntakeClient {
     await this.send("DELETE", INTAKE_ROUTES.session(sid));
   }
 
-  private async send(
+  private send(
     method: string,
     path: string,
     body?: unknown,
     signal?: AbortSignal,
   ): Promise<Response> {
-    const at = this.at();
-    if (at === null) throw offline("The daemon is not running.");
-    let response: Response;
-    try {
-      response = await this.fetchImpl(`${at.url}${path}`, {
-        method,
-        headers: {
-          "X-Athena-Token": at.token,
-          "Content-Type": "application/json",
-        },
-        body: body === undefined ? undefined : JSON.stringify(body),
-        signal,
-      });
-    } catch (error) {
-      if (signal?.aborted) throw error;
-      throw offline(error instanceof Error ? error.message : String(error));
-    }
-    if (!response.ok) throw await refusal(response);
-    return response;
+    return daemonSend(this.at(), this.fetchImpl, method, path, body, signal);
   }
 
-  private async json<T>(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<T> {
-    const response = await this.send(method, path, body);
-    try {
-      return (await response.json()) as T;
-    } catch {
-      return {} as T;
-    }
+  private json<T>(method: string, path: string, body?: unknown): Promise<T> {
+    return daemonJson<T>(this.at(), this.fetchImpl, method, path, body);
   }
-}
-
-async function refusal(response: Response): Promise<ApiError> {
-  let reason = "unknown";
-  let detail = "";
-  try {
-    const payload = (await response.json()) as {
-      reason?: string;
-      detail?: string;
-    };
-    reason = payload.reason ?? reason;
-    detail = payload.detail ?? "";
-  } catch {
-    // Not JSON: the status is the refusal.
-  }
-  return new ApiError(response.status, reason, detail);
 }

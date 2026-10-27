@@ -138,15 +138,15 @@ function reasonOf(error: unknown): string {
 /**
  * The same reason, plus who is giving it.
  *
- * An `ApiError` is only ever constructed from a response, so it is proof the daemon answered.
- * Anything else — a transport failure, or a bug in this shell such as the unbound `fetch` default
+ * An `ApiError` with a status is proof the daemon answered (status 0 is the shared door's
+ * `offline`: the request never got there). Anything else — a transport failure, or a bug in this shell such as the unbound `fetch` default
  * that `lib/api.ts` carried — means the request never got there, and the surface must not report
  * it as a refusal.
  */
 function problemOf(error: unknown): ConnectorProblem {
   return {
     reason: reasonOf(error),
-    from: error instanceof ApiError ? "daemon" : "client",
+    from: error instanceof ApiError && error.status > 0 ? "daemon" : "client",
   };
 }
 
@@ -279,7 +279,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
             // The daemon answered and refused (a 4xx): the flow is not there to wait for. A read
             // that never reached it, or a 5xx, is not the consent ending: the person may be in the
             // browser right now, so the poll says so and asks again (as the voice install poll does).
-            if (error instanceof ApiError && error.status < 500) return;
+            if (error instanceof ApiError && error.status > 0 && error.status < 500) return;
             shown = reasonOf(error);
             await deps.wait(FLOW_POLL_MS);
             continue;
