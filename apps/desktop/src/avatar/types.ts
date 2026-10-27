@@ -4,7 +4,7 @@
  * The daemon sends a sentence's mouth shapes (`voice.visemes`) and, when a motion model is set up,
  * its head and eye motion (`voice.motion`). The athena window, which owns her voice, turns those
  * and the playback level into one `FaceSignal` a frame, draws it in her own window, and mirrors it
- * to Main at most 30 times a second. Every surface that shows her renders an `<Avatar>` fed by a
+ * to Main at most `FACE_MIRROR_HZ` (40) times a second (ADR 0027's face cap, `lib/face.ts`). Every surface that shows her renders an `<Avatar>` fed by a
  * `FaceSource`, so the face is the same wherever she appears.
  */
 

@@ -1043,6 +1043,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(avatar): under Calm a stream of signals draws her still frame once, not once per signal.` Stabilize 2026-10-27 (desktop-avatar, code-optimizer): the face loop redrew the rest frame on every changed signal, about 60 GPU renders a second of one still picture in her own window while she spoke; it now draws it once and again only on a Calm change or a resize (`FaceLoop.redraw`).
 - `fix(avatar): the scripted line holds every closure for the producer's 60 ms, as her live line does.` Stabilize 2026-10-27 (desktop-avatar, parity-auditor): the face timeline floors each closure to `CLOSURE_FLOOR_S` but `fixtureSignal` read the calm line raw, so the audition, the preview harness and the perf gate drew five of its seven closures at 40-50 ms; the fixture now draws a floored copy and the raw timeline stays the tests' producer input.
 - `fix(chores): Enter in the composer before the session is ready keeps the words instead of clearing them unsent.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, bounty-hunter): the shared composer's `send` honours `ready`, as its Send button did; studio.test.tsx.
+- `fix(avatar): the face's shared types say the mirror runs at 40 Hz, as ADR 0027's amendment set it.` Stabilize 2026-10-27 (desktop-avatar, copy-auditor): `avatar/types.ts` still said "at most 30 times a second" after a57677d5 raised the face cap to `FACE_MIRROR_HZ` = 40.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
