@@ -218,7 +218,7 @@ def _signed_u(value: float | None, unit: str) -> str:
 def _role_table(role: str, stats: Mapping[str, ConfigStats]) -> list[str]:
     lines = [
         "| config | runs | accuracy % | right/wrong/missed | false clears | repeats | judge | "
-        "round p50 | round p95 | first text p50 | audit p50 | usage/run | ended |",
+        "round p50 | round p95 | first text p50 | audit p50 (with brief) | usage/run | ended |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for name, s in stats.items():

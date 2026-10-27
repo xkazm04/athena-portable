@@ -207,3 +207,22 @@ def test_the_judge_is_blind() -> None:
     for secret in ("opus", "Opus", "claude-", "medium", "effort", "haiku", "sonnet"):
         assert secret not in prompt
     assert "<<<transcript:" in prompt
+
+
+def test_the_audit_row_counts_the_same_legs_in_usage_and_in_latency() -> None:
+    """The brief writer is an audit-kind leg (ledger trigger ``adopt.audit``): usage sums it, so
+    the audit latency must read it too, or one row's cost and p50 describe different legs."""
+
+    def leg(role: str, ms: int) -> dict[str, Any]:
+        return {"role": role, "kind": "audit", "ok": True, "ms": ms, "first_text_ms": None}
+
+    record = {
+        **_record([]),
+        "legs": [leg("audit", 2000), leg("audit", 2200), leg("audit", 2400), leg("brief", 9000)],
+        "ledger": [
+            {"role": "adopt.audit", "cost_usd": 0.01, "input_tokens": 1, "output_tokens": 1}
+            for _ in range(4)
+        ],
+    }
+    scored = score_interview(record, LEASE)
+    assert scored["usage"]["audit"]["legs"] == len(scored["audit_ms"]) == 4

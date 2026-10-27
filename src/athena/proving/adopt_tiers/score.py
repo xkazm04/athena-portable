@@ -335,7 +335,9 @@ def score_interview(record: Mapping[str, Any], scenario: Scenario) -> dict[str, 
     first_text = [
         leg.get("first_text_ms") for leg in legs if leg.get("role") == "interview" and leg.get("ok")
     ]
-    audit_ms = [leg.get("ms") for leg in legs if leg.get("role") == "audit" and leg.get("ok")]
+    # Every audit-kind leg, the brief writer's too: the ledger books it as ``adopt.audit``, so
+    # the usage and the latency of the audit row cover the same legs.
+    audit_ms = [leg.get("ms") for leg in legs if leg.get("kind") == "audit" and leg.get("ok")]
     questions = sum(
         len(e.get("questions") or []) for e in _events(record) if e.get("kind") == "adopt.questions"
     )
