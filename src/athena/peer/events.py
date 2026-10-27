@@ -7,11 +7,14 @@ one frame on every queue and never blocks: a subscriber that stopped reading los
 frames rather than holding up the thread that published (the stream is a notification, and
 ``GET /devices`` is the state).
 
-The kinds today are ``pair.requested`` and ``peer.changed``; ``remote.message`` is WP3's, published
-through the same :meth:`EventBus.publish` from its own module. A payload is a JSON object and
-always carries ``kind`` (the event's); ``pair.requested`` carries the pending row under
-``pending`` and ``peer.changed`` the ``peer_id`` it was about, or ``null``. No payload carries a
-token, a nonce or a claim secret.
+The kinds, each published through :meth:`EventBus.publish` from its own module:
+``pair.requested`` (the pending row under ``pending``), ``peer.changed`` (the ``peer_id`` it was
+about, or ``null``), ``pair.opened`` (setup's window: its code and the phone's QR address),
+``remote.message`` and ``remote.decided`` (WP3's remote composer), ``task.changed``,
+``vitals.changed`` and ``sleep.changed``. A payload is a JSON object and always carries ``kind``
+(the event's). No payload carries a token or a claim secret. One carries a nonce:
+``pair.opened``'s ``url`` is ``.../m/#claim=<pairing_id>.<nonce>``, the QR this device's own window
+draws - which is why it goes on this loopback bus and never into the setup tool's answer.
 
 **A quiet stream ends, and the reader reconnects.** The daemon's law is one request per connection
 with every response ending (ADR 0011; ``tests/e2e`` reads every route to its end). So a stream that

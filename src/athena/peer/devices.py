@@ -31,7 +31,8 @@ device's own chrome is the only one who reaches them, which is what makes
     This PC asks the PC at ``address`` (an overlay address) to let it in, with the code that PC's
     person read out; the tick then polls the claim and files the pair-back request here.
 ``GET /events``
-    Server-Sent Events: ``pair.requested``, ``peer.changed`` and, later, WP3's ``remote.message``.
+    Server-Sent Events: every kind :mod:`athena.peer.events` names (``pair.requested``,
+    ``peer.changed``, ``pair.opened``, ``remote.message``, ...).
 """
 
 from __future__ import annotations
