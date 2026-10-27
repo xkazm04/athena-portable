@@ -53,6 +53,7 @@ from athena.proving.adopt_tiers.simulate import (
     _answers_from,
     _card_text,
     _persona_check,
+    interview_legs,
     read_record,
     write_record,
 )
@@ -613,10 +614,7 @@ def legs_per_pair(rounds: int = ASSUMED_ROUNDS, *, rehearse: bool = True) -> int
     """Model legs one pair takes at ``rounds`` cards (schema retries and bench turns not counted):
     start (audit + interview), per answered card persona + audit + interview (the last card's
     audit + interview turn into the brief), the brief, a shape leg when rehearsing, the judge."""
-    rounds = max(1, min(rounds, MAX_ROUNDS))
-    last = rounds >= MAX_ROUNDS
-    onboarding = 2 + (rounds - 1) * 3 + (1 if last else 3) + 1
-    return onboarding + (1 if rehearse else 0) + 1
+    return interview_legs(rounds) + (1 if rehearse else 0) + 1
 
 
 def run_pairs(

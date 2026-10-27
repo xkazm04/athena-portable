@@ -184,6 +184,15 @@ def write_record(path: Path, record: Mapping[str, Any]) -> None:
 # --- the plan --------------------------------------------------------------------------------
 
 
+def interview_legs(rounds: int) -> int:
+    """Model legs one interview takes at ``rounds`` cards, schema retries not counted: the start
+    (an audit and an interview), per answered card a persona and (unless it was the last card
+    the loop allows) an audit and an interview, then the brief. A test counts them off the loop."""
+    rounds = max(1, min(rounds, MAX_ROUNDS))
+    last = rounds >= MAX_ROUNDS
+    return 2 + (rounds - 1) * 3 + (1 if last else 3) + 1
+
+
 @dataclass(frozen=True)
 class Plan:
     """What a run would do. ``jobs`` are only the ones not already on disk."""
@@ -220,10 +229,7 @@ class Plan:
         (unless it was the last card the loop allows) one audit and one interview. Then the
         brief. Plus a judge per transcript and a shape leg per shape run.
         """
-        rounds = max(1, min(rounds, MAX_ROUNDS))
-        last = rounds >= MAX_ROUNDS
-        per = 2 + (rounds - 1) * 3 + (1 if last else 3) + 1
-        return self.interviews * per + self.judges + self.shapes
+        return self.interviews * interview_legs(rounds) + self.judges + self.shapes
 
 
 def make_plan(
