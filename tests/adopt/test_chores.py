@@ -613,3 +613,26 @@ def test_case_8_the_cadence_route_suggests_from_the_saved_case(brain: Brain) -> 
     assert status == 200 and reply["cadence"] is None
     assert reply["suggested"]["start"] == "2027-05-01"
     assert "Protest deadline" in reply["suggested_basis"]
+
+
+def test_an_every_n_days_rule_without_a_start_counts_from_her_own_date(brain: Brain) -> None:
+    from athena.adopt.chores import case_route
+    from athena.daemon.routes import Request
+
+    case = _case(brain)
+    clock = _clock(brain)
+    # 23:30 UTC on the 25th is already the 26th in Test/Euro (UTC+1 or +2).
+    clock.clock = lambda: datetime(2026, 10, 25, 23, 30, tzinfo=UTC)
+    rule = {"kind": "every_days", "every_days": 30}
+    status, reply = case_route(
+        clock,
+        Request(
+            "POST",
+            f"/adopt/cases/{case.id}/cadence",
+            body={"rule": rule, "timezone": "Test/Euro"},
+        ),
+        case.id,
+        "cadence",
+    )
+    assert status == 200, reply
+    assert reply["cadence"]["rule"]["start"] == "2026-11-25"  # her 26 Oct + 30, not UTC 25 Oct + 30

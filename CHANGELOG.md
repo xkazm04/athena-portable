@@ -1144,6 +1144,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(peer): the phone page reads a streamed answer to a screen reader once, not once per delta.` Stabilize Lane B (accessibility-checker): `<main>` is no longer a live region; the conversation is `role=log`, a streaming message is `aria-hidden` and its finished text is announced once from a status node, cards keep a polite region and a new panel takes focus on its heading (20 announcements of one answer before, 1 after, jsdom harness).
 - `fix(sleep): the degraded merge reads the live memories once per kind, and a forget bar's lift scan starts at the oldest marker.` Stabilize Lane B (code-optimizer): over 5,000 live facts, 18 key lookups took 99.6 ms (18 scans) and now 13.4 ms (2 reads), and `bars()` 12.8 ms now 6.1 ms; verdicts and bars unchanged.
 - `fix(adopt): the brief writer and the setup lines call a reopened guessed slot the same thing.` Stabilize Lane B (parity-auditor): a reopened case's unconfirmed earlier answer was "you said it" to the model and "(my guess)" on the setup line; both now say "your earlier answer, to check", pinned over all 18 status x source pairs.
+- `fix(adopt): an every-N-days chore set without a start counts from her own date, not the UTC date.` Stabilize Lane B (bounty-hunter): the cadence route filled a missing start from the machine's UTC date before reading her zone; it now reads the zone and the chore clock first, so the first run is her local today + N.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

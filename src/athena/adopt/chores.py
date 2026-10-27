@@ -592,12 +592,22 @@ def case_route(clock: ChoreClock, request: Request, case_id: str, verb: str) -> 
     if verb == "cadence":
         if request.method == "POST":
             try:
-                rule = cad.rule_from(body["rule"]) if body.get("rule") is not None else None
                 zone_name = body.get("timezone")
                 if zone_name is not None and (
                     not isinstance(zone_name, str) or len(zone_name) > 64
                 ):
                     raise ValueError("timezone must be a zone name")
+                # A rule with no start counts from her own date, in the zone it will run in.
+                held = clock.book.load(case_id)
+                tz, _ = cad.zone(
+                    zone_name if zone_name is not None else (held.timezone if held else "")
+                )
+                today = clock.clock().astimezone(UTC).astimezone(tz).date()
+                rule = (
+                    cad.rule_from(body["rule"], today=today)
+                    if body.get("rule") is not None
+                    else None
+                )
                 enabled = body.get("enabled")
                 if enabled is not None and not isinstance(enabled, bool):
                     raise ValueError("enabled must be true or false")
