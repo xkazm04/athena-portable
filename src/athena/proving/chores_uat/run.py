@@ -401,8 +401,9 @@ def run_pair(
     intro = " ".join(str(case.get("stated_up_front") or "").split())[:ANSWER_CAP]
     deadline = started + rig.wall_s
     ended = ""
-    session = store.create(pair.playbook_id, intro)
+    session: Any = None
     try:
+        session = store.create(pair.playbook_id, intro)
         loop.start(session)
         seen = 0
         enough_sent = False
@@ -501,10 +502,11 @@ def run_pair(
         dump["failure"] = f"{type(exc).__name__}: {exc}"
         ended = "failed"
     finally:
-        onboarding["events"] = [e.to_dict() for e in session.events_after(0)]
-        onboarding["rounds"] = session.rounds_done
-        onboarding["cards"] = session.cards
-        onboarding["counters"] = dict(session.counters)
+        if session is not None:  # a refused create leaves no session to read, only the failure
+            onboarding["events"] = [e.to_dict() for e in session.events_after(0)]
+            onboarding["rounds"] = session.rounds_done
+            onboarding["cards"] = session.cards
+            onboarding["counters"] = dict(session.counters)
         store.close_all()
         shutil.rmtree(root, ignore_errors=True)
     onboarding["ended"] = ended or "failed"

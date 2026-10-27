@@ -564,8 +564,9 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
     started = clock()
     deadline = started + rig.wall_s
     ended = ""
-    session = store.create(scenario.playbook_id, record["intro"])
+    session: Any = None
     try:
+        session = store.create(scenario.playbook_id, record["intro"])
         mark = clock()
         loop.start(session)
         seen = 0
@@ -631,11 +632,12 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
     except Exception as exc:  # a bench bug is a failed job, named, never a dead pool
         record["failure"] = f"{type(exc).__name__}: {exc}"
     finally:
-        record["events"] = [e.to_dict() for e in session.events_after(0)]
-        record["final_slots"] = [asdict(s) for s in session.slots]
-        record["rounds"] = session.rounds_done
-        record["cards"] = session.cards
-        record["counters"] = dict(session.counters)
+        if session is not None:  # a refused create leaves no session to read, only the failure
+            record["events"] = [e.to_dict() for e in session.events_after(0)]
+            record["final_slots"] = [asdict(s) for s in session.slots]
+            record["rounds"] = session.rounds_done
+            record["cards"] = session.cards
+            record["counters"] = dict(session.counters)
         store.close_all()
         shutil.rmtree(root, ignore_errors=True)
     record["ended"] = ended
@@ -754,8 +756,8 @@ def run_shape(
         "failure": "",
     }
     started = rig.clock()
-    session = store.create(scenario.playbook_id)
     try:
+        session = store.create(scenario.playbook_id)
         session.brief = brief
         available: dict[str, Any] = {
             "session": session,
