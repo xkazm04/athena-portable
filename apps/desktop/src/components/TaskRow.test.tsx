@@ -126,6 +126,21 @@ describe("the words", () => {
     expect(head.endsWith("…")).toBe(true);
     expect(headOf(task({ status: "done", result: "   " }))).toBeNull();
   });
+
+  it("says why a task failed in words, without the runner's closed-vocabulary code before them", () => {
+    // The runner stores `reason: detail` (`stores/task-runner.ts` failureOf); a person reads the detail.
+    expect(headOf(task({ status: "failed", error: "no_page: the tab opened for shadowrunr never appeared" }))).toBe(
+      "the tab opened for shadowrunr never appeared",
+    );
+    expect(headOf(task({ status: "failed", error: "budget_exhausted: the page answered 8 times" }))).toBe(
+      "the page answered 8 times",
+    );
+    // An error with no code, as an orphaned task's, is said as it is; a done result is never trimmed.
+    expect(headOf(task({ status: "failed", error: "her window closed while this task ran, so it stopped" }))).toBe(
+      "her window closed while this task ran, so it stopped",
+    );
+    expect(headOf(task({ status: "done", result: "note: paid 3 invoices" }))).toBe("note: paid 3 invoices");
+  });
 });
 
 describe("Kill takes two presses", () => {

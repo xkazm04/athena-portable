@@ -83,7 +83,8 @@ export function headOf(task: TaskView): string | null {
     task.status === "done"
       ? task.result
       : task.status === "failed"
-        ? task.error
+        ? // Stored as `reason: detail` (`stores/task-runner.ts`): the row says the detail, in words.
+          task.error?.replace(/^[a-z_]+: /, "")
         : task.status === "interrupted"
           ? "Athena restarted while it ran."
           : null;
