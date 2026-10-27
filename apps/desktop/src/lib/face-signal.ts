@@ -91,6 +91,7 @@ const levelled = (phase: FacePhase) => phase === "listening" || phase === "speak
 const clamp01 = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0);
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const r3 = (v: number) => Math.round(v * 1000) / 1000;
+const r3OrNull = (v: number | null) => (v === null ? null : r3(v));
 
 /**
  * The window's frame clock, or a 34 ms timer while the document is hidden (the clock pauses then).
@@ -212,12 +213,13 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
       open: r3(open),
       motion: motion
         ? {
-            yaw: r3(motion.yaw),
-            pitch: r3(motion.pitch),
-            roll: r3(motion.roll),
-            blink: motion.blink === null ? null : r3(motion.blink),
-            gazeX: r3(motion.gazeX),
-            gazeY: r3(motion.gazeY),
+            // a channel the track does not drive stays null: r3 would make it a 0, a say
+            yaw: r3OrNull(motion.yaw),
+            pitch: r3OrNull(motion.pitch),
+            roll: r3OrNull(motion.roll),
+            blink: r3OrNull(motion.blink),
+            gazeX: r3OrNull(motion.gazeX),
+            gazeY: r3OrNull(motion.gazeY),
           }
         : null,
       generation,

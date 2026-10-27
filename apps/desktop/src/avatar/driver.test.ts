@@ -162,6 +162,69 @@ describe("neural motion crossfades over the procedural", () => {
     expect(closed).toBeGreaterThanOrEqual(3); // procedural blinks, 2-6 s apart
   });
 
+  it("a track that omits gaze moves the head and keeps her own saccades on the eyes", () => {
+    // The same seed with no track at all: the gaze she would have had on her own.
+    const own = run(createDriver({ seed: 9, idleLinger: 60 }), 4, () => signal({ phase: "speaking" }));
+    const headOnly = { ...motion, gazeX: null, gazeY: null };
+    const poses = run(createDriver({ seed: 9, idleLinger: 60 }), 4, () => signal({ phase: "speaking", motion: headOnly }));
+    const last = poses[poses.length - 1];
+    expect(last.yaw).toBeCloseTo(10 * 0.55, 5); // the head is the track's
+    for (let i = 0; i < poses.length; i++) {
+      expect(poses[i].gx).toBeCloseTo(own[i].gx, 9); // the eyes are hers, saccades and all
+      expect(poses[i].gy).toBeCloseTo(own[i].gy, 9);
+    }
+    const gxs = own.map((p) => p.gx);
+    expect(Math.max(...gxs) - Math.min(...gxs)).toBeGreaterThan(0.01); // and hers do move
+  });
+
+  it("a track that sends gaze 0 centres her eyes on purpose", () => {
+    const d = createDriver({ seed: 9, idleLinger: 60 });
+    let p: Pose = d.pose;
+    for (let t = 0; t < 4; t += FRAME) {
+      d.setSignal(signal({ phase: "speaking", motion: { ...motion, gazeX: 0, gazeY: 0 } }));
+      p = d.step(FRAME);
+    }
+    expect(p.gazeX).toBe(0);
+    expect(p.gazeY).toBe(0);
+  });
+
+  it("a track that omits the head turns the eyes and leaves her head its own drift", () => {
+    const own = run(createDriver({ seed: 9, idleLinger: 60 }), 2, () => signal({ phase: "speaking" }));
+    const eyesOnly = { yaw: null, pitch: null, roll: null, blink: null, gazeX: 0.5, gazeY: 0 };
+    const poses = run(createDriver({ seed: 9, idleLinger: 60 }), 2, () => signal({ phase: "speaking", motion: eyesOnly }));
+    const last = poses[poses.length - 1];
+    expect(last.gx).toBeCloseTo(0.5, 5);
+    // the head trails her own gaze (procedural), so it matches the trackless run only where the
+    // eyes were not yet handed over: compare roll, which no gaze moves
+    for (let i = 0; i < poses.length; i++) expect(poses[i].roll).toBeCloseTo(own[i].roll, 9);
+  });
+
+  it("a full frame moves her exactly as before channels could be absent", () => {
+    // Fingerprint of the poses a whole-frame track gives, taken on the tree before this change
+    // (every channel a number; the track starts, toggles its lids and ends).
+    const d = createDriver({ seed: 13, idleLinger: 60 });
+    const at = (t: number): FaceSignal =>
+      t < 0.5 || t > 2.5
+        ? signal({ phase: "speaking", level: 0.4 })
+        : signal({
+            phase: "speaking",
+            level: 0.4,
+            motion: {
+              yaw: 8 * Math.sin(t * 3),
+              pitch: -3 + Math.cos(t * 2),
+              roll: 1.5 * Math.sin(t),
+              blink: t > 1.5 && t < 2 ? null : 0.1 * t,
+              gazeX: 0.4 * Math.sin(t * 5),
+              gazeY: -0.2 * Math.cos(t * 4),
+            },
+          });
+    const poses = run(d, 3.5, at);
+    const text = poses.map((p) => Object.values(p).map((v) => v.toFixed(9)).join(",")).join(";");
+    let h = 0x811c9dc5;
+    for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
+    expect(h.toString(16)).toBe("175bc4db");
+  });
+
   it("breathing and the floats stay procedural: activity holds while neural motion plays", () => {
     const d = createDriver({ seed: 5 });
     d.setSignal(signal({ phase: "speaking", motion }));

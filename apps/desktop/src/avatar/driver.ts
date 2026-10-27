@@ -14,17 +14,19 @@
  *    target is its rule (`visemes.ts` `mouthTarget`, the one table, loudness against
  *    `SPEECH_LEVEL`), never a second copy; without one it is the producer's `open` as sent, floor
  *    and all. The jaw opens over 35 ms and closes over 12 ms, so a closure shuts.
- * 3. **Neural motion.** When `signal.motion` is set it takes the head, the gaze and (unless its
- *    `blink` is null: the track leaves the lids to her own blinks) the blinks over
- *    a 200 ms crossfade, and hands them back over another when it ends; breathing and the floating
- *    parts stay procedural throughout. The spike ran neural motion at 0.55x; it is applied here
+ * 3. **Neural motion.** When `signal.motion` is set it takes each channel it drives - head yaw,
+ *    pitch and roll, gaze x and y, the blinks - over a 200 ms crossfade of that channel's own, and
+ *    hands it back over another when the track ends or stops driving it. A channel the track leaves
+ *    `null` is no say: her own motion keeps it (a head-only track leaves her saccades running), while
+ *    a 0 is a say (gaze 0 centres her eyes). Breathing and the floating parts stay procedural
+ *    throughout. The spike ran neural motion at 0.55x; it is applied here
  *    and only here (the helper's retarget sends the head unscaled).
  *
  * **It settles.** At rest (idle or gate, silent, no neural track) it keeps living for a short linger
  * and then eases every motion to zero and reports `settled`; the runtime then stops its frame loop
  * (ADR 0089, 0092: none when nothing moves). Any new signal wakes it.
  */
-import type { FacePhase, FaceSignal, Viseme } from "./types";
+import type { FaceMotion, FacePhase, FaceSignal, Viseme } from "./types";
 import { CLOSE_TAU_MS, mouthTarget, VISEME_SHAPES, VOWELS } from "./visemes";
 
 /** One frame of the rig. Reused between frames: read it, do not keep it. */
@@ -149,6 +151,8 @@ export function speechTarget(signal: Pick<FaceSignal, "viseme" | "level" | "open
  */
 const OPEN_TAU_S = 0.035;
 const NEURAL_FADE_S = 0.2;
+/** The channels a motion track may drive, each crossfaded on its own. */
+const CHANNELS: readonly (keyof FaceMotion)[] = ["yaw", "pitch", "roll", "blink", "gazeX", "gazeY"];
 const BLINK_S = 0.28;
 
 export function createDriver(options: DriverOptions = {}): Driver {
@@ -197,11 +201,10 @@ export function createDriver(options: DriverOptions = {}): Driver {
   const nods: { t: number; amp: number }[] = [];
   let lastNod = -10;
   let lastViseme: Viseme | null = null;
-  // neural
-  let w = 0;
-  /** The same crossfade for the lids alone: up only while the track drives them. */
-  let wLid = 0;
-  const neural = { yaw: 0, pitch: 0, roll: 0, blink: 0, gazeX: 0, gazeY: 0 };
+  // neural: the last value each channel was driven to, and each channel's own crossfade, up only
+  // while the track drives that channel (the value is held while it fades back)
+  const neural: Record<keyof FaceMotion, number> = { yaw: 0, pitch: 0, roll: 0, blink: 0, gazeX: 0, gazeY: 0 };
+  const fade: Record<keyof FaceMotion, number> = { yaw: 0, pitch: 0, roll: 0, blink: 0, gazeX: 0, gazeY: 0 };
   // level history at 40 Hz
   let histAcc = 0;
 
@@ -230,14 +233,12 @@ export function createDriver(options: DriverOptions = {}): Driver {
     const prevPhase = signal.phase;
     signal = { ...next, motion: m ? { ...m } : null };
     if (m) {
-      neural.yaw = m.yaw;
-      neural.pitch = m.pitch;
-      neural.roll = m.roll;
-      neural.gazeX = m.gazeX;
-      neural.gazeY = m.gazeY;
-      // a track that leaves the lids out (blink null) keeps her own blinks; the last lid it drove
-      // is held only while the lids fade back
-      if (m.blink !== null) neural.blink = m.blink;
+      // a channel the track leaves out (null) keeps her own motion; the last value it drove is
+      // held only while that channel fades back
+      for (const c of CHANNELS) {
+        const v = m[c];
+        if (v !== null) neural[c] = v;
+      }
     }
     if (next.phase !== prevPhase) {
       if (next.phase === "thinking") thinkSide = rnd() < 0.5 ? -1 : 1;
@@ -323,21 +324,20 @@ export function createDriver(options: DriverOptions = {}): Driver {
     pitch += gy * 1.5;
     const blink = blinkAt(t);
 
-    // neural over procedural
-    w = clamp(w + (signal.motion ? dt : -dt) / NEURAL_FADE_S, 0, 1);
-    const k = smooth(w);
+    // neural over procedural, channel by channel
+    const m = signal.motion;
+    for (const c of CHANNELS) fade[c] = clamp(fade[c] + (m && m[c] !== null ? dt : -dt) / NEURAL_FADE_S, 0, 1);
     const pYaw = yaw * motionScale * act;
     const pPitch = pitch * motionScale * act;
     const pRoll = roll * motionScale * act;
-    pose.yaw = pYaw + (neural.yaw * neuralScale - pYaw) * k;
-    pose.pitch = pPitch + (neural.pitch * neuralScale - pPitch) * k;
-    pose.roll = pRoll + (neural.roll * neuralScale - pRoll) * k;
-    wLid = clamp(wLid + (signal.motion && signal.motion.blink !== null ? dt : -dt) / NEURAL_FADE_S, 0, 1);
-    const b = blink + (clamp(neural.blink, 0, 1) - blink) * smooth(wLid);
+    pose.yaw = pYaw + (neural.yaw * neuralScale - pYaw) * smooth(fade.yaw);
+    pose.pitch = pPitch + (neural.pitch * neuralScale - pPitch) * smooth(fade.pitch);
+    pose.roll = pRoll + (neural.roll * neuralScale - pRoll) * smooth(fade.roll);
+    const b = blink + (clamp(neural.blink, 0, 1) - blink) * smooth(fade.blink);
     pose.blinkL = b;
     pose.blinkR = b;
-    pose.gazeX = gx * act + (clamp(neural.gazeX, -1, 1) - gx * act) * k;
-    pose.gazeY = gy * act + (clamp(neural.gazeY, -1, 1) - gy * act) * k;
+    pose.gazeX = gx * act + (clamp(neural.gazeX, -1, 1) - gx * act) * smooth(fade.gazeX);
+    pose.gazeY = gy * act + (clamp(neural.gazeY, -1, 1) - gy * act) * smooth(fade.gazeY);
 
     // speech
     const level = clamp(signal.level, 0, 1.2);
@@ -376,8 +376,7 @@ export function createDriver(options: DriverOptions = {}): Driver {
     return (
       linger === 0 &&
       awake === 0 &&
-      w === 0 &&
-      wLid === 0 &&
+      CHANNELS.every((c) => fade[c] === 0) &&
       blinks.length === 0 &&
       nods.length === 0 &&
       pose.open < 1e-3 &&

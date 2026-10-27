@@ -12,7 +12,7 @@
  * `done` is marked finished and kept until its last word has played, because synthesis runs ahead
  * of playback; a dropped line is forgotten at once.
  */
-import type { RigFrame, Viseme } from "@/avatar/types";
+import type { FaceMotion, RigFrame, Viseme } from "@/avatar/types";
 import { VISEMES } from "@/avatar/types";
 import { floorClosures } from "@/avatar/visemes";
 import type { VoiceMotion, VoiceVisemes } from "@/lib/events";
@@ -42,8 +42,7 @@ export interface FaceTimeline {
   finished: boolean;
 }
 
-/** Her head and eyes for one frame, as `FaceSignal.motion` spells it. */
-export type FaceMotion = { yaw: number; pitch: number; roll: number; blink: number | null; gazeX: number; gazeY: number };
+export type { FaceMotion };
 
 let current: FaceTimeline | null = null;
 /** Generations dropped by a barge-in and not yet stopped: their late events are ignored. */
@@ -185,7 +184,8 @@ export function visemeAt(line: FaceTimeline | null, sample: number): Viseme | nu
 /**
  * The neural pose at `sample`, interpolated between the two frames around it; `null` outside every
  * received track, so the avatar's own procedural motion applies there. A channel the track omits
- * reads as rest (0): the wire's pose has every channel.
+ * is `null` ("no say": her own motion keeps it), never rest; a track that drives no channel at all
+ * is `null` whole.
  */
 export function motionAt(line: FaceTimeline | null, sample: number): FaceMotion | null {
   if (!line || line.motion.length === 0 || line.sampleRate <= 0) return null;
@@ -209,30 +209,34 @@ export function motionAt(line: FaceTimeline | null, sample: number): FaceMotion 
   const b = poseOf(frames[hi]);
   const span = frames[hi].t - frames[lo].t;
   const k = span > 0 ? Math.min(1, Math.max(0, (t - frames[lo].t) / span)) : 0;
-  return {
-    yaw: a.yaw + (b.yaw - a.yaw) * k,
-    pitch: a.pitch + (b.pitch - a.pitch) * k,
-    roll: a.roll + (b.roll - a.roll) * k,
-    blink: a.blink === null || b.blink === null ? null : a.blink + (b.blink - a.blink) * k,
-    gazeX: a.gazeX + (b.gazeX - a.gazeX) * k,
-    gazeY: a.gazeY + (b.gazeY - a.gazeY) * k,
+  // A channel either frame leaves out has no say between them.
+  const mix = (x: number | null, y: number | null) => (x === null || y === null ? null : x + (y - x) * k);
+  const pose: FaceMotion = {
+    yaw: mix(a.yaw, b.yaw),
+    pitch: mix(a.pitch, b.pitch),
+    roll: mix(a.roll, b.roll),
+    blink: mix(a.blink, b.blink),
+    gazeX: mix(a.gazeX, b.gazeX),
+    gazeY: mix(a.gazeY, b.gazeY),
   };
+  return Object.values(pose).every((v) => v === null) ? null : pose;
 }
 
+/** A finite number, or `null`: what the track did not send (or sent broken) is no say, not 0. */
+const say = (v: number | undefined): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
 function poseOf(frame: RigFrame): FaceMotion {
-  const n = (v: number | undefined) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
-  const left = frame.eyes?.blinkL;
-  const right = frame.eyes?.blinkR;
-  // A track that leaves the lids out says nothing about them: `null`, so the face keeps blinking.
-  const known = [left, right].filter((v): v is number => typeof v === "number" && Number.isFinite(v));
-  const blink = known.length ? known.reduce((s, v) => s + v, 0) / known.length : null;
+  const left = say(frame.eyes?.blinkL);
+  const right = say(frame.eyes?.blinkR);
+  // One lid driven is both lids: the face draws one blink.
+  const blink = left === null ? right : right === null ? left : (left + right) / 2;
   return {
-    yaw: n(frame.head?.yaw),
-    pitch: n(frame.head?.pitch),
-    roll: n(frame.head?.roll),
+    yaw: say(frame.head?.yaw),
+    pitch: say(frame.head?.pitch),
+    roll: say(frame.head?.roll),
     blink,
-    gazeX: n(frame.eyes?.gazeX),
-    gazeY: n(frame.eyes?.gazeY),
+    gazeX: say(frame.eyes?.gazeX),
+    gazeY: say(frame.eyes?.gazeY),
   };
 }
 

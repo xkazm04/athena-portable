@@ -32,6 +32,7 @@ export const FACE_COMMAND = "athena_face";
 const PHASES: readonly FacePhase[] = ["idle", "listening", "thinking", "speaking", "gate"];
 const VISEME_SET = new Set<string>(VISEMES);
 const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const MOTION_KEYS = ["yaw", "pitch", "roll", "blink", "gazeX", "gazeY"] as const;
 
 /** Is `value` a whole `FaceSignal`? What Main checks before handing an event to a face. */
 export function isFaceSignal(value: unknown): value is FaceSignal {
@@ -44,7 +45,8 @@ export function isFaceSignal(value: unknown): value is FaceSignal {
   if (v.motion === null) return true;
   if (typeof v.motion !== "object" || v.motion === undefined) return false;
   const m = v.motion as Record<string, unknown>;
-  return ["yaw", "pitch", "roll", "gazeX", "gazeY"].every((k) => finite(m[k])) && (m.blink === null || finite(m.blink));
+  // Every channel present: a number, or `null` for one the track does not drive (no say).
+  return MOTION_KEYS.every((k) => m[k] === null || finite(m[k]));
 }
 
 /** The signal spelled as `Wire`: every key present, `null` for nothing (`lib/ipc.ts`, rule 1). */

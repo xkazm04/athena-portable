@@ -136,6 +136,10 @@ describe("Main's face source", () => {
     expect(isFaceSignal(SPEAKING)).toBe(true);
     expect(isFaceSignal(RESTING)).toBe(true);
     expect(isFaceSignal({ ...SPEAKING, viseme: null, motion: null })).toBe(true);
+    const headOnly = { yaw: 2, pitch: 1, roll: 0, blink: null, gazeX: null, gazeY: null };
+    expect(isFaceSignal({ ...SPEAKING, motion: headOnly })).toBe(true);
+    expect(isFaceSignal({ ...SPEAKING, motion: { ...headOnly, gazeX: "left" } })).toBe(false);
+    expect(isFaceSignal({ ...SPEAKING, motion: { ...headOnly, gazeX: undefined } })).toBe(false);
   });
 });
 

@@ -404,6 +404,20 @@ describe("acceptance: a fake channel and a fake player clock in, her face out", 
     const e = frame(0.65); // 0.15 s into the track: three quarters of the way to the second frame
     expect(e.motion).toEqual({ yaw: 3, pitch: -1.5, roll: 0.75, blink: 0, gazeX: 0.15, gazeY: 0 });
     expect(frame(0.85).motion).toBeNull(); // past the track: procedural again
+    // A track that leaves the eyes out says nothing about them: null crosses, never a 0.
+    await ch.emit({
+      kind: "voice.motion",
+      generation: 1,
+      sentence: 1,
+      offset: 500,
+      fps: 10,
+      frames: [
+        { t: 0, head: { yaw: 0, pitch: 0, roll: 0 } },
+        { t: 0.2, head: { yaw: 4, pitch: -2, roll: 1 } },
+        { t: 0.3, head: { yaw: 4, pitch: -2, roll: 1 } },
+      ],
+    });
+    expect(frame(0.65).motion).toEqual({ yaw: 3, pitch: -1.5, roll: 0.75, blink: null, gazeX: null, gazeY: null });
 
     // The daemon has sent the whole line; her voice is still sounding its last chunk.
     await ch.emit({ kind: "voice.stopped", generation: 1, reason: "done" });

@@ -36,6 +36,20 @@ export interface RigFrame {
 export type FacePhase = "idle" | "listening" | "thinking" | "speaking" | "gate";
 
 /**
+ * Her head and eyes for one frame, from a motion track. Each channel is `null` when the track does
+ * not drive it: "no say", so the face keeps its own motion there (procedural drift, saccades,
+ * blinks). `null` is never rest: a track that sends gaze 0 centres her eyes on purpose.
+ */
+export interface FaceMotion {
+  yaw: number | null;
+  pitch: number | null;
+  roll: number | null;
+  blink: number | null;
+  gazeX: number | null;
+  gazeY: number | null;
+}
+
+/**
  * What a face shows this frame. Produced in the athena window, mirrored to Main.
  * `viseme` is the current mouth shape when a timeline exists, else `null` (drive from `level`);
  * `motion` is the neural head/eye pose when a motion track covers this instant, else `null`
@@ -51,8 +65,8 @@ export interface FaceSignal {
    * aims on `viseme` and `level`; without one it follows `open` as sent, floor included.
    */
   open: number;
-  /** `blink` is `null` when the motion track does not drive the eyelids: the face keeps its own blinks. */
-  motion: { yaw: number; pitch: number; roll: number; blink: number | null; gazeX: number; gazeY: number } | null;
+  /** A channel is `null` when the motion track does not drive it: the face keeps its own motion there. */
+  motion: FaceMotion | null;
   generation: number;
 }
 

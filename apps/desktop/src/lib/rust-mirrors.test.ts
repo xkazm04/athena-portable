@@ -49,6 +49,33 @@ test("DaemonStatus names daemon.rs's fields, and DaemonHealth its Health variant
   expect([...union.matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort()).toEqual(snake.sort());
 });
 
+/** `pub struct <name>`'s fields as the wire spells them (serde renames applied), with their types. */
+function rustWireFields(file: string, name: string): Array<[string, string]> {
+  const body = new RegExp(`pub struct ${name}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(rust(file))?.[1] ?? "";
+  const out: Array<[string, string]> = [];
+  for (const m of body.matchAll(/((?:\s*#\[[^\n]*\]\s*)*)\s*pub (\w+): ([^,\n]+),/g)) {
+    const rename = /rename = "(\w+)"/.exec(m[1])?.[1];
+    out.push([rename ?? m[2], m[3].trim()]);
+  }
+  return out.sort(([a], [b]) => a.localeCompare(b));
+}
+
+test("face.rs's RawMotion and Motion are the TS FaceMotion, and every channel may be absent", () => {
+  // A channel a motion track omits is "no say" (her own motion keeps it), not 0, on every hop:
+  // the TS pose spells it null, so Rust must take and give back null for each one.
+  const body = /export interface FaceMotion\s*\{([\s\S]*?)\n\}/.exec(
+    readFileSync(resolve(LIB, "../avatar/types.ts"), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, ""),
+  )?.[1];
+  const tsMotion = [...(body ?? "").matchAll(/^\s*(\w+): ([^;]+);/gm)].map((m) => [m[1], m[2].trim()]).sort(([a], [b]) => a.localeCompare(b));
+  expect(tsMotion.length).toBe(6);
+  for (const [, type] of tsMotion) expect(type).toBe("number | null");
+  for (const struct of ["RawMotion", "Motion"]) {
+    const fields = rustWireFields("face.rs", struct);
+    expect(fields.map(([n]) => n)).toEqual(tsMotion.map(([n]) => n));
+    for (const [, type] of fields) expect(type).toBe("Option<f64>");
+  }
+});
+
 test("Tab names tabs.rs's fields", () => {
   const fields = rustFields("tabs.rs", "Tab");
   expect(fields.length).toBeGreaterThan(0);

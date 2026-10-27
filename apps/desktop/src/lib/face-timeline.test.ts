@@ -156,9 +156,19 @@ describe("the pose at a sample", () => {
     expect(motionAt(faceTimeline(), 2501)).toBeNull();
   });
 
-  it("reads an unpredicted head or gaze channel as rest, and unpredicted lids as no say (null)", () => {
+  it("reads every channel a track omits as no say (null), never as rest", () => {
     addMotion(motion(1, 5000, [{ t: 0, head: { yaw: 3 } }, { t: 1, head: { yaw: 3 } }]));
-    expect(motionAt(faceTimeline(), 5500)).toEqual({ yaw: 3, pitch: 0, roll: 0, blink: null, gazeX: 0, gazeY: 0 });
+    expect(motionAt(faceTimeline(), 5500)).toEqual({ yaw: 3, pitch: null, roll: null, blink: null, gazeX: null, gazeY: null });
+  });
+
+  it("keeps a gaze the track sends as 0: centred on purpose is a say", () => {
+    addMotion(motion(1, 5000, [{ t: 0, eyes: { gazeX: 0, gazeY: 0 } }, { t: 1, eyes: { gazeX: 0, gazeY: 0 } }]));
+    expect(motionAt(faceTimeline(), 5500)).toEqual({ yaw: null, pitch: null, roll: null, blink: null, gazeX: 0, gazeY: 0 });
+  });
+
+  it("is null where the track says nothing at all, so her own motion applies whole", () => {
+    addMotion(motion(1, 5000, [{ t: 0, brow: { raise: 0.2 } }, { t: 1, brow: { raise: 0.1 } }]));
+    expect(motionAt(faceTimeline(), 5500)).toBeNull();
   });
 });
 
