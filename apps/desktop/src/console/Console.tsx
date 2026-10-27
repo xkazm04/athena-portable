@@ -13,7 +13,7 @@ import { useVoicePhase } from "@/bell/voice-phase";
 import WindowControls from "@/components/WindowControls";
 import { samePath, shapeOf, type Labeller, type Path } from "@/depth/model";
 import { useDepth } from "@/depth/store";
-import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
+import { resolveMotion } from "@/lib/motion";
 import Stage from "@/stage/Stage";
 import { isResting, pillText, useAthena } from "@/stores/athena";
 import { useReopened } from "@/scenes/waking/reopen";
@@ -105,7 +105,7 @@ export default function Console() {
   const hydrated = useSettings((s) => s.hydrated);
   const onboarded = useSettings((s) => s.onboarded);
   const problem = useSettings((s) => s.problem);
-  const motion = useSettings((s) => s.motion);
+  const calm = useSettings((s) => resolveMotion(s.motion, s.reduced) === "calm");
   const reopened = useReopened((s) => s.on);
   const label = useLabeller();
   useFollowShell();
@@ -126,7 +126,7 @@ export default function Console() {
   return (
     <Stage
       state={{ path, from, move, seq }}
-      calm={resolveMotion(motion, systemPrefersReduced()) === "calm"}
+      calm={calm}
       renderScene={render}
       label={label}
       band={Band ? <Band /> : undefined}

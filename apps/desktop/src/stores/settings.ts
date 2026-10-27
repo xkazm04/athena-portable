@@ -81,6 +81,8 @@ export interface SettingsState {
   typeScale: TypeScale;
   /** Calm motion: `system` follows the OS, the others override it (ADR 0089). */
   motion: MotionChoice;
+  /** What the OS asks for right now; `motion` resolves against it, so a change reaches the stage. */
+  reduced: boolean;
   /** The project every turn is filed under (c25), or null. */
   activeProjectId: string | null;
   /** The brain directory. Empty means the daemon's own default, which is not the same as unset. */
@@ -117,6 +119,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   theme: "system",
   typeScale: "comfortable",
   motion: "system",
+  reduced: systemPrefersReduced(),
   activeProjectId: null,
   brainPath: "",
   onboarded: false,
@@ -321,7 +324,8 @@ function watchSystemTheme(): void {
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   reduced.addEventListener("change", () => {
-    const choice = useSettings.getState().motion;
-    applyMotion(resolveMotion(choice, systemPrefersReduced()));
+    const reduced = systemPrefersReduced();
+    useSettings.setState({ reduced });
+    applyMotion(resolveMotion(useSettings.getState().motion, reduced));
   });
 }
