@@ -665,14 +665,17 @@ class SleepBook:
             if mark not in newest or str(created) > newest[mark][1]:
                 newest[mark] = (str(marker), str(created))
         written: dict[tuple[str, str, str], str] = {}
+        # A write lifts a bar only if it is newer than that bar's marker, so nothing created
+        # before the oldest marker can change the answer: the scan starts there (idx_node_created).
+        oldest = min(created for _, created in newest.values())
         for kind, scope, key, created in self._all(
             f"""SELECT n.kind, COALESCE(fc.scope, pr.scope, ''),
                        COALESCE(fc.fact_key, pr.trigger_pattern, ''), n.created_at
                 FROM companion_node n
                 LEFT JOIN companion_fact fc ON fc.id = n.id
                 LEFT JOIN companion_procedural pr ON pr.id = n.id
-                WHERE {_LIVE} AND {_wall(seen)}""",
-            seen,
+                WHERE {_LIVE} AND {_wall(seen)} AND n.created_at >= ?""",
+            (*seen, oldest),
         ):
             mark = (str(kind), str(scope), norm_key(str(key)))
             if mark in newest and str(created) > written.get(mark, ""):
@@ -687,24 +690,32 @@ class SleepBook:
         """A live memory of ``kind`` whose key (or trigger) is ``key``, ignoring case and spacing:
         the deterministic prefilter the merge degrades to when its leg fails. Of those ``space``
         can see (ADR 0225)."""
-        wanted = norm_key(key)
+        return self.keyed(kind, space).get(norm_key(key))
+
+    def keyed(self, kind: str, space: str = CORE) -> dict[str, Existing]:
+        """Every live memory of ``kind`` ``space`` can see (ADR 0225), by its normalised key: one
+        read, so a batch of lookups (:meth:`same_key`) is not one scan per candidate. Of memories
+        sharing a normalised key the first read stands, as a lookup's first match did."""
         seen = visible_spaces(space)
         column, table = (
             ("fact_key", "companion_fact")
             if kind == "fact"
             else ("trigger_pattern", "companion_procedural")
         )
+        out: dict[str, Existing] = {}
         for node_id, found, body, where in self._all(
             f"""SELECT n.id, t.{column}, n.body_excerpt, n.space
                 FROM {table} t JOIN companion_node n ON n.id = t.id
                 WHERE {_LIVE} AND {_wall(seen)}""",
             seen,
         ):
-            if norm_key(str(found)) == wanted:
-                return Existing(
+            out.setdefault(
+                norm_key(str(found)),
+                Existing(
                     str(node_id), kind, str(found), _excerpt(str(body or "")), str(where or CORE)
-                )
-        return None
+                ),
+            )
+        return out
 
     # -- fade -----------------------------------------------------------------------------------
 

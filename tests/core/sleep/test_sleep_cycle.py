@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from typing import Any
 
 from athena.contracts import ids
@@ -14,6 +15,7 @@ from athena.core.sleep import COMPRESS_EPISODES, FACTS_CAP, FORGOTTEN_PREFIX, SU
 from athena.core.sleep.admission import boundary_after
 from athena.core.sleep.book import SleepBook
 from athena.core.sleep.cycle import SleepCycle
+from athena.core.sleep.legs import Candidate
 from athena.core.sleep.proposals import decide
 from athena.core.sleep.window import Boundary, EpisodeReader, Window
 
@@ -428,3 +430,34 @@ def test_only_a_persons_forget_bars_and_only_its_own_key(brain: Brain, clock: Cl
     assert proposal is not None
     decide(brain, book, proposal.id, "forget", None, clock=clock)
     assert set(book.bars()) == {("fact", "user", "user drink")}
+
+
+def test_the_degraded_merge_reads_the_live_memories_once_per_kind_not_once_per_candidate(
+    brain: Brain,
+) -> None:
+    """Instrument for the sleep-cycle scan count: 18 candidates (12 facts, 6 procedurals) judged
+    by key must cost one read per kind, with the same verdicts a per-candidate lookup gave."""
+    book = SleepBook(brain)
+    (episode,) = write_episodes(brain, 1)
+    brain.write_fact("user city", "The user lives in Brno.", sources=[episode])
+    brain.write_procedural("answer briefly", "Keep answers short.", sources=[episode])
+    candidates = [
+        Candidate("fact", f"fact {i}", "v", "user", 0.9, (episode,)) for i in range(11)
+    ] + [Candidate("fact", "User   CITY", "v", "user", 0.9, (episode,))]
+    candidates += [
+        Candidate("procedural", f"trigger {i}", "v", "user", 0.9, (episode,)) for i in range(5)
+    ]
+    candidates.append(Candidate("procedural", "Answer  Briefly", "v", "user", 0.9, (episode,)))
+
+    reads: list[str] = []
+    real = book._all
+
+    def counting(sql: str, params: tuple[Any, ...] = ()) -> Any:
+        reads.append(sql)
+        return real(sql, params)
+
+    book._all = counting  # type: ignore[method-assign]
+    verdicts = SleepCycle._by_key(SimpleNamespace(book=book), candidates)  # type: ignore[arg-type]
+    assert len(reads) == 2, "one read per kind, not one per candidate (18 before)"
+    duplicates = {i for i, v in verdicts.items() if v.decision == "duplicate"}
+    assert duplicates == {11, 17}, "a key matches ignoring case and spacing, within its kind"

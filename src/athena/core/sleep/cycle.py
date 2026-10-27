@@ -406,8 +406,11 @@ class SleepCycle:
         """The deterministic prefilter a failed merge degrades to: an exact key - among what
         ``space`` can see - is a duplicate."""
         verdicts: dict[int, Judged] = {}
+        known: dict[str, dict[str, Existing]] = {}  # one read per kind, not one per candidate
         for index, candidate in enumerate(candidates):
-            same = self.book.same_key(candidate.kind, candidate.key, space)
+            if candidate.kind not in known:
+                known[candidate.kind] = self.book.keyed(candidate.kind, space)
+            same = known[candidate.kind].get(norm_key(candidate.key))
             verdicts[index] = Judged("duplicate", (same.id,)) if same else Judged("new")
         return verdicts
 
