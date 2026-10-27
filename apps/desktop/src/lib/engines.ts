@@ -95,11 +95,6 @@ export function engineLine(
   return found.state === "found" ? `Engine: ${name}, ready.` : `Engine: ${remedyFor(found)}`;
 }
 
-/** The binary behind an engine id, which is what a remediation sentence has to name. */
-export function cliOf(id: string): string {
-  return id === "codex" ? "codex" : "claude";
-}
-
 /**
  * Probes whose binary answered, that are usable, and that this desktop can launch. The only ones
  * worth choosing. The daemon reports every engine its harness offers (an API engine, an engine
