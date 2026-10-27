@@ -1119,6 +1119,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(forge): the report reads the run's ledger as the purse does, so a killed run's torn line no longer stops the report.` Stabilize 2026-10-27 (proving-forge, parity-auditor): `_ledger_costs` raised on a torn line and counted purse refusals as calls; it and `restore_budget` now both read through `RunLog.read`.
 - `fix(chores-uat): report --against leaves a pair judged on one side only out of the judge numbers, and names it.` Stabilize 2026-10-27 (proving-chores-uat, parity-auditor): a matched pair whose judge failed in one run counted as lost criteria passes "over N matched pairs"; criteria, adopt and findings now read only the pairs both runs judged, and the one-sided pairs are listed as `unjudged` in compare.json and compare.md.
 - `fix(forge): an audit the Claude purse cut short is not saved as done, so a resumed audit asks the rest.` Stabilize 2026-10-27 (proving-forge, error-handler): a purse that ran dry mid-variant still wrote the audit file, so its unasked items stayed `unaudited` for good; the stage now stops without writing it.
+- `fix(chores-uat): run --dry prices a judge-only job as a judge, not as a whole pair again.` Stabilize 2026-10-27 (proving-chores-uat, parity-auditor): a resumed run whose dump only needs its judge again was estimated at a full pair's $1.90 instead of the judge's $0.10; the plan line now also says how many jobs are judge only.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

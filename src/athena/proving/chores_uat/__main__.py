@@ -240,10 +240,16 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
         + (COST_MEDIANS["rehearsal"] if rehearse else 0.0)
         + COST_MEDIANS["judge"]
     )
-    estimate = len(jobs) * per_pair + len(no_case) * COST_MEDIANS["case"]
+    # A "judge" job re-judges a dump already on disk: it costs the judge, not a pair.
+    rejudge = sum(1 for j in jobs if j.kind == "judge")
+    estimate = (
+        (len(jobs) - rejudge) * per_pair
+        + rejudge * COST_MEDIANS["judge"]
+        + len(no_case) * COST_MEDIANS["case"]
+    )
     plan = [
         f"run {run_id}: {len(cast.selected)} pairs selected, {done} complete on disk, "
-        f"{len(jobs)} to run",
+        f"{len(jobs)} to run" + (f" ({rejudge} judge only)" if rejudge else ""),
         f"legs per pair: about {legs_per_pair(rehearse=rehearse)} at 3 cards "
         f"(onboarding, {'a shape leg and the bench turns, ' if rehearse else ''}the judge)",
         f"estimate: ${estimate:.2f} (medians: onboarding ${COST_MEDIANS['onboarding']:.2f}, "

@@ -445,6 +445,25 @@ def test_main_dry_over_the_fixture_spends_nothing(tmp_path: Path) -> None:
     assert not (tmp_path / "chores-uat" / "t").exists()
 
 
+def test_main_dry_prices_a_judge_only_job_as_a_judge(tmp_path: Path) -> None:
+    """A dump whose judge failed is planned as a "judge" job: the estimate is the judge's
+    median, not a whole pair's onboarding and rehearsal again."""
+    run_dir = tmp_path / "chores-uat" / "t" / "pairs"
+    run_dir.mkdir(parents=True)
+    dump = {"pair": ROSA.id, "complete": False, "failure": "judge: timeout", "onboarding": {}}
+    (run_dir / f"{ROSA.id}.json").write_text(json.dumps(dump), "utf-8")
+    out: list[str] = []
+    code = main(
+        ["run", "--dry", "--uat", str(UAT), "--base", str(tmp_path), "--run-id", "t"],
+        echo=out.append,
+    )
+    assert code == 0, out
+    text = "\n".join(out)
+    assert f"judge {ROSA.id}" in text
+    # 1 judge x 0.10 + 2 pairs x (0.30 + 1.50 + 0.10) + 2 cases x 0.05
+    assert "3 to run (1 judge only)" in text and "estimate: $4.00" in text
+
+
 def test_main_reports_a_bad_pairs_file_and_writes_numbers(tmp_path: Path) -> None:
     uat = tmp_path / "uat"
     shutil.copytree(UAT, uat)
