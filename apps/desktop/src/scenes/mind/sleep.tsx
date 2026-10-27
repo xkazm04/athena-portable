@@ -370,7 +370,6 @@ function Proposal({
   choosing: boolean;
   onChoose: (on: boolean) => void;
 }) {
-  const busy = model.state.busy[proposal.id] ? "Answering…" : undefined;
   const pair = proposal.kind === "contradiction";
   // An older daemon sends ids only; then the card falls back to naming each side by its place.
   const memories = proposal.memories && proposal.memories.length === proposal.node_ids.length ? proposal.memories : null;
@@ -392,7 +391,6 @@ function Proposal({
                     <Button
                       size="sm"
                       variant="secondary"
-                      disabledReason={busy}
                       aria-describedby={textId}
                       onClick={() => answer("forget", memory.id)}
                     >
@@ -420,7 +418,7 @@ function Proposal({
         <div className="mind__row" role="group" aria-label="Which one goes?">
           <span className="typo-body">Which one goes?</span>
           {proposal.node_ids.map((id, i) => (
-            <Button key={id} size="sm" variant="secondary" disabledReason={busy} onClick={() => answer("forget", id)}>
+            <Button key={id} size="sm" variant="secondary" onClick={() => answer("forget", id)}>
               {`Forget the ${ORDINAL[i] ?? `number ${i + 1}`}`}
             </Button>
           ))}
@@ -430,11 +428,11 @@ function Proposal({
         </div>
       ) : (
         <div className="mind__row">
-          <Button size="sm" variant="secondary" disabledReason={busy} onClick={() => answer("keep")}>
+          <Button size="sm" variant="secondary" onClick={() => answer("keep")}>
             {pair ? "Keep both" : "Keep"}
           </Button>
           {pair && memories ? null : (
-            <Button size="sm" variant="ghost" disabledReason={busy} onClick={() => (pair ? onChoose(true) : answer("forget"))}>
+            <Button size="sm" variant="ghost" onClick={() => (pair ? onChoose(true) : answer("forget"))}>
               {pair ? "Forget one…" : "Forget"}
             </Button>
           )}

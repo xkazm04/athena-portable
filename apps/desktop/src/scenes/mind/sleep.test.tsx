@@ -214,6 +214,13 @@ describe("waiting for you", () => {
     expect(h).toContain(">Forget<");
   });
 
+  it("never draws a proposal as answering: a row being sent has left the list, the store marks only the run", () => {
+    const base = sleepFixtures.typical!;
+    const h = render({ ...base, state: { ...base.state, busy: { prp_00000000d001: true, prp_00000000d002: true } } });
+    expect(h).not.toContain("Answering");
+    expect(h).toContain(">Keep both<");
+  });
+
   it("says an answer that was refused under its card", () => {
     const base = sleepFixtures.typical!;
     const h = render({ ...base, state: { ...base.state, errors: { prp_00000000d002: "Could not forget it: refused" } } });
