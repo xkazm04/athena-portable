@@ -61,6 +61,7 @@ from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 from athena.connectors.seal import SealPort, select_seal
+from athena.contracts import ids
 from athena.contracts.harness import normalize_reason
 from athena.daemon.routes import (
     SSE_CONTENT_TYPE,
@@ -633,13 +634,14 @@ class PeerHost:
             word = str(answer.body.get("error") or "unknown")
             return peer_error(answer.status, word, str(answer.body.get("detail") or ""))
         now = self._now()
+        named = str(answer.body.get("device_id") or "")
         joined = Join(
             join_id=str(answer.body.get("pairing_id") or ""),
             url=url,
             code=code,
             claim_secret=str(answer.body.get("claim_secret") or ""),
             name=str(answer.body.get("name") or ""),
-            device_id=str(answer.body.get("device_id") or "") or None,
+            device_id=named if ids.is_id("device", named) else None,
             started=now,
             expires_at=now + timedelta(seconds=2 * WINDOW_TTL_S),
         )
@@ -684,7 +686,15 @@ class PeerHost:
     def _joined(self, joined: Join, body: Mapping[str, Any]) -> None:
         device_id = str(body.get("device_id") or joined.device_id or "")
         token = str(body.get("token") or "")
-        if not device_id or not token:
+        # The key is filed under the device id, so that id must be one, and the one the request
+        # answer named when it named one: a claim answer naming another paired PC would put this
+        # PC's address and token where that PC's key is kept.
+        named = joined.device_id
+        if not ids.is_id("device", device_id) or (named is not None and device_id != named):
+            joined.state = "expired"
+            _log("a join's claim answer named no device id, or not the one it named first")
+            return
+        if not token:
             joined.state = "expired"
             return
         self.keys.keep(device_id, joined.url, token)

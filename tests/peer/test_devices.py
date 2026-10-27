@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import json
 import threading
+from datetime import UTC, datetime, timedelta
 from http.client import HTTPConnection
 
 import pytest
 
+from athena.contracts import ids
 from athena.daemon.server import TOKEN_HEADER
-from athena.peer.listener import PeerRoute
+from athena.peer.listener import Join, PeerRoute
 from athena.peer.overlay import Overlay
 
 from .conftest import TOKEN, Device, Probe
@@ -279,3 +281,50 @@ def test_a_join_to_a_lan_address_is_refused_before_any_call(device: Device) -> N
         "/devices/join", method="POST", body={"address": "192.168.1.20", "code": "ABCDEF"}
     )
     assert answer.status == 400
+
+
+def _join(device_id: str | None) -> Join:
+    started = datetime(2026, 10, 24, 12, 0, tzinfo=UTC)
+    return Join(
+        join_id="pair_0123456789ab",
+        url="http://100.64.0.9:17491",
+        code="ABCDEF",
+        claim_secret="s",
+        name="Desk",
+        device_id=device_id,
+        started=started,
+        expires_at=started + timedelta(minutes=10),
+    )
+
+
+@pytest.mark.parametrize(
+    ("named_first", "claimed_as"),
+    [("named", "../../not-a-device"), ("named", "other"), (None, "../../not-a-device")],
+)
+def test_a_claim_answer_files_a_key_only_under_the_device_the_request_named(
+    device: Device, named_first: str | None, claimed_as: str
+) -> None:
+    # The answering PC names itself twice: in the request answer (``Join.device_id``) and in the
+    # claim. A key is filed only under a real device id, and only the one it named first - never
+    # under a string that is not an id, and never over another paired device's key.
+    host = device.host
+    named, other = ids.mint("device"), ids.mint("device")
+    host.keys.keep(other, "http://100.64.0.2:17491", "the-other-pcs-own-token")
+    joined = _join(named if named_first else None)
+    answer_id = other if claimed_as == "other" else claimed_as
+    host._joined(joined, {"device_id": answer_id, "token": "t" * 43, "pair_back": None})
+    assert joined.state == "expired"
+    assert host.keys.known() == [other]
+    assert host.keys.token(other) == "the-other-pcs-own-token"
+    assert host.keys.url(other) == "http://100.64.0.2:17491"
+
+
+@pytest.mark.parametrize("in_claim", [True, False])
+def test_a_claim_answer_from_the_device_it_named_is_filed(device: Device, in_claim: bool) -> None:
+    host = device.host
+    named = ids.mint("device")
+    joined = _join(named)
+    body = {"device_id": named if in_claim else None, "token": "t" * 43, "pair_back": None}
+    host._joined(joined, body)
+    assert joined.state == "claimed"
+    assert host.keys.token(named) == "t" * 43
