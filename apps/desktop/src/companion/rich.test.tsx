@@ -57,3 +57,21 @@ describe("plainOf", () => {
     expect(plainOf("")).toBe("");
   });
 });
+
+describe("a heading line", () => {
+  it("keeps a # that is part of a word, and drops only a closing run after a space", () => {
+    expect(blocksOf("# Learn C#")).toEqual([{ kind: "h", text: "Learn C#" }]);
+    expect(blocksOf("## Issue #12")).toEqual([{ kind: "h", text: "Issue #12" }]);
+    expect(blocksOf("# Done ##")).toEqual([{ kind: "h", text: "Done" }]);
+    expect(blocksOf("#hashtag")).toEqual([{ kind: "p", text: "#hashtag" }]);
+  });
+
+  it("is read in time proportional to its length, however much space it holds", () => {
+    // The old pattern backtracked cubically here: 2,000 spaces took ~1.5 s, 4,000 ~15 s.
+    const line = "# a" + " ".repeat(4000) + "b";
+    const start = performance.now();
+    expect(blocksOf(line)[0]).toMatchObject({ kind: "h" });
+    expect(plainOf(line).endsWith("b")).toBe(true);
+    expect(performance.now() - start).toBeLessThan(250);
+  });
+});

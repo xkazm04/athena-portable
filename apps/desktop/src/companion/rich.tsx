@@ -14,7 +14,9 @@
 import { Fragment, type ReactNode } from "react";
 
 const MARKS = /(\*\*[^*\n]+?\*\*|`[^`\n]+`)/g;
-const HEADING = /^#{1,6}\s+(.+?)\s*#*\s*$/;
+// Anchored with one open run, so it reads a line in linear time; the old `(.+?)\s*#*\s*$` tail
+// backtracked cubically over a run of spaces (4,000 of them took seconds) and ate the # of "C#".
+const HEADING = /^#{1,6}[ \t]+(.*)$/;
 const BULLET = /^\s*[-*•]\s+(.*)$/;
 const NUMBERED = /^\s*\d+[.)]\s+(.*)$/;
 const RULE = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/;
@@ -42,6 +44,15 @@ export function plainOf(text: string): string {
     .trim();
 }
 
+/** A heading's words: a closing run of `#` goes only when a space stands before it (CommonMark). */
+function headingText(rest: string): string {
+  const t = rest.trimEnd();
+  let end = t.length;
+  while (end > 0 && t[end - 1] === "#") end--;
+  const words = end > 0 && /[ \t]/.test(t[end - 1]!) ? t.slice(0, end).trimEnd() : end === t.length ? t : "";
+  return words || t;
+}
+
 type Block = { kind: "p" | "h"; text: string } | { kind: "ul" | "ol"; items: string[] };
 
 /** Her message as blocks: headings, lists and paragraphs, in the order she wrote them. */
@@ -53,7 +64,8 @@ export function blocksOf(text: string): Block[] {
     para = [];
   };
   for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
-    const heading = HEADING.exec(line);
+    const found = HEADING.exec(line);
+    const heading = found && found[1]!.trim() ? [line, headingText(found[1]!)] : null;
     const item = BULLET.exec(line) ?? NUMBERED.exec(line);
     if (!line.trim() || RULE.test(line)) {
       close();
