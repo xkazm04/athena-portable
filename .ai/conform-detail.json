@@ -2676,30 +2676,32 @@
       "subject": "agent-browser-control",
       "bundle": "software-engineering",
       "state": "unknown",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:28:13.232Z",
       "techniques": [
-        {
-          "technique": "agent-actionable-errors",
-          "verdict": "deviation",
-          "evidence": "src/athena/channels/voice/gateway.py:954 The synthetic error gives neither outcome uncertainty nor a next command; test_voice_gateway.py:610 confirms the timeout reaches the next model request."
-        },
         {
           "technique": "persistent-browser-daemon",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/whisper.py:3 The subprocess lifecycle here belongs to speech engines, not browser sessions."
+          "evidence": "src/athena/channels/voice/gateway.py:1 This is an audio transport, not a browser process."
+        },
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "src/athena/channels/voice/gateway.py:954 The synthetic error gives neither outcome uncertainty nor a next command; test_voice_gateway.py:610 confirms the timeout reaches the next model request.",
+          "carriedFrom": "2026-10-16"
         },
         {
           "technique": "references-over-selectors",
           "verdict": "not-applicable",
-          "evidence": "src/athena/channels/voice/gateway.py:892 The voice gateway forwards page results into the lane rather than minting or resolving element references."
+          "evidence": "src/athena/channels/voice/gateway.py:892 The voice gateway forwards page results into the lane rather than minting or resolving element references.",
+          "carriedFrom": "2026-10-16"
         }
       ],
       "withdrawn": {
-        "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
-        "state": "deviation",
-        "at": "2026-10-16T02:35:02.505974+00:00",
-        "reason": "reviewer (sonnet): The gateway.py:954 timeout row and the test at line 610 concern host-app tool calls (`host.invoices.chase`, ADR 0010), not browser-control commands, so a browser-control deviation is not shown for this context."
+        "worker": "b48dd5f4-aaaa-49e7-a2cd-722e6c6f7629",
+        "state": "not-applicable",
+        "at": "2026-10-27T22:30:10.231857+00:00",
+        "reason": "reviewer (sonnet): Both claims rest on 'no browser command surface', but the code contradicts that: the daemon gates host tools and emits `tool.call` and `execute` instructions for the page to run (routes.py:38, decisions.py:48, registry.py:10), and gateway.py:46-48 relays those same calls and the `tool_result` replie"
       }
     },
     "29de8ade-bf7f-481c-9aa7-94bef87aab94/agent-browser-control": {
@@ -7851,6 +7853,32 @@
           "evidence": "examples/tidycrm/components/blocks/model.ts:4 no accelerator/device placement anywhere in the context"
         }
       ]
+    },
+    "10c863df-b13e-4802-85a8-60731a8c6c99/agent-browser-control": {
+      "context": "daemon-service",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:28:13.232Z",
+      "techniques": [
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:4 The daemon hosts the engine/brain/ledger, not a browser process; the browser is a client of it."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:4 No accessibility snapshot or element references; host tool calls are executed by the page itself (the lane has no host executor)."
+        }
+      ],
+      "withdrawn": {
+        "worker": "b48dd5f4-aaaa-49e7-a2cd-722e6c6f7629",
+        "state": "not-applicable",
+        "at": "2026-10-27T22:30:10.231857+00:00",
+        "reason": "reviewer (sonnet): Both claims rest on 'no browser command surface', but the code contradicts that: the daemon gates host tools and emits `tool.call` and `execute` instructions for the page to run (routes.py:38, decisions.py:48, registry.py:10), and gateway.py:46-48 relays those same calls and the `tool_result` replie"
+      }
     }
   }
 }
