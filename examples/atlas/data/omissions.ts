@@ -59,6 +59,20 @@ export const OMISSIONS: Omission[] = [
     modules: 4,
   },
   {
+    path: "src/athena/senses/",
+    reason:
+      "featured chores' senses: recorded media built into world tables with provenance, a build step a chore's world is made by, not a layer of the turn",
+    source: "src/athena/senses/__init__.py; ADR 0226",
+    modules: 14,
+  },
+  {
+    path: "src/athena/harness/meta/",
+    reason:
+      "Meta's hosted models as sense clients behind the senses contract, not yet a registered engine of the turn",
+    source: "src/athena/harness/meta/__init__.py; ADR 0226",
+    modules: 9,
+  },
+  {
     path: "src/athena/vitals/",
     reason:
       "a PC's room measured and the gate on background tasks: scheduling for the sleep cycle and delegated tasks, not the turn",

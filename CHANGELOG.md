@@ -1067,6 +1067,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): the reconnect banner counts against the session hook's own limit, not a 5 typed twice beside it.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the studio's and the front door's banners read `MAX_TRIES`; seeded red with a changed limit against the old literal.
 - `fix(intake): an intake card holds at most the three questions its prompt allows, not the interviewer's four.` scan-sweep stabilize (adopt-engine, parity-auditor): `prompts.MAX_INTAKE_QUESTIONS` is the one cap the prompt states and `card_questions` applies.
 - `fix(adopt): a picture-reader call that raised after it was sent is ledgered as a failed row, not dropped.` scan-sweep stabilize (adopt-engine, observability-auditor): the VL reader's catch-all now writes a failed `nebius` row and counts `vl_reader_failed` before the Claude leg reads the document.
+- `fix(atlas): the senses and Meta client packages are declared in the omission ledger, so the coverage test reads the tree again.` ADR 0226 (scan-sweep integration, stabilize-2026-10-27): `src/athena/senses/` (14 modules) and `src/athena/harness/meta/` (9) landed on 10-26 neither drawn nor omitted, and `examples/atlas/test/coverage.test.ts` read 23 of 213 uncovered; now 43 drawn, 170 omitted, 0 uncovered.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
