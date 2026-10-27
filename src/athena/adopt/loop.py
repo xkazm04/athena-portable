@@ -244,16 +244,9 @@ def _reopen(session: AdoptSession) -> None:
     session.warm = session.runner.warm_session("interview", INTERVIEW_SYSTEM, str(session.temp_dir))
     session.emit(Progress(text="Checking the dates and amounts that may have moved…"))
     card = _interview_leg(session, slots, round_no=1)
-    if card.ok and card.value is not None:
-        # Asked again: only what reopened. A slot she left a guess when she approved stays one.
-        wanted = set(reopened)
-        kept = []
-        for raw in _dicts(card.value.get("questions")):
-            named = [i for i in raw.get("slot_ids", []) if isinstance(i, str) and i in wanted]
-            if named:
-                kept.append({**raw, "slot_ids": named})
-        card = replace(card, value={**card.value, "questions": kept})
-    _offer_card(session, card, round_no=1, open_ids=reopened)
+    # Asked again: only what reopened. A slot she left a guess when she approved stays one.
+    only = frozenset(reopened)
+    _offer_card(session, _only(card, only), round_no=1, open_ids=reopened, only=only)
 
 
 def reopen_line(approved_at: str, slots: Sequence[Slot], reopened: Sequence[str]) -> str:
@@ -352,15 +345,22 @@ def _apply_audit(session: AdoptSession, result: LegResult) -> list[str] | None:
 
 
 def _offer_card(
-    session: AdoptSession, result: LegResult, *, round_no: int, open_ids: list[str] | None
+    session: AdoptSession,
+    result: LegResult,
+    *,
+    round_no: int,
+    open_ids: list[str] | None,
+    only: frozenset[str] | None = None,
 ) -> None:
-    """Emit the card ``result`` wrote, trimmed to what is still unknown — or never stall."""
+    """Emit the card ``result`` wrote, trimmed to what is still unknown — or never stall.
+    ``only`` (a reopened case) is the one set of slots any card of this round may ask about,
+    the retry's included."""
     slots = session.slots
     with session.lock:
         answers = [asdict(a) for a in session.answers]
     guard = _ExampleGuard(session.playbook, slots, answers)
     try:
-        _offer(session, result, slots, guard, round_no=round_no, open_ids=open_ids)
+        _offer(session, result, slots, guard, round_no=round_no, open_ids=open_ids, only=only)
     finally:
         for _ in range(guard.dropped):
             session.count("example_option_dropped")
@@ -374,6 +374,7 @@ def _offer(
     *,
     round_no: int,
     open_ids: list[str] | None,
+    only: frozenset[str] | None = None,
 ) -> None:
     if result.ok and result.value is not None:
         say = str(result.value.get("say") or "").strip()
@@ -385,7 +386,7 @@ def _offer(
             return
         # Nothing asked although something is unknown: ask again on the settled slots, once.
         if open_ids is None or open_ids:
-            retry = _interview_leg(session, slots, round_no=round_no)
+            retry = _only(_interview_leg(session, slots, round_no=round_no), only)
             if retry.ok and retry.value is not None:
                 questions = _questions(retry.value, session.slots, round_no, guard=guard)
                 if questions:
@@ -780,6 +781,19 @@ def _questions(
             )
         )
     return out
+
+
+def _only(card: LegResult, wanted: frozenset[str] | None) -> LegResult:
+    """``card`` with each question's slot ids cut to ``wanted``, and a question left naming none
+    dropped; ``card`` itself when ``wanted`` is ``None`` or the leg failed."""
+    if wanted is None or not card.ok or card.value is None:
+        return card
+    kept = []
+    for raw in _dicts(card.value.get("questions")):
+        named = [i for i in raw.get("slot_ids", []) if isinstance(i, str) and i in wanted]
+        if named:
+            kept.append({**raw, "slot_ids": named})
+    return replace(card, value={**card.value, "questions": kept})
 
 
 def card_questions(value: Mapping[str, Any], round_no: int) -> list[Question]:

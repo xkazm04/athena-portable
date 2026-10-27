@@ -157,6 +157,43 @@ def test_a_restart_reopens_the_case_with_nothing_asked_again_but_the_date(
     assert kept["p1"].confirmed_at == {s.id: s for s in saved.slots}["p1"].confirmed_at
 
 
+def test_a_reopened_cases_retried_card_still_asks_only_what_reopened(
+    live: Live, tmp_path: Path
+) -> None:
+    # She approved with the trap t1 left a guess; reopening asks again only the date that may
+    # have moved (f2). The interviewer asks about t1 anyway, twice: the first card is trimmed to
+    # nothing, and the retry the loop makes on an empty card must be trimmed the same way.
+    script = dated_script()
+    script["audit"][1]["updates"] = [
+        {**u, "status": "guessed"} if u["slot_id"] == "t1" else u
+        for u in script["audit"][1]["updates"]
+    ]
+    _, case_id = approve_one(live, script)
+    saved = CaseBook(live.local.brain).load(case_id)
+    assert saved is not None and {s.id: s.status for s in saved.slots}["t1"] == "guessed"
+    restart(live, tmp_path)
+    live.rig.model.script = {
+        "interview": [{"questions": [{"slot_ids": ["t1"], "text": "Any deposit on day seven?"}]}]
+    }
+    status, body = live.request(
+        "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "case_id": case_id}
+    )
+    assert status == 200, body
+    session = live.rig.store.get(str(body["session_id"]))
+    assert session is not None
+    session.drain()
+    events = [e.to_dict() for e in session.events_after(0)]
+    asked = {
+        i
+        for e in events
+        if e["kind"] == "adopt.questions"
+        for q in e["questions"]
+        for i in q["slot_ids"]
+    }
+    assert "t1" not in asked and asked <= {"f2"}
+    assert live.rig.model.kinds()[:2] == ["interview", "interview"]
+
+
 def test_a_case_with_no_date_reopens_clear_with_no_model_call(live: Live, tmp_path: Path) -> None:
     _, case_id = approve_one(live, clear_script())
     restart(live, tmp_path)
