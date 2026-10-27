@@ -1168,6 +1168,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 - fix(proving): the docread verdict reads UNRESOLVED when the ratio's 95% paired-bootstrap interval spans its 0.90 (PASS) or 0.70 (KILL) line, and the report prints the interval; run 20261022T195808Z rescored is 0.945 [0.887, 1.000], UNRESOLVED; ADR 0232 (scan-sweep Lane C, owner-approved).
 - fix(peer): a code that matches no pairing window counts against the windows open when it was typed, so yesterday's typos no longer close today's window; the fifth wrong code a window faces still closes it, and the lifetime counter is gone (scan-sweep Lane C, owner-approved).
+- `fix(mind): the Undo bar says what it will keep or forget, with its separator outside the live region.` Stabilize Lane B: the staged-answer bar announced "Forgetting 1 ·" - a bare count and a dangling dot; it now reads "Forgetting 1 memory", "Keeping 3 memories" or "Keeping both" (one contradiction kept whole), built from the proposals the batch names, and the dot is hidden from assistive tech.
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.

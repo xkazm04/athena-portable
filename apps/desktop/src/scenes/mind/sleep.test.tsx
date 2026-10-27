@@ -381,13 +381,20 @@ describe("pressing", () => {
     const actions = { ...base.actions, undo: vi.fn(() => {}) };
     act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals, staged }, actions }} />));
     const bar = host.querySelector(".sleep__undo")!;
-    expect(bar.textContent).toBe("Keeping 3 · Undo6 s left");
+    expect(bar.textContent).toBe("Keeping 3 memories·Undo6 s left");
+    // The live region holds the sentence only: no number without its noun, no dangling separator.
+    expect(bar.querySelector('[role="status"]')!.textContent).toBe("Keeping 3 memories");
     expect(host.textContent).not.toContain("Staged prp_00000000f001.");
     act(() => button("Undo").click());
     expect(actions.undo).toHaveBeenCalledTimes(1);
     const forgetting = { ...staged, ids: [offers[0]!], action: "forget" as const, until: base.now + 2400 };
     act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals, staged: forgetting }, actions }} />));
-    expect(host.querySelector(".sleep__undo")!.textContent).toBe("Forgetting 1 · Undo3 s left");
+    expect(host.querySelector(".sleep__undo")!.textContent).toBe("Forgetting 1 memory·Undo3 s left");
+    expect(host.querySelector('.sleep__undo [role="status"]')!.textContent).toBe("Forgetting 1 memory");
+    // One contradiction kept keeps both of its memories, and the bar says so.
+    const both = { ...staged, ids: ["prp_00000000d001"], action: "keep" as const };
+    act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals, staged: both }, actions }} />));
+    expect(host.querySelector('.sleep__undo [role="status"]')!.textContent).toBe("Keeping both");
   });
 
   it("a row's Keep and Forget stage their answer, and Keep all stages every open forget at once", () => {

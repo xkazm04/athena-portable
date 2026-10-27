@@ -327,7 +327,7 @@ function Proposals({ model, open, opening }: { model: SleepModel; open: readonly
   return (
     <div className="sleep__block">
       <h3 className="sleep__title">Waiting for you</h3>
-      {staged ? <UndoBar key={staged.until} staged={staged} onUndo={model.actions.undo} /> : null}
+      {staged ? <UndoBar key={staged.until} staged={staged} words={stagedWords(staged, model.state.proposals)} onUndo={model.actions.undo} /> : null}
       {offers >= 2 ? (
         <div className="mind__row">
           <Button size="sm" variant="secondary" onClick={() => model.actions.stageAll("keep")}>
@@ -445,11 +445,26 @@ function Proposal({
 }
 
 /**
+ * What a staged batch does, in words that name what it touches: "Forgetting 1 memory", "Keeping 3
+ * memories", "Keeping both" for one contradiction kept whole. A forget names the one memory
+ * pressed; a keep names every memory the offers name. A row the list no longer holds counts as one.
+ */
+export function stagedWords(staged: StagedBatch, proposals: readonly ProposalView[]): string {
+  const rows = staged.ids.map((id) => proposals.find((p) => p.id === id));
+  if (staged.action === "keep" && rows.length === 1 && rows[0]?.kind === "contradiction") return "Keeping both";
+  const memories = rows.reduce((sum, row) => {
+    if (staged.action === "forget" && row?.kind === "contradiction") return sum + 1;
+    return sum + Math.max(1, row?.node_ids.length ?? 1);
+  }, 0);
+  return `${staged.action === "forget" ? "Forgetting" : "Keeping"} ${plural(memories, "memory", "memories")}`;
+}
+
+/**
  * What a staged batch will do, with its Undo and the seconds left, counted from when it was staged
  * on the store's clock. The count is the live region; the seconds tick beside it, outside it, so a
  * screen reader hears the decision once, not each second.
  */
-function UndoBar({ staged, onUndo }: { staged: StagedBatch; onUndo: () => void }) {
+function UndoBar({ staged, words, onUndo }: { staged: StagedBatch; words: string; onUndo: () => void }) {
   const [ticked, setTicked] = useState<number | null>(null);
   useEffect(() => {
     const beat = setInterval(() => setTicked(Date.now()), 1000);
@@ -457,11 +472,13 @@ function UndoBar({ staged, onUndo }: { staged: StagedBatch; onUndo: () => void }
   }, []);
   const clock = ticked !== null && ticked > staged.at ? ticked : staged.at;
   const left = Math.max(0, Math.ceil((staged.until - clock) / 1000));
-  const n = staged.ids.length;
   return (
     <div className="sleep__undo mind__row">
       <span className="typo-body" role="status">
-        {`${staged.action === "forget" ? "Forgetting" : "Keeping"} ${figure(n)} · `}
+        {words}
+      </span>
+      <span className="typo-body" aria-hidden="true">
+        ·
       </span>
       <Button size="sm" variant="secondary" onClick={onUndo}>
         Undo
