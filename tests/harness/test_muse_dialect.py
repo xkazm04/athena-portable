@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from athena.harness.cli_harness import MUSE, MUSE_EXTRA_ARGS, CliHarness
 from athena.harness.engines import build_harness
 from athena.harness.hooks import GateHook, LedgerHook, TruncationHook
@@ -111,3 +113,17 @@ def test_the_next_turn_resumes_the_session_and_sends_only_its_message(tmp_path: 
     assert second.argv[second.argv.index("--session-id") + 1] == session
     prompt = Path(second.argv[second.argv.index("--prompt-file") + 1]).read_text("utf-8")
     assert "And which are paid?" in prompt and "The law" not in prompt
+
+
+def test_the_act_law_line_is_added_only_when_switched_on(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from athena.harness.cli_harness import MUSE_ACT_LAW, MUSE_ACT_LAW_ENV
+
+    for value, present in (("", False), ("1", True)):
+        monkeypatch.setenv(MUSE_ACT_LAW_ENV, value)
+        transport = ScriptedTransport([_records()])
+        _drain(_harness(transport, tmp_path), [])
+        argv = transport.requests[0].argv
+        prompt = Path(argv[argv.index("--prompt-file") + 1]).read_text("utf-8")
+        assert (MUSE_ACT_LAW in prompt) is present
