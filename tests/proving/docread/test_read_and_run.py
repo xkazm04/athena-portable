@@ -94,6 +94,23 @@ def test_vl_refuses_to_send_a_picture_over_the_edge_limit(tmp_path: Path) -> Non
     assert post.sent == [] and reading.values is None and reading.error_reason == "engine_error"
 
 
+def test_a_resumed_purse_does_not_charge_a_picture_that_was_never_sent(tmp_path: Path) -> None:
+    """The refusal row stays in the ledger (one row per invocation) but no call was made: the purse
+    a resume rebuilds from it equals the live session's, and the forge's cost table agrees."""
+    from athena.proving.forge.report import _ledger_costs
+    from athena.proving.forge.store import restore_budget
+
+    (tmp_path / "l.png").write_bytes(_png(MAX_EDGE + 1, 900))
+    ledger = tmp_path / "ledger.jsonl"
+    live = Budget(caps={NEMOTRON: 1.0, CLAUDE: 1.0})
+    read_vl(RoleCaller(live, RunLog(ledger)), S, UNIT, tmp_path, post=Post(_vl_body("{}")))
+    assert ledger.read_text(encoding="utf-8").count("\n") == 1
+    resumed = Budget(caps={NEMOTRON: 1.0, CLAUDE: 1.0})
+    restore_budget(resumed, ledger)
+    assert (live.calls(NEMOTRON), resumed.calls(NEMOTRON)) == (0, 0)
+    assert _ledger_costs(ledger).get("nemotron", {}).get("calls", 0) == 0
+
+
 def test_vl_bad_json_is_scored_empty_not_void(tmp_path: Path) -> None:
     (tmp_path / "l.png").write_bytes(_png(992, 1404))
     reading = read_vl(

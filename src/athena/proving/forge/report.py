@@ -65,7 +65,7 @@ def _ledger_costs(path: Path) -> dict[str, dict[str, Any]]:
     reads the same file: a torn line (a killed run) is skipped, and a purse refusal is no call."""
     out: dict[str, dict[str, Any]] = {}
     for row in RunLog.read(path):
-        if row.get("error_reason") == "budget_exhausted":
+        if row.get("error_reason") == "budget_exhausted" or row.get("sent") is False:
             continue
         engine = str(row.get("engine"))
         slot = out.setdefault(engine, {"calls": 0, "unpriced_calls": 0, "cost": 0.0})

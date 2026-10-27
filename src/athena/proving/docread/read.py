@@ -158,8 +158,14 @@ def read_vl(
             error_reason="engine_error",
             detail=f"{width}x{height} is over {MAX_EDGE}px; not sent",
         )
+        # The row stays (one per invocation), marked unsent: no call was made, so a resumed purse
+        # and the forge's cost table skip it (``forge.store.restore_budget``).
         caller.log.record(
-            role="docread.vl", engine=reply.engine, model=reply.model, error_reason="engine_error"
+            role="docread.vl",
+            engine=reply.engine,
+            model=reply.model,
+            error_reason="engine_error",
+            extra={"sent": False},
         )
         return Reading.from_reply("vl", unit.id, reply, None)
     role = VLRole(png, thinking=thinking, post=post, api_key=api_key)

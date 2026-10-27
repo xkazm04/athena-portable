@@ -124,9 +124,15 @@ _FIELDS = {
 
 
 def restore_budget(budget: Budget, runlog: Path) -> None:
-    """Charge ``budget`` with every row of an earlier session's ledger, so caps hold across runs."""
+    """Charge ``budget`` with every call an earlier session's ledger holds, so caps hold across
+    runs. A purse refusal and a row marked ``sent: false`` (a picture refused before any call)
+    are no call."""
     for row in RunLog.read(runlog):
         engine = row.get("engine")
-        if engine in ENGINES and row.get("error_reason") != "budget_exhausted":
+        if (
+            engine in ENGINES
+            and row.get("error_reason") != "budget_exhausted"
+            and row.get("sent") is not False
+        ):
             cost = row.get("cost_usd")
             budget.charge(str(engine), float(cost) if isinstance(cost, int | float) else None)
