@@ -234,8 +234,10 @@ def cover(segs: list[Seg], n: int) -> list[Seg]:
     return out
 
 
-def visemes_of(ph: list[Seg]) -> list[Seg]:
-    """Phones to raw viseme segments; ``h`` borrows its next vowel's shape."""
+def visemes_of(ph: list[Seg], unknown: list[str] | None = None) -> list[Seg]:
+    """Phones to raw viseme segments; ``h`` borrows its next vowel's shape. A phone with no entry
+    in :data:`VISEME` is shaped ``E`` (a neutral half-open mouth) and its symbol is appended to
+    ``unknown`` when given: it is counted, never shaped in silence."""
     segs: list[Seg] = []
     for k, u in enumerate(ph):
         p = u["p"]
@@ -247,6 +249,8 @@ def visemes_of(ph: list[Seg]) -> list[Seg]:
             vs = VISEME.get(nxt, ("E",))[:1] if nxt else ("E",)
         else:
             vs = VISEME.get(p, ("E",))
+            if p not in VISEME and unknown is not None:
+                unknown.append(p)
         if len(vs) == 1:
             segs.append({"v": vs[0], "a": u["a"], "b": u["b"]})
         else:
@@ -342,8 +346,10 @@ def sentence_visemes(
     pcm: bytes,
     sample_rate: int,
     sid: int,
+    unknown: list[str] | None = None,
 ) -> list[list[Any]]:
-    """The sentence's ``[[v, start, end], ...]`` in samples of the played audio."""
+    """The sentence's ``[[v, start, end], ...]`` in samples of the played audio. ``unknown``, when
+    given, collects the symbols of phones the viseme table has no entry for."""
     import numpy as np
 
     audio = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32767.0
@@ -351,5 +357,5 @@ def sentence_visemes(
     spans = token_spans(batches, frames, raw_samples, time_map, sample_rate)
     syms = [symbols.get(t, "?") if t != 0 else "$PAD" for seq in batches for t in seq]
     laid = cover(phones(syms, spans, audio), int(audio.shape[0]))
-    vis = merge_short(absorb_pre_closure(visemes_of(laid), sample_rate), sample_rate)
+    vis = merge_short(absorb_pre_closure(visemes_of(laid, unknown), sample_rate), sample_rate)
     return [[s["v"], int(s["a"]), int(s["b"])] for s in vis]

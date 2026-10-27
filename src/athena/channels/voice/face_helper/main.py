@@ -314,6 +314,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             else:
                 try:
+                    unknown: list[str] = []
                     visemes = sentence_visemes(
                         durations,
                         symbols,
@@ -323,8 +324,21 @@ def main(argv: list[str] | None = None) -> int:
                         pcm=pcm,
                         sample_rate=sample_rate,
                         sid=int(message["sid"]),
+                        unknown=unknown,
                     )
-                    out.send({"type": "visemes", "id": ident, "visemes": visemes})
+                    answer: dict[str, Any] = {"type": "visemes", "id": ident, "visemes": visemes}
+                    if unknown:
+                        # Counted, not silent: a phone with no shape is drawn as E (a new Kokoro
+                        # or misaki symbol would otherwise be a lip-sync fault with no trace).
+                        symbols_seen = sorted(set(unknown))[:16]
+                        answer["unknown"] = {"count": len(unknown), "symbols": symbols_seen}
+                        print(
+                            f"face: {len(unknown)} phone(s) with no viseme, shaped E: "
+                            f"{symbols_seen}",
+                            file=sys.stderr,
+                            flush=True,
+                        )
+                    out.send(answer)
                 except Exception as exc:
                     out.send(
                         {

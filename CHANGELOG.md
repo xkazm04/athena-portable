@@ -1150,6 +1150,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(spaces): promoting a superseded or retired project memory to core answers 409 with the reason instead of 200 and a memory nothing serves.` Stabilize Lane B (ux-reviewer): `Brain.unstamp` refuses a memory a same-project successor closes and a retired forget marker (ADR 0225); recall and the space wall are unchanged.
 - fix(proving): the adopt-tiers audit row counts the same legs in usage and in latency; `audit p50` now includes the brief writer, as the ledger trigger `adopt.audit` already did (scan-sweep Lane B).
 - `fix(voice): the motion worker forgets a cancelled sentence id once its job is skipped, answered or gone.` Stabilize Lane B (bounty-hunter): `MotionWorker.cancelled` grew by every cancel for the life of the helper; it now holds only ids still queued or running (5 ids left after one scripted round before, 0 now).
+- `fix(voice): the face helper counts the phones it has no viseme for instead of shaping them E in silence.` Stabilize Lane B (observability-auditor): `visemes_of` collects the unknown symbols; the helper's `visemes` answer carries `unknown: {count, symbols}` and stderr one line (0 places reported one before); the E fallback shape is unchanged.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

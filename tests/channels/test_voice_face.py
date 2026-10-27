@@ -796,6 +796,23 @@ def test_her_motion_leaves_two_logical_cores_to_kokoro() -> None:
 # -- the helper's two small honesty fixes (no model: a stub Motion, a made-up phone) --------------
 
 
+def test_a_phone_the_helper_has_no_shape_for_is_still_an_e_but_is_counted() -> None:
+    """visemes-drive: an unknown sound falls back to a neutral mid vowel and is counted, never
+    silently shaped. The answer carries the symbols so a new Kokoro phone is findable."""
+    assert "ʘ" not in helper_visemes.VISEME
+    phones = [
+        {"p": "ʘ", "a": 0, "b": 100},
+        {"p": "ʘ", "a": 100, "b": 200},
+        {"p": "m", "a": 200, "b": 300},
+        {"p": "sil", "a": 300, "b": 400},
+    ]
+    unknown: list[str] = []
+    shaped = helper_visemes.visemes_of(phones, unknown)
+    assert unknown == ["ʘ", "ʘ"]
+    assert [s["v"] for s in shaped][:2] == ["E", "E"], "the fallback shape is unchanged"
+    assert helper_visemes.visemes_of(phones[2:]) == helper_visemes.visemes_of(phones[2:], [])
+
+
 class _Sink:
     def __init__(self) -> None:
         self.sent: list[dict[str, Any]] = []
