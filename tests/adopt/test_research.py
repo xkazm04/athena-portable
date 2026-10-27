@@ -148,7 +148,9 @@ def test_start_runs_three_lanes_and_rules_keep_only_sourced_findings(
         assert tools_of(argv) == "WebSearch,WebFetch"
         assert argv[argv.index("--allowedTools") + 1] == "WebSearch,WebFetch"
 
-        assert lanes_of(session, "accounts")[-1] == ("skipped", "Gmail not connected")
+        # Neither account is connected, so the line names both and blames neither alone.
+        accounts = lanes_of(session, "accounts")[-1]
+        assert accounts == ("skipped", "No Gmail or Notion account is connected")
         assert lanes_of(session, "memory")[-1] == ("skipped", "Nothing recalled")
         assert progress(session)[-1] == "1 of 3 lanes done · 2 skipped"
         assert calls(rig, "plan") == [] and calls(rig, "memory") == []

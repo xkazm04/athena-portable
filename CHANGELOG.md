@@ -1050,6 +1050,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(peer): a pairing request refreshed by its nonce never echoes back a claim secret it did not check.` Stabilize 2026-10-27 (peer-devices, bounty-hunter): the nonce path returned an unverified `claim_secret` without storing its digest, so the requester's every claim was `wrong_secret`; `pairing.py` keeps a presented secret only when it verifies; test_pairing.py.
 - `fix(adopt): a rehearsal turn the live ledger refuses is counted, not dropped without a trace.` scan-sweep stabilize (adopt-engine, observability-auditor): the showcase's copy of each rehearsal row onto the live ledger swallowed a failed write; it now counts `showcase_ledger_failed` on the session and `ledger_failures` on the runner, as a leg's own failed row is.
 - `fix(chores): a practice run that finished with no turns says so, instead of a showcase that reads as if nothing ran.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, state-coverage): the showcase's status line gains the done-and-empty state beside failed; showcase.test.tsx.
+- `fix(adopt): an accounts lane with nothing connected says no Gmail or Notion account is, not "Gmail not connected".` scan-sweep stabilize (adopt-engine, copy-auditor): the skip line is built from the connectors the lane reads.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

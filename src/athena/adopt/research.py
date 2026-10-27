@@ -421,7 +421,9 @@ class Research:
 
         def body() -> LaneOutcome:
             if not live:
-                return LaneOutcome(status="skipped", summary="Gmail not connected")
+                # Said of every account the lane can read, never of Gmail alone.
+                names = " or ".join(_CONNECTOR_LABELS[c] for c in SEARCH_TOOLS)
+                return LaneOutcome(status="skipped", summary=f"No {names} account is connected")
             slots = session.slots
             plan = session.run_leg(
                 "research",
