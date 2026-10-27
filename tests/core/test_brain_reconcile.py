@@ -704,3 +704,15 @@ def test_a_clean_brain_has_no_drift(tmp_path: Path) -> None:
         found = drift(brain)
         assert found.clean
         assert found.as_dict()["unindexed"] == []
+
+
+def test_a_distilled_writer_takes_nothing_a_rebuild_cannot_restore() -> None:
+    """A rebuild indexes a fact or procedural from its file alone (ADR 0003), so a writer argument
+    that reaches only the index - free-form ``tags`` once did, with no caller - is a row the next
+    rebuild silently rewrites. Importance is the one documented index-only column."""
+    import inspect
+
+    from athena.core.brain import Brain
+
+    for writer in (Brain.write_fact, Brain.write_procedural):
+        assert "tags" not in inspect.signature(writer).parameters, writer.__name__

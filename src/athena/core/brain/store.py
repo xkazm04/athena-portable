@@ -622,7 +622,6 @@ class Brain:
         sources: Sequence[str],
         confidence: float = DEFAULT_CONFIDENCE,
         importance: int = DEFAULT_IMPORTANCE,
-        tags: Sequence[str] | None = None,
         every_turn: bool = False,
         supersedes: Sequence[str] = (),
         retired: bool = False,
@@ -692,7 +691,6 @@ class Brain:
                 body=body,
                 importance=importance,
                 created_at=created_at,
-                tags=list(tags or []),
                 space=space,
             )
             con.execute(
@@ -713,7 +711,6 @@ class Brain:
         sources: Sequence[str],
         confidence: float = DEFAULT_CONFIDENCE,
         importance: int = DEFAULT_IMPORTANCE,
-        tags: Sequence[str] | None = None,
         supersedes: Sequence[str] = (),
         retired: bool = False,
         space: str = CORE,
@@ -768,7 +765,6 @@ class Brain:
                 body=body,
                 importance=importance,
                 created_at=created_at,
-                tags=list(tags or []),
                 space=space,
             )
             con.execute(
