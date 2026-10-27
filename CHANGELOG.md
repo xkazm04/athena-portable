@@ -1130,6 +1130,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(brain): a fact or procedural writer no longer takes free-form tags, which no caller passed and every rebuild dropped.` Stabilize 2026-10-27 (core-brain-memory, parity-auditor; ADR 0003): `write_fact`/`write_procedural` wrote `tags` to the index alone, so a fact written with them rebuilt with 4 rows changed (tags_json and the FTS tags column); zero callers in src or tests, the parameter is gone and a signature test keeps it out.
 - `fix(forge): the validator refuses an eligible entry that lost its why or its expect params, as the generator's prompt requires.` Stabilize 2026-10-27 (proving-forge, parity-auditor): the prompt demands both and `validate()` checked only `value_usd`; a dropped `expect` made a variant easier to score. New refusal code `eligible-incomplete`.
 - `fix(docread): a read killed mid-line resumes and scores, instead of dying on the half-written answer it left.` Stabilize 2026-10-27 (proving-docread, error-handler): a torn last line in `answers.jsonl` made every resume and score raise; it is now skipped (its unit re-read) and closed before the next append.
+- `fix(docread): a render that cannot run exits 2 with its reason, as the CLI promises, instead of a traceback.` Stabilize 2026-10-27 (proving-docread, error-handler): a missing node or a failed `render-docs.mjs` escaped `main()` as a RuntimeError; it is now one line and exit 2.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

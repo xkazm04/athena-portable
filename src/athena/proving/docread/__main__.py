@@ -87,7 +87,11 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
         return 2
     budget: Budget | None = None
     if args.verb in ("render", "all"):
-        run_render(run, echo=echo)
+        try:
+            run_render(run, echo=echo)
+        except RuntimeError as exc:  # no node, or render-docs.mjs failed: the run cannot start
+            echo(str(exc))
+            return 2
     if args.verb in ("read", "all"):
         budget, _ = run_read(run, echo=echo)
     if args.verb in ("score", "read", "all"):

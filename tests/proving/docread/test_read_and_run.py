@@ -292,3 +292,20 @@ def test_a_read_killed_mid_line_resumes_and_scores(tmp_path: Path) -> None:
     run_read(run, echo=lambda _s: None)  # the torn unit is read again
     report = run_score(run)
     assert report["all"]["claude"]["units"] + report["all"]["vl"]["units"] == len(lines)
+
+
+def test_a_render_that_cannot_run_exits_2_with_its_reason(tmp_path: Path, monkeypatch: Any) -> None:
+    import athena.proving.docread.run as docread_run
+
+    def no_node(*_a: Any, **_k: Any) -> None:
+        raise RuntimeError("node is not on PATH; render-docs.mjs needs it (and Playwright)")
+
+    monkeypatch.setattr(docread_run, "render", no_node)
+    said: list[str] = []
+    assert (
+        main(
+            ["render", "--scenarios", "easy-data-broker", "--out", str(tmp_path)], echo=said.append
+        )
+        == 2
+    )
+    assert any("node is not on PATH" in line for line in said)
