@@ -247,3 +247,105 @@ def test_report_pick_block_names_the_incumbent_and_the_delta_table(tmp_path: Pat
     assert "| delta |" in interview and "-620 ms" in interview
     audit = text.split("## audit")[1].split("## shape")[0]
     assert "Incumbent in tiers.json: opus-low (unchanged)" in audit
+
+
+# --- the usage tiebreak compares like with like -----------------------------------------------
+
+
+def test_a_partly_priced_role_has_no_dollar_figure() -> None:
+    """One priced row and one the CLI did not price: the known sum is not the role's cost."""
+    from athena.proving.adopt_tiers.score import usage_of
+
+    record = {
+        "ledger": [
+            {"role": "adopt.interview", "cost_usd": 0.01, "input_tokens": 10, "output_tokens": 5},
+            {"role": "adopt.interview", "cost_usd": None, "input_tokens": 900, "output_tokens": 90},
+        ]
+    }
+    usage = usage_of(record, ["interview"])
+    assert usage["legs"] == 2
+    assert usage["tokens"] == 1005
+    assert usage["cost_usd"] is None
+
+
+def _usage_score(record: dict[str, Any], _scenario: Any) -> dict[str, Any]:
+    cost, tokens = record["_usage"]
+    return {
+        "ended": "clear",
+        "right": 9,
+        "wrong": 0,
+        "missed": 1,
+        "accuracy": 90.0,
+        "verdicts": [],
+        "false_clear": [],
+        "repeats": [],
+        "rounds": 3,
+        "questions": 6,
+        "round_ms": [6000],
+        "first_text_ms": record["_first"],
+        "audit_ms": [6000],
+        "usage": {
+            "interview": {"cost_usd": cost, "tokens": tokens},
+            "audit": {"cost_usd": cost, "tokens": tokens},
+        },
+        "judge": 4.5,
+    }
+
+
+def test_usage_breaks_a_tie_in_one_unit_across_configs(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A config with one unpriced leg reads in tokens; every config must then read in tokens,
+    or the tiebreak compares dollars (~0.05) with tokens (~100) and dollars always win."""
+    from athena.proving.adopt_tiers import pick as pick_module
+    from athena.proving.adopt_tiers.pick import aggregate
+    from athena.proving.adopt_tiers.scenarios import load_scenarios
+
+    monkeypatch.setattr(pick_module, "score_interview", _usage_score)
+    scenarios = load_scenarios(["easy-lease-end"], full=False)
+    records = [
+        {
+            "scenario": "easy-lease-end",
+            "config": "opus-low",
+            "_first": [1000],
+            "_usage": (0.05, 9000),
+        },
+        {
+            "scenario": "easy-lease-end",
+            "config": "haiku-low",
+            "_first": [1020],
+            "_usage": (None, 100),
+        },
+    ]
+    stats = aggregate(records, scenarios)
+    assert stats["opus-low"].usage_unit == stats["haiku-low"].usage_unit == "tokens"
+    assert stats["opus-low"].usage_interview == 9000
+    pick = pick_role("interview", stats)
+    assert pick.config == "haiku-low"  # within the band, a ninetieth of the tokens
+    delta = against([pick], stats, {}, _held("opus-low"))[0]
+    assert delta.usage_unit == "tokens" and delta.delta["usage"] == -8900
+
+
+def test_shape_usage_reads_in_one_unit_across_configs() -> None:
+    from athena.proving.adopt_tiers.pick import aggregate_shape
+
+    priced = {"cost_usd": 0.05, "input_tokens": 8000, "output_tokens": 1000}
+    unpriced = {"cost_usd": None, "input_tokens": 50, "output_tokens": 50}
+    shapes = aggregate_shape(
+        [
+            {
+                "config": "opus-low",
+                "valid": True,
+                "portals_ok": True,
+                "wall_ms": 1000,
+                "ledger": [priced],
+            },
+            {
+                "config": "haiku-low",
+                "valid": True,
+                "portals_ok": True,
+                "wall_ms": 1010,
+                "ledger": [unpriced],
+            },
+        ]
+    )
+    assert shapes["opus-low"].usage_unit == shapes["haiku-low"].usage_unit == "tokens"
+    assert pick_shape(shapes, measured=True).config == "haiku-low"

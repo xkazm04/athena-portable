@@ -233,19 +233,25 @@ def aggregate(
         s.audit_p50 = percentile([v for x in scores for v in x["audit_ms"]], 50)
         s.rounds = _mean([x["rounds"] for x in scores])
         s.questions = _mean([x["questions"] for x in scores])
-        costs_i = [x["usage"]["interview"]["cost_usd"] for x in scores]
-        costs_a = [x["usage"]["audit"]["cost_usd"] for x in scores]
-        if all(c is not None for c in costs_i + costs_a):
-            s.usage_interview, s.usage_audit, s.usage_unit = _mean(costs_i), _mean(costs_a), "usd"
-        else:
-            s.usage_interview = _mean([x["usage"]["interview"]["tokens"] for x in scores])
-            s.usage_audit = _mean([x["usage"]["audit"]["tokens"] for x in scores])
-            s.usage_unit = "tokens"
         for x in scores:
             s.ended[x["ended"]] = s.ended.get(x["ended"], 0) + 1
             s.right += x["right"]
             s.wrong += x["wrong"]
             s.missed += x["missed"]
+    # One unit for every config, or the tiebreak compares dollars with tokens: dollars only when
+    # every run of every config was priced, else tokens for all of them.
+    priced = all(
+        x["usage"][role]["cost_usd"] is not None
+        for scores in grouped.values()
+        for x in scores
+        for role in ("interview", "audit")
+    )
+    key, unit = ("cost_usd", "usd") if priced else ("tokens", "tokens")
+    for config, scores in grouped.items():
+        s = stats[config]
+        s.usage_interview = _mean([x["usage"]["interview"][key] for x in scores])
+        s.usage_audit = _mean([x["usage"]["audit"][key] for x in scores])
+        s.usage_unit = unit
     return stats
 
 
@@ -255,6 +261,7 @@ def aggregate_shape(records: Sequence[Mapping[str, Any]]) -> dict[str, ShapeStat
     for record in records:
         if str(record.get("config")) in stats:
             grouped.setdefault(str(record.get("config")), []).append(record)
+    usage: dict[str, tuple[list[float | None], list[int]]] = {}
     for config, rows in grouped.items():
         s = stats[config]
         s.runs = len(rows)
@@ -275,7 +282,12 @@ def aggregate_shape(records: Sequence[Mapping[str, Any]]) -> dict[str, ShapeStat
                     for x in ledger
                 )
             )
-        if costs and all(c is not None for c in costs):
+        usage[config] = (costs, tokens)
+    # One unit for every config, as for the interview roles.
+    priced = all(c is not None for costs, _ in usage.values() for c in costs)
+    for config, (costs, tokens) in usage.items():
+        s = stats[config]
+        if priced:
             s.usage, s.usage_unit = _mean(costs), "usd"
         else:
             s.usage, s.usage_unit = _mean(tokens), "tokens"

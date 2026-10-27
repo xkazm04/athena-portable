@@ -304,15 +304,20 @@ def percentile(values: Iterable[float | int | None], q: float) -> float | None:
 
 
 def usage_of(record: Mapping[str, Any], roles: Sequence[str]) -> dict[str, Any]:
-    """Cost and tokens of the ledger rows whose trigger is one of ``adopt.<role>``."""
+    """Cost and tokens of the ledger rows whose trigger is one of ``adopt.<role>``. ``cost_usd``
+    is ``None`` unless every row was priced: a known sum beside an unpriced leg is not the role's
+    cost, and the pick's usage tiebreak would read it as one."""
     triggers = {f"adopt.{r}" for r in roles}
     rows = [
         r for r in record.get("ledger", []) if isinstance(r, Mapping) and r.get("role") in triggers
     ]
-    costs = [float(r["cost_usd"]) for r in rows if isinstance(r.get("cost_usd"), int | float)]
+    costs = [r.get("cost_usd") for r in rows]
+    priced = bool(costs) and all(
+        isinstance(c, int | float) and not isinstance(c, bool) for c in costs
+    )
     return {
         "legs": len(rows),
-        "cost_usd": round(sum(costs), 6) if costs else None,
+        "cost_usd": round(sum(float(c) for c in costs if c is not None), 6) if priced else None,
         "tokens": sum(
             int(r.get("input_tokens") or 0) + int(r.get("output_tokens") or 0) for r in rows
         ),
