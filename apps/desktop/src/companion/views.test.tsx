@@ -430,8 +430,15 @@ test("welcome: a failed start shows the reason and a Try again button that resta
 
 test("each scrollable tab the keyboard can focus is a named region, as Talk's log is", () => {
   expect(html("ledger")).toContain('role="log" aria-label="Conversation"');
-  expect(html("ledger record")).toContain('role="region" aria-label="Record"');
-  expect(html("ledger origins")).toContain('role="region" aria-label="Origins"');
+  // In the words on screen, and once: the section is not a second landmark of the same name.
+  const record = html("ledger record");
+  expect(record).toContain('role="region" aria-label="The record"');
+  expect(record.match(/(?:role="region"|<section)[^>]*aria-label="The record"/g)).toHaveLength(1);
+  expect(record).not.toContain('aria-label="Record"');
+  const origins = html("ledger origins");
+  expect(origins).toContain('role="region" aria-label="The apps she may act on"');
+  expect(origins.match(/(?:role="region"|<section)[^>]*aria-label="The apps she may act on"/g)).toHaveLength(1);
+  expect(origins).not.toContain('aria-label="Origins"');
 });
 
 test("each Enable or Disable button names its app and says its state once, in its name, not also as pressed", () => {

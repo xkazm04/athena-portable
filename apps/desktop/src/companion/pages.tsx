@@ -19,7 +19,7 @@ function Level({ open, crumb, onRise, children, label }: { open: boolean; crumb:
     if (open) rise.current?.focus({ preventScroll: true });
   }, [open]);
   return (
-    <section className={`aw-depth${open ? " open" : ""}`} aria-hidden={!open} inert={!open} aria-label={label}>
+    <section className={`aw-depth${open ? " open" : ""}`} aria-hidden={!open} inert={!open}>
       <div className="depth-top">
         <button ref={rise} type="button" className="rise" data-act="rise" onClick={onRise}>
           <Icon name="back" />
@@ -216,10 +216,10 @@ export function Pages({ model }: { model: CompanionModel }) {
   const rise = () => model.actions.tab("talk");
   return (
     <>
-      <Level open={model.tab === "record"} crumb="Athena / The record" onRise={rise} label="Record">
+      <Level open={model.tab === "record"} crumb="Athena / The record" onRise={rise} label="The record">
         <Record model={model} />
       </Level>
-      <Level open={model.tab === "origins"} crumb="Athena / The apps she may act on" onRise={rise} label="Origins">
+      <Level open={model.tab === "origins"} crumb="Athena / The apps she may act on" onRise={rise} label="The apps she may act on">
         <Origins model={model} />
       </Level>
     </>
