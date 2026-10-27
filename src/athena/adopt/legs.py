@@ -424,20 +424,26 @@ class WarmSession:
             if self.closed or self.deaths >= self.MAX_DEATHS:
                 return None
             proc = self._proc
+            reading = _Reading(time.monotonic())
             try:
                 if proc is None or not proc.alive():
                     proc = self._proc = self.spawn(
                         cli_argv(self.tier, system_file=self.system_file, warm=True), self.cwd
                     )
-                reading = _Reading(time.monotonic())
+                    if self.closed:  # closed while it spawned: close() may not have seen it
+                        return self._cancelled(reading)
                 proc.send(_user_line(prompt))
                 while not reading.done:
                     line = proc.read_line(timeout_s)
                     if line is None:
+                        if self.closed:
+                            return self._cancelled(reading)
                         self._die()
                         return None
                     reading.feed(line)
             except TimeoutError:
+                if self.closed:
+                    return self._cancelled(reading)
                 self._die()
                 return _Attempt(
                     "",
@@ -448,9 +454,30 @@ class WarmSession:
                     warm=True,
                 )
             except OSError:
+                if self.closed:
+                    return self._cancelled(reading)
                 self._die()
                 return None
             return _attempt_from(reading, warm=True)
+
+    def _cancelled(self, reading: _Reading) -> _Attempt:
+        """The ask a close interrupted: no cold call follows, since nobody will read the answer.
+        Holds the lock; the process is killed (close may have raced its spawn)."""
+        if self._proc is not None:
+            with contextlib.suppress(OSError):
+                self._proc.kill()
+            self._proc = None
+        return _Attempt(
+            "",
+            _ms(reading.started),
+            reading.first_text_ms,
+            input_tokens=reading.input_tokens,
+            output_tokens=reading.output_tokens,
+            cost_usd=reading.cost_usd,
+            error_reason="cancelled",
+            detail="the session was closed while the answer was read",
+            warm=True,
+        )
 
     def _die(self) -> None:
         self.deaths += 1
@@ -460,13 +487,16 @@ class WarmSession:
         self._proc = None
 
     def close(self) -> None:
-        """Kill the process. Idempotent; a closed session never spawns again."""
-        with self._lock:
-            self.closed = True
-            if self._proc is not None:
-                with contextlib.suppress(OSError):
-                    self._proc.kill()
-                self._proc = None
+        """Kill the process. Idempotent; a closed session never spawns again.
+
+        Never takes the lock an ask holds while it reads: closing (DELETE, expiry, shutdown) must
+        not wait up to a leg's timeout for an answer. The kill ends the reader's stream, and the
+        interrupted ask answers ``cancelled`` (:meth:`_cancelled`) instead of a cold call."""
+        self.closed = True
+        proc = self._proc
+        if proc is not None:
+            with contextlib.suppress(OSError):
+                proc.kill()
 
 
 # --- the door -----------------------------------------------------------------------------------

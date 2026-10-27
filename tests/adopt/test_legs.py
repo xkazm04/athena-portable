@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import threading
+import time
 from pathlib import Path
 
 import pytest
 
-from athena.adopt.legs import LegRunner, cli_argv, load_tiers
+from athena.adopt.legs import LegRunner, WarmSession, cli_argv, load_tiers
 from athena.contracts.adopt import LEG_KINDS, Tier
 from athena.core.brain import Brain
 from athena.core.ledger import Ledger
@@ -203,3 +205,46 @@ def test_a_warm_session_at_another_tier_is_not_used(tmp_path: Path) -> None:
     result = door.run_leg("interview", "s", "p", json_schema=SCHEMA, session=warm, tier=opus)
     assert result.ok and not result.warm and result.model == "claude-opus-5-5"
     assert spawn.spawned == []
+
+
+class _HungWarm:
+    """A warm process that never answers until it is killed (a slow interviewer)."""
+
+    def __init__(self) -> None:
+        self.sent = threading.Event()
+        self.killed = threading.Event()
+
+    def send(self, line: str) -> None:
+        self.sent.set()
+
+    def read_line(self, timeout: float) -> str | None:
+        if self.killed.wait(timeout):
+            return None  # end of stream: the process is gone
+        raise TimeoutError
+
+    def alive(self) -> bool:
+        return not self.killed.is_set()
+
+    def kill(self) -> None:
+        self.killed.set()
+
+
+def test_closing_a_warm_session_does_not_wait_for_the_answer_in_flight(tmp_path: Path) -> None:
+    # DELETE /adopt/<sid>, idle expiry and shutdown all close the warm session while an
+    # interview leg may be reading its answer; the close kills the process at once, and the
+    # interrupted ask is cancelled rather than retried as a cold call nobody will read.
+    proc = _HungWarm()
+    warm = WarmSession(lambda argv, cwd: proc, SONNET, "s.md", str(tmp_path), kind="interview")
+    got: list[object] = []
+    asker = threading.Thread(target=lambda: got.append(warm.ask("p", 30.0)), daemon=True)
+    asker.start()
+    assert proc.sent.wait(5)
+    closer = threading.Thread(target=warm.close, daemon=True)
+    started = time.monotonic()
+    closer.start()
+    closer.join(5)
+    assert not closer.is_alive() and time.monotonic() - started < 5
+    assert proc.killed.is_set()
+    asker.join(5)
+    (attempt,) = got
+    assert attempt is not None and attempt.error_reason == "cancelled"  # type: ignore[attr-defined]
