@@ -231,3 +231,18 @@ def test_a_cycle_stamped_ahead_of_the_clock_still_holds_and_says_so(
         "The last cycle is stamped 3 h ahead of this computer's clock; the next cycle is not "
         "before 6 h after one."
     )
+
+
+def test_the_ceilings_are_the_adrs() -> None:
+    """Every number ADR 0143 (and 0190's backoff) states for the cycle, pinned to it: a changed
+    ceiling is an ADR amendment, not a constant edit a test computed from would follow."""
+    import athena.core.sleep as s
+
+    assert (s.PRESSURE_CHARS, s.MIN_CHARS, s.FLOOR_H, s.STALE_H) == (40_000, 2_000, 6, 72)
+    assert (s.QUIET_AFTER_TURN_S, s.FAILED_BACKOFF_H, s.FAILED_BACKOFF_CAP_H) == (120, 1, 24)
+    assert (s.EPISODE_FETCH, s.SCAN_ROWS) == (480, 20_000)
+    assert (s.COMPRESS_EPISODES, s.COMPRESS_CHARS, s.EPISODE_CHARS) == (120, 30_000, 2_000)
+    assert (s.FACTS_CAP, s.PROCEDURALS_CAP, s.SUPERSEDES_CAP) == (12, 6, 8)
+    assert (s.SHORTLIST, s.EXCERPT_CHARS, s.LEG_TIMEOUT_S) == (4, 200, 300.0)
+    assert (s.FADE_AFTER_D, s.FADE_MAX) == (30, 3)
+    assert (s.OPEN_PROPOSALS_CAP, s.PROPOSAL_EXPIRE_D) == (20, 14)
