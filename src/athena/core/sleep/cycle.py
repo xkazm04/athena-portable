@@ -112,18 +112,20 @@ class SleepCycle:
         """Run every phase and settle the row. Never raises for a leg or a write that failed: the
         row says ``failed`` with a sentence for a person."""
         stats = empty_stats()
-        failures = self.book.failures_since_settled()
-        take = window.take(failures.take_limit)
-        stats.update(
-            episodes_in=len(take.reads),
-            episodes_available=window.episodes_available,
-            chars_in=take.chars_in,
-            truncated=take.truncated,
-        )
+        take: Take | None = None
         try:
+            # Inside the guard: a read that fails here (a locked index) still settles the row.
+            failures = self.book.failures_since_settled()
+            take = window.take(failures.take_limit)
+            stats.update(
+                episodes_in=len(take.reads),
+                episodes_available=window.episodes_available,
+                chars_in=take.chars_in,
+                truncated=take.truncated,
+            )
             return self._run(cycle_id, window, take, reason, stats, failures)
         except Exception as exc:
-            stats.update(failure="error", take=len(take.reads))
+            stats.update(failure="error", take=0 if take is None else len(take.reads))
             self._finish(
                 cycle_id,
                 "failed",

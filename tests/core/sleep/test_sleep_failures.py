@@ -9,6 +9,7 @@ walked past - never deleted: it stays indexed and recallable, it is only not dis
 from __future__ import annotations
 
 import re
+import sqlite3
 from contextlib import closing
 from datetime import timedelta
 from typing import Any
@@ -170,6 +171,24 @@ def test_an_engine_error_backs_off_but_never_shrinks_the_take(
     door = FakeDoor(compress=_nothing(), merge=no_verdicts())
     _cycle(r, door)
     assert len(_shown(door.calls[0][1])) == 120
+
+
+def test_a_read_that_fails_before_the_first_leg_settles_the_row_failed(
+    brain: Brain, clock: Clock, stamp: Stamp, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``run`` promises never to raise and to settle the row: a failure reading the failure run
+    (a locked index) is a ``failed`` row with a sentence, not a ``running`` row left for good."""
+    r = rig(brain, clock, stamp)
+    write_episodes(brain, 3)
+
+    def locked() -> Any:
+        raise sqlite3.OperationalError("database is locked")
+
+    monkeypatch.setattr(r.book, "failures_since_settled", locked)
+    row = _cycle(r, FakeDoor(compress=_nothing(), merge=no_verdicts()))
+    assert row.status == "failed"
+    assert row.reason == "The cycle stopped: OperationalError: database is locked"
+    assert row.stats["failure"] == "error" and row.stats["take"] == 0
 
 
 # -- quarantine -----------------------------------------------------------------------------------
