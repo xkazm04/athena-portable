@@ -89,6 +89,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     run_dir = Path(args.run_dir) if args.run_dir else new_run_dir(Path(args.out))
     run_dir.mkdir(parents=True, exist_ok=True)
     store = ForgeDir(run_dir)
+    recorded = store.settle_dry(args.dry)
+    if recorded != args.dry:
+        if args.stage != "report":
+            kind = "a dry run (fixtures)" if recorded else "a live run"
+            print(
+                f"refused: {run_dir.as_posix()} holds {kind}; "
+                f"{'pass --dry' if recorded else 'drop --dry'}, or start a new run directory",
+                file=sys.stderr,
+            )
+            return 2
+        args.dry = recorded  # a report says what the run is, whatever this command says
     budget = purse({NEMOTRON: args.nemotron_cap, CLAUDE: args.claude_cap}, store.runlog)
     caller = RoleCaller(budget, RunLog(store.runlog))
 

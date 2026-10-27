@@ -133,3 +133,19 @@ def test_a_live_run_without_the_key_is_refused(
         ]
     )
     assert code == 2
+
+
+def test_a_dry_run_directory_stays_dry_whatever_flag_the_next_stage_is_given(
+    library: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    lib = ["--library", str(library)]
+    assert main(["all", "--dry", "--n", "1", "--no-control", "--out", str(tmp_path), *lib]) == 0
+    run = str(runs(tmp_path)[0])
+    # Regenerating the report without --dry must not turn fixture worlds into a measurement.
+    assert main(["report", "--run-dir", run, *lib]) == 0
+    report = json.loads((Path(run) / "forge" / "report.json").read_text(encoding="utf-8"))
+    assert report["dry"] is True
+    # And a stage that would spend is refused over fixtures, before it looks for a key or a CLI.
+    capsys.readouterr()
+    assert main(["bench", "--run-dir", run, *lib]) == 2
+    assert "dry" in capsys.readouterr().err

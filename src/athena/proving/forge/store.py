@@ -44,6 +44,24 @@ class ForgeDir:
     def picks(self) -> Path:
         return self.root / "pick.json"
 
+    @property
+    def mode(self) -> Path:
+        return self.root / "mode.json"
+
+    def settle_dry(self, dry: bool) -> bool:
+        """Whether this run is dry: what its first stage recorded, else ``dry``, now recorded.
+
+        A run directory is dry or live for good: its fixture worlds and scripted benches are
+        never reported, benched or audited as a measurement because a later stage forgot
+        ``--dry``. A directory from before the record is taken as ``dry`` says.
+        """
+        if self.mode.is_file():
+            recorded = ForgeDir.read(self.mode).get("dry")
+            if isinstance(recorded, bool):
+                return recorded
+        ForgeDir.write(self.mode, {"dry": dry})
+        return dry
+
     def variant_path(self, generator: str, playbook: str, k: int) -> Path:
         d = self.variants / generator
         d.mkdir(exist_ok=True)
