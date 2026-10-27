@@ -297,6 +297,24 @@ def test_a_body_that_is_not_json_is_a_parse_error(live: Live) -> None:
     assert reply.body["reason"] == "parse_error"
 
 
+def test_a_refusal_sent_before_the_body_is_read_still_reaches_the_caller(live: Live) -> None:
+    """A tokenless or unrouted POST is refused before its body is read. Closing on unread input
+    resets the socket on Windows (``WinError 10053``) and the 401 is lost, so the handler reads
+    the declared body past the refusal, bounded (:data:`DRAIN_LIMIT`)."""
+    live.daemon.routes.add(Route("POST", "/echo", lambda request: (200, dict(request.body))))
+    body = json.dumps({"filler": "x" * 900_000})
+    lost: list[str] = []
+    for _ in range(40):
+        for path, token, status in (("/echo", None, 401), ("/nowhere", TOKEN, 404)):
+            try:
+                reply = live.request(path, method="POST", token=token, body=body)
+            except (ConnectionError, OSError) as exc:
+                lost.append(f"{path}: {type(exc).__name__}")
+                continue
+            assert reply.status == status
+    assert lost == []
+
+
 def test_a_route_that_raises_is_a_500_that_quotes_nothing(live: Live) -> None:
     """A body may hold anything the caller put in it, so the detail is the exception type."""
 

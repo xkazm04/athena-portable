@@ -720,6 +720,23 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
         def _fail(self, reply: Reply) -> None:
             self._send(*reply)
 
+        def _refuse_unread(self, reply: Reply) -> None:
+            """Refuse a request whose body has not been read, so the refusal arrives.
+
+            Closing with the caller's body still unread resets the socket on Windows
+            (``WinError 10053``) and the 401 or 404 is lost. The declared body is read past, up
+            to :data:`MAX_BODY_BYTES` - a bound a caller who has not shown a token cannot raise;
+            a longer body is dropped as it always was.
+            """
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            if length > 0:
+                with suppress(OSError):
+                    self._discard(min(length, MAX_BODY_BYTES))
+            self._send(*reply)
+
         def _send_bytes(self, answer: BinaryReply) -> None:
             self.send_response(answer.status)
             self._cors()
@@ -936,13 +953,13 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             # The token is checked before the path is matched, so an unauthenticated caller
             # cannot map the daemon's routes by comparing a 404 against a 401.
             if not self._authorized():
-                self._fail(error(401, "foreign_token", f"{TOKEN_HEADER} missing or wrong"))
+                self._refuse_unread(error(401, "foreign_token", f"{TOKEN_HEADER} missing or wrong"))
                 return
             url = urlsplit(self.path)
             route = daemon.routes.match(method, url.path)
             if route is None:
                 status = 405 if daemon.routes.knows(url.path) else 404
-                self._fail(error(status, "unknown", f"no route for {method} {url.path}"))
+                self._refuse_unread(error(status, "unknown", f"no route for {method} {url.path}"))
                 return
             query = {k: v[0] for k, v in parse_qs(url.query).items() if v}
             origin = self.headers.get("Origin") or ""
