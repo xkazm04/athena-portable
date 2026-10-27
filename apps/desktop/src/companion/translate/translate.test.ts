@@ -312,3 +312,9 @@ test("a decision about a read says nothing changes, and one that names no app ne
   const out = describeDecision({ action: "core.delegate", params: {} }, EMPTY_CONTEXT, "", { reversible: false, side_effects: "external" }).effect;
   expect(out).toBe("A task goes out. Once it is done it cannot be taken back.");
 });
+
+test("the oldest row's age reads in the same words as its cell: 1 day, not 1 days", () => {
+  const m = translate({ id: "d", kind: "tool", tier: 1, ok: true, text: 'host.ledgerbox.list_overdue → {"items":[{"id":"inv_1","client":"Acme","days_overdue":1}]}' });
+  expect(m.sub).toBe("longest: Acme, 1 day overdue");
+  if (m.detail.kind === "table") expect(m.detail.rows[0]!.cells).toContain("1 day");
+});

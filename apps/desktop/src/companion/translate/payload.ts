@@ -292,7 +292,7 @@ function composeList(t: ToolName, p: JsonObject | Json, rows: JsonObject[], key:
   if (det.ageKey) {
     const ageKey = det.ageKey;
     const worst = rows.reduce((a, b) => ((num(b[ageKey]) ?? 0) > (num(a[ageKey]) ?? 0) ? b : a));
-    bits.push(`longest: ${labelOf(worst)}, ${num(worst[ageKey])} days ${ageKey.replace(/^days_/, "")}`);
+    bits.push(`longest: ${labelOf(worst)}, ${days(num(worst[ageKey]) ?? 0)} ${ageKey.replace(/^days_/, "")}`);
   }
   const flagged = rows.filter((r) => Object.keys(r).some((k) => NOTE_KEY.test(k) && !!r[k]));
   if (flagged.length) bits.push(`${flagged.length} with a note`);
