@@ -261,6 +261,7 @@ def build_report(
             "recall_drops_ge_0_2": drops,
             "n_variants_benched": benched,
             "n_variants_comparable": comparable_benched,
+            "n_variants_comparable_audited": comparable_audited,
             "bases_not_comparable": sorted(not_comparable) or None,
         },
         "athena_findings": findings,
@@ -410,10 +411,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         "",
         f"- benched {bench['benched']} of {bench['valid_variants']} valid variants "
         f"{bench.get('shown') or ''}".rstrip(),
+        # Each count over the variants it was counted over: a flip needs a comparable base.
         f"- raw exceeds->short flips: {flips['raw_exceeds_to_short']} "
-        f"of {flips['n_variants_benched']}",
+        f"of {flips['n_variants_comparable']} benched against a comparable base",
         f"- audited flips: {flips['audited_exceeds_to_short']} "
-        f"of {audit['variants_audited']} audited",
+        f"of {flips.get('n_variants_comparable_audited', 0)} audited against a comparable base",
         f"- recall drops >= 0.2: {flips['recall_drops_ge_0_2']}",
         f"- audit items {audit['items']}: {audit['label_holds_athena_findings']} Athena findings, "
         f"{audit['forge_errors']} forge errors",

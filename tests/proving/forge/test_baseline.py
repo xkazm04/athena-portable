@@ -218,3 +218,19 @@ def test_proof_2_is_n_a_with_no_comparable_base_and_names_its_smallest_n_on_pass
     p2 = proof_2(report)
     assert p2["status"] == "PASS"
     assert "n=3" in p2["detail"]
+
+
+def test_the_markdown_divides_each_flip_count_by_the_variants_it_was_counted_over(
+    tmp_path: Path,
+) -> None:
+    from athena.proving.forge.report import render_markdown
+
+    lib = tmp_path / "lib"
+    keyed_playbook(lib, "pb", [("exceeds", 1.0)], key="sha256:0000000000000000")
+    report = forge_run(tmp_path, lib, "pb", word="short", recall=0.1, audited=("short", 0.1))
+    assert report["flips"]["n_variants_comparable_audited"] == 0
+    md = render_markdown(report)
+    # One variant was benched and audited, but its base has no comparable run: no flip could
+    # be counted over it, so it is not in the denominator a reader divides by.
+    assert "raw exceeds->short flips: 0 of 0 benched against a comparable base" in md
+    assert "audited flips: 0 of 0 audited against a comparable base" in md
