@@ -60,7 +60,8 @@ export type FeedItem =
       questions: Question[];
       answers: Answer[] | null;
     }
-  | { kind: "you"; key: string; text: string; via: AnswerVia }
+  /** A line from the composer; `failed` is one the daemon refused, so she never heard it. */
+  | { kind: "you"; key: string; text: string; via: AnswerVia; status: "sent" | "failed" }
   | {
       kind: "doc";
       key: string;
@@ -155,8 +156,10 @@ export type Action =
   | { t: "answered"; key: string; answers: Answer[] }
   | { t: "said"; key: string; text: string; via: AnswerVia }
   | { t: "unanswered"; key: string }
-  /** Composer words the daemon refused: the line stays, the brief is no longer stale on its account. */
+  /** Composer words the daemon refused: the line stays, marked not sent; the brief is no longer stale on its account. */
   | { t: "unsaid"; key: string }
+  /** A refused line sent again: it is drawn as said once more. */
+  | { t: "resaid"; key: string }
   | {
       t: "doc";
       key: string;
@@ -224,14 +227,24 @@ export function reduce(s: StudioState, a: Action): StudioState {
         ),
       };
     case "unsaid":
-      return { ...s, ...unstaled(s, a.key) };
+      return {
+        ...s,
+        ...unstaled(s, a.key),
+        feed: s.feed.map((f) => (f.kind === "you" && f.key === a.key ? { ...f, status: "failed" } : f)),
+      };
+    case "resaid":
+      return {
+        ...s,
+        ...staled(s, a.key),
+        feed: s.feed.map((f) => (f.kind === "you" && f.key === a.key ? { ...f, status: "sent" } : f)),
+      };
     case "said":
       return {
         ...s,
         ...staled(s, a.key),
         feed: [
           ...s.feed,
-          { kind: "you", key: a.key, text: a.text, via: a.via },
+          { kind: "you", key: a.key, text: a.text, via: a.via, status: "sent" },
         ],
       };
     case "doc": {

@@ -267,6 +267,7 @@ export default function Studio({
             enough={s.enough}
             onAnswer={act.answer}
             onSay={act.say}
+            onResay={act.resay}
             onDrop={act.drop}
             onEnough={act.enough}
             onDraft={onDraft}

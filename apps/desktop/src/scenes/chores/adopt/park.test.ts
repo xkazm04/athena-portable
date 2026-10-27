@@ -74,7 +74,9 @@ describe("the parked studio", () => {
     expect(worthParking(with_([]))).toBe(false);
     expect(worthParking(with_([card(false)]))).toBe(false);
     expect(worthParking(with_([card(true)]))).toBe(true);
-    expect(worthParking(with_([{ kind: "you", key: "l1", text: "hi", via: "text" }]))).toBe(true);
+    expect(worthParking(with_([{ kind: "you", key: "l1", text: "hi", via: "text", status: "sent" }]))).toBe(true);
+    // A line the daemon refused was never heard, so it is nothing to keep.
+    expect(worthParking(with_([{ kind: "you", key: "l1", text: "hi", via: "text", status: "failed" }]))).toBe(false);
     expect(
       worthParking(with_([{ kind: "doc", key: "l1", name: "a.pdf", status: "sent", detail: "" }])),
     ).toBe(true);
@@ -86,7 +88,7 @@ describe("the parked studio", () => {
   });
 
   it("says how far the conversation got", () => {
-    const you: FeedItem = { kind: "you", key: "l1", text: "hi", via: "text" };
+    const you: FeedItem = { kind: "you", key: "l1", text: "hi", via: "text", status: "sent" };
     expect(resumeLine(with_([card(true), you]))).toBe(
       "You were part-way through (2 answers). Continue where you left off, or start over.",
     );

@@ -98,6 +98,8 @@ export const why = (error: unknown): { reason: string; detail: string } => {
 export interface StudioActions {
   answer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
   say: (text: string, via: AnswerVia) => void;
+  /** Send a line the daemon refused once more. */
+  resay: (key: string) => void;
   drop: (file: File) => void;
   enough: () => void;
   approve: (rev: number) => void;
@@ -281,6 +283,17 @@ export function useAdoptSession(
           [{ question_id: "", choice_ids: [], text: words }],
           via,
         )
+        .catch((error: unknown) => {
+          dispatch({ t: "unsaid", key });
+          fail(error);
+        });
+    },
+    resay: (key) => {
+      const line = state.feed.find((f) => f.kind === "you" && f.key === key && f.status === "failed");
+      if (!deps || !sid.current || line?.kind !== "you") return;
+      dispatch({ t: "resaid", key });
+      deps.client
+        .answer(sid.current, [{ question_id: "", choice_ids: [], text: line.text }], line.via)
         .catch((error: unknown) => {
           dispatch({ t: "unsaid", key });
           fail(error);

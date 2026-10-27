@@ -206,6 +206,7 @@ export default function Intake({
           enough={s.enough}
           onAnswer={act.answer}
           onSay={act.say}
+          onResay={act.resay}
           onEnough={act.decide}
           enoughBlocked={hasSaid(s) ? undefined : "Say what you need first"}
           onDraft={onDraft}

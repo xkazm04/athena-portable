@@ -546,6 +546,28 @@ describe("the conversation", () => {
     expect(intake.routes("decide")).toEqual([]);
   });
 
+  it("a refused line is drawn not sent, does not open Just decide, and Send again posts it", async () => {
+    const sent: string[] = [];
+    let up = false;
+    intake.answer = (_sid, answers) => {
+      if (!up) return Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+      sent.push(answers[0]!.text);
+      return Promise.resolve();
+    };
+    await show();
+    await feed(CARD);
+    type(q<HTMLTextAreaElement>("#ad-say")!, NEED);
+    await click(sendIn(".ad-composer"));
+    expect(q(".ad-you")!.getAttribute("data-status")).toBe("failed");
+    expect(q(".ad-you__not-sent")?.textContent).toContain("Not sent");
+    expect((button("Just decide for me") as HTMLButtonElement | null)?.disabled).toBe(true);
+    up = true;
+    await click(button("Send again"));
+    await vi.waitFor(() => expect(sent).toEqual([NEED]), { timeout: 5000 });
+    expect(q(".ad-you__not-sent")).toBeNull();
+    expect((button("Just decide for me") as HTMLButtonElement | null)?.disabled).toBe(false);
+  });
+
   it("follows a dropped stream from the last seq and stops at session_closed", async () => {
     await show();
     await feed(

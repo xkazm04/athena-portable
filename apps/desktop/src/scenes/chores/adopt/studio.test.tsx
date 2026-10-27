@@ -841,6 +841,27 @@ describe("the brief's lifecycle, keyed by rev", () => {
     expect(button("Approve")!.hasAttribute("disabled")).toBe(false);
   });
 
+  it("a composer line the daemon refused is drawn not sent, and Send again posts it", async () => {
+    const sent: string[] = [];
+    let up = false;
+    client.answer = (_sid, answers) => {
+      if (!up) return Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+      sent.push(answers[0]!.text);
+      return Promise.resolve();
+    };
+    await show();
+    type(q<HTMLTextAreaElement>("#ad-say")!, "We also flew Delta.");
+    await click(qa(".ad-composer button").find((b) => b.textContent?.trim() === "Send") ?? null);
+    expect(q(".ad-you")!.getAttribute("data-status")).toBe("failed");
+    expect(text(".ad-you__not-sent")).toContain("Not sent");
+    expect(sent).toEqual([]);
+    up = true;
+    await click(button("Send again"));
+    await vi.waitFor(() => expect(sent).toEqual(["We also flew Delta."]), { timeout: 5000 });
+    expect(q(".ad-you")!.getAttribute("data-status")).toBe("sent");
+    expect(q(".ad-you__not-sent")).toBeNull();
+  });
+
   it("guard: one refused send among two keeps the brief stale, since the other one landed", async () => {
     let n = 0;
     client.answer = () =>

@@ -51,6 +51,7 @@ export default function Conversation({
   enough,
   onAnswer,
   onSay,
+  onResay,
   onDrop,
   onEnough,
   enoughBlocked,
@@ -66,6 +67,8 @@ export default function Conversation({
   enough: boolean;
   onAnswer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
   onSay: (text: string, via: AnswerVia) => void;
+  /** Send a line the daemon refused once more. */
+  onResay: (key: string) => void;
   /** Absent: no drop zone (the Chores front door takes no documents). */
   onDrop?: (file: File) => void;
   onEnough: () => void;
@@ -101,7 +104,7 @@ export default function Conversation({
       <ol className="ad-feed">
         {feed.map((f) => (
           <li key={f.key} className={`ad-feed__item ad-feed__item--${f.kind}`}>
-            <Item item={f} onAnswer={onAnswer} onDraft={onDraft} />
+            <Item item={f} onAnswer={onAnswer} onDraft={onDraft} onResay={ready ? onResay : undefined} />
           </li>
         ))}
       </ol>
@@ -191,10 +194,13 @@ function Item({
   item: f,
   onAnswer,
   onDraft,
+  onResay,
 }: {
   item: FeedItem;
   onAnswer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
   onDraft: (key: string, unsent: boolean) => void;
+  /** Absent while a line cannot be sent. */
+  onResay?: (key: string) => void;
 }) {
   const draft = useCallback(
     (unsent: boolean) => onDraft(f.key, unsent),
@@ -220,12 +226,24 @@ function Item({
       );
     case "you":
       return (
-        <p className="ad-you">
-          {f.via === "voice" ? (
-            <span className="ad-you__via">spoken</span>
+        <div className="ad-you-wrap">
+          <p className="ad-you" data-status={f.status}>
+            {f.via === "voice" ? (
+              <span className="ad-you__via">spoken</span>
+            ) : null}
+            {f.text}
+          </p>
+          {f.status === "failed" ? (
+            <p className="ad-you__not-sent" role="status">
+              <span className="ad-note">Not sent. She has not heard this.</span>
+              {onResay ? (
+                <button type="button" className="ad-link" data-act="resay" onClick={() => onResay(f.key)}>
+                  Send again
+                </button>
+              ) : null}
+            </p>
           ) : null}
-          {f.text}
-        </p>
+        </div>
       );
     case "doc":
       return (

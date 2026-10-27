@@ -196,6 +196,28 @@
 .ad-feed__item--you {
   display: flex;
 }
+.ad-you-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+  max-width: 80%;
+}
+.ad-you-wrap .ad-you {
+  max-width: 100%;
+}
+.ad-you[data-status="failed"] {
+  border: 1px dashed var(--status-error);
+}
+.ad-you__not-sent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px 12px;
+  margin: 0;
+}
 .ad-you__via {
   display: inline-block;
   margin-right: 8px;

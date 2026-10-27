@@ -64,7 +64,7 @@ export const expired = (entry: Parked, now: number): boolean =>
   now - entry.parkedAt > PARK_LIMIT_MS;
 
 const answers = (s: StudioState): number =>
-  s.feed.filter((f) => (f.kind === "card" && f.answers !== null) || f.kind === "you").length;
+  s.feed.filter((f) => (f.kind === "card" && f.answers !== null) || (f.kind === "you" && f.status === "sent")).length;
 
 /**
  * Whether leaving should park rather than close: the person said something (an answered card, a

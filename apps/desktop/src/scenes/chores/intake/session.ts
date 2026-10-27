@@ -30,6 +30,8 @@ import {
 export interface IntakeActions {
   answer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
   say: (text: string, via: AnswerVia) => void;
+  /** Send a line the daemon refused once more. */
+  resay: (key: string) => void;
   /** "Just decide for me". */
   decide: () => void;
   /** Follow the stream again after it was given up, or start a new session after a fault or a failed start. */
@@ -146,6 +148,17 @@ export function useIntakeSession(
     [],
   );
 
+  /** The words go to the daemon; a refusal marks the line not sent (so it is not counted as said) and says why. */
+  const refused = (key: string, words: string, via: AnswerVia) => {
+    client
+      ?.answer(sid.current, [{ question_id: "", choice_ids: [], text: words }], via)
+      .catch((error: unknown) => {
+        dispatch({ t: "unsaid", key });
+        if (need.current === words && !startNeed) need.current = "";
+        fail(error);
+      });
+  };
+
   const actions: IntakeActions = {
     answer: (cardKey, answers, via) => {
       if (!client || !sid.current) return;
@@ -158,15 +171,17 @@ export function useIntakeSession(
     say: (text, via) => {
       const words = text.trim();
       if (!client || !sid.current || !words) return;
-      dispatch({ t: "said", key: nextKey(), text: words, via });
+      const key = nextKey();
+      dispatch({ t: "said", key, text: words, via });
       need.current ||= words;
-      client
-        .answer(
-          sid.current,
-          [{ question_id: "", choice_ids: [], text: words }],
-          via,
-        )
-        .catch(fail);
+      refused(key, words, via);
+    },
+    resay: (key) => {
+      const line = state.feed.find((f) => f.kind === "you" && f.key === key && f.status === "failed");
+      if (!client || !sid.current || line?.kind !== "you") return;
+      dispatch({ t: "resaid", key });
+      need.current ||= line.text;
+      refused(key, line.text, line.via);
     },
     decide: () => {
       if (!client || !sid.current) return;
