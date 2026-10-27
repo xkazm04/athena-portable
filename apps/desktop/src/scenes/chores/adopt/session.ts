@@ -16,7 +16,8 @@
  * local limit is closed on return.
  *
  * The person's acts are optimistic: an answered card collapses at once and reopens with the
- * daemon's reason if the send is refused.
+ * daemon's reason if the send is refused, and a refused send (a card or composer words) takes back
+ * the stale mark it put on the brief, since the daemon never recorded it.
  */
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
@@ -248,14 +249,18 @@ export function useAdoptSession(
     say: (text, via) => {
       const words = text.trim();
       if (!deps || !sid.current || !words) return;
-      dispatch({ t: "said", key: nextKey(), text: words, via });
+      const key = nextKey();
+      dispatch({ t: "said", key, text: words, via });
       deps.client
         .answer(
           sid.current,
           [{ question_id: "", choice_ids: [], text: words }],
           via,
         )
-        .catch(fail);
+        .catch((error: unknown) => {
+          dispatch({ t: "unsaid", key });
+          fail(error);
+        });
     },
     drop: (file) => {
       if (!deps || !sid.current) return;

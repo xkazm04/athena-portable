@@ -782,6 +782,38 @@ describe("the brief's lifecycle, keyed by rev", () => {
     expect(drawn).toBe(false);
     expect(button("Approve")!.parentElement!.getAttribute("title")).toMatch(/redraft/);
   });
+
+  it("case 7: an answer the daemon refused does not leave the brief stale, so Approve opens again", async () => {
+    client.answer = () =>
+      Promise.reject(new ApiError(400, "validator_failed", "answers: no question 'q-mail' was asked"));
+    await show();
+    await feed(BRIEF(2), { kind: "adopt.clear", rev: 2 });
+    await answerCard();
+    expect(text(".ad-error")).toContain("no question");
+    expect(button("Approve")!.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("case 8: composer words the daemon refused do not leave the brief stale either", async () => {
+    client.answer = () => Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+    await show();
+    await feed(BRIEF(2), { kind: "adopt.clear", rev: 2 });
+    type(q<HTMLTextAreaElement>("#ad-say")!, "We also flew Delta.");
+    await click(qa(".ad-composer button").find((b) => b.textContent?.trim() === "Send") ?? null);
+    expect(text(".ad-error")).toContain("not running");
+    expect(button("Approve")!.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("guard: one refused send among two keeps the brief stale, since the other one landed", async () => {
+    let n = 0;
+    client.answer = () =>
+      (n += 1) === 2 ? Promise.reject(new ApiError(0, "offline", "gone")) : Promise.resolve();
+    await show();
+    await feed(BRIEF(2), { kind: "adopt.clear", rev: 2 });
+    await answerCard();
+    type(q<HTMLTextAreaElement>("#ad-say")!, "And Delta.");
+    await click(qa(".ad-composer button").find((b) => b.textContent?.trim() === "Send") ?? null);
+    expect(button("Approve")!.hasAttribute("disabled")).toBe(true);
+  });
 });
 
 describe("leaving parks the interview, and coming back offers Continue", () => {

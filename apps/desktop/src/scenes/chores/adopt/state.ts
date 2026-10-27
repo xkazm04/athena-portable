@@ -95,6 +95,12 @@ export interface StudioState {
   enough: boolean;
   /** The person answered or said something after the brief on show; the next brief clears it. */
   briefStale: boolean;
+  /**
+   * The keys of the person's sends since the brief on show that the daemon has not refused: the
+   * brief is stale while one is left, so a refused send (which the daemon never recorded) does not
+   * hold Approve shut for a redraft that is not coming.
+   */
+  staleBy: string[];
   approvedRev: number | null;
   rehearsal: Rehearsal | null;
   /** The draft whose command went to Athena on "Start for real"; `null` before one. */
@@ -126,6 +132,7 @@ export const INITIAL: StudioState = {
   clearRev: null,
   enough: false,
   briefStale: false,
+  staleBy: [],
   approvedRev: null,
   rehearsal: null,
   handedRev: null,
@@ -148,6 +155,8 @@ export type Action =
   | { t: "answered"; key: string; answers: Answer[] }
   | { t: "said"; key: string; text: string; via: AnswerVia }
   | { t: "unanswered"; key: string }
+  /** Composer words the daemon refused: the line stays, the brief is no longer stale on its account. */
+  | { t: "unsaid"; key: string }
   | {
       t: "doc";
       key: string;
@@ -198,7 +207,7 @@ export function reduce(s: StudioState, a: Action): StudioState {
     case "answered":
       return {
         ...s,
-        briefStale: s.briefStale || s.brief !== null,
+        ...staled(s, a.key),
         feed: s.feed.map((f) =>
           f.kind === "card" && f.key === a.key
             ? { ...f, answers: a.answers }
@@ -208,14 +217,17 @@ export function reduce(s: StudioState, a: Action): StudioState {
     case "unanswered":
       return {
         ...s,
+        ...unstaled(s, a.key),
         feed: s.feed.map((f) =>
           f.kind === "card" && f.key === a.key ? { ...f, answers: null } : f,
         ),
       };
+    case "unsaid":
+      return { ...s, ...unstaled(s, a.key) };
     case "said":
       return {
         ...s,
-        briefStale: s.briefStale || s.brief !== null,
+        ...staled(s, a.key),
         feed: [
           ...s.feed,
           { kind: "you", key: a.key, text: a.text, via: a.via },
@@ -257,6 +269,20 @@ export function reduce(s: StudioState, a: Action): StudioState {
     case "event":
       return onEvent(s, a.e);
   }
+}
+
+/** A send past the brief on show makes it stale, on that send's account. */
+function staled(s: StudioState, key: string): Pick<StudioState, "briefStale" | "staleBy"> {
+  if (s.brief === null) return { briefStale: s.briefStale, staleBy: s.staleBy };
+  return { briefStale: true, staleBy: [...s.staleBy, key] };
+}
+
+/** A refused send takes back its own account (once: a card answered twice holds two). */
+function unstaled(s: StudioState, key: string): Pick<StudioState, "briefStale" | "staleBy"> {
+  const at = s.staleBy.indexOf(key);
+  if (at < 0) return { briefStale: s.briefStale, staleBy: s.staleBy };
+  const staleBy = s.staleBy.filter((_, i) => i !== at);
+  return { briefStale: staleBy.length > 0, staleBy };
 }
 
 function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
@@ -302,7 +328,7 @@ function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
       };
     }
     case "adopt.brief":
-      return { ...s, progress: "", brief: e, briefStale: false };
+      return { ...s, progress: "", brief: e, briefStale: false, staleBy: [] };
     case "adopt.clear":
       return { ...s, clearRev: e.rev };
     case "adopt.showcase":
