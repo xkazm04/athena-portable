@@ -23,7 +23,7 @@ import type {
   Slot,
   StartReply,
 } from "@/lib/adopt";
-import type { AdoptClient, AdoptDocument } from "@/lib/adopt-client";
+import { DOCUMENT_MIMES, type AdoptClient, type AdoptDocument } from "@/lib/adopt-client";
 import type {
   PlaybookActions,
   PlaybooksModel,
@@ -637,6 +637,8 @@ describe("a question card", () => {
     expect(text(".ad-doc")).toContain(
       "notes.docx is not a PDF, an image or a text file.",
     );
+    // The picker offers exactly the kinds the refusal admits: one list, not two.
+    expect(input.accept).toBe(DOCUMENT_MIMES.join(","));
     expect(client.routes("document")).toEqual([]);
   });
 });

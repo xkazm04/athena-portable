@@ -18,6 +18,7 @@ import {
 
 import Button from "@/components/Button";
 import type { Answer, AnswerVia } from "@/lib/adopt";
+import { DOCUMENT_MIMES } from "@/lib/adopt-client";
 
 import Rich from "../rich";
 import QuestionCard from "./card";
@@ -425,7 +426,7 @@ function DropZone({
         type="file"
         hidden
         multiple
-        accept="application/pdf,image/png,image/jpeg,text/plain"
+        accept={DOCUMENT_MIMES.join(",")}
         onChange={(e) => {
           for (const f of Array.from(e.currentTarget.files ?? [])) onDrop(f);
           e.currentTarget.value = "";

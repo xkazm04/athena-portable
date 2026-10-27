@@ -1063,6 +1063,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(peer): a phone card's "Read it first" is a 44px tap target like every button beside it.` Stabilize 2026-10-27 (peer-devices, mobile-specialist): the summary that reveals what Sign runs was ~19px tall; `mobile/app.css` gives it 44px; test_phone.py.
 - `fix(chores): "Leave anyway?" takes the keyboard focus on Stay, in the studio and the front door.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, accessibility-checker): the inline alertdialog moves focus into itself on open; studio.test.tsx and intake.test.tsx.
 - `fix(adopt): a brief leg the engine failed is said beside the fallback brief, as a failed audit is.` scan-sweep stabilize (adopt-engine, observability-auditor): a timeout or engine error on the brief leg now emits `adopt.error` before the playbook's floor brief; a malformed brief stays counted and silent.
+- `fix(chores): the studio's file picker offers the document kinds the refusal admits, from one list instead of two.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the DropZone's `accept` reads `DOCUMENT_MIMES`; studio.test.tsx, seeded red with a new kind against the old literal.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
