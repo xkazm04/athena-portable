@@ -7797,6 +7797,32 @@
           "evidence": "apps/desktop/vite.config.ts:69 Nothing in these files unpacks an archive (git grep for unzip/extract found nothing). The only path built from a request is this dev-server film route, bounded by a one-segment regex."
         }
       ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/trust-base": {
+      "context": "tidycrm-style",
+      "subject": "trust-base",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-27",
+      "evaluatedTs": "2026-10-27T22:11:06.910Z",
+      "worker": "ece9a53d-1e87-4d97-8d8c-ffe9b6546bb7",
+      "techniques": [
+        {
+          "technique": "trusted-leaf-gets-an-outside-test",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 There are no functions here, so no body is marked trusted against a contract that proofs consume. The only ordering constraint is the CSS cascade."
+        },
+        {
+          "technique": "assumptions-are-build-errors",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:15 These are plain stylesheet imports. No proof assumes a platform fact such as word size or endianness."
+        },
+        {
+          "technique": "verdict-pins-its-checker",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/forced-colors.css:44 In these files 'verdict' is UI vocabulary for a visual stripe. No checker verdict is stored or compared."
+        }
+      ]
     }
   }
 }

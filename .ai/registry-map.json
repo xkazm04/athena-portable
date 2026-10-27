@@ -9731,7 +9731,11 @@
           "revision": 5,
           "changedAt": "2026-10-21",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:2 This context is only CSS: an ordered @import list of stylesheets with no prover, type checker override, trusted body, unsafe block, marker impl or stored checker verdict. A case-insensitive grep over all 21 files found 0 hits for unsafe, trusted, assume, proof and external_body, so the subject's precondition (code that overrides or extends a checker) does not hold here.",
+          "evaluatedAt": "2026-10-27",
+          "evaluatedAgainst": "sha256-b2:0fd52192b37a88e4",
+          "evaluatedRevision": 6
         },
         {
           "subject": "ui-controls",
