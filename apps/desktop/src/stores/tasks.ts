@@ -160,13 +160,19 @@ export function askAbout(task: Pick<TaskView, "title">): string {
 
 /**
  * The instant the rows are drawn at: every second while one is running, so its time moves, and
- * every half minute otherwise, so a finished row leaves after {@link RECENT_MS} on its own.
+ * every half minute otherwise, so a finished row leaves after {@link RECENT_MS} on its own. Not
+ * while the window is hidden, where nobody reads it: it catches up the moment it is shown.
  */
 export function useTasksNow(running: boolean): number {
   const [now, setNow] = useState(deps.now);
   useEffect(() => {
-    const timer = setInterval(() => setNow(deps.now()), running ? 1000 : 30_000);
-    return () => clearInterval(timer);
+    const tick = () => document.hidden || setNow(deps.now());
+    const timer = setInterval(tick, running ? 1000 : 30_000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+    };
   }, [running]);
   return now;
 }
