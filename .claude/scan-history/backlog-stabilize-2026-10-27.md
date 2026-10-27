@@ -83,3 +83,9 @@ Approved to build (14): bound case receipts; promote/erase replicate; erase scru
 Declined (2): judge drift anchors (both benches); failed-form fallback in the waking Face step.
 
 Dispatch: after Lane B, folded into the same write-set group as the Lane B cards that share their files.
+
+## Owner decisions - 2026-10-27 (after Lane B)
+
+- First-paint ceiling raised to 167,200 B (owner): build the shared daemon request door and the console reduced-motion fix.
+- Build: omitted motion channel with face.rs (Rust granted); tier pick ties on run-to-run noise.
+- Declined: forge failed generator call stops counting as a refusal (today's rule stands).
