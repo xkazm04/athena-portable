@@ -1,4 +1,4 @@
-"""The forge's bench stage: what a bench that fails leaves behind (README §2 invariant 6)."""
+"""The forge's stages: what a failed bench, a torn ledger or a spent purse leaves behind."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget
-from athena.proving.forge.base import Base
+from athena.proving.forge.base import Base, materialize
 from athena.proving.forge.dry import mutate
 from athena.proving.forge.forge import Variant
 from athena.proving.forge.runner import bench_variants
@@ -73,3 +73,39 @@ def test_the_report_and_the_purse_read_one_ledger_alike(tmp_path: Path) -> None:
     # A torn last line does not stop the report, and a purse refusal is no call in either.
     assert report["cost_usd"][NEMOTRON]["calls"] == budget.calls(NEMOTRON) == 1
     assert report["cost_usd"][NEMOTRON]["cost_usd"] == 0.25
+
+
+def test_an_audit_the_purse_cut_short_is_not_saved_as_done(base: Base, tmp_path: Path) -> None:
+    from athena.proving.forge.dry import dry_bench
+    from athena.proving.forge.run import Forge
+    from athena.proving.roles import RoleCaller
+
+    from .conftest import ScriptedRole, text_reply
+
+    store = ForgeDir(tmp_path)
+    (v,) = _one_valid(store, base)
+    ForgeDir.write(store.picks, {"ids": [base.id], "shorts": [], "notes": []})
+    book = materialize(base, v.world, v.truth, tmp_path / "copy")
+    report = dry_bench(book, BenchConfig())
+    target = v.truth["targets"][0]
+    report["score"]["missed"] = [{"action": target["tool"], "key": k} for k in target["eligible"]]
+    assert len(report["score"]["missed"]) >= 2
+    ForgeDir.write(store.bench_path(v), report)
+    # The purse pays for the first audit call only; the rest of the variant's items are refused.
+    budget = Budget(caps={NEMOTRON: 1.0, CLAUDE: 0.005})
+    answer = json.dumps({"label_holds": True, "why": "the row says so"})
+    control = ScriptedRole(lambda s, p: text_reply(answer, cost=0.01, engine=CLAUDE), CLAUDE)
+    forge = Forge(
+        store=store,
+        library=base.library,
+        budget=budget,
+        caller=RoleCaller(budget, RunLog()),
+        nemotron=ScriptedRole(lambda s, p: text_reply("{}")),
+        control=control,
+        echo=lambda _s: None,
+    )
+    forge.stage_audit()
+    assert len(control.prompts) == 1
+    # Not written: a resumed audit (with a bigger cap) audits this variant again, whole.
+    assert not store.audit_path(v).is_file()
+    assert any("audit stopped" in note for note in forge.notes)

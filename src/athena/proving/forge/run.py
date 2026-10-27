@@ -14,7 +14,7 @@ from typing import Any
 
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget
 from athena.proving.forge import report as reporting
-from athena.proving.forge.audit import audit_items, rescore_corrected, run_audit
+from athena.proving.forge.audit import audit_items, purse_cut, rescore_corrected, run_audit
 from athena.proving.forge.base import Base, instrument, load_base, materialize
 from athena.proving.forge.forge import forge_one
 from athena.proving.forge.pick import Picks, pick_detail
@@ -168,6 +168,12 @@ class Forge:
             report = ForgeDir.read(self.store.bench_path(v))
             items = audit_items(v.truth, report)
             run_audit(self.caller, client, base, v.world, items)
+            if purse_cut(items):
+                # Not written, so a resumed stage audits this variant again, whole.
+                self.notes.append(
+                    f"audit stopped: Claude purse spent {announce(done + made, len(todo))}"
+                )
+                break
             try:
                 book = materialize(base, v.world, v.truth, self.store.work / f"{v.playbook}-v{v.k}")
                 fixed = rescore_corrected(book, report, items)
