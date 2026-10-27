@@ -10,7 +10,7 @@
  * chunk, so the first frame carries none; it starts the poller (`stores/due-poll.ts`) when it
  * mounts, and the review's view is fetched only when a line is first pressed.
  */
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useId } from "react";
 
 import Button from "@/components/Button";
 import type { Path } from "@/depth/model";
@@ -26,6 +26,7 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
   // The poller lives with the one view that draws what it finds, so the console root starts nothing
   // more and the first frame carries neither.
   useEffect(() => startDue(), []);
+  const panel = useId();
   const { notice, more, dock, shown, dismiss, review, prepare, skip, pause, later } = useDue();
   // Drawn means seen: a hidden window has drawn nothing a person can read, so the stamp waits for
   // the window to be shown (ADR 0131, decision 8).
@@ -63,7 +64,7 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
       }}
     >
       {open ? (
-        <section className="due-notice__panel" aria-label={`${notice.title}: the review`}>
+        <section id={panel} className="due-notice__panel" aria-label={`${notice.title}: the review`}>
           {dock.kind === "reading" ? reading : null}
           {dock.kind === "failed" ? (
             <p className="due-notice__said" role="status">
@@ -89,6 +90,7 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
         type="button"
         className="due-notice__line focus-ring"
         aria-expanded={open}
+        aria-controls={open ? panel : undefined}
         onClick={() => (open ? close() : review())}
       >
         {`${line}${queued}`}

@@ -331,6 +331,15 @@ describe("the dock's notice, held to its own words", { timeout: 15_000 }, () => 
     expect(line()?.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("the line names the review it opens, so a reader can follow it there", async () => {
+    await mount([notice("a")]);
+    expect(line()?.hasAttribute("aria-controls")).toBe(false);
+    await press(line());
+    const id = line()?.getAttribute("aria-controls");
+    expect(id).toBeTruthy();
+    expect(host.querySelector(".due-notice__panel")?.id).toBe(id);
+  });
+
   it("an answer the daemon refused is said beside the review, which stays on show to be answered again", async () => {
     await mount([notice("a")]);
     await press(line());
