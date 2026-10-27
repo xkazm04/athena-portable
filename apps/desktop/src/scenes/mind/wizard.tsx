@@ -88,6 +88,12 @@ export interface Answered {
   choice: "approve" | "decline";
 }
 
+/** Whether an answer let the device in: approved, and the daemon did not refuse it. The Done
+ * step's title and its body both read this, so they cannot say two different things. */
+export function letIn(answered: Answered, errors: Readonly<Record<string, string>>): boolean {
+  return answered.choice === "approve" && !errors[answered.pairingId];
+}
+
 /** Which way a computer pairs: this one shows a code, or this one types the other's. */
 export type PcBranch = "show" | "join" | null;
 
@@ -345,7 +351,7 @@ export default function Wizard({ model, kind, origin, spent, onAnswered, onClose
     step === "approve" && pending
       ? `${pending.name} wants to join`
       : step === "done" && answered
-        ? answered.choice === "approve"
+        ? letIn(answered, model.state.errors)
           ? `${answered.name} is in`
           : `${answered.name} was not let in`
         : step === "choose"
@@ -673,7 +679,7 @@ function Join({ model, onBack }: { model: DevicesModel; onBack: () => void }) {
 
 function Done({ model, kind, answered, onClose }: { model: DevicesModel; kind: DeviceKind; answered: Answered; onClose: () => void }) {
   const refused = model.state.errors[answered.pairingId];
-  const lettingIn = answered.choice === "approve" && !refused;
+  const lettingIn = letIn(answered, model.state.errors);
   const beaconOff = kind === "phone" && !model.state.view?.beacon.on;
   return (
     <div className="cwizard__done" data-in={lettingIn ? "1" : undefined}>

@@ -624,6 +624,18 @@ describe("driven", () => {
     expect(host.textContent).toContain("Kitchen phone is in");
   });
 
+  it("an approval the daemon refused, its request gone, is titled as not let in, as its body says", () => {
+    const base = withSpies(deviceFixtures["pairing-requested"]!);
+    show(base);
+    press(byLabel("Add a phone"));
+    press([...host.querySelectorAll("button")].find((b) => b.textContent === "Approve")!);
+    const refused = { ...base.state.errors, pair_0000000000c1: "The request ran out before it was answered." };
+    show({ ...base, state: { ...base.state, errors: refused, view: { ...base.state.view!, pending: [] } } });
+    expect(host.querySelector('[role="dialog"]')!.getAttribute("data-step")).toBe("done");
+    expect(host.textContent).toContain("Nothing was let in.");
+    expect(host.querySelector("#cwizard-title")!.textContent).toBe("Kitchen phone was not let in");
+  });
+
   it("a node opens its drawer and a second press closes it", () => {
     show(withSpies(deviceFixtures.typical!));
     press(byLabel("Laptop"));
