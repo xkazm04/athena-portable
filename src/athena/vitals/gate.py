@@ -169,16 +169,19 @@ class Gate:
         self._refresh_slow()
         with self._lock:
             self._reading = reading
+            # An unknown figure holds nothing (``_held`` reads it as open), but it is not a reading
+            # below the resume line either: the hold state is kept across it, so one probe gap
+            # inside a hold does not reopen the gate halfway down the hysteresis band.
             ram = reading.ram_pct
             if ram is None:
-                self._ram_held = False
+                pass
             elif ram >= RAM_HOLD_PCT:
                 self._ram_held = True
             elif ram < RAM_RESUME_PCT:
                 self._ram_held = False
             cpu = reading.cpu_pct
             if cpu is None:
-                self._cpu_high, self._cpu_held = 0, False
+                self._cpu_high = 0  # a gap breaks a run of high readings
             else:
                 self._cpu_high = self._cpu_high + 1 if cpu >= CPU_HOLD_PCT else 0
                 if self._cpu_high >= CPU_HOLD_SAMPLES:

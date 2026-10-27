@@ -173,6 +173,27 @@ def test_a_ram_hold_lifts_when_ram_becomes_unknown(gate: Gate) -> None:
     assert gate.held() is None
 
 
+def test_one_unknown_reading_does_not_erase_the_hysteresis(gate: Gate) -> None:
+    """Unknown holds nothing while it is unknown, but it is not a reading below the resume line:
+    a probe gap inside a hold must not reopen the gate at 88% RAM or 80% CPU (ADR 0143)."""
+    gate.observe(reading(ram_pct=95.0))
+    gate.observe(reading(ram_pct=None))
+    assert gate.held() is None, "an unknown figure holds nothing"
+    gate.observe(reading(ram_pct=88.0))
+    assert gate.held() == "Waiting for room: RAM is at 88% (resumes below 85%).", "still held"
+    gate.observe(reading(ram_pct=84.0))
+    assert gate.held() is None
+    for _ in range(3):
+        gate.observe(reading(cpu=95.0))
+    assert gate.held() is not None
+    gate.observe(reading(cpu=None))
+    assert gate.held() is None, "an unknown CPU holds nothing"
+    gate.observe(reading(cpu=80.0))
+    assert gate.held() == "Waiting for room: CPU is at 80% (resumes below 70%).", "still held"
+    gate.observe(reading(cpu=69.0))
+    assert gate.held() is None
+
+
 # -- slots and room -----------------------------------------------------------------------------
 
 
