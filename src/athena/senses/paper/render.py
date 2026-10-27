@@ -19,7 +19,11 @@ replaced with ``?``.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+import html
+import os
+import shutil
+import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -207,15 +211,90 @@ def render_item(item: MediaItem, world: Mapping[str, Any], senses_dir: Path) -> 
     return target
 
 
+#: Where a headless Chrome is looked for when ``ATHENA_CHROME`` names none and PATH has none.
+CHROME_ENV = "ATHENA_CHROME"
+CHROME_PATHS = (
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+)
+PNG_SIZE = (860, 1100)
+
+
+def find_chrome(environ: Mapping[str, str] | None = None) -> str | None:
+    """A Chromium to screenshot a sheet with, or ``None``: the PNG is then not written."""
+    env = environ if environ is not None else os.environ
+    named = env.get(CHROME_ENV, "").strip()
+    if named:
+        return named if Path(named).is_file() else None
+    for name in ("chrome", "google-chrome", "chromium", "msedge"):
+        found = shutil.which(name)
+        if found:
+            return found
+    return next((p for p in CHROME_PATHS if Path(p).is_file()), None)
+
+
+def sheet_html(lines: Sequence[tuple[str, str]]) -> str:
+    """The same lines as the PDF, as a page a browser prints to a picture."""
+    sizes = {"head": "24px;font-weight:bold", "bold": "15px;font-weight:bold", "text": "15px"}
+    body = "".join(
+        '<div style="height:12px"></div>'
+        if style == "gap"
+        else f'<p style="margin:4px 0;font-size:{sizes.get(style, "15px")}">{html.escape(text)}</p>'
+        for style, text in lines
+    )
+    return (
+        '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;'
+        f'background:#fff;font-family:Helvetica,Arial,sans-serif;padding:56px">{body}</body></html>'
+    )
+
+
+def render_png(
+    item: MediaItem,
+    world: Mapping[str, Any],
+    senses_dir: Path,
+    chrome: str,
+    run: Callable[..., Any] = subprocess.run,
+) -> Path:
+    """The sheet as a PNG beside its PDF (``sheet-X.png``): what an image reader is given."""
+    if item.kind != "paper" or not item.path:
+        raise RenderError(f"{item.id}: only a paper item with a path is rendered")
+    target = (senses_dir / item.path).with_suffix(".png")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    page = target.with_suffix(".html")
+    page.write_text(sheet_html(sheet_lines(item, world)), encoding="utf-8")
+    width, height = PNG_SIZE
+    run(
+        [
+            chrome,
+            "--headless=new",
+            "--disable-gpu",
+            "--hide-scrollbars",
+            f"--window-size={width},{height}",
+            f"--screenshot={target}",
+            page.resolve().as_uri(),
+        ],
+        capture_output=True,
+        timeout=60,
+        check=False,
+    )
+    page.unlink(missing_ok=True)
+    if not target.is_file():
+        raise RenderError(f"{item.id}: the browser wrote no PNG")
+    return target
+
+
 def render_all(root: Path) -> list[Path]:
-    """Every paper sheet of the chore at ``root``, rendered (``python -m athena.senses render``)."""
+    """Every paper sheet of the chore at ``root`` as a PDF, and as a PNG when a Chrome is found
+    (``python -m athena.senses render``)."""
     from athena.senses.build import _read, load_media
     from athena.senses.contract import SENSES_DIR
 
     media, _ = load_media(root)
     world = _read(root / "world.json")
-    return [
-        render_item(m, world, root / SENSES_DIR)
-        for m in media
-        if m.sense == "paper" and m.kind == "paper" and m.path
-    ]
+    sheets = [m for m in media if m.sense == "paper" and m.kind == "paper" and m.path]
+    out = [render_item(m, world, root / SENSES_DIR) for m in sheets]
+    chrome = find_chrome()
+    if chrome:
+        out += [render_png(m, world, root / SENSES_DIR, chrome) for m in sheets]
+    return out

@@ -150,14 +150,15 @@ def make_senses(fixtures_dir: Path, backends: Mapping[str, Backend]) -> Senses:
     """The roles one build runs. A role not named in ``backends`` is ``fixture``.
 
     ``claude`` is a Reader only (the CLI reads a rendered sheet with its own ``Read`` tool);
-    ``meta`` imports the Meta clients, which enforce the Standard-only guard themselves.
+    ``meta`` imports the Meta clients, which enforce the Standard-only guard themselves; ``muse`` is
+    a Reader only (Muse Spark through ``muse exec`` on the person's plan, Contributor mode off).
     """
     chosen: dict[str, Backend] = {
         role: backends.get(role, "fixture") for role in ("segmenter", "transcriber", "reader")
     }
     for role in ("segmenter", "transcriber"):
-        if chosen[role] == "claude":
-            raise ValueError(f"{role} has no claude backend; use fixture or meta")
+        if chosen[role] in ("claude", "muse"):
+            raise ValueError(f"{role} has no {chosen[role]} backend; use fixture or meta")
     segmenter: Any = FixtureSegmenter(fixtures_dir)
     transcriber: Any = FixtureTranscriber(fixtures_dir)
     reader: Any = FixtureReader(fixtures_dir)
@@ -174,6 +175,10 @@ def make_senses(fixtures_dir: Path, backends: Mapping[str, Backend]) -> Senses:
         from athena.senses.claude_reader import ClaudeReader
 
         reader = ClaudeReader(fallback=FixtureReader(fixtures_dir))
+    if chosen["reader"] == "muse":
+        from athena.senses.muse_reader import MuseReader
+
+        reader = MuseReader(fallback=FixtureReader(fixtures_dir))
     return Senses(segmenter=segmenter, transcriber=transcriber, reader=reader, backends=chosen)
 
 

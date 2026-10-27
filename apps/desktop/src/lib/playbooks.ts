@@ -584,6 +584,9 @@ export function parseEvidence(
   };
 }
 
+/** The backends that run Meta's own models: `athena.senses.contract.META_BACKENDS`. */
+const META_BACKENDS: ReadonlySet<string> = new Set(["meta", "muse"]);
+
 /** Python's truthiness, so the status rule reads a file exactly as the bench's `featured_status`. */
 const truthy = (v: unknown): boolean =>
   Array.isArray(v) ? v.length > 0 : isRaw(v) ? Object.keys(v).length > 0 : Boolean(v);
@@ -592,13 +595,14 @@ const truthy = (v: unknown): boolean =>
  * The status `senses/proofs.json` earns — the same rule as the bench's
  * `athena.senses.build.featured_status`, on the same truthiness: no file or no proofs is
  * `unproven`, a file that did not pass is `failing`, and a pass is `proven` only when a backend
- * ran on `meta`, `rehearsed` otherwise. Pure.
+ * ran on one of Meta's models (`meta`, the API, or `muse`, Muse Code on the plan), `rehearsed`
+ * otherwise. Pure.
  */
 export function featuredStatus(proofs: unknown): FeaturedStatus {
   if (!isRaw(proofs) || !truthy(proofs.proofs)) return "unproven";
   if (!truthy(proofs.passed)) return "failing";
   const backends = isRaw(proofs.backends) ? Object.values(proofs.backends) : [];
-  return backends.includes("meta") ? "proven" : "rehearsed";
+  return backends.some((b) => META_BACKENDS.has(String(b))) ? "proven" : "rehearsed";
 }
 
 /** `featured`, or `null` when it is absent; its status and count are read from `proofs`. */

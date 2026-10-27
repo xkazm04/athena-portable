@@ -36,6 +36,8 @@ describe("the status rule, as the bench's featured_status", () => {
   it("is proven when it passed and any backend ran on meta", () => {
     const file = { passed: true, backends: { segmenter: "fixture", reader: "meta" }, proofs: [proof(true)] };
     expect(featuredStatus(file)).toBe("proven");
+    const muse = { passed: true, backends: { segmenter: "fixture", reader: "muse" }, proofs: [proof(true)] };
+    expect(featuredStatus(muse)).toBe("proven");
   });
   it("is rehearsed when it passed on fixtures or Claude alone", () => {
     const file = { passed: true, backends: { segmenter: "fixture", transcriber: "claude" }, proofs: [proof(true)] };

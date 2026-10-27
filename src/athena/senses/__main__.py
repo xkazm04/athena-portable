@@ -60,7 +60,9 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "render":
                 from athena.senses.paper.render import render_all
 
-                print(f"{pid}: rendered {len(render_all(root))} sheets")
+                written = render_all(root)
+                pngs = sum(1 for p in written if p.suffix == ".png")
+                print(f"{pid}: rendered {len(written) - pngs} sheets, {pngs} as PNG")
             else:
                 print(f"{pid}: {featured_status(root)}")
         except (SenseError, NotImplementedError, OSError) as exc:

@@ -35,8 +35,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
-Backend = Literal["fixture", "claude", "meta"]
-BACKENDS: tuple[Backend, ...] = ("fixture", "claude", "meta")
+Backend = Literal["fixture", "claude", "meta", "muse"]
+BACKENDS: tuple[Backend, ...] = ("fixture", "claude", "meta", "muse")
+
+#: The backends that run one of Meta's own models: the API (``meta``) and Muse Code on the
+#: person's plan (``muse``, Reader only). A proof passed on either counts toward ``proven``.
+META_BACKENDS: frozenset[Backend] = frozenset({"meta", "muse"})
 
 #: Meta's two data-use modes (meta-model-facts.md "Data use"). Contributor trains on the content.
 Mode = Literal["standard", "contributor"]
@@ -247,7 +251,8 @@ class ProofResult:
 
 
 #: ``featured.status`` as the catalogue reports it (computed, never authored - ADR 0040):
-#: ``proven`` = every proof passed on a build whose segmenter, transcriber or reader was ``meta``;
+#: ``proven`` = every proof passed on a build where a role ran on Meta's models
+#: (:data:`META_BACKENDS`);
 #: ``rehearsed`` = every proof passed, but not on Meta yet; ``failing`` = a proof missed its bar;
 #: ``unproven`` = no proofs.json.
 FeaturedStatus = Literal["proven", "rehearsed", "failing", "unproven"]

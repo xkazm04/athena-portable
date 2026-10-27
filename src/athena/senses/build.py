@@ -25,6 +25,7 @@ from athena.senses.contract import (
     BACKENDS,
     FIXTURES_DIR,
     MEDIA_FILE,
+    META_BACKENDS,
     PROOFS_FILE,
     SENSED_FILE,
     SENSES,
@@ -186,4 +187,5 @@ def featured_status(root: Path) -> FeaturedStatus:
         return "unproven"
     if not proofs.get("passed"):
         return "failing"
-    return "proven" if "meta" in dict(proofs.get("backends", {})).values() else "rehearsed"
+    used = set(dict(proofs.get("backends", {})).values())
+    return "proven" if used & META_BACKENDS else "rehearsed"

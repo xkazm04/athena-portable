@@ -97,8 +97,9 @@ def test_a_sheet_without_a_source_prints_its_lines(tmp_path: Path) -> None:
 
 
 def test_the_cli_renders_every_sheet_of_a_chore(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setenv("ATHENA_CHROME", str(tmp_path / "no-chrome.exe"))
     root = tmp_path / "chore"
     (root / "senses").mkdir(parents=True)
     (root / "world.json").write_text(json.dumps(WORLD), encoding="utf-8")
@@ -117,5 +118,30 @@ def test_the_cli_renders_every_sheet_of_a_chore(
     }
     (root / "senses" / "media.json").write_text(json.dumps(media), encoding="utf-8")
     assert main(["render", "chore", "--library", str(tmp_path)]) == 0
-    assert "rendered 1 sheets" in capsys.readouterr().out
+    assert "rendered 1 sheets, 0 as PNG" in capsys.readouterr().out
     assert (root / "senses" / "render" / "sheet-B-2.pdf").is_file()
+
+
+def test_a_png_is_the_same_lines_screenshotted_beside_the_pdf(tmp_path: Path) -> None:
+    from athena.senses.contract import MediaItem
+    from athena.senses.paper.render import render_png
+
+    item = MediaItem(
+        id="s",
+        kind="paper",
+        sense="paper",
+        path="render/sheet-S.pdf",
+        params={"letterhead": "Riverside <General>", "fields": []},
+    )
+    seen: list[list[str]] = []
+
+    def run(argv: list[str], **kw: object) -> None:
+        seen.append(argv)
+        page = Path(argv[-1].removeprefix("file:///"))
+        assert "Riverside &lt;General&gt;" in page.read_text(encoding="utf-8")
+        Path(argv[-2].removeprefix("--screenshot=")).write_bytes(b"PNG")
+
+    out = render_png(item, {}, tmp_path, "chrome", run=run)
+    assert out == tmp_path / "render" / "sheet-S.png" and out.is_file()
+    assert seen[0][0] == "chrome" and "--headless=new" in seen[0]
+    assert not out.with_suffix(".html").exists()
