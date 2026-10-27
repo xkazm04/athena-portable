@@ -1177,6 +1177,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - fix(adopt): a case file keeps its latest 20 receipts and moves older ones, whole, to an append-only `goals/<proj>.runs.txt`; the runs route and the file's own "Your runs" say `(showing N of M)` over the whole history; ADR 0233 (scan-sweep Lane C, owner-approved).
 - `fix(run): a refused tab read tells the person no tool name, while the model's error keeps them.` `tabReadRefusal` carries a `said` line for the refusals that named `tabs_read` / `page_read`; the rail's "not read:" line uses it (`stores/run.ts`).
 - `fix(mind): the RAM bar turns to the warning hue at the gate's hold line (92%), not the 85% slot line.` Stabilize Lane B: between 85% and 92% a computer is "tight" (no further task fits) but the gate holds nothing, yet the drawer's bar was already warning; it now follows `RAM_HOLD_PCT`, and the comment names the two lines apart.
+- `fix(mind): the sky's legend keys every line style it draws, and only those.` Stabilize Lane B: it named three (online, asleep, out of reach) while the sky also draws the plain hairline of a phone or an unchecked PC, a waiting request's pulsing dots and this PC's own dotted ask; the legend is built from the link states present, so a phone's plain line has a key.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

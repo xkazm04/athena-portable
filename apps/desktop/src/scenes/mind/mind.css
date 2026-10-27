@@ -576,6 +576,19 @@
   border-top-style: dashed;
   border-top-color: var(--status-warning);
 }
+.sky__legend li[data-state="none"]::before {
+  border-top-color: var(--border-emphasis);
+}
+.sky__legend li[data-state="pending"]::before,
+.sky__legend li[data-state="joining"]::before {
+  border-top-style: dotted;
+}
+.sky__legend li[data-state="pending"]::before {
+  border-top-color: var(--status-pending);
+}
+.sky__legend li[data-state="joining"]::before {
+  border-top-color: var(--primary);
+}
 /* A narrow stage keeps the drawing and the names; how each stands moves to its drawer and the list. */
 @container (max-width: 560px) {
   .sky__legend,

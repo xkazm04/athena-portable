@@ -209,6 +209,16 @@ function Link({ to, state }: { to: Spot; state: string }) {
   );
 }
 
+/** The key to the sky's lines, in the order they are met: only the styles drawn on this sky are shown. */
+const LEGEND: readonly { state: string; word: string }[] = [
+  { state: "online", word: "online" },
+  { state: "asleep", word: "asleep" },
+  { state: "unreachable", word: "out of reach" },
+  { state: "none", word: "phone, or not checked yet" },
+  { state: "pending", word: "wants to join" },
+  { state: "joining", word: "asked to join" },
+];
+
 function linkState(node: SkyNode): string {
   if (node.role === "peer") return presenceOf(node.peer);
   return node.role;
@@ -369,13 +379,15 @@ export default function Constellation({ model, selected, onSelect, onAdd, dim, a
           );
         })}
       </div>
-      {nodes.some((n) => n.role === "peer") ? (
+      {lonely ? null : (
         <ul className="sky__legend" aria-hidden="true">
-          <li data-state="online">online</li>
-          <li data-state="asleep">asleep</li>
-          <li data-state="unreachable">out of reach</li>
+          {LEGEND.filter((entry) => nodes.some((n) => linkState(n) === entry.state)).map((entry) => (
+            <li key={entry.state} data-state={entry.state}>
+              {entry.word}
+            </li>
+          ))}
         </ul>
-      ) : null}
+      )}
     </div>
   );
 }

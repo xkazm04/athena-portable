@@ -109,6 +109,21 @@ describe("the constellation", () => {
     expect(h).toContain("sky__legend");
   });
 
+  it("keys every line style the sky draws, and only those", () => {
+    let withPending = 0;
+    for (const id of Object.keys(deviceFixtures)) {
+      const h = html(id);
+      const drawn = new Set([...h.matchAll(/class="sky__link" data-state="([a-z_]+)"/g)].map((m) => m[1]));
+      const keyed = new Set([...h.matchAll(/<li data-state="([a-z_]+)">/g)].map((m) => m[1]));
+      expect(keyed, id).toEqual(drawn);
+      if (drawn.has("pending") || drawn.has("joining")) withPending += 1;
+    }
+    // The typical sky (a phone, which is never probed, beside the three presences) names all four.
+    const typical = html("typical");
+    for (const state of ["online", "asleep", "unreachable", "none"]) expect(typical, state).toContain(`<li data-state="${state}">`);
+    expect(withPending).toBeGreaterThan(0);
+  });
+
   it("says the private network's state at the centre, in plain words", () => {
     expect(html("empty")).toContain("network not set up");
     expect(html("signed-out")).toContain("network signed out");
