@@ -15,7 +15,7 @@ fixtures where SAM, Voice Transcribe or Spark reading would be (ADRs 0226-0231).
 | 00 | - (`src/athena/senses/`, `src/athena/harness/meta/`) | - | contract, guard, prices, probe tests | - | - |
 | 01 | `paper-flip-through` | `sheets`, `sheet_fields` | F1 F2 F2x F3 R2 R3 pass | rehearsed | exceeds: 9/9 ($3,107), 0 false, $1.96 |
 | 02 | `prior-auth-denial-appeal` | + `call_turns`, `call_log` | F1 F1k F3 F3x F4 R4 pass | rehearsed | short: 2/3, missed LT-1 (the hold letter), 0 false, $1.49 |
-| 03 | `roll-call-inventory` | `inventory`, `inventory_asked` | F1 F1x F3 F4 R2 pass | rehearsed | exceeds: 20/20 ($17,885), 0 false, $2.54 |
+| 03 (descoped 2026-10-27) | `roll-call-inventory` | `inventory`, `inventory_asked` | F1 F1x F3 F4 R2 pass | rehearsed | exceeds: 20/20 ($17,885), 0 false, $2.54 |
 | 04 | `renovation-witness` | `walk_counts`, `walk_promises`, `change_checks` | F2 F2d F3 F4 pass | rehearsed | short: 7/9, 2 false claims, missed CO-02 refusal and 1043-7, $0.82 |
 | 05 | `care-circle` | `counter_meds`, `circle_tasks`, `signer_rules` (+ paper) | F1 F1x F3 F3a F3x F4 pass | rehearsed | exceeds: 6/6, 0 false, $1.42 |
 
@@ -26,6 +26,9 @@ against `senses/key.json` into `senses/proofs.json`; the Chores scene's featured
 computed status (`proven` needs a role on `meta`). Bench results are in each chore's `bench.json`.
 Not measured anywhere yet: every V* proof (Character onboarding and rehearsal through
 `proving/chores_uat`), R1-style cross-person variance, the sense Gauntlet, and anything on Meta.
+
+**Descoped 2026-10-27 (owner):** spike 03 `roll-call-inventory` leaves the featured program - it
+stays an ordinary chore with its object sense; the other four move on.
 
 ## Engines compared (2026-10-27, one run each, `--no-write`)
 

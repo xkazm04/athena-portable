@@ -118,10 +118,5 @@
       "what you already submitted"
     ],
     "costs": "No fees from Athena; only your Claude usage and the photo scan's model calls. Public adjusters usually keep a share of the claim."
-  },
-  "featured": {
-    "senses": ["object"],
-    "spike": "03-roll-call",
-    "since": "2026-10-26"
   }
 }
