@@ -34,7 +34,7 @@ import Button from "@/components/Button";
 import Facts, { Fact } from "@/components/Facts";
 import FormField, { TextInput } from "@/components/FormField";
 import type { Tone } from "@/components/StatusDot";
-import { overlayWords, type DeviceKind, type DevicesView, type JoinView, type OverlayState, type PeerView, type PendingView, type Presence } from "@/lib/fleet";
+import { overlayWords, type DeviceKind, type DevicesView, type JoinView, type LinkState, type OverlayState, type PeerView, type PendingView, type Presence } from "@/lib/fleet";
 import { clockOf, whenAgo } from "@/lib/time";
 import type { Conversation } from "@/stores/devices";
 
@@ -108,15 +108,43 @@ export const SELF = "self";
 /** How often an open computer's figures are read again: the presence probe's hello beat. */
 export const VITALS_REREAD_MS = 30_000;
 
-/** How a presence reads: one word, its hue, and the line's state. `null` is "not checked yet". */
-const PRESENCE: Readonly<Record<Presence | "none", { word: string; tone: Tone }>> = {
+/**
+ * How a peer stands: a presence, or what the link state says where a presence cannot (ADR 0140
+ * "Link state"): the other side removed this device, no key has arrived, the last hello is too old.
+ * `none` is "not checked yet", and a phone's.
+ */
+type Standing = Presence | "none" | "removed" | "keyless" | "stale";
+
+/** How a standing reads: one word, its hue, and, where there is a mend or a caveat, the sentence. */
+const STANDING: Readonly<Record<Standing, { word: string; tone: Tone; note?: string }>> = {
   online: { word: "Online", tone: "success" },
   asleep: { word: "Asleep", tone: "neutral" },
   unreachable: { word: "Out of reach", tone: "warning" },
   none: { word: "Not checked yet", tone: "neutral" },
+  removed: {
+    word: "Removed there",
+    tone: "error",
+    note: "That computer no longer lists this one. Revoke it here, then pair it again.",
+  },
+  keyless: {
+    word: "Waiting for its key",
+    tone: "warning",
+    note: "No key has arrived from it yet. If this stays, revoke it and pair it again.",
+  },
+  stale: { word: "Not heard lately", tone: "neutral", note: "It has not answered for a few minutes; this is its last known state." },
 };
 
-const presenceOf = (peer: PeerView): Presence | "none" => peer.presence ?? "none";
+/** The link states that outrank a presence, by the standing they draw. */
+const LINK_STANDING: Readonly<Partial<Record<LinkState, Standing>>> = {
+  removed_there: "removed",
+  awaiting_key: "keyless",
+  stale: "stale",
+};
+
+const standingOf = (peer: PeerView): Standing => {
+  const state = peer.link?.state;
+  return (state && LINK_STANDING[state]) || peer.presence || "none";
+};
 
 const OVERLAY_TONE: Readonly<Record<OverlayState, Tone>> = {
   absent: "warning",
@@ -127,14 +155,20 @@ const OVERLAY_TONE: Readonly<Record<OverlayState, Tone>> = {
 /** The node's caption: how it stands, in a few words. A phone is never probed, so it says when it was seen. */
 export function presenceCaption(peer: PeerView, now: number): string {
   const seen = peer.last_seen ? `seen ${whenAgo(peer.last_seen, now)}` : "not seen yet";
-  switch (peer.presence ?? null) {
+  switch (standingOf(peer)) {
     case "online":
       return "Online";
     case "asleep":
       return `Asleep · ${seen}`;
     case "unreachable":
       return `Out of reach · ${seen}`;
-    case null:
+    case "removed":
+      return `Removed there · ${seen}`;
+    case "keyless":
+      return "Waiting for its key";
+    case "stale":
+      return `Not heard lately · ${seen}`;
+    case "none":
       return seen.charAt(0).toUpperCase() + seen.slice(1);
   }
 }
@@ -190,7 +224,7 @@ export function DeviceGlyph({ kind }: { kind: DeviceKind }) {
 /** The line from the centre to one node, in the node's state. A broken line has a gap at its middle. */
 function Link({ to, state }: { to: Spot; state: string }) {
   const { cx, cy } = SKY;
-  if (state === "unreachable") {
+  if (state === "unreachable" || state === "removed") {
     const at = (t: number) => ({ x: Math.round(cx + (to.x - cx) * t), y: Math.round(cy + (to.y - cy) * t) });
     const a = at(0.44);
     const b = at(0.56);
@@ -214,13 +248,16 @@ const LEGEND: readonly { state: string; word: string }[] = [
   { state: "online", word: "online" },
   { state: "asleep", word: "asleep" },
   { state: "unreachable", word: "out of reach" },
+  { state: "stale", word: "not heard lately" },
+  { state: "keyless", word: "waiting for its key" },
+  { state: "removed", word: "removed there" },
   { state: "none", word: "phone, or not checked yet" },
   { state: "pending", word: "wants to join" },
   { state: "joining", word: "asked to join" },
 ];
 
 function linkState(node: SkyNode): string {
-  if (node.role === "peer") return presenceOf(node.peer);
+  if (node.role === "peer") return standingOf(node.peer);
   return node.role;
 }
 
@@ -322,7 +359,7 @@ export default function Constellation({ model, selected, onSelect, onAdd, dim, a
                 key={node.key}
                 {...common}
                 className="cnode--peer"
-                attrs={{ "data-presence": presenceOf(node.peer), "data-kind": node.peer.kind }}
+                attrs={{ "data-presence": standingOf(node.peer), "data-kind": node.peer.kind }}
                 disc={<DeviceGlyph kind={node.peer.kind} />}
                 name={node.peer.name}
                 caption={withRoom(presenceCaption(node.peer, model.now), node.peer.vitals)}
@@ -596,7 +633,7 @@ function ThisComputer({ model }: { model: DevicesModel }) {
 }
 
 function PeerDetails({ model, peer }: { model: DevicesModel; peer: PeerView }) {
-  const presence = PRESENCE[presenceOf(peer)];
+  const presence = STANDING[standingOf(peer)];
   return (
     <div className="cdrawer__body">
       <Facts>
@@ -604,6 +641,7 @@ function PeerDetails({ model, peer }: { model: DevicesModel; peer: PeerView }) {
         <Fact label="Now">
           <Badge tone={presence.tone}>{peer.kind === "phone" && !peer.presence ? "Not probed (a phone)" : presence.word}</Badge>
           {peer.presence_at ? <span className="typo-caption">{` changed ${whenAgo(peer.presence_at, model.now)}`}</span> : null}
+          {presence.note ? <span className="typo-caption">{presence.note}</span> : null}
         </Fact>
         <Fact label="Last seen">{peer.last_seen ? whenAgo(peer.last_seen, model.now) : "never"}</Fact>
         <Fact label="May">{peer.grants.length ? peer.grants.map((g) => GRANT_WORDS[g]).join(", ") : "-"}</Fact>

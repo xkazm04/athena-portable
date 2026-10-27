@@ -124,6 +124,36 @@ describe("the constellation", () => {
     expect(withPending).toBeGreaterThan(0);
   });
 
+  it("tells a peer the other side removed, one with no key yet, and a stale one from a peer not probed yet (ADR 0140)", () => {
+    const h = html("links");
+    for (const standing of ["removed", "keyless", "stale", "none"]) {
+      expect(count(h, `data-presence="${standing}"`), standing).toBe(1);
+      expect(h, standing).toContain(`<li data-state="${standing}">`);
+    }
+    expect(h).toContain("Removed there · seen 3 h ago");
+    expect(h).toContain("Waiting for its key");
+    expect(h).toContain("Not heard lately · seen 3 h ago");
+    expect(h).toContain("Old desk, computer, removed there");
+    expect(h).toContain("Old desk: computer, removed there");
+    // The plain one keeps the plain caption: no link verdict, no presence.
+    expect(h).toContain('<span class="cnode__caption">Seen 3 h ago</span>');
+  });
+
+  it("the drawer's Now fact names the mend for each", () => {
+    const removed = (id: string) => {
+      const h = html("links", { selected: `dev_0000000000${id}` });
+      return h.slice(h.indexOf('class="cdrawer"'));
+    };
+    expect(removed("a6")).toContain("Removed there");
+    expect(removed("a6")).toContain("That computer no longer lists this one. Revoke it here, then pair it again.");
+    expect(removed("a7")).toContain("Waiting for its key");
+    expect(removed("a7")).toContain("No key has arrived from it yet. If this stays, revoke it and pair it again.");
+    expect(removed("a8")).toContain("Not heard lately");
+    expect(removed("a8")).toContain("It has not answered for a few minutes; this is its last known state.");
+    expect(removed("a9")).toContain("Not checked yet");
+    expect(removed("a9")).not.toContain("Revoke it here, then pair it again");
+  });
+
   it("says the private network's state at the centre, in plain words", () => {
     expect(html("empty")).toContain("network not set up");
     expect(html("signed-out")).toContain("network signed out");

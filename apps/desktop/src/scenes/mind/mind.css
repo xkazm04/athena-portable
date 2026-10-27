@@ -351,6 +351,19 @@
   stroke: color-mix(in srgb, var(--status-warning) 60%, transparent);
   stroke-dasharray: 5 7;
 }
+.sky__link[data-state="stale"] line {
+  stroke: var(--border-default);
+  stroke-dasharray: 2 5;
+}
+.sky__link[data-state="keyless"] line {
+  stroke: color-mix(in srgb, var(--status-warning) 60%, transparent);
+  stroke-dasharray: 1 6;
+  stroke-width: 2;
+}
+.sky__link[data-state="removed"] line {
+  stroke: color-mix(in srgb, var(--status-error) 70%, transparent);
+  stroke-dasharray: 5 7;
+}
 .sky__link[data-state="pending"] line {
   stroke: var(--status-pending);
   stroke-dasharray: 1 6;
@@ -576,9 +589,20 @@
   border-top-style: dashed;
   border-top-color: var(--status-warning);
 }
+.sky__legend li[data-state="stale"]::before {
+  border-top-style: dashed;
+}
+.sky__legend li[data-state="keyless"]::before {
+  border-top-color: var(--status-warning);
+}
+.sky__legend li[data-state="removed"]::before {
+  border-top-style: dashed;
+  border-top-color: var(--status-error);
+}
 .sky__legend li[data-state="none"]::before {
   border-top-color: var(--border-emphasis);
 }
+.sky__legend li[data-state="keyless"]::before,
 .sky__legend li[data-state="pending"]::before,
 .sky__legend li[data-state="joining"]::before {
   border-top-style: dotted;

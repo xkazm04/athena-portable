@@ -288,6 +288,33 @@ export const deviceFixtures: Record<string, DevicesModel> = {
       ],
     },
   ),
+  /** Four computers with no presence verdict to read, and the link state that says why (ADR 0140). */
+  links: devicesModel(
+    {},
+    {
+      peers: (
+        [
+          ["a6", "Old desk", { state: "removed_there", since: "2026-10-24T10:00:00Z" }, null],
+          ["a7", "New laptop", { state: "awaiting_key", since: "2026-10-24T11:30:00Z" }, null],
+          ["a8", "Back office", { state: "stale", since: "2026-10-24T11:50:00Z" }, "online"],
+          ["a9", "Garage PC", { state: null, since: null }, null],
+        ] as const
+      ).map(([id, name, link, presence]) => ({
+        peer_id: `dev_0000000000${id}`,
+        name,
+        kind: "pc" as const,
+        grants: ["chat" as const],
+        created: "2026-10-23T09:00:00Z",
+        expires: null,
+        last_seen: "2026-10-24T09:00:00Z",
+        memory: null,
+        presence,
+        presence_at: null,
+        vitals: null,
+        link: { ...link, evidence: {} },
+      })),
+    },
+  ),
   /** The phone wizard's Scan step: a window this person opened, two minutes into its five. */
   "pairing-phone": devicesModel({ opened: { phone: PHONE_WINDOW } }, { listener: LISTENING }),
   /** The same window, run out. */

@@ -50,6 +50,21 @@ export interface PeerView {
   /** The peer's last vitals off its hello (device-vitals, ADR 0143): `null` for a phone, before the
    * first hello, or when older than 90 s. Optional only because an older daemon sends none. */
   vitals?: Vitals | null;
+  /** How the link to this device stands (ADR 0140 "Link state", `peer/link.py`): what the probe saw,
+   * which says more than `presence` when there is none to read (the other side removed this
+   * device, no key arrived yet, the last hello is too old). Optional only because an older
+   * daemon sends none. */
+  link?: PeerLink | null;
+}
+
+/** The states `peer/link.py` derives. `state` is `null` until there is anything to say. */
+export type LinkState = "phone" | "awaiting_key" | "online" | "stale" | "asleep" | "unreachable" | "removed_there";
+
+/** `link.derive()`: the state, since when, and the facts behind it. */
+export interface PeerLink {
+  state: LinkState | null;
+  since: string | null;
+  evidence: Record<string, unknown>;
 }
 
 /** Online: an authorized hello answered. Asleep: the overlay sees the device, Athena there does not
