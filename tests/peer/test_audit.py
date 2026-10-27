@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.peer import audit as audit_module
+from athena.peer import listener as listener_module
 from athena.peer.audit import AUDIT_FILENAME, COALESCE_S, AuditLog
 from athena.peer.pairing import WINDOW_TTL_S
 
@@ -126,7 +127,10 @@ def test_every_trust_change_and_refusal_writes_exactly_one_row_and_no_secret(
         assert secret not in on_disk, "an audit row carried a secret"
 
 
-def test_a_flood_of_the_same_refusal_is_one_row_and_a_count(device: Device, clock: Clock) -> None:
+def test_a_flood_of_the_same_refusal_is_one_row_and_a_count(
+    device: Device, clock: Clock, monkeypatch: Any
+) -> None:
+    monkeypatch.setattr(listener_module, "REFUSAL_DELAY_S", 0.0)  # this is about rows, not time
     _window(device)
     for _ in range(30):
         assert device.peer("/peer/hello").status == 401

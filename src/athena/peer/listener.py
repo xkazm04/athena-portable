@@ -85,9 +85,11 @@ from athena.peer.registry import PeerRegistry, PeerRow
 
 __all__ = [
     "DEFAULT_PEER_PORT",
+    "DELAYED_REFUSALS",
     "MAX_PEER_BODY_BYTES",
     "OVERLAY_TTL_S",
     "REFUSAL",
+    "REFUSAL_DELAY_S",
     "TICK_S",
     "Join",
     "PeerHost",
@@ -107,6 +109,24 @@ TICK_S = 2.0
 OVERLAY_TTL_S = 30.0
 #: The whole answer to a connection from a refused address. Fixed bytes, no body, then close.
 REFUSAL = b"HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+
+#: Every answer to a failed credential on the pre-trust surface takes at least this long, measured
+#: from the request's arrival (the device-pairing standard's "fixed-delay refusal"): wrong and
+#: unknown alike, so online guessing is throttled without lockout state and a refusal's speed says
+#: nothing about which door it was. A handler thread is held for the wait, which is why it is a
+#: fraction of a second and not more.
+REFUSAL_DELAY_S = 0.25
+#: The peer error words that wait :data:`REFUSAL_DELAY_S` before they are sent.
+DELAYED_REFUSALS = frozenset(
+    {
+        "unauthorized",
+        "wrong_code",
+        "wrong_nonce",
+        "wrong_secret",
+        "window_taken",
+        "pairing_unknown",
+    }
+)
 
 #: A peer error word, and the member of ``ERROR_REASONS`` it collapses onto in ``reason``.
 PEER_REASONS: dict[str, str] = {
@@ -287,11 +307,19 @@ def build_peer_handler(host: PeerHost) -> type[BaseHTTPRequestHandler]:
         def do_DELETE(self) -> None:
             self._dispatch("DELETE")
 
-        def _unauthorized(self, path: str) -> None:
+        def _hold(self, began: float) -> None:
+            """Wait out what is left of :data:`REFUSAL_DELAY_S`; a closing host does not wait."""
+            left = REFUSAL_DELAY_S - (time.monotonic() - began)
+            if left > 0:
+                host.wait(left)
+
+        def _unauthorized(self, path: str, began: float) -> None:
             host.audit.refusal("unauthorized", address=str(self.client_address[0]), path=path)
+            self._hold(began)
             self._send(*peer_error(401, "unauthorized", "a peer token is required"))
 
         def _dispatch(self, method: str) -> None:
+            began = time.monotonic()
             origin = self.headers.get("Origin") or ""
             if origin and origin not in host.own_origins():
                 # Browsers name their page honestly; a page on any other site is not a peer.
@@ -302,14 +330,14 @@ def build_peer_handler(host: PeerHost) -> type[BaseHTTPRequestHandler]:
             row = host.registry.authenticate(self._bearer())
             if route is None:
                 if row is None:
-                    self._unauthorized(url.path)
+                    self._unauthorized(url.path, began)
                 else:
                     status = 405 if host.routes.knows(url.path) else 404
                     self._send(*peer_error(status, "not_found", f"no {method} {url.path}"))
                 return
             if not isinstance(route, PeerRoute) or not route.open:
                 if row is None:
-                    self._unauthorized(url.path)
+                    self._unauthorized(url.path, began)
                     return
                 grant = route.grant if isinstance(route, PeerRoute) else None
                 if grant is not None and grant not in row.grants:
@@ -336,6 +364,8 @@ def build_peer_handler(host: PeerHost) -> type[BaseHTTPRequestHandler]:
                 _log(f"{method} {url.path} raised {type(exc).__name__}")
                 self._send(*peer_error(500, "unknown", type(exc).__name__))
                 return
+            if isinstance(answer, tuple) and answer[1].get("error") in DELAYED_REFUSALS:
+                self._hold(began)
             if isinstance(answer, BinaryReply):
                 self._send_bytes(answer)
             elif isinstance(answer, EventStream):
@@ -444,6 +474,10 @@ class PeerHost:
 
     def now(self) -> datetime:
         return self._now()
+
+    def wait(self, seconds: float) -> None:
+        """Sleep ``seconds``, or until :meth:`close`, whichever is first."""
+        self._stop.wait(seconds)
 
     # -- the overlay and the socket ------------------------------------------------------------
 
