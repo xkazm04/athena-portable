@@ -4,7 +4,7 @@
  * on the back ("Read it first"), and one beat when it is signed. Nothing runs until the person signs;
  * the buttons answer, the gate decides (README section 3.3).
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { ContractDrift } from "@/lib/contract";
 import type { ConnectorLine } from "@/modules/connectors/model";
@@ -258,9 +258,9 @@ function Speak({ model, off }: { model: CompanionModel; off: boolean }) {
   );
 }
 
-function Face({ cls, head, body, actions }: { cls: string; head: ReactNode; body: ReactNode; actions: ReactNode }) {
+function Face({ cls, head, body, actions, away }: { cls: string; head: ReactNode; body: ReactNode; actions: ReactNode; away?: boolean }) {
   return (
-    <div className={`sl-face ${cls}`}>
+    <div className={`sl-face ${cls}`} aria-hidden={away || undefined} inert={away || undefined}>
       <div className="sl-head">{head}</div>
       <div className="sl-body fades" onScroll={fadeOnScroll}>
         {body}
@@ -274,6 +274,19 @@ function Face({ cls, head, body, actions }: { cls: string; head: ReactNode; body
 export function Slip({ model }: { model: CompanionModel }) {
   const card = model.cards[0];
   const [flipped, setFlipped] = useState<string | null>(null);
+  const article = useRef<HTMLElement>(null);
+  const wasBack = useRef(false);
+  const turned = !!card && flipped === card.id;
+  // Focus follows the face the person sees: to the back's way home when it turns up, to "Read it
+  // first" when it turns down (unless focus already went somewhere else on the page).
+  useEffect(() => {
+    if (wasBack.current === turned) return;
+    wasBack.current = turned;
+    const node = article.current;
+    if (!node) return;
+    if (turned) node.querySelector<HTMLElement>('[data-act="front"]')?.focus({ preventScroll: true });
+    else if (document.activeElement === document.body || node.contains(document.activeElement)) node.querySelector<HTMLElement>('[data-act="read"]')?.focus({ preventScroll: true });
+  }, [turned]);
   if (!card) return <p className="sl-effect sl-none">Nothing is waiting on you.</p>;
   const { actions, decision } = model;
   const n = model.cards.length;
@@ -294,6 +307,7 @@ export function Slip({ model }: { model: CompanionModel }) {
         <i />
       </div>
       <article
+        ref={article}
         className={`sl-card decision${back ? " flipped" : ""}`}
         aria-label={`A decision is waiting on you: ${sheet ? `${sheet.rows.length} requests in ${sheet.app}` : card.words.title}`}
         data-card={sheet ? undefined : card.id}
@@ -303,6 +317,7 @@ export function Slip({ model }: { model: CompanionModel }) {
       >
         <Face
           cls="sl-front"
+          away={back}
           head={
             <>
               <div className="sl-toprow">

@@ -85,3 +85,20 @@ test("while the next card's capture is read, the last card's picture is not show
   expect(host.querySelector("img")?.getAttribute("src")).toBe("data:image/png;base64,BBBB");
   expect(host.textContent).toContain("page capture cap_b");
 });
+
+test("flipping a decision card moves focus to the face turned toward the person, and back (a11y)", () => {
+  show(fixtures.slip());
+  const press = (act_: string) => act(() => host.querySelector<HTMLButtonElement>(`[data-act="${act_}"]`)!.click());
+  const front = () => host.querySelector(".sl-front")!;
+  const back = () => host.querySelector(".sl-back")!;
+  host.querySelector<HTMLButtonElement>('[data-act="read"]')!.focus();
+  press("read");
+  expect(document.activeElement?.getAttribute("data-act")).toBe("front");
+  expect(front().hasAttribute("inert")).toBe(true);
+  expect(front().getAttribute("aria-hidden")).toBe("true");
+  expect(back().hasAttribute("inert")).toBe(false);
+  press("front");
+  expect(document.activeElement?.getAttribute("data-act")).toBe("read");
+  expect(front().hasAttribute("inert")).toBe(false);
+  expect(back().hasAttribute("inert")).toBe(true);
+});
