@@ -31,6 +31,7 @@ platform's arithmetic is exercised on any OS; only the reader bodies touch the m
 from __future__ import annotations
 
 import ctypes
+import math
 import os
 import shutil
 import subprocess
@@ -228,9 +229,11 @@ def parse_vm_stat(memsize: str | None, vm_stat: str | None) -> Memory | None:
 
 def _number(text: str) -> float | None:
     try:
-        return float(text.strip())
+        value = float(text.strip())
     except ValueError:
         return None  # "[N/A]", "[Not Supported]"
+    # ``float`` also reads "inf" and "nan": not a figure, and ``int()`` of one raises.
+    return value if math.isfinite(value) else None
 
 
 def parse_nvidia_smi(text: str | None) -> list[GpuView] | None:
@@ -471,7 +474,7 @@ class Probe:
             if times is not None:
                 self._last_cpu = times
             if gpu:
-                self._gpus = self._read_gpus()
+                self._gpus = _safe(self._read_gpus)
             gpus = None if self._gpus is None else list(self._gpus)
         memory = _safe(readers.memory)
         power = _safe(readers.power)

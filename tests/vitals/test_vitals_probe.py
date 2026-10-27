@@ -215,6 +215,20 @@ def test_no_nvidia_smi_is_looked_for_once_per_process(
     assert runner.calls == []
 
 
+def test_a_non_finite_gpu_figure_is_none_and_the_gpu_path_never_raises(tmp_path: Path) -> None:
+    """``float()`` reads "inf" and "nan": as figures they are unknown, never a number that would
+    raise in ``int()`` or reach the wire as a NaN no JSON reader accepts (ADR 0143)."""
+    assert parse_nvidia_smi("GPU, inf, nan, NaN\n") == [
+        {"name": "GPU", "util_pct": None, "vram_total_mb": None, "vram_used_mb": None}
+    ]
+
+    def boom(argv: Sequence[str], timeout: float) -> str | None:
+        raise OSError("the runner broke")
+
+    probe = _probe(tmp_path, run=boom, nvidia_smi="nvidia-smi")
+    assert probe.read().gpus is None, "a GPU read that raised is unknown, never a raise"
+
+
 def test_a_failing_nvidia_smi_is_none_this_time_and_asked_again(tmp_path: Path) -> None:
     runner = Runner({"nvidia-smi": None})
     probe = _probe(tmp_path, run=runner, nvidia_smi="nvidia-smi")
