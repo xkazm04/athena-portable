@@ -678,3 +678,29 @@ def test_a_use_mark_the_index_refuses_is_let_go_and_logged(
         with caplog.at_level("WARNING", logger="athena.core.brain.store"):
             assert brain.note_recalled([fact.id]) is False
         assert any("companion_recall_seen" in r.getMessage() for r in caplog.records)
+
+
+def test_a_use_mark_never_waits_out_another_connections_write(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A CLI reconcile holds the index's write lock on its own connection; the daemon's recall must
+    not stall its five-second busy timeout for a ranking hint (SEEN_LOCK_S), and contention is not
+    a fault worth a warning."""
+    import time
+
+    with Brain(tmp_path / "brain") as brain:
+        said = brain.append_episode("the harbour invoice", "user")
+        fact = brain.write_fact("harbour", "Harbour pays Friday.", sources=[said.id])
+        other = sqlite3.connect(str(brain.db_path), isolation_level=None)
+        try:
+            other.execute("BEGIN IMMEDIATE")
+            started = time.perf_counter()
+            with caplog.at_level("WARNING", logger="athena.core.brain.store"):
+                assert brain.note_recalled([fact.id]) is False
+            waited = time.perf_counter() - started
+        finally:
+            other.execute("ROLLBACK")
+            other.close()
+        assert waited < 2.0, f"waited {waited:.2f}s"
+        assert not caplog.records
+        assert brain.note_recalled([fact.id]) is True, "the writer's own timeout is back"

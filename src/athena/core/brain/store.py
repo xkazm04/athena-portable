@@ -88,6 +88,8 @@ PROCEDURAL_SCOPES: tuple[str, ...] = paths.PROCEDURAL_SCOPES
 #: The only SQLite result codes that mean the index file itself is damaged (ADR 0081). A locked or
 #: read-only brain is a different failure and must never be called damaged.
 _DAMAGE_CODES = (sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB)
+#: The result codes of contention: another connection holds the lock. Expected, never a fault.
+_BUSY_CODES = (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 #: A ritual's file name (ADR 0131): a lowercase slug, so ``rituals/<folder>/<name>.md`` stays put.
 _RITUAL_NAME = re.compile(r"[a-z0-9][a-z0-9_-]{0,63}\Z")
 
@@ -1151,6 +1153,8 @@ class Brain:
         refuses the write, the hit is let go and the answer is ``False``. A refusal is logged at
         warning: a busy lock is expected and passes in silence, but an index that will not take the
         mark (a full disk, a damaged page) lets every memory in use fade, and that must be seen.
+        The index's own busy timeout is held to :data:`SEEN_LOCK_S` for the mark too, so another
+        connection's write is waited on no longer than this process's own.
         """
         wanted = list(dict.fromkeys(node_ids))
         if not wanted:
@@ -1159,18 +1163,26 @@ class Brain:
         if not self._write_lock.acquire(timeout=SEEN_LOCK_S):
             return False
         try:
-            with self.write_txn() as con:
-                con.executemany(
-                    """INSERT INTO companion_recall_seen (node_id, last_at, hits) VALUES (?, ?, 1)
-                       ON CONFLICT (node_id) DO UPDATE SET
-                         last_at = excluded.last_at, hits = hits + 1""",
-                    [(node_id, when) for node_id in wanted],
-                )
-                con.executemany(
-                    "DELETE FROM companion_fade WHERE node_id = ?", [(n,) for n in wanted]
-                )
+            # The same bound on the index's own lock: another connection's write (a CLI
+            # reconcile) would otherwise hold this mark for the whole BUSY_TIMEOUT_MS.
+            self._con.execute(f"PRAGMA busy_timeout = {int(SEEN_LOCK_S * 1000)}")
+            try:
+                with self.write_txn() as con:
+                    con.executemany(
+                        """INSERT INTO companion_recall_seen (node_id, last_at, hits)
+                           VALUES (?, ?, 1)
+                           ON CONFLICT (node_id) DO UPDATE SET
+                             last_at = excluded.last_at, hits = hits + 1""",
+                        [(node_id, when) for node_id in wanted],
+                    )
+                    con.executemany(
+                        "DELETE FROM companion_fade WHERE node_id = ?", [(n,) for n in wanted]
+                    )
+            finally:
+                self._con.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
         except sqlite3.Error as exc:
-            _log.warning("recall use marks not written for %d memories: %s", len(wanted), exc)
+            if ((getattr(exc, "sqlite_errorcode", None) or 0) & 0xFF) not in _BUSY_CODES:
+                _log.warning("recall use marks not written for %d memories: %s", len(wanted), exc)
             return False
         finally:
             self._write_lock.release()

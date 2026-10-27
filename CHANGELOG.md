@@ -1132,6 +1132,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(docread): a read killed mid-line resumes and scores, instead of dying on the half-written answer it left.` Stabilize 2026-10-27 (proving-docread, error-handler): a torn last line in `answers.jsonl` made every resume and score raise; it is now skipped (its unit re-read) and closed before the next append.
 - `fix(docread): a render that cannot run exits 2 with its reason, as the CLI promises, instead of a traceback.` Stabilize 2026-10-27 (proving-docread, error-handler): a missing node or a failed `render-docs.mjs` escaped `main()` as a RuntimeError; it is now one line and exit 2.
 - `fix(forge): three helpers nothing calls are gone, and run.py exports the purse its CLI imports instead of a type alias nobody uses.` Stabilize 2026-10-27 (proving-forge, code-optimizer): `Stage`, `dumps()` and `runner.work_root()` had zero consumers (git grep over the tree).
+- `fix(brain): a recall's use mark waits no longer on another connection's write than on this process's own.` Stabilize 2026-10-27 (core-brain-memory, code-optimizer; ADR 0143): `note_recalled` bounded only the in-process lock by `SEEN_LOCK_S`, then `BEGIN IMMEDIATE` waited the full 5 s busy timeout while a CLI reconcile held the index, so every recall stalled 5.53 s for a ranking hint; the mark now holds the busy timeout to 0.25 s (measured < 0.3 s) and contention is not logged as a fault.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
