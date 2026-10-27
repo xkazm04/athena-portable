@@ -268,8 +268,15 @@ def receipt_line(receipt: Receipt) -> str:
         parts.append(
             f"${receipt.asked_usd:,.2f} asked, from {n} card{'' if n == 1 else 's'} you approved"
         )
-    parts.append(f"${receipt.cost_usd:,.2f} over {receipt.calls} ledger rows")
+    # As the desktop's costLine says it: unpriced rows make the dollars a floor, failures count.
+    floor = f" ({_rows(receipt.unpriced)} unpriced, so at least this)" if receipt.unpriced else ""
+    failed = f", {receipt.errors} of them failed or refused" if receipt.errors else ""
+    parts.append(f"${receipt.cost_usd:,.2f}{floor} over {_rows(receipt.calls, 'ledger ')}{failed}")
     return f"- run closed {when}: " + ", ".join(parts)
+
+
+def _rows(n: int, kind: str = "") -> str:
+    return f"{n} {kind}row{'' if n == 1 else 's'}"
 
 
 # --- where the last run began (ADR 0126, ADR 0130) -----------------------------------------------

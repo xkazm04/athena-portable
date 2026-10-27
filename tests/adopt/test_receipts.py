@@ -218,3 +218,17 @@ def test_a_case_with_no_receipt_has_no_start_and_one_with_receipts_has_the_lates
     book.append_receipt(case_id, first)
     book.append_receipt(case_id, second)
     assert book.last_run_started(case_id) == iso(T0 + timedelta(days=30))
+
+
+def test_the_case_files_run_line_says_the_dollars_are_a_floor_when_rows_are_unpriced() -> None:
+    # The desktop's costLine (scenes/chores/runs.tsx) says unpriced rows make the dollars a floor
+    # and counts the failed rows; the case file's own line for the same receipt says the same.
+    case_id = ids.mint("project")
+    receipt = runs.Receipt(
+        case_id=case_id, conversation_id="", calls=3, errors=1, unpriced=2, cost_usd=0.5
+    )
+    line = runs.receipt_line(receipt)
+    assert "$0.50 (2 rows unpriced, so at least this) over 3 ledger rows" in line
+    assert "1 of them failed or refused" in line
+    one = runs.receipt_line(runs.Receipt(case_id=case_id, conversation_id="", calls=1))
+    assert one.endswith("$0.00 over 1 ledger row")
