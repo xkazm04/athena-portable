@@ -27,6 +27,7 @@ from athena.proving.forge.store import ForgeDir, VariantRecord
 from athena.proving.forge.validate import code_of
 from athena.proving.playbooks.bench import BenchConfig
 from athena.proving.report import announce, prune, write_report
+from athena.proving.runlog import RunLog
 
 __all__ = ["PROOF_RATIO", "PROOF_RECALL_DROP", "build_report", "render_markdown", "write"]
 
@@ -60,13 +61,12 @@ def _generator(variants: Sequence[VariantRecord]) -> dict[str, Any] | None:
 
 
 def _ledger_costs(path: Path) -> dict[str, dict[str, Any]]:
+    """Calls and known cost per engine, read as :func:`~athena.proving.forge.store.restore_budget`
+    reads the same file: a torn line (a killed run) is skipped, and a purse refusal is no call."""
     out: dict[str, dict[str, Any]] = {}
-    if not path.is_file():
-        return out
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
+    for row in RunLog.read(path):
+        if row.get("error_reason") == "budget_exhausted":
             continue
-        row = json.loads(line)
         engine = str(row.get("engine"))
         slot = out.setdefault(engine, {"calls": 0, "unpriced_calls": 0, "cost": 0.0})
         slot["calls"] += 1

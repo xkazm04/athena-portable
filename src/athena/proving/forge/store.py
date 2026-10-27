@@ -14,6 +14,7 @@ from typing import Any
 
 from athena.proving.budget import ENGINES, Budget
 from athena.proving.forge.forge import Variant
+from athena.proving.runlog import RunLog
 
 __all__ = ["ForgeDir", "VariantRecord", "restore_budget"]
 
@@ -106,15 +107,7 @@ _FIELDS = {
 
 def restore_budget(budget: Budget, runlog: Path) -> None:
     """Charge ``budget`` with every row of an earlier session's ledger, so caps hold across runs."""
-    if not runlog.is_file():
-        return
-    for line in runlog.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            continue
+    for row in RunLog.read(runlog):
         engine = row.get("engine")
         if engine in ENGINES and row.get("error_reason") != "budget_exhausted":
             cost = row.get("cost_usd")

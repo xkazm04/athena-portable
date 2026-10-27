@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -43,3 +44,32 @@ def test_a_bench_that_raises_leaves_a_ledger_row_and_weighs_on_the_cap(
     assert rows[0]["is_error"] is True and rows[0]["variant"] == f"{base.id}-v1"
     # What it spent is unknown, so it is weighed as an unpriced call, never as $0 (ADR 0122).
     assert budget.summary()[CLAUDE]["unpriced_calls"] == 1
+
+
+def test_the_report_and_the_purse_read_one_ledger_alike(tmp_path: Path) -> None:
+    from athena.proving.forge.report import build_report
+    from athena.proving.forge.store import restore_budget
+
+    store = ForgeDir(tmp_path)
+    rows = [
+        {"role": "forge", "engine": NEMOTRON, "model": "m", "cost_usd": 0.25},
+        {"role": "forge", "engine": NEMOTRON, "model": "m", "error_reason": "budget_exhausted"},
+    ]
+    lines = [json.dumps(r) for r in rows] + ['{"role": "forge", "engine": "nemo']  # killed mid-row
+    store.runlog.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    budget = Budget(caps={NEMOTRON: 1.0, CLAUDE: 1.0})
+    restore_budget(budget, store.runlog)
+    report = build_report(
+        store,
+        {},
+        run_id="t",
+        seed=11,
+        n=1,
+        rung="lightning",
+        dry=True,
+        picks={"ids": []},
+        models={},
+    )
+    # A torn last line does not stop the report, and a purse refusal is no call in either.
+    assert report["cost_usd"][NEMOTRON]["calls"] == budget.calls(NEMOTRON) == 1
+    assert report["cost_usd"][NEMOTRON]["cost_usd"] == 0.25
