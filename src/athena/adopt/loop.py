@@ -48,6 +48,7 @@ from athena.adopt.prompts import (
     BRIEF_SYSTEM,
     INTERVIEW_SCHEMA,
     INTERVIEW_SYSTEM,
+    MAX_INTAKE_QUESTIONS,
     MAX_QUESTIONS,
     MAX_ROUNDS,
     audit_prompt,
@@ -743,6 +744,7 @@ def _questions(
     *,
     slotless: bool = False,
     guard: _ExampleGuard | None = None,
+    limit: int = MAX_QUESTIONS,
 ) -> list[Question]:
     """The card as the person will see it: at most four questions, each about a slot that is not
     confirmed, 2 to 5 options or none, free text always allowed, ids minted here.
@@ -753,7 +755,7 @@ def _questions(
     unconfirmed = {s.id for s in slots if s.status != "confirmed"}
     out: list[Question] = []
     for raw in _dicts(value.get("questions")):
-        if len(out) >= MAX_QUESTIONS:
+        if len(out) >= limit:
             break
         named = raw.get("slot_ids", [])
         slot_ids = tuple(dict.fromkeys(i for i in named if isinstance(i, str) and i in unconfirmed))
@@ -801,8 +803,9 @@ def _only(card: LegResult, wanted: frozenset[str] | None) -> LegResult:
 
 
 def card_questions(value: Mapping[str, Any], round_no: int) -> list[Question]:
-    """:func:`_questions` for a conversation with no slots (the intake, ADR 0098)."""
-    return _questions(value, (), round_no, slotless=True)
+    """:func:`_questions` for a conversation with no slots (the intake, ADR 0098), at most
+    :data:`~athena.adopt.prompts.MAX_INTAKE_QUESTIONS` of them, as its prompt says."""
+    return _questions(value, (), round_no, slotless=True, limit=MAX_INTAKE_QUESTIONS)
 
 
 # --- helpers ------------------------------------------------------------------------------------

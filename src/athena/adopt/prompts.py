@@ -29,6 +29,7 @@ __all__ = [
     "INTERVIEW_CAP",
     "INTERVIEW_SCHEMA",
     "INTERVIEW_SYSTEM",
+    "MAX_INTAKE_QUESTIONS",
     "MAX_INTAKE_ROUNDS",
     "MAX_QUESTIONS",
     "MAX_ROUNDS",
@@ -46,6 +47,9 @@ MAX_QUESTIONS = 4
 MAX_ROUNDS = 8
 #: The intake (ADR 0098) asks for a verdict by its third model round at the latest.
 MAX_INTAKE_ROUNDS = 3
+#: The most questions one intake card holds: what INTAKE_SYSTEM tells the model (a front door,
+#: not an interview), and what :func:`~athena.adopt.loop.card_questions` keeps.
+MAX_INTAKE_QUESTIONS = 3
 INTERVIEW_CAP = 4000
 
 INTERVIEW_SYSTEM = """\

@@ -1065,6 +1065,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(adopt): a brief leg the engine failed is said beside the fallback brief, as a failed audit is.` scan-sweep stabilize (adopt-engine, observability-auditor): a timeout or engine error on the brief leg now emits `adopt.error` before the playbook's floor brief; a malformed brief stays counted and silent.
 - `fix(chores): the studio's file picker offers the document kinds the refusal admits, from one list instead of two.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the DropZone's `accept` reads `DOCUMENT_MIMES`; studio.test.tsx, seeded red with a new kind against the old literal.
 - `fix(chores): the reconnect banner counts against the session hook's own limit, not a 5 typed twice beside it.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the studio's and the front door's banners read `MAX_TRIES`; seeded red with a changed limit against the old literal.
+- `fix(intake): an intake card holds at most the three questions its prompt allows, not the interviewer's four.` scan-sweep stabilize (adopt-engine, parity-auditor): `prompts.MAX_INTAKE_QUESTIONS` is the one cap the prompt states and `card_questions` applies.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

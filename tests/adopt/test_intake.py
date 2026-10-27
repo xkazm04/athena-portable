@@ -336,3 +336,15 @@ def test_an_empty_post_asks_what_they_need_and_a_second_delete_is_quiet(
     assert status == 404 and body["ok"] is False and body["reason"] == "unknown_ref"
     status, body = live.request("/intake/sess_000000000000", method="DELETE")
     assert status == 404 and body["reason"] == "unknown_ref"
+
+
+def test_an_intake_card_holds_no_more_questions_than_its_prompt_allows() -> None:
+    # INTAKE_SYSTEM tells the model "At most 3 questions"; a model that writes four must not
+    # get a fourth onto the card (the adopt interviewer's own cap is four).
+    from athena.adopt.loop import card_questions
+    from athena.adopt.prompts import MAX_INTAKE_QUESTIONS
+
+    assert f"At most {MAX_INTAKE_QUESTIONS} questions" in INTAKE_SYSTEM
+    value = {"questions": [{"text": f"Question {i}?"} for i in range(1, 6)]}
+    card = card_questions(value, 1)
+    assert [q.text for q in card] == ["Question 1?", "Question 2?", "Question 3?"]
