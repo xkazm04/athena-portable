@@ -219,6 +219,8 @@ def _start(session: AdoptSession) -> None:
         lambda: _audit_leg(session, slots, derive=True),
         lambda: _interview_leg(session, slots, round_no=1),
     )
+    if session.cancelled.is_set():
+        return
     _apply_audit(session, audit)
     _offer_card(session, card, round_no=1, open_ids=None)
 
@@ -283,6 +285,8 @@ def _after_answers(session: AdoptSession) -> None:
         lambda: _audit_leg(session, slots, derive=False),
         lambda: _interview_leg(session, slots, round_no=next_round),
     )
+    if session.cancelled.is_set():
+        return
     open_ids = _apply_audit(session, audit)
     if open_ids is not None and not open_ids:
         _write_brief(session, cleared=True)
@@ -387,6 +391,8 @@ def _offer(
             return
         # Nothing asked although something is unknown: ask again on the settled slots, once.
         if open_ids is None or open_ids:
+            if session.cancelled.is_set():
+                return
             retry = _only(_interview_leg(session, slots, round_no=round_no), only)
             if retry.ok and retry.value is not None:
                 questions = _questions(retry.value, session.slots, round_no, guard=guard)
@@ -465,6 +471,8 @@ def _emit_card(session: AdoptSession, round_no: int, questions: Sequence[Questio
 
 
 def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
+    if session.cancelled.is_set():
+        return
     session.emit(Progress(text="Writing your brief…"))
     # One snapshot: the brief is drafted from these, and they are kept with it (ADR 0151).
     slots = session.slots
@@ -477,6 +485,8 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
         brief_prompt(session.playbook, slots, answers),
         json_schema=BRIEF_SCHEMA,
     )
+    if session.cancelled.is_set():
+        return
     playbook = session.playbook
     claim_default, left_default = _default_sections(playbook)
     if result.ok and result.value is not None:

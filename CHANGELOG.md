@@ -1153,6 +1153,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(voice): the face helper counts the phones it has no viseme for instead of shaping them E in silence.` Stabilize Lane B (observability-auditor): `visemes_of` collects the unknown symbols; the helper's `visemes` answer carries `unknown: {count, symbols}` and stderr one line (0 places reported one before); the E fallback shape is unchanged.
 - `fix(peer): the tick reaps and reconciles without waiting on its outbound pair-back and join calls.` Stabilize Lane B (risk-assessor): delivery and join polling (5 s timeout each) moved to a `peer-outbound` thread; with a peer that accepts and never answers the listener closed 0.92 s late (1.2 s call timeout in the probe) before and 0.02 s after; `tick()` still runs both halves inline and a delivery re-checks its approval is live.
 - test(proving): the chores numbers audit's mirrored tables (`PER`, `PERIODS`, verdict labels, `KIND_WORD`, `INSTEAD`, states, the example-case tag) are read back from the desktop's TS source, so a desktop change turns the audit red (scan-sweep Lane B).
+- `fix(adopt): a closed adopt session's in-flight round starts no more model legs.` Stabilize Lane B (risk-assessor): after DELETE or expiry the running round still ran the brief leg and the retry interview as billed cold calls; `AdoptSession.run_leg` now answers `cancelled` with no transport call once the session is closed, and the loop returns at its next step.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

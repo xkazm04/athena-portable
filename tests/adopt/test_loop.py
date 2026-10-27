@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import threading
+from collections.abc import AsyncIterator
 from typing import Any
 
 from athena.adopt import loop
@@ -10,7 +12,7 @@ from athena.adopt.prompts import MAX_ROUNDS
 from athena.adopt.session import UNASKED, AdoptSession
 from athena.contracts.adopt import Answer
 
-from .conftest import PLAYBOOK_ID, Rig, clear_script
+from .conftest import PLAYBOOK_ID, FakeTransport, Rig, clear_script
 
 
 def wire(event: Any) -> dict[str, Any]:
@@ -345,3 +347,60 @@ def test_case_5_approving_a_brief_an_answer_made_stale_is_refused_with_no_hook(r
     session.drain()
     assert not any(name == "approve" for name, _ in rig.seen)
     assert session.approved_rev is None
+
+
+class GateTransport(FakeTransport):
+    """The cold path, holding its first call open until the test lets it answer."""
+
+    def __init__(self, inner: FakeTransport) -> None:
+        super().__init__(inner.model)
+        self.started: list[Any] = []
+        self.entered = threading.Event()
+        self.release = threading.Event()
+        self._first = True
+
+    async def run(self, request: Any) -> AsyncIterator[str]:
+        self.started.append(request)
+        hold = self._first
+        self._first = False
+        if hold:
+            self.entered.set()
+            assert self.release.wait(10)
+        async for line in super().run(request):
+            yield line
+
+
+def test_a_session_closed_mid_round_starts_no_more_model_legs(rig: Rig) -> None:
+    rig.model.script = clear_script()
+    session = started(rig)
+    gate = GateTransport(rig.transport)
+    rig.runner.transport = gate
+    card = last(session, "adopt.questions")
+    answers = [
+        Answer(
+            question_id=q["id"],
+            choice_ids=(q["options"][-1]["id"],) if q["options"] else (),
+            text="" if q["options"] else "yes",
+        )
+        for q in card["questions"]
+    ]
+    loop.receive_answers(session, answers, "text")
+    assert gate.entered.wait(5), "the round's audit leg never started"
+    session.close()
+    started_at_close = len(gate.started)
+    gate.release.set()
+    session._actor.shutdown(wait=True)  # the running round finishes; nothing new may start
+    assert len(gate.started) == started_at_close, [r.argv[-1] for r in gate.started]
+    # The round that was running writes nothing after the session_closed error ends the stream.
+    final = session.events_after(0)[-1]
+    assert (final.kind, wire(final)["reason"]) == ("adopt.error", "session_closed")
+
+
+def test_a_closed_session_refuses_a_leg_without_a_transport_call(rig: Rig) -> None:
+    rig.model.script = clear_script()
+    session = started(rig)
+    before = len(rig.transport.requests)
+    session.close()
+    result = session.run_leg("audit", "system", "prompt")
+    assert (result.ok, result.error_reason) == (False, "cancelled")
+    assert len(rig.transport.requests) == before

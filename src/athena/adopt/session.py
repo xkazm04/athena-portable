@@ -365,7 +365,17 @@ class AdoptSession:
     ) -> LegResult:
         """:meth:`LegRunner.run_leg` for this session: run in its temp dir, ledgered under its
         conversation, one ``adopt.usage`` per invocation, and the warm process when ``warm``
-        (the interviewer's) is asked for."""
+        (the interviewer's) is asked for. A closed session starts no leg: the answer would be
+        billed and nobody could read it, so it is ``cancelled`` without a transport call."""
+        if self.cancelled.is_set():
+            return LegResult(
+                kind,
+                False,
+                "",
+                "",
+                error_reason="cancelled",
+                detail="the session was closed before the leg started",
+            )
         session = self.warm if warm else None
         return self.runner.run_leg(
             kind,
