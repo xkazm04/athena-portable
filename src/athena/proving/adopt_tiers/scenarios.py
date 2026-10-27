@@ -14,10 +14,12 @@ difficulty 4 with 4 portals; *hard* = difficulty 5 or more, or 6 portals and mor
 **Scoring patterns are regular expressions, case-insensitive.** A ``portal`` entry is strict: her
 truth is ``"same"`` (the playbook's app) or the name of her own app, and any other value is wrong.
 A ``gate`` entry names her ``consent`` — ``ask`` (ask her before each such act) or ``go`` (go ahead
-without asking) — and the patterns are the two vocabularies below. A ``fact`` or ``trap`` entry
-carries its own ``keys`` (which derived slot it is: a match on the slot's label), ``accept`` (a
-value that is right) and ``reject`` (a value that contradicts her). Matching a derived slot by its
-label is a heuristic, and it is said so in the report.
+without asking) — and her words, which the simulated person says and the sheet's brief carries; a
+gate is never scored (approval before a gated act is policy, settled before the first card), so
+it carries no patterns. A ``fact`` or ``trap`` entry carries its own ``keys`` (which derived slot
+it is: a match on the slot's label), ``accept`` (a value that is right) and ``reject`` (a value
+that contradicts her). Matching a derived slot by its label is a heuristic, and it is said so in
+the report.
 
 ``stated_up_front`` is what she volunteers before she is asked (1 or 2 things), to test that Athena
 never asks again what she already said.
@@ -36,11 +38,7 @@ from athena.adopt.slots import load_playbook_json, mechanical_slots, portal_name
 from athena.contracts.adopt import Brief, Slot
 
 __all__ = [
-    "ASK_ACCEPT",
-    "ASK_REJECT",
     "BANDS",
-    "GO_ACCEPT",
-    "GO_REJECT",
     "SCENARIOS_DIR",
     "Entry",
     "Scenario",
@@ -60,44 +58,6 @@ PER_BAND = 3
 
 EntryKind = Literal["portal", "gate", "fact", "trap"]
 _KINDS: tuple[str, ...] = ("portal", "gate", "fact", "trap")
-
-#: What a gate value says when she wants to be asked first. The lookbehinds keep "don't ask",
-#: "no need to ask" and "without asking" out of it.
-ASK_ACCEPT = (
-    r"(?<!t )(?<!to )\bask",
-    r"\bfirst\b",
-    r"\bbefore\b",
-    r"\beach\b",
-    r"\bevery\b",
-    r"approv",
-    r"\breview",
-    r"show (me|her|him)",
-    r"check with",
-    r"\bconfirm",
-)
-ASK_REJECT = (
-    r"do ?n.?t (need to )?ask",
-    r"no need",
-    r"without (asking|checking)",
-    r"go ahead",
-    r"\bjust (do|send|file|submit)",
-    r"\bautomatic",
-)
-GO_ACCEPT = (
-    r"go ahead",
-    r"no need",
-    r"do ?n.?t (need to )?ask",
-    r"without (asking|checking)",
-    r"\bfine\b",
-    r"\bok(ay)?\b",
-    r"\bjust (do|send|file|submit)",
-    r"\bautomatic",
-)
-GO_REJECT = (
-    r"(?<!t )(?<!to )\bask (me|her|him) (first|before|each)",
-    r"check with",
-    r"\bapprov",
-)
 
 
 class ScenarioError(ValueError):
@@ -363,8 +323,8 @@ def _entry(item: Any, index: int, names: Sequence[str], problems: list[str]) -> 
     elif kind == "gate":
         if consent not in ("ask", "go"):
             problems.append(f"{eid}: consent must be 'ask' or 'go'")
-        accept = ASK_ACCEPT if consent == "ask" else GO_ACCEPT
-        reject = ASK_REJECT if consent == "ask" else GO_REJECT
+        # Never scored (score.slot_verdicts skips gates): no patterns to carry.
+        accept = reject = ()
         about = about or "whether to ask her before this act, or go ahead"
     else:
         if not keys:

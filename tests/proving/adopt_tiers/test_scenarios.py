@@ -82,3 +82,20 @@ def test_sheet_brief_swaps_her_portals() -> None:
     assert brief.portals["Linestone Inspect"] == ""
     assert "I use Gmail instead of Postwren" in brief.command
     assert all(s.status == "confirmed" for s in sheet_slots(scenario))
+
+
+def test_a_gate_carries_her_consent_and_no_scoring_patterns(tmp_path: Path) -> None:
+    """Gates are not scored (ADR 0097; score.slot_verdicts skips them): a gate entry carries her
+    consent and her words, and no accept/reject vocabulary that nothing reads; the report does
+    not claim gate verdicts either."""
+    from athena.proving.adopt_tiers import scenarios as module
+    from athena.proving.adopt_tiers.report import report_md
+
+    scenario = load_scenario(SCENARIOS_DIR / "easy-data-broker.json")
+    gates = [e for e in scenario.sheet if e.kind == "gate"]
+    assert gates and all(e.consent in ("ask", "go") for e in gates)
+    assert all(e.accept == () and e.reject == () for e in gates)
+    assert not any(hasattr(module, name) for name in ("ASK_ACCEPT", "GO_ACCEPT"))
+    text = report_md({}, {}, [], run_dir=tmp_path, scenarios=9, shape_note="")
+    caveat = next(line for line in text.splitlines() if line.startswith("Caveat:"))
+    assert "gate and fact/trap verdicts" not in caveat and "Gates are not scored" in caveat

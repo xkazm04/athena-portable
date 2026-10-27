@@ -293,9 +293,10 @@ def report_md(
         "broken by usage. One config sets interview and audit together, so both roles read the "
         "same runs' quality.",
         "",
-        "Caveat: gate and fact/trap verdicts are matched by patterns (the fact sheet's keys, "
-        "accept and reject); a derived slot whose label matches no key is counted missed for "
-        "every config alike.",
+        "Caveat: fact/trap verdicts are matched by patterns (the fact sheet's keys, accept and "
+        "reject); a derived slot whose label matches no key is counted missed for every config "
+        "alike. Gates are not scored: approval before a gated act is policy, settled before the "
+        "first card.",
         "",
         "## Comparability",
         "",
