@@ -1,0 +1,181 @@
+{
+ "context": "desktop-tasks-and-due",
+ "files_read": 13,
+ "loc": 2360,
+ "registry": "none (no row in .ai/registry-map.json covers this context's paths; the map predates it)",
+ "techniques": [],
+ "deviations": 0,
+ "assigned": [
+  {
+   "title": "First paint 167.2 kB over the 167.0 kB ceiling (287be4e1 featured band in lib/playbooks.ts)",
+   "verdict": "built 41f21381"
+  }
+ ],
+ "built": [
+  {
+   "sha": "51717048",
+   "title": "Escape closes the dock's due review from the line that opened it",
+   "lens": "accessibility-checker",
+   "red_before": "due-notice.test.tsx Escape case: dock stayed 'reviewing' after Escape on the focused line",
+   "after": "'line', aria-expanded false; 11 green"
+  },
+  {
+   "sha": "70d3ad25",
+   "title": "A dock answer the daemon refused is said beside the review, which stays to be answered again",
+   "lens": "state-coverage",
+   "red_before": "due-notice.test.tsx refused-skip case: Skip this one gone after a 500",
+   "after": "refusal sentence beside the review; second Skip posted; 12 green"
+  },
+  {
+   "sha": "25f25f9e",
+   "title": "A due notice drawn into a hidden Main is stamped seen when shown, not while hidden (ADR 0131 d8)",
+   "lens": "bounty-hunter",
+   "red_before": "due-notice.test.tsx hidden case: seen POST sent with document.hidden true",
+   "after": "none while hidden, one after visibilitychange; 13 green"
+  },
+  {
+   "sha": "6a589559",
+   "title": "A refusal on 'When it comes due' is not left on the page once the same change is saved",
+   "lens": "state-coverage",
+   "red_before": "due.test.tsx: 'That was not saved' still shown after a successful second Pause",
+   "after": "cleared; 6 green"
+  },
+  {
+   "sha": "2ab9c4aa",
+   "title": "'When it comes due' and its review are named groups, not role-less divs whose aria-label readers drop",
+   "lens": "accessibility-checker",
+   "red_before": "due.test.tsx: three aria-labels on div/pre with no role",
+   "after": "role=group x2, role=note; 20 green"
+  },
+  {
+   "sha": "3b9e233d",
+   "title": "The tasks mirror drops cap and loaded, which no surface read, from Main's first frame",
+   "lens": "code-optimizer",
+   "red_before": "tasks.test.ts: state keys included cap and loaded",
+   "after": "keys = held, problem, tasks; first paint 167,241 -> 167,214 B (-27)"
+  },
+  {
+   "sha": "c5ea4b99",
+   "title": "A failed task's row says why in words, not with the runner's 'no_page:' code",
+   "lens": "copy-auditor",
+   "red_before": "TaskRow.test.tsx: head kept 'no_page: '",
+   "after": "detail only; 259 green; first paint 167,214 -> 167,229 B (+15), round net -12 B"
+  },
+  {
+   "sha": "d24ef9b8",
+   "title": "Task caps and statuses are read against daemon/tasks.py (hand-kept mirror pinned)",
+   "lens": "parity-auditor",
+   "red_before": "seeded: TASKS_QUEUED_CAP=12 failed the cap case, restored",
+   "after": "3 cases green"
+  },
+  {
+   "sha": "0e097032",
+   "title": "The dock's due line names the review panel it opens (aria-controls)",
+   "lens": "accessibility-checker",
+   "red_before": "due-notice.test.tsx: no aria-controls on the open line",
+   "after": "names the panel id while open; 14 green"
+  },
+  {
+   "sha": "41f21381",
+   "title": "The featured band earns its status off Main's first frame (Playbook.featured is the authored block; rule + eager proofs glob in scenes/chores/featured-model.ts)",
+   "lens": "code-optimizer",
+   "red_before": "scripts/first-paint.test.ts: 167.2 kB over the 167.0 kB ceiling",
+   "after": "first paint 167,239 -> 166,780 B gz; pnpm test 214/214 files green"
+  },
+  {
+   "sha": "3661c80c",
+   "title": "The tasks clock stands still behind a hidden window and catches up when shown",
+   "lens": "code-optimizer",
+   "red_before": "tasks-now.test.tsx: 11 renders over 10 s hidden",
+   "after": "1 render hidden, 1 on show; first paint 166,780 -> 166,821 B"
+  },
+  {
+   "sha": "8790a777",
+   "title": "Main's task card lets a failed Ask go once it has something newer to say",
+   "lens": "state-coverage",
+   "red_before": "tasks-ask.test.tsx: refused line stood after the task ended and over the mirror's problem",
+   "after": "gone in both; first paint 166,821 -> 166,873 B"
+  }
+ ],
+ "rejected": [],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "ADR 0131 d8 seen-when-drawn vs due-notice effect (built 25f25f9e); due-poll advance/done/act ordering; tasks loadTasks framed re-read"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "lib/tasks.ts caps/statuses vs daemon/tasks.py (built d24ef9b8); GET /tasks slots/held and claim held vs TS types; one mirror per window: git grep '.tasks()|claimTask' - only stores/tasks reads the list, the runner claims only"
+  },
+  {
+   "key": "error-handler",
+   "checked": "task-runner claim catch -> useTaskRunner.problem with zero readers (card B); due-poll act/review catches (built 70d3ad25); stopTask refusal ordering"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "task-runner report() console.error on finish/orphan/contract; due-poll seen/open/hand console.error - each failure path logs with a prefix; nothing real"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "dead-state removal blast radius: git grep of cap/loaded consumers before 3b9e233d; first-paint deltas measured for each first-frame edit"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "first-paint fix (built 41f21381); useTasksNow paused when hidden (built 3661c80c); dead cap/loaded (built 3b9e233d); due poll interval cleared on unmount - ok"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "dock review flow: refusal dropped the review (built 70d3ad25); surface 'N more'/'Fewer' toggle; Kill two-press arm"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "task-row.css, surface tasks.css, due-notice.css: tokens only, reduced-motion and calm guards on the panel animation; nothing real"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "queued/held/interrupted/failed rows in TaskRow+surface; due empty/failed/reading/reviewing; stale said on due page (built 6a589559); stale refused on surface (card B); stale refused on surface (built 8790a777)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "TaskRow head raw reason code (built c5ea4b99); summaryOf 'finished' (card C); dock line two 'more's (card C)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "due-notice Escape (built 51717048), aria-controls (built 0e097032); aria-label on generic in due.tsx (built 2ab9c4aa); TaskRow Kill aria-label swap"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "task-runner bind deadlines on Date.now vs deps.wait (card B); due-notice tests waitLong 5 s pattern kept"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "due-poll ask(): token header to endpoint() only, review page text fenced as <pre> text, portal urls filtered to http(s) before tabsCreate; nothing real"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "dock overlay panel: width min(440px,100vw-32px), max-height, own scroll, focus stays on line; surface card max-width 28rem"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "desktop Tauri windows only; no phone surface in these files"
+  },
+  {
+   "key": "i18n",
+   "why": "the app is English-only by design; no locale layer in these files"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:12/B:2/C:2",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "12 built incl. first-paint fix; gate green at 166,873 B",
+ "notes": "After the director's grant: first paint 167,239 -> 166,780 (41f21381), then +41 (3661c80c) and +52 (8790a777) = 166,873 B gz, 127 B under the ceiling; pnpm test 216 files / 3128 tests green. Preview fixture ledger-featured is now the shipped set (real proofs); the invented three-status chores live in featured.test.tsx. Same aria-label-on-<pre> pattern remains in scenes/chores/runs.tsx:149 (outside this context). No pnpm perf run."
+}

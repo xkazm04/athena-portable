@@ -1,0 +1,41 @@
+{"context":"core-sleep-and-vitals","files_read":13,"loc":4434,
+ "registry":"software-engineering/admission-queue, software-engineering/subprocess-lifecycle (registry-map has no row for this context: map holds 64 of 77 contexts; resolved by registry_query)",
+ "techniques":["load-aware-admission","host-resource-protection"],"deviations":2,
+ "assigned":[],
+ "built":[
+  {"sha":"3e814f38","title":"One unknown reading inside a hold no longer reopens the gate halfway down the hysteresis band","lens":"bounty-hunter","red_before":"test_one_unknown_reading_does_not_erase_the_hysteresis: held() None at RAM 88% after 95 -> None","after":"green; tests/vitals 45 passed"},
+  {"sha":"06978f05","title":"A keep racing a forget on one proposal waits and is refused, not closed kept over a retired memory","lens":"risk-assessor","red_before":"test_a_keep_racing_a_forget...: forget answered 'kept' (AssertionError 'kept' == 'forgotten')","after":"green 4/4 runs; keep answers 409"},
+  {"sha":"76b38fe7","title":"A GPU figure of inf/nan is unknown and a GPU read that raises is null","lens":"error-handler","red_before":"test_a_non_finite_gpu_figure...: OverflowError: cannot convert float infinity to integer","after":"green; tests/vitals 46 passed"},
+  {"sha":"ec15780a","title":"A cycle whose first read fails settles its row failed with a sentence","lens":"error-handler","red_before":"test_a_read_that_fails_before_the_first_leg...: sqlite3.OperationalError raised out of run(), row left running","after":"green; row failed, failure error, take 0"},
+  {"sha":"4537fdf2","title":"Floor sentence says the last cycle is stamped ahead of the clock instead of 'Slept 1 min ago'","lens":"copy-auditor","red_before":"text was 'Slept 1 min ago; ...' for a stamp 3 h ahead","after":"green; reason still floor"},
+  {"sha":"ebc2f625","title":"Every ceiling ADR 0143 states for the cycle is pinned to it","lens":"parity-auditor","red_before":"seeded PRESSURE_CHARS=30_000: tests/core/sleep had 0 failures without the pin","after":"1 failure under the seed (the pin); green restored"}
+ ],
+ "rejected":[
+  {"title":"Peer clean_view turns a missing runs key into 0, not null","before":"RunsSummary is typed int on both wires (Python TypedDict, lib/vitals.ts); a peer always sends every key","after":"null would change the wire type for no reading a real build sends: not-better (contract churn)"},
+  {"title":"Windows BatteryFlag 128 test should be a bitmask","before":"flag == 128 vs & 128: 255 (unknown) would read as no-battery under a mask","after":"the equality is the correct read; not-better"}
+ ],
+ "lens_keys":[
+  {"key":"bounty-hunter","checked":"gate.py observe/_held hysteresis edges (92/85, 90x3/70, None readings), slots_for edge cases (free>total, charge 0), admission _hours_since negative, window.take stop index and boundary"},
+  {"key":"parity-auditor","checked":"ADR 0143 + CHANGELOG stated numbers vs vitals/__init__ and core/sleep/__init__ (all agree); VitalsView vs lib/vitals.ts (agree); STATS_KEYS vs lib/sleep.ts CycleStats (skipped missing - sibling fixing it in flight this wave)"},
+  {"key":"error-handler","checked":"probe _safe coverage (GPU path unguarded), sampler/sleep loop catch-alls, SleepCycle.run guard placement, SleepService.run spawn failure path, admit lease release on raise"},
+  {"key":"observability-auditor","checked":"probe fail-open without a log (load-aware-admission), sampler stderr cadence, sleep.changed/vitals.changed publish guards, journal_error on the row"},
+  {"key":"risk-assessor","checked":"forget marker path: proposals.decide/retire ordering and book.decide return, ThreadingHTTPServer concurrency, sweep vs decide; bars() lifting rule"},
+  {"key":"code-optimizer","checked":"book.bars and same_key full scans per partition/candidate; window header cache; gate slow-figure refresh (once a minute)"},
+  {"key":"test-strategist","checked":"constants pinned for gate but not cycle; probe tests machine-independent (last test asserts shapes, gpu=False); decision race untested"},
+  {"key":"security-auditor","checked":"clean_view re-typing and text caps on peer vitals; legs id checks against the shown window/shortlist; FORGOTTEN_PREFIX refused from the model; journal keys ticked"},
+  {"key":"copy-auditor","checked":"every Verdict text in admission; held sentences 'Waiting for room'; floor/failed clock-ahead wording"},
+  {"key":"state-coverage","checked":"SleepState never/idle/sleeping/failed derivation; running row never read; summary None before first measure"},
+  {"key":"registry-conformance","checked":"load-aware-admission hysteresis and probe-failure rules vs gate/probe: 2 deviations (band reset, silent fail-open)"}
+ ],
+ "lens_no_surface":[
+  {"key":"ux-reviewer","why":"Python core and daemon routes only; the UI is lib/sleep.ts and scenes/mind, swept by another agent"},
+  {"key":"visual-craft","why":"no rendered surface in this context"},
+  {"key":"accessibility-checker","why":"no rendered surface in this context"},
+  {"key":"ui-perfectionist","why":"no UI files"},
+  {"key":"mobile-specialist","why":"daemon-side Python"}
+ ],
+ "findings":13,"lanes":"A:6/B:4/C:1","fp":0,
+ "gates":{"uv run ruff check <touched files>":0,"uv run ruff format --check <touched files>":0,"uv run mypy":0,"uv run pytest tests/vitals tests/core/sleep tests/core/test_ledger.py tests/lane/test_fleet.py tests/peer/test_presence.py tests/daemon/test_sleep.py tests/daemon/test_tasks.py -m \"not provider and not eval\"":0},
+ "leads":[],
+ "degraded":false,"note":"6 built (gate hysteresis, decision race, GPU NaN, cycle guard, copy, ADR pins)",
+ "notes":"Sibling (desktop sleep agent) is adding `skipped` to apps/desktop/src/lib/sleep.ts CycleStats this wave, so no parity card was written for it. failed_recently clock-ahead sentence carded B. Registry map has no row for this context. CHANGELOG lines appended under the lock at the end of [Unreleased]. Consult line for the director: {\"bundle\":\"software-engineering\",\"subjects\":[\"admission-queue\",\"subprocess-lifecycle\"],\"techniques\":[\"load-aware-admission\",\"host-resource-protection\"],\"deviations\":2}"}

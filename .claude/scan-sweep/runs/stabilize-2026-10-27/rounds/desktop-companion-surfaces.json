@@ -1,0 +1,230 @@
+{
+ "context": "desktop-companion-surfaces",
+ "files_read": 18,
+ "loc": 3266,
+ "registry": "software-engineering/chat-transcript, software-engineering/status-vocabulary (by registry_query; the context is absent from .ai/registry-map.json)",
+ "techniques": [
+  "markdown-and-code-rendering",
+  "untrusted-label-rendering"
+ ],
+ "deviations": 0,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "1c450501",
+   "title": "An empty list answer reads 'Nothing found.' instead of throwing out of the translator",
+   "lens": "bounty-hunter",
+   "red_before": "translate.test.ts empty-list case: TypeError at payload.ts nameKeyOf",
+   "after": "green; fixture fnv pin 324f76fe unchanged"
+  },
+  {
+   "sha": "5ed2b843",
+   "title": "The run store's own lines read as what happened (a void declined on a phone no longer reads 'Voided invoice')",
+   "lens": "parity-auditor",
+   "red_before": "2 tests (exact sentences + shapes read from stores/run.ts): 'Voided invoice in Ledgerbox', '...firsted'",
+   "after": "green; pin unchanged"
+  },
+  {
+   "sha": "85d13354",
+   "title": "A heading line in her markdown is read in linear time and keeps the # of 'C#'",
+   "lens": "security-auditor",
+   "red_before": "rich.test.tsx: 4,000-space heading ran 55,300 ms; 'Learn C#' drew 'Learn C'",
+   "after": "~1 ms, under the 250 ms bound; C# kept"
+  },
+  {
+   "sha": "9448b719",
+   "title": "A call that failed in words reads 'Could not ...', not the past tense",
+   "lens": "copy-auditor",
+   "red_before": "translate.test.ts: title 'Sent a reminder in Ledgerbox' on a failure",
+   "after": "'Could not send a reminder in Ledgerbox'"
+  },
+  {
+   "sha": "db49cdb0",
+   "title": "Her own core tools read as a verb and an object, not 'Tasksed 1 memory'",
+   "lens": "parity-auditor",
+   "red_before": "test reads core.* names from src/athena/core/catalog.py: 'Checkpointing a memory'",
+   "after": "all 7 parse to known verbs"
+  },
+  {
+   "sha": "5e115352",
+   "title": "A decision about a read says nothing changes; one naming no app never ends 'in .'",
+   "lens": "copy-auditor",
+   "red_before": "'Inbox is changed in Ledgerbox.' / 'Tab is changed in .'",
+   "after": "'Inbox is only read in Ledgerbox. Nothing is changed.'; guards 4/5 unchanged"
+  },
+  {
+   "sha": "931fc4ee",
+   "title": "A list's oldest row reads '1 day overdue', as its cell does",
+   "lens": "copy-auditor",
+   "red_before": "'longest: Acme, 1 days overdue'",
+   "after": "'1 day overdue'"
+  },
+  {
+   "sha": "f4268d7c",
+   "title": "A call that answered late reads as its answer and how late, not raw JSON under a tool name",
+   "lens": "parity-auditor",
+   "red_before": "sub was the raw `<tool> finished 12 s late: {json}` line",
+   "after": "'$100 balance · answered 12 s late', table detail"
+  },
+  {
+   "sha": "570d58dd",
+   "title": "The docked tab's working light sweeps by transform, not by animating top",
+   "lens": "ui-perfectionist",
+   "red_before": "seal.css.test.ts: 'seal-sweep animates top'",
+   "after": "every infinite seal animation is transform/opacity only"
+  },
+  {
+   "sha": "ebefefee",
+   "title": "The back of an unflipped decision card is inert",
+   "lens": "accessibility-checker",
+   "red_before": "slip.test.tsx: .sl-back had buttons and aria-hidden but no inert",
+   "after": "inert present while turned away"
+  },
+  {
+   "sha": "5a9f06ef",
+   "title": "A held call (ADR 0101) reads 'Held back', not 'Could not'",
+   "lens": "state-coverage",
+   "red_before": "translate.test.ts reads heldBefore's line from lib/execute.ts: tone 'fail'",
+   "after": "tone blocked, 'may already have run', no 'Nothing was changed'"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "A not-run reason ending in '.' reads '..' before 'Nothing was changed.'",
+   "before": "0 of the 6 refusal details stores/run.ts writes end in '.' (run.ts:337-341, 717-720)",
+   "after": "same - nothing to fix on real inputs"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "translate() over every entry shape stores/run.ts writes; the kit's empty page {items:[]} threw (built 1c450501)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "translator vs stores/run.ts arrowless lines, late() and heldBefore lines, core.* names in src/athena/core/catalog.py (3 built); SEAL_TABLE in model.ts vs SEAL_STATES vs seal.css [data-seal] rules - all 12 states covered, clean"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "rich.tsx: HTML in marks/headings/items stays text (tests exist), links stay as typed, MARKS/BULLET/RULE linear on 100k input; HEADING cubic backtracking (built 85d13354)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "every sentence composeTool/describeDecision/ownLine write: failed-in-words tense, read/app-less decision, '1 days' (3 built); welcome privacy claim (C card); tab-read refusal tool names (B card)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "empty list, failed-in-words, held, late, stop/interrupt states in the translator (held built); Record's earlier/ledger null/problem/empty branches in pages.tsx all present"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "slip back face aria-hidden+focusable (built), flip focus (B), pages.tsx landmark labels (B), welcome live region with buttons (B); icons aria-hidden+focusable=false, seal label carries the count"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "seal.css keyframes and transitions vs transform/opacity rule: seal-sweep animated top (built); tasks.css spacing on 2/4/8/12 scale, transitions use tokens; preview.css is the harness only"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "translate per entry: buildContext/translateAll are folded incrementally by memo.ts (ADR 0185); translateAll's recovered scan is O(fails x n) on slices, not hot; nothing real"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "seal.css state table (ring/check/cross per state), tokens.css dark/light token pairs; count pill 13px/12px >= 12px floor; nothing real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "ledger Gate/Queued/Compose flows, slip front/back, pages crumbs; code-inside-bold markdown (B card)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "readJson's one try/catch; ShotFigure readCapture promise has a cancelled guard but no catch - readCapture returns a CaptureRead with a problem rather than rejecting (capture.ts), so clean"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "translator keeps raw text for the Technical record (prettyRaw); nothing logs or swallows in the context's files; nothing real"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "one throwing input in the translator took the whole rail down (built 1c450501); no other single point"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "translate.test.ts derived its guards from the producers (run.ts templates, execute.ts held line, catalog.py names) instead of hand lists; seal.css.test.ts added"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "translator composes from data tables, so an unknown tool still reads; no new capability proposed in a stabilize round"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "no event or metric emission in these files; Record and Model calls are read-only views"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "translate/ split: words (data) / payload (JSON) / decision / index; seal one component one input - clean"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "tokens.css imports @fontsource/outfit 300/400/500 - bundled, offline; nothing real"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "welcome.tsx first launch: engine probe states ready/missing/unknown, retry/use offers; privacy claim (C card)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "file headers vs code: rich.tsx header claim 'text nodes only' held; slip.tsx:20 carries an orphan doc comment above deadOf (cosmetic, not carded)"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "slip.tsx:20 orphan JSDoc line; no TODO/FIXME in the 18 files"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "OP:/TTS: extraction in extractOps; the translator never shows proposal or spoken lines (existing test); nothing real"
+  },
+  {
+   "key": "render-path",
+   "checked": "pages.tsx Level renders children only when open, inert when closed; tasks strip renders nothing when empty"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "chat-transcript/markdown-and-code-rendering and status-vocabulary/untrusted-label-rendering consulted; no recorded verdict rows (context absent from .ai/registry-map.json)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "her window is a fixed-size desktop overlay; no viewport or touch surface in these files"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing code"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, referral or invite surface"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no build, CI or deploy files in the context"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no feature-value or conversion surface beyond the welcome copy carded under copy-auditor"
+  }
+ ],
+ "findings": 18,
+ "lanes": "A:11/B:5/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 1
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "11 built; translator read run.ts's own lines as tool calls",
+ "notes": "pnpm test exit 1 is only scripts/first-paint.test.ts at 167.2 kB (known, unchanged by this round). Sibling reds seen mid-round and not mine: src/console/due-notice.test.tsx, src/stores/tasks.test.ts, src/scenes/mind/devices.test.tsx, lint on src/scenes/mind/constellation.tsx:507 (all uncommitted sibling edits at the time). seal.css motion touched (570d58dd): perf:all left to the director. Context missing from .ai/registry-map.json (map has 64 contexts, context-map 77). Translator byte pin fnv 324f76fe held through every commit."
+}

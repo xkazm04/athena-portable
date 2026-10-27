@@ -129,6 +129,15 @@ becomes `C:\c\Users\...` (wave 1 left a stray tree that way). Never write a prob
 `.claude/scan-history/*`, `.ai/*`, `.personas/*`, the outbox, other agents' contexts,
 `examples/journey`, `.claude/settings.local.json`, anything under `.claude/skills/`.
 
+**A foreign (non-sweep) session is editing in this checkout** (since wave 1: `src/athena/harness/**`,
+`tests/harness/**`, `tests/fixtures/muse_*`). Any dirty path you did not write is theirs: never
+stage, format, revert or "fix" it, and a red gate on it is theirs. Re-check `git status --porcelain`
+before every commit; your staged list must be exactly your files.
+
+**The desktop suite is red at the run base on one test**: `scripts/first-paint.test.ts` reads
+167.2 kB over the 167.0 kB ceiling (from 287be4e1, before this run). Treat that one failure as known
+unless your own change moves the figure up; report the figure you saw.
+
 ## Return - write BOTH files BEFORE you reply
 
 1. `.claude/scan-sweep/runs/stabilize-2026-10-27/findings/<context>.jsonl` - ONE line per
