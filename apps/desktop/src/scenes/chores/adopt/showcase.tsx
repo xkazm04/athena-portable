@@ -17,7 +17,8 @@
  * - The bench never approves a card (`approve: "none"`), so every card is one she would propose
  *   for an OK nobody gave: nothing was sent, and the words say "would propose", never "filed".
  *
- * A rehearsal that failed leaves the recorded run and says why. The daemon rehearses once per
+ * A rehearsal that failed leaves the recorded run and says why; so does one that finished with no turn
+ * to play. The daemon rehearses once per
  * conversation: a draft approved after an earlier one was rehearsed plays the recorded run, with a
  * line saying which draft the practice run was on, never that run under this draft's name. Then
  * "Start for real" hands the brief's command to Athena; the line under it says so only for the
@@ -214,6 +215,9 @@ export default function Showcase({
         </p>
       ) : status === "failed" ? (
         <p className="ad-note ad-show__line">{`The rehearsal did not finish${showcase?.detail ? `: ${showcase.detail}` : ""}. The recorded run stays.`}</p>
+      ) : !shown.tailored ? (
+        // Done, but its trace held no turn to play: said, never drawn as if nothing had run.
+        <p className="ad-note ad-show__line">{`The practice run finished with no turns to show${showcase?.detail ? `: ${showcase.detail}` : ""}. The recorded run stays.`}</p>
       ) : shown.shaped ? (
         <p className="ad-show__found" data-reason="shaped">
           <span className="ad-show__n">{cards(proposed)}</span>

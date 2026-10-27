@@ -212,6 +212,14 @@ describe("what the cards are", () => {
     );
   });
 
+  it("says a practice run that finished with no turns, and keeps the recorded run", () => {
+    render(done({ trace: [], found_usd: null }));
+    expect(text(".ad-show__tag")).toBe("Recorded run");
+    expect(text(".ad-show__line")).toContain("finished with no turns to show");
+    expect(text(".ad-show__line")).toContain("The recorded run stays");
+    expect(host.querySelector(".ad-progress")).toBeNull();
+  });
+
   it("while it runs, the recorded run plays and nothing says 'shaped like yours'", () => {
     render(done({ status: "running", turn: 4, total: 11, trace: [] }));
     expect(text(".ad-show__label")).toContain("The benched run, shown with your portals");
