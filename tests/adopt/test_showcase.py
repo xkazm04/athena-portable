@@ -390,6 +390,35 @@ def test_delete_stops_the_rehearsal_at_a_turn_boundary(rig: Rig, tmp_path: Path)
         assert {r["conversation"] for r in rows} == {session.conversation}
 
 
+def test_a_rehearsal_row_the_live_ledger_refuses_is_counted(rig: Rig, tmp_path: Path) -> None:
+    # The rehearsal's spend is copied onto the live ledger; a copy that fails is counted like a
+    # leg's own failed row, so the gap between the spend and the record is visible.
+    rig.model.script = {"shape": [SPEC]}
+    world = StubWorld()
+
+    class ShowcaseRowsFail:
+        def record(self, **row: Any) -> object:
+            if row["trigger"] == "adopt.showcase":
+                raise OSError("disk full")
+            return rig.ledger.record(**row)
+
+    rig.runner.ledger = ShowcaseRowsFail()
+
+    def bench(playbook: Any, config: Any, *, world_factory: Any, echo: Any) -> dict[str, Any]:
+        built = world_factory(playbook)
+        for i in range(1, 3):
+            built.turn("go")
+            echo(f"  turn {i}: 0 calls, 0 cards")
+        return fake_report(2)
+
+    show = Showcase(bench=bench, make_world=lambda book: world, spawn=inline)  # type: ignore[arg-type,return-value]
+    with real_session(rig, tmp_path) as (_, session):
+        show.start(session, 1)
+        assert showcases(session)[-1].status == "done"
+        assert session.counters.get("showcase_ledger_failed") == 2
+        assert rig.runner.ledger_failures == 2
+
+
 def scripted(text: str) -> Any:
     async def fn(request: ModelRequest) -> AsyncIterator[ModelChunk]:
         yield ModelChunk("text", text=text)

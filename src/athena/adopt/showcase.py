@@ -54,7 +54,7 @@ from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
-from athena.adopt.legs import LegResult
+from athena.adopt.legs import LegResult, LegRunner
 from athena.adopt.slots import playbooks_root
 from athena.contracts.adopt import Brief, Progress, Slot
 from athena.contracts.adopt import Showcase as ShowcaseEvent
@@ -763,7 +763,11 @@ class Showcase:
                     raise ShowcaseCancelled
                 record = inner(message, **kwargs)
                 for row in record.ledger:
-                    _forward(ledger, session.conversation, row)
+                    if not _forward(ledger, session.conversation, row):
+                        # Counted where a leg's own failed row is (LegRunner.ledger_failures).
+                        session.count("showcase_ledger_failed")
+                        if isinstance(session.runner, LegRunner):
+                            session.runner.ledger_failures += 1
                 return record
 
             setattr(world, "turn", turn)  # noqa: B010 - an instance override, on purpose
@@ -789,10 +793,11 @@ def _claude_world(config: BenchConfig) -> WorldMaker:
     return make
 
 
-def _forward(ledger: Any, conversation: str, row: Mapping[str, Any]) -> None:
-    """One rehearsal turn's ledger row, copied onto the live ledger. A failed write is dropped."""
+def _forward(ledger: Any, conversation: str, row: Mapping[str, Any]) -> bool:
+    """One rehearsal turn's ledger row, copied onto the live ledger. ``False`` when the write
+    failed: the rehearsal goes on, and the caller counts the row it could not keep."""
     if ledger is None:
-        return
+        return True
     try:
         ledger.record(
             engine=str(row.get("engine") or "claude_code"),
@@ -810,7 +815,8 @@ def _forward(ledger: Any, conversation: str, row: Mapping[str, Any]) -> None:
             error_reason=row.get("error_reason"),
         )
     except Exception:
-        return
+        return False
+    return True
 
 
 def _key_holds(source: Path, shaped: Path) -> tuple[bool, int]:
