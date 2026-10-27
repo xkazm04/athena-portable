@@ -1,7 +1,8 @@
 """The phone page follows a turn to its end (ADR 0140, "Phone and setup").
 
 athena/peer/mobile/turn.js - followTurn, createTurnReader, pendingTurn, turnMessage. The cases live
-in ``tests/peer/phone/turn.test.mjs`` (node:test, a scripted fake beacon); this runs them under
+in ``tests/peer/phone/turn.test.mjs`` (node:test, a scripted fake beacon) and the page itself in
+``app.test.mjs`` (jsdom, skipped where it is absent); this runs them under
 pytest so the Python gate holds them. Skipped only where node is absent (the repo needs node 22.5+).
 """
 
@@ -16,7 +17,7 @@ import pytest
 from athena.peer.phone import FILES, MOBILE_DIR
 
 HERE = Path(__file__).resolve().parent
-SUITE = HERE / "phone" / "turn.test.mjs"
+SUITES = sorted((HERE / "phone").glob("*.test.mjs"))
 NODE = shutil.which("node")
 
 
@@ -24,7 +25,7 @@ NODE = shutil.which("node")
 def test_the_turn_follower_cases_pass_under_node() -> None:
     assert NODE is not None
     done = subprocess.run(
-        [NODE, "--test", "--test-reporter=tap", str(SUITE)],
+        [NODE, "--test", "--test-reporter=tap", *map(str, SUITES)],
         capture_output=True,
         text=True,
         encoding="utf-8",

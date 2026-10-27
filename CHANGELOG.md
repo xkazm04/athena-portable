@@ -1138,6 +1138,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(vitals): a probe that cannot read RAM says so once, and says when it is back.` Stabilize Lane B (observability-auditor): the gate still fails open on an unknown figure, but the sampler now writes one stderr line when RAM turns unknown and one when it recovers (0 lines across 10 broken readings before, 1 and 1 now).
 - fix(proving): a session the store refuses is that job's recorded failure, not a leaked root. `run_pair`, `run_interview` and `run_shape` create the session inside the try; the finally tolerates none (scan-sweep Lane B).
 - `fix(vitals): a sampler that keeps failing says so once with its message, and once when it clears.` Stabilize Lane B (observability-auditor): the loop printed the exception type every 5 s (720 lines/hour, none with a message); it now prints "Type: message" on the first failure and on a changed one, and one line on recovery (20 failing ticks: 20 lines before, 2 now).
+- `fix(peer): a phone the beacon removed forgets its token in memory too and stops knocking on every wake.` Stabilize Lane B (error-handler): `forget()` left `chat.saved`, so each wake sent GET /peer/hello and /peer/decisions with the revoked bearer (2 per wake before, 0 after); the new jsdom suite `tests/peer/phone/app.test.mjs` runs under pytest.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

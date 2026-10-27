@@ -266,9 +266,11 @@ const chat = {
   log: [],
   nodes: null,
   timers: [],
+  armed: false, // the wake listener is added once, however often ready() runs
 };
 
 function forget() {
+  chat.saved = null; // the dead token goes from memory too: nothing below may knock with it
   write(localStorage, TOKEN_KEY, null);
   write(sessionStorage, LOG_KEY, null);
   write(sessionStorage, TURN_KEY, null);
@@ -336,12 +338,16 @@ async function ready() {
   chat.log = read(sessionStorage, LOG_KEY) || [];
   renderChat();
   await hello();
+  if (!chat.saved) return; // the beacon answered 401: this phone was removed, stay quiet
   // A reload mid-answer: pick the open turn up where it stopped instead of dropping it.
   const open = pendingTurn(sessionStorage);
   if (open && chat.saved) resume(open);
   await loadCards();
+  if (!chat.saved) return;
   chat.timers.push(setInterval(() => document.visibilityState === "visible" && loadCards(), CARDS_POLL_MS));
   chat.timers.push(setInterval(() => document.visibilityState === "visible" && hello(), HELLO_POLL_MS));
+  if (chat.armed) return;
+  chat.armed = true;
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && chat.saved) {
       hello();
