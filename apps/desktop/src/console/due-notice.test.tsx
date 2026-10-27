@@ -327,4 +327,19 @@ describe("the dock's notice, held to its own words", { timeout: 15_000 }, () => 
     expect((await dock()).dock.kind).toBe("line");
     expect(line()?.getAttribute("aria-expanded")).toBe("false");
   });
+
+  it("an answer the daemon refused is said beside the review, which stays on show to be answered again", async () => {
+    await mount([notice("a")]);
+    await press(line());
+    await waitLong(() => expect(button("Skip this one")).toBeTruthy());
+    daemon.refuse = true;
+    await press(button("Skip this one"));
+    await waitLong(() => expect(host.textContent).toContain("That was not saved: the daemon answered 500."));
+    expect(button("Skip this one")).toBeTruthy();
+    expect((await dock()).notice?.case_id).toBe("a");
+    daemon.refuse = false;
+    await press(button("Skip this one"));
+    expect(posts().filter((p) => (p.body as { answer?: string }).answer === "skip")).toHaveLength(2);
+    expect((await dock()).notice).toBeNull();
+  });
 });

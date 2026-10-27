@@ -61,7 +61,7 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
           ) : null}
           {dock.kind === "reviewing" ? (
             <Suspense fallback={reading}>
-              <ReviewView review={dock.review} said="" onPrepare={prepare} onSkip={skip} onPause={pause} onSlow={openChore} />
+              <ReviewView review={dock.review} said={dock.said ?? ""} onPrepare={prepare} onSkip={skip} onPause={pause} onSlow={openChore} />
             </Suspense>
           ) : null}
           <div className="due-notice__row">

@@ -156,7 +156,7 @@ async function review(): Promise<void> {
   }
 }
 
-/** One act on the review on show; a refusal is said and the notice stays. */
+/** One act on the review on show; a refusal is said beside the review, which stays to be answered again. */
 async function act(what: string, run: (review: DueReview) => Promise<unknown>): Promise<void> {
   const d = useDue.getState().dock;
   if (d.kind !== "reviewing") return;
@@ -164,7 +164,8 @@ async function act(what: string, run: (review: DueReview) => Promise<unknown>): 
     await run(d.review);
     done();
   } catch (error) {
-    useDue.setState({ dock: { kind: "failed", detail: `${what}: ${reason(error)}.` } });
+    if (useDue.getState().dock === d)
+      useDue.setState({ dock: { kind: "reviewing", review: d.review, said: `${what}: ${reason(error)}.` } });
   }
 }
 

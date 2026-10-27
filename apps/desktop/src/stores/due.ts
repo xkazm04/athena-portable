@@ -15,11 +15,12 @@ import type { DueNotice, DueReview } from "@/lib/adopt";
 /** A notice's identity: its case and its due date. */
 export const noticeKey = (n: Pick<DueNotice, "case_id" | "due_at">) => `${n.case_id}|${n.due_at}`;
 
-/** What the dock draws for the notice on show: its line, the review being read, the review, or why not. */
+/** What the dock draws for the notice on show: its line, the review being read, the review (with
+ *  why an answer to it was refused, if one was), or why it could not be read. */
 export type DockState =
   | { kind: "line" }
   | { kind: "reading" }
-  | { kind: "reviewing"; review: DueReview }
+  | { kind: "reviewing"; review: DueReview; said?: string }
   | { kind: "failed"; detail: string };
 
 const idle = () => {};
