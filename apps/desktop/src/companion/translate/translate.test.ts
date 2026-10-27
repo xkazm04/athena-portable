@@ -301,3 +301,14 @@ test("every core tool the daemon's catalog names reads as a verb and an object, 
   expect(done('core.checkpoint → {"ok":true}')).toBe("Saved a note");
   expect(describeRunning("core.tasks")).toBe("Listing the tasks");
 });
+
+test("a decision about a read says nothing changes, and one that names no app never says 'in .'", () => {
+  const read = { reversible: true, side_effects: "none" };
+  expect(describeDecision({ action: "host.ledgerbox.read_inbox", params: {} }, EMPTY_CONTEXT, "", read).effect).toBe("Inbox is only read in Ledgerbox. Nothing is changed.");
+  expect(describeDecision({ action: "tabs.read", params: {} }, EMPTY_CONTEXT, "", read).effect).toBe("Tab is only read. Nothing is changed.");
+  expect(describeDecision({ action: "core.write_fact", params: {} }, EMPTY_CONTEXT, "", { reversible: true, side_effects: "internal" }).effect).toBe("Fact is changed.");
+  const undeclared = describeDecision({ action: "core.delegate", params: {} }, EMPTY_CONTEXT).effect;
+  expect(undeclared.startsWith("Task is changed for good. It cannot be undone.")).toBe(true);
+  const out = describeDecision({ action: "core.delegate", params: {} }, EMPTY_CONTEXT, "", { reversible: false, side_effects: "external" }).effect;
+  expect(out).toBe("A task goes out. Once it is done it cannot be taken back.");
+});

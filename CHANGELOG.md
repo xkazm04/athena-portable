@@ -1091,6 +1091,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): her own tools read as a verb and an object, not "Tasksed 1 memory".` Stabilize 2026-10-27 (desktop-companion-surfaces, parity-auditor): `CORE_WORDS` in translate/words.ts for the five core tools whose names are not verb_object; translate.test.ts reads them from `core/catalog.py`.
 - `fix(tasks): the tasks mirror holds only what a surface draws - the cap and the loaded flag no surface read are gone from Main's first frame.` Stabilize 2026-10-27 (desktop-tasks-and-due, code-optimizer): `stores/tasks.ts` kept `cap` and `loaded` with zero consumers outside its test; first paint 167,241 -> 167,214 B gz.
 - `fix(tasks): a failed task's row says why in words, not with the runner's "no_page:" code before them.` Stabilize 2026-10-27 (desktop-tasks-and-due, copy-auditor): `TaskRow` showed the runner's `reason: detail` as it is; the head now says the detail (first paint +15 B, after the mirror's -27 B).
+- `fix(companion): a decision about a read says nothing changes, and one that names no app never ends "in .".` Stabilize 2026-10-27 (desktop-companion-surfaces, copy-auditor): `describeDecision` gave a declared read the change sentence and spelled an empty app for core and tab tools; translate.test.ts.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

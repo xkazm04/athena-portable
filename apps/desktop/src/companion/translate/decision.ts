@@ -104,16 +104,22 @@ export function describeDecision(
   const subject = text(p.subject) || text(draft?.subject);
   const body = text(p.body) || text(draft?.body);
   const app = brand(t.app);
+  // " in Ledgerbox", or nothing for her own tools and another tab, which name no app.
+  const sfx = appSuffix(t);
+  const thing = `${cap(obj || "it")}${target ? " " + target : ""}`;
 
   let effect: string;
   if (risk === "outbound" && (OUTBOUND.has(t.verb) || whom)) {
     effect = `${whom || "The recipient"} will receive ${subject ? `“${subject}”` : "it"}${from ? " from " + from : ""}. Once it is sent it cannot be taken back.`;
   } else if (risk === "outbound") {
-    effect = `${cap(noun || "it")} goes out to ${app}${from ? " as " + from : ""}. Once it is done it cannot be taken back.`;
+    effect = `${cap(noun || "it")} goes out${sfx ? " to " + app : ""}${from ? " as " + from : ""}. Once it is done it cannot be taken back.`;
   } else if (risk === "destructive") {
-    effect = `${cap(target || obj || "it")} is changed for good in ${app}. It cannot be undone.`;
+    effect = `${cap(target || obj || "it")} is changed for good${sfx}. It cannot be undone.`;
+  } else if (risk === "read") {
+    // Declared side_effects "none": nothing changes, so the sentence never says it does.
+    effect = `${thing} is only read${sfx}. Nothing is changed.`;
   } else {
-    effect = `${cap(obj || "it")}${target ? " " + target : ""} is changed in ${app}.`;
+    effect = `${thing} is changed${sfx}.`;
   }
   if (!declaredRisk) effect += " The app did not declare whether this can be undone, so the card assumes it cannot.";
 
