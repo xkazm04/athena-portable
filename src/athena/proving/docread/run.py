@@ -168,12 +168,8 @@ def run_score(
     if not dry:
         if "vl" in config.readers:
             models["vl"] = models.get("vl") or SUPER_VL_MODEL
-        try:
-            t = tier or claude_tier()
-            if "claude" in config.readers:
-                models["claude"] = f"{t.model} (effort {t.effort}, Read only)"
-        except (OSError, ValueError):
-            pass
+        if "claude" in config.readers:
+            models["claude"] = _claude_model(models.get("claude", ""), tier)
     report: dict[str, Any] = {
         "run_id": run.root.parent.name,
         "dry": dry,
@@ -191,6 +187,18 @@ def run_score(
     }
     write_report(run.root, report, render_markdown(report))
     return report
+
+
+def _claude_model(answered: str, tier: Tier | None) -> str:
+    """The Claude control as it ran: the model its readings recorded, and the effort only when
+    today's ``tiers.json`` still names that model (a ``score`` can run long after the ``read``)."""
+    try:
+        t = tier or claude_tier()
+    except (OSError, ValueError) as exc:
+        return f"{answered or '?'} (Read only; tiers.json unreadable: {type(exc).__name__})"
+    if not answered or answered == t.model:
+        return f"{t.model} (effort {t.effort}, Read only)"
+    return f"{answered} (Read only; effort not recorded, tiers.json now names {t.model})"
 
 
 def _status(reading: Reading) -> str:

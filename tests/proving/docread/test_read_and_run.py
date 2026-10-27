@@ -23,6 +23,7 @@ from athena.proving.docread.read import (
     read_vl,
 )
 from athena.proving.docread.run import Config, open_run, run_read, run_score
+from athena.proving.docread.score import Reading
 from athena.proving.roles import ProcessResult, RoleCaller
 from athena.proving.runlog import RunLog
 
@@ -261,3 +262,21 @@ def test_a_resumed_read_keeps_the_spend_its_ledger_already_holds(
     budget, _ = run_read(run, echo=lambda _s: None)
     assert post.sent == []
     assert budget.spent(NEMOTRON) >= 0.6
+
+
+def test_the_report_names_the_claude_model_that_answered(tmp_path: Path) -> None:
+    config = Config(
+        scenarios=("easy-data-broker",),
+        degradations=("clean",),
+        readers=("claude",),
+        out=str(tmp_path),
+    )
+    run = open_run(config)
+    answered = Reading("claude", run.units[0].id, {}, model="claude-sonnet-5-5", cost_usd=0.01)
+    run.answers.write_text(json.dumps(answered.to_json()) + "\n", encoding="utf-8")
+    # tiers.json has moved on since the read: the report must not name today's tier.
+    moved = run_score(run, tier=Tier("claude-opus-9", "high"))["models"]["claude"]
+    assert moved.startswith("claude-sonnet-5-5") and "claude-opus-9" in moved
+    assert "effort high" not in moved
+    same = run_score(run, tier=Tier("claude-sonnet-5-5", "low"))["models"]["claude"]
+    assert same == "claude-sonnet-5-5 (effort low, Read only)"
