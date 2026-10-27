@@ -42,6 +42,19 @@ export const gone = (error: unknown): boolean =>
   error instanceof ApiError && error.status === 404 && error.reason === "unknown_ref";
 
 /**
+ * Let a session go without waiting on it (ADR 0179: fire and forget). A close that fails is not
+ * surfaced to the person, but it is not silent either: the daemon keeps three places and a held
+ * one makes a later start `busy:`, so the failure is recorded where the desktop records its faults.
+ * A session the daemon no longer knows is already closed, which is what was asked for.
+ */
+export function closeQuietly(client: { close(sid: string): Promise<void> }, sid: string, why: string): void {
+  client.close(sid).catch((error: unknown) => {
+    if (gone(error)) return;
+    console.error(`[athena] adopt: closing session ${sid} (${why}) failed: ${error instanceof Error ? error.message : String(error)}`);
+  });
+}
+
+/**
  * A refusal in words. The daemon carries two adopt refusals in its closed reason vocabulary with a
  * prefix on the detail (ADR 0097): `busy:` (three conversations already open, 429) and `stale_rev:`
  * (an approve for a brief that has since changed, 409); the front door adds `nothing_said:` and
@@ -190,7 +203,7 @@ export function useAdoptSession(
         (reply) => {
           const started = reply.session_id;
           if (ctl.signal.aborted) {
-            void deps.client.close(started).catch(() => {});
+            closeQuietly(deps.client, started, "start aborted");
             return;
           }
           sid.current = started;
@@ -215,7 +228,7 @@ export function useAdoptSession(
     if (held && (held.key !== key || expired(held, now()))) {
       // Another chore's conversation, or one the daemon may have reaped: never offered, closed.
       unpark();
-      void deps.client.close(held.sid).catch(() => {});
+      closeQuietly(deps.client, held.sid, "parked chat expired or foreign");
     }
     const mine = parked(key);
     if (mine) {
@@ -238,8 +251,8 @@ export function useAdoptSession(
           keys: counter.current,
           parkedAt: now(),
         });
-        if (displaced) void deps.client.close(displaced.sid).catch(() => {});
-      } else void deps.client.close(id).catch(() => {});
+        if (displaced) closeQuietly(deps.client, displaced.sid, "displaced park");
+      } else closeQuietly(deps.client, id, "left the studio");
     };
   }, [deps, key, begin, epoch]);
 
@@ -370,7 +383,7 @@ export function useAdoptSession(
       if (!deps || !ctl) return;
       if (held) {
         unpark();
-        void deps.client.close(held.sid).catch(() => {});
+        closeQuietly(deps.client, held.sid, "start over");
       }
       begin(ctl, opening.current);
     },

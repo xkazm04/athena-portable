@@ -17,7 +17,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import type { Answer, AnswerVia } from "@/lib/adopt";
 
-import { BACKOFF_MS, MAX_TRIES, gone, why } from "../adopt/session";
+import { BACKOFF_MS, MAX_TRIES, closeQuietly, gone, why } from "../adopt/session";
 import { realWait, type AdoptDeps } from "../adopt/deps";
 import {
   INITIAL,
@@ -74,7 +74,7 @@ export function useIntakeSession(
             }
             if (e.kind === "adopt.verdict") {
               // Her last word: let the session go now, not when the person leaves.
-              void client.close(id).catch(() => {});
+              closeQuietly(client, id, "verdict given");
               return;
             }
           }
@@ -124,7 +124,7 @@ export function useIntakeSession(
       (reply) => {
         started = reply.session_id;
         if (ctl.signal.aborted) {
-          void client.close(started).catch(() => {});
+          closeQuietly(client, started, "start aborted");
           return;
         }
         sid.current = started;
@@ -137,7 +137,7 @@ export function useIntakeSession(
     );
     return () => {
       ctl.abort();
-      if (started) void client.close(started).catch(() => {});
+      if (started) closeQuietly(client, started, "left the front door");
     };
   }, [client, follow, epoch]);
 
