@@ -240,6 +240,34 @@ def test_a_reading_that_raises_does_not_end_the_sampler(
     assert len(calls) >= 3
 
 
+def test_a_memory_reader_that_breaks_is_said_once_and_its_recovery_once(
+    brain: Brain,
+    tmp_path: Path,
+    told: list[dict[str, Any]],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    broken = {"on": True}
+    ram = Ram()
+
+    def memory() -> Memory:
+        if broken["on"]:
+            raise OSError("GlobalMemoryStatusEx failed")
+        return ram()
+
+    probe = Probe(tmp_path, readers=Readers(memory=memory), disk=lambda root: 1, cores=lambda: 2)
+    service = _service(brain, probe, told)
+    sampler = Sampler(probe, service.gate)
+    for _ in range(10):
+        sampler.sample()
+    broken["on"] = False
+    for _ in range(3):
+        sampler.sample()
+    lines = capsys.readouterr().err.strip().splitlines()
+    assert len(lines) == 2, lines
+    assert "RAM could not be read" in lines[0]
+    assert "readable again" in lines[1]
+
+
 # -- the fleet, with a peer host ----------------------------------------------------------------
 
 

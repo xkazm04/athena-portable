@@ -44,6 +44,7 @@ class Sampler:
         self._clock = clock
         self._lock = threading.Lock()
         self._gpu_at: float | None = None
+        self._ram_unknown = False
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
 
@@ -56,7 +57,22 @@ class Sampler:
                 self._gpu_at = now
             reading = self.probe.read(gpu=gpu)
             self.gate.observe(reading)
+            self._say_ram(reading)
         return reading
+
+    def _say_ram(self, reading: Reading) -> None:
+        """Say once when RAM turns unknown, and once when it is back: an unknown RAM figure
+        holds nothing (the gate fails open), so a PC whose memory reader broke would admit every
+        task with no trace. Transitions only, not every :attr:`every_s`."""
+        unknown = reading.ram_pct is None
+        if unknown == self._ram_unknown:
+            return
+        self._ram_unknown = unknown
+        _say(
+            "[vitals] RAM could not be read, so the gate cannot hold for it and admits tasks"
+            if unknown
+            else "[vitals] RAM is readable again; the gate holds for it once more"
+        )
 
     def start(self) -> None:
         if self._thread is not None:
@@ -81,3 +97,8 @@ class Sampler:
                     print(f"[vitals] a reading raised {type(exc).__name__}", file=sys.stderr)
             if self._stop.wait(self.every_s):
                 return
+
+
+def _say(line: str) -> None:
+    with suppress(Exception):
+        print(line, file=sys.stderr)

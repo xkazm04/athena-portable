@@ -1135,6 +1135,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(brain): a recall's use mark waits no longer on another connection's write than on this process's own.` Stabilize 2026-10-27 (core-brain-memory, code-optimizer; ADR 0143): `note_recalled` bounded only the in-process lock by `SEEN_LOCK_S`, then `BEGIN IMMEDIATE` waited the full 5 s busy timeout while a CLI reconcile held the index, so every recall stalled 5.53 s for a ranking hint; the mark now holds the busy timeout to 0.25 s (re-measured 0.35 s) and contention is not logged as a fault.
 - `fix(docread): each reader's accuracy carries its 95% interval into the report, as wilson() says it exists to.` Stabilize 2026-10-27 (proving-docread, test-strategist): `wilson()` had no caller; `score_readers` now adds `accuracy_ci95` and `report.md` prints a 95% CI column.
 - `fix(sleep): a failed cycle stamped ahead of the clock says so instead of "failed 1 min ago".` Stabilize Lane B (copy-auditor): the failure sentence now carries the floor sentence's wording for a stamp in this computer's future, one-failure and N-in-a-row forms; the backoff hold is unchanged.
+- `fix(vitals): a probe that cannot read RAM says so once, and says when it is back.` Stabilize Lane B (observability-auditor): the gate still fails open on an unknown figure, but the sampler now writes one stderr line when RAM turns unknown and one when it recovers (0 lines across 10 broken readings before, 1 and 1 now).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
