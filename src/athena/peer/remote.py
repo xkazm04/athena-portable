@@ -121,6 +121,7 @@ __all__ = [
     "RemoteTurns",
     "loopback_routes",
     "peer_routes",
+    "resume_index",
     "wire",
 ]
 
@@ -368,6 +369,15 @@ class RemoteTurns:
                 return
 
 
+def resume_index(query: Mapping[str, str]) -> int:
+    """``?from=<n>`` as the index a turn stream resumes at: ASCII digits, else ``0``.
+
+    ``str.isdigit`` alone admits ``"²"``, which ``int`` refuses: that was a 500 from the route.
+    """
+    start = query.get("from", "0")
+    return int(start) if start.isascii() and start.isdigit() else 0
+
+
 def _moved(turn: RemoteTurn, index: int) -> bool:
     """Whether a reader at ``index`` has something new: an event, or the close."""
     return index < len(turn.events) or turn.closed is not None
@@ -409,8 +419,7 @@ def peer_turn(turns: RemoteTurns, request: Request, request_id: str) -> Reply | 
     if turn.peer_id != row.peer_id:
         # A turn's stream is the asker's alone; another paired device learns nothing of it.
         return peer_error(403, "not_sender", "only the device that sent this message reads it")
-    start = request.query.get("from", "0")
-    return EventStream(turns.frames(turn, int(start) if start.isdigit() else 0))
+    return EventStream(turns.frames(turn, resume_index(request.query)))
 
 
 def peer_decisions(daemon: AthenaDaemon, request: Request) -> Reply:
@@ -539,8 +548,7 @@ def relay_turn(
     if keyed is None:
         return error(404, "unknown_ref", NO_KEY)
     url, token = keyed
-    start = request.query.get("from", "0")
-    path = f"/peer/turns/{quote(request_id)}?from={int(start) if start.isdigit() else 0}"
+    path = f"/peer/turns/{quote(request_id)}?from={resume_index(request.query)}"
     parts = urlsplit(url)
     connection = HTTPConnection(parts.hostname or "", parts.port or 80, timeout=RELAY_TIMEOUT_S)
     try:

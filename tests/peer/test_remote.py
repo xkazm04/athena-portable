@@ -477,6 +477,27 @@ def test_a_message_nobody_took_is_forgotten() -> None:
     assert turns._turns == {}
 
 
+@pytest.mark.parametrize(
+    ("given", "start"), [("3", 3), ("0", 0), ("²", 0), ("٣", 0), ("-1", 0), ("x", 0)]
+)
+def test_a_from_that_is_not_ascii_digits_reads_from_the_start(given: str, start: int) -> None:
+    # ``"²".isdigit()`` is true and ``int("²")`` raises: a superscript two in ``?from=``
+    # was a 500 from the route, on the peer listener and on the loopback relay alike.
+    from athena.peer.listener import PeerRequest
+
+    assert remote.resume_index({"from": given}) == start
+    turns = RemoteTurns(lambda *_a, **_k: None, quiet_s=0.05)
+    request_id = _accepted(turns)
+    asked = PeerRequest(
+        method="GET",
+        path=f"/peer/turns/{request_id}",
+        query={"from": given},
+        peer=_Row(),  # type: ignore[arg-type]
+    )
+    answer = remote.peer_turn(turns, asked, request_id)
+    assert isinstance(answer, remote.EventStream)
+
+
 # --- PC to PC, through the asking side's loopback -----------------------------------------------
 
 
