@@ -14,6 +14,7 @@ from __future__ import annotations
 import itertools
 import os
 import random
+import re
 import threading
 import time
 from collections.abc import Iterator
@@ -34,6 +35,7 @@ from athena.channels.voice.face import (
     scale_silence,
     token_lines,
 )
+from athena.channels.voice.face_helper import visemes as helper_visemes
 from athena.channels.voice.face_helper.probe import (
     choose_device,
     choose_steps,
@@ -208,6 +210,33 @@ def test_the_token_ids_are_read_off_sherpas_debug_output() -> None:
 
 
 # -- the helper ----------------------------------------------------------------------------------
+
+
+REPO = Path(__file__).resolve().parents[2]
+
+
+def _quoted_list(path: Path, pattern: str) -> list[str]:
+    found = re.search(pattern, path.read_text(encoding="utf-8"))
+    assert found, f"no viseme list in {path}"
+    return re.findall(r'"([^"]+)"', found.group(1))
+
+
+def test_every_mouth_shape_the_helper_can_say_is_one_the_face_and_the_shell_know() -> None:
+    """The Oculus 15 is written three times: the helper's table, the page's ``VISEMES`` and the
+    shell's. A shape the page does not know is drawn as ``sil`` - a shut mouth - so a rename on one
+    side would close her mouth on that sound with no error anywhere."""
+    produced = {"sil"} | {v for shapes in helper_visemes.VISEME.values() for v in shapes}
+    produced.add("E")  # `visemes_of`'s shape for a phone it has no entry for
+    page = _quoted_list(
+        REPO / "apps" / "desktop" / "src" / "avatar" / "types.ts",
+        r"export const VISEMES = \[([^\]]*)\]",
+    )
+    shell = _quoted_list(
+        REPO / "apps" / "desktop" / "src-tauri" / "src" / "face.rs",
+        r"pub const VISEMES: \[&str; \d+\] = \[([^\]]*)\]",
+    )
+    assert len(page) == 15 and page == shell
+    assert produced == set(page)
 
 
 def test_with_no_helper_set_up_the_face_is_absent_and_nothing_starts(tmp_path: Path) -> None:
