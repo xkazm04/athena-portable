@@ -115,3 +115,23 @@ def test_proof_pass_kill_mixed_boundaries() -> None:
 def test_proof_needs_both_readers_and_a_nonzero_control() -> None:
     assert proof({"vl": {"field_accuracy": 1.0, "false_fact_rate": 0.0}})["verdict"] == "NOT_RUN"
     assert proof(_scores(0.5, 0.0, 0.0, 0.0))["verdict"] == "NOT_RUN"
+
+
+def _counted(correct: int, stated: int, false: int, probes: int) -> dict[str, object]:
+    return {
+        "field_accuracy": round(correct / stated, 4),
+        "fields_correct": correct,
+        "fields_stated": stated,
+        "false_fact_rate": round(false / probes, 4),
+        "false_facts": false,
+        "probes": probes,
+        "units": 1,
+    }
+
+
+def test_proof_judges_the_counts_not_the_rounded_rates() -> None:
+    # VL 3 of 5 vs Claude 2 of 3 is a ratio of exactly 0.9, a PASS. The printed rates round to
+    # 0.6 and 0.6667, whose quotient (0.89996) would read as MIXED.
+    verdict = proof({"vl": _counted(3, 5, 0, 10), "claude": _counted(2, 3, 0, 10)})
+    assert verdict["verdict"] == "PASS"
+    assert verdict["accuracy_ratio"] == 0.9

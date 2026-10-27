@@ -20,6 +20,7 @@ import re
 import statistics
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Any
 
 from athena.proving.adopt_tiers.scenarios import Entry, Scenario
@@ -247,21 +248,26 @@ def proof(scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
     vl, claude = scores.get("vl"), scores.get("claude")
     if vl is None or claude is None:
         return {"verdict": "NOT_RUN", "reason": "both readers are needed for a verdict"}
-    va, ca = vl.get("field_accuracy"), claude.get("field_accuracy")
-    vf, cf = vl.get("false_fact_rate"), claude.get("false_fact_rate")
+    # The verdict is taken on the counts, exactly: the printed rates are rounded to 4 places, and
+    # a quotient of two rounded rates can land either side of a threshold the counts sit on.
+    va = _exact(vl, "fields_correct", "fields_stated", "field_accuracy")
+    ca = _exact(claude, "fields_correct", "fields_stated", "field_accuracy")
+    vf = _exact(vl, "false_facts", "probes", "false_fact_rate")
+    cf = _exact(claude, "false_facts", "probes", "false_fact_rate")
     if va is None or ca is None or vf is None or cf is None:
         return {"verdict": "NOT_RUN", "reason": "a reader has no scored fields"}
     if ca == 0:
         return {"verdict": "NOT_RUN", "reason": "the Claude control scored 0, no ratio"}
     ratio = va / ca
-    accuracy_ok = ratio >= PASS_RATIO
-    false_ok = vf <= cf + PASS_FALSE_FACT_PP + 1e-9
-    verdict = "PASS" if accuracy_ok and false_ok else "KILL" if ratio < KILL_RATIO else "MIXED"
+    accuracy_ok = ratio >= Fraction(str(PASS_RATIO))
+    false_ok = vf <= cf + Fraction(str(PASS_FALSE_FACT_PP))
+    killed = ratio < Fraction(str(KILL_RATIO))
+    verdict = "PASS" if accuracy_ok and false_ok else "KILL" if killed else "MIXED"
     return {
         "verdict": verdict,
-        "accuracy_ratio": round(ratio, 4),
+        "accuracy_ratio": round(float(ratio), 4),
         "accuracy_ok": accuracy_ok,
-        "false_fact_delta_pp": round((vf - cf) * 100, 2),
+        "false_fact_delta_pp": round(float((vf - cf) * 100), 2),
         "false_fact_ok": false_ok,
         "vl_units": vl["units"],
         "claude_units": claude["units"],
@@ -271,6 +277,15 @@ def proof(scores: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
             f" KILL: ratio < {KILL_RATIO}"
         ),
     }
+
+
+def _exact(stats: Mapping[str, Any], num: str, den: str, rate: str) -> Fraction | None:
+    """``num / den`` as an exact fraction when the counts are there, else the printed ``rate``."""
+    top, bottom = stats.get(num), stats.get(den)
+    if isinstance(top, int) and isinstance(bottom, int) and bottom > 0:
+        return Fraction(top, bottom)
+    value = stats.get(rate)
+    return Fraction(str(value)) if isinstance(value, int | float) else None
 
 
 def wilson(correct: int, n: int, z: float = 1.96) -> tuple[float, float] | None:
