@@ -59,7 +59,7 @@ DIMENSIONS = (
 SEVERITIES = ("blocker", "major", "minor", "polish")
 ADOPT = ("yes", "maybe", "no")
 CONFIDENCE = ("low", "med", "high")
-VOICE_WORDS = (60, 260)
+VOICE_WORDS = (80, 200)  # what JUDGE_SYSTEM asks for is what the check enforces
 _EVIDENCE = re.compile(r"^(turn:(\d+)|brief|rehearsal|page)$")
 
 JUDGE_SYSTEM = f"""\
