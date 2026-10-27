@@ -216,10 +216,16 @@ class SleepAdmission:
         settled = self.book.last_settled()
         since = _hours_since(settled.finished_at if settled else None, now)
         if since is not None and since < FLOOR_H:
+            # A stamp ahead of this clock (the clock was set back) still holds: never loosened.
+            slept = (
+                f"Slept {_ago(since)} ago"
+                if since >= 0
+                else f"The last cycle is stamped {_ago(-since)} ahead of this computer's clock"
+            )
             return Verdict(
                 False,
                 "floor",
-                f"Slept {_ago(since)} ago; the next cycle is not before {FLOOR_H} h after one.",
+                f"{slept}; the next cycle is not before {FLOOR_H} h after one.",
             )
         failures = self.book.failures_since_settled()
         failed = failures.last

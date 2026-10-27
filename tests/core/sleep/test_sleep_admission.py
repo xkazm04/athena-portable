@@ -215,3 +215,19 @@ def test_the_walk_counts_at_most_the_fetch_and_says_so(
     window = EpisodeReader(brain, stamp).read(Boundary.first(clock()))
     assert window.episodes_available == EPISODE_FETCH
     assert not window.counted_all
+
+
+def test_a_cycle_stamped_ahead_of_the_clock_still_holds_and_says_so(
+    brain: Brain, clock: Clock, stamp: Stamp
+) -> None:
+    """A clock set back after a cycle: the floor still holds (never loosened), but the sentence
+    does not claim she slept "1 min ago" when the stamp is hours in this computer's future."""
+    r = rig(brain, clock, stamp)
+    write_episodes(brain, 3, chars=100)
+    settle(r.book, clock, hours_ago=-3)
+    verdict = r.admission.decide()[0]
+    assert verdict.reason == "floor"
+    assert verdict.text == (
+        "The last cycle is stamped 3 h ahead of this computer's clock; the next cycle is not "
+        "before 6 h after one."
+    )
