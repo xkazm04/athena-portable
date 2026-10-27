@@ -20,6 +20,11 @@ describe("richText", () => {
     expect(html("**one\ntwo**")).toBe("**one\ntwo**");
   });
 
+  it("draws a `code` name inside a **bold** line, with no backtick left over", () => {
+    expect(html("**run `doctor` now**")).toBe("<strong>run <code>doctor</code> now</strong>");
+    expect(html("**<b>`x`</b>**")).toBe("<strong>&lt;b&gt;<code>x</code>&lt;/b&gt;</strong>");
+  });
+
   it("never turns her words into markup", () => {
     expect(html("**<img src=x onerror=alert(1)>**")).toBe("<strong>&lt;img src=x onerror=alert(1)&gt;</strong>");
   });

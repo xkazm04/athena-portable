@@ -21,11 +21,18 @@ const BULLET = /^\s*[-*•]\s+(.*)$/;
 const NUMBERED = /^\s*\d+[.)]\s+(.*)$/;
 const RULE = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/;
 
+const CODE = /(`[^`\n]+`)/g;
+
+/** Text with its `code` spans drawn; text nodes only. */
+function withCode(text: string): ReactNode[] {
+  return text.split(CODE).map((part, i) => (i % 2 === 1 ? <code key={i}>{part.slice(1, -1)}</code> : <Fragment key={i}>{part}</Fragment>));
+}
+
 /** Her words with `**bold**` as <strong> and `` `code` `` as <code>; everything else as typed. */
 export function richText(text: string): ReactNode[] {
   // `split` with one capture group puts each match at an odd index; only those are marks.
   return text.split(MARKS).map((part, i) => {
-    if (i % 2 === 1 && part.startsWith("**")) return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (i % 2 === 1 && part.startsWith("**")) return <strong key={i}>{withCode(part.slice(2, -2))}</strong>;
     if (i % 2 === 1) return <code key={i}>{part.slice(1, -1)}</code>;
     return <Fragment key={i}>{part}</Fragment>;
   });
