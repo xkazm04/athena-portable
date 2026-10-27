@@ -140,7 +140,7 @@
   gap: 22px;
 }
 .ad-feed__item {
-  animation: ad-arrive 260ms var(--ease-fast) both;
+  animation: ad-arrive calc(var(--dur-depth) * 0.8) var(--ease-fast) both;
 }
 @keyframes ad-arrive {
   from {
@@ -281,13 +281,13 @@
   height: 7px;
   border-radius: 50%;
   background: var(--primary);
-  animation: ad-beat 1.2s var(--ease-fast) infinite;
+  animation: ad-beat calc(var(--dur-settle) * 2) var(--ease-fast) infinite;
 }
 .ad-progress__dots i:nth-child(2) {
-  animation-delay: 0.15s;
+  animation-delay: calc(var(--dur-settle) / 4);
 }
 .ad-progress__dots i:nth-child(3) {
-  animation-delay: 0.3s;
+  animation-delay: calc(var(--dur-settle) / 2);
 }
 @keyframes ad-beat {
   0%,
@@ -461,7 +461,7 @@
   border-color: var(--status-error);
 }
 .ad-mic[data-phase="recording"] .ad-mic__glyph {
-  animation: ad-beat 1s var(--ease-fast) infinite;
+  animation: ad-beat calc(var(--dur-settle) * 2) var(--ease-fast) infinite;
 }
 .ad-mic__problem {
   flex-basis: 100%;
@@ -781,7 +781,7 @@
   width: 40%;
   border-radius: 999px;
   background: var(--primary);
-  animation: ad-sweep 1.4s var(--ease-fast) infinite;
+  animation: ad-sweep calc(var(--dur-settle) * 2.5) var(--ease-fast) infinite;
 }
 @keyframes ad-sweep {
   from {
@@ -840,7 +840,7 @@
   border: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
   background: var(--card-bg);
   box-shadow: var(--shadow-elevation-1);
-  animation: ad-arrive 320ms var(--ease-fast) both;
+  animation: ad-arrive calc(var(--dur-depth) * 0.8) var(--ease-fast) both;
 }
 .ad-show[data-tailored] {
   border-color: color-mix(in srgb, var(--status-success) 60%, transparent);
