@@ -173,10 +173,18 @@ class ChoreClock:
         with self.book.lock:
             quiet = self.book.quiet()
             for cadence in self.book.all():
-                changed = self._reconcile(cadence, moment, quiet)
-                if changed is not None:
-                    self._save(changed)
-                    written += 1
+                # One chore whose file will not take the write (held open by another program, a
+                # refused path) is that chore's line, never every later chore's missed tick.
+                try:
+                    changed = self._reconcile(cadence, moment, quiet)
+                    if changed is not None:
+                        self._save(changed)
+                        written += 1
+                except (OSError, ValueError) as exc:
+                    print(
+                        f"[chores] {cadence.case_id} not reconciled: {type(exc).__name__}: {exc}",
+                        file=sys.stderr,
+                    )
             self.ticked_at = iso(moment)
         return written
 

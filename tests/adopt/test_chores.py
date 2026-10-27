@@ -334,6 +334,32 @@ def test_no_second_review_opens_while_one_is_open(brain: Brain) -> None:
     assert len(clock.due(T0 + timedelta(days=7, minutes=2))["notices"]) == 1
 
 
+def test_one_cadence_that_cannot_be_written_does_not_hold_back_the_others(
+    brain: Brain, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # On Windows a file another program holds open cannot be replaced: that chore's write fails,
+    # and every chore after it on disk must still come due on this tick.
+    first, second = sorted((_case(brain), _case(brain)), key=lambda c: c.id)
+    clock = _clock(brain)
+    for case in (first, second):
+        clock.set_cadence(case.id, rule=MONDAY, timezone="UTC", enabled=True, now=T0 - timedelta(1))
+    real_save = clock.book.save
+
+    def save(cadence: Any, title: str) -> Any:
+        if cadence.case_id == first.id:
+            raise PermissionError("the file is open in another program")
+        return real_save(cadence, title)
+
+    monkeypatch.setattr(clock.book, "save", save)
+    assert clock.tick(T0 + timedelta(minutes=1)) == 1
+    held = clock.book.load(second.id)
+    assert held is not None and held.review is not None and held.review.due_at == iso(T0)
+    assert clock.book.load(first.id).review is None  # type: ignore[union-attr]
+    assert clock.ticked_at == iso(T0 + timedelta(minutes=1))
+    err = capsys.readouterr().err
+    assert first.id in err and "PermissionError" in err
+
+
 def test_three_unanswered_in_a_row_asks_pause_or_slow(brain: Brain) -> None:
     case = _case(brain)
     clock = _clock(brain)

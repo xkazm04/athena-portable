@@ -1045,6 +1045,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): Enter in the composer before the session is ready keeps the words instead of clearing them unsent.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, bounty-hunter): the shared composer's `send` honours `ready`, as its Send button did; studio.test.tsx.
 - `fix(avatar): the face's shared types say the mirror runs at 40 Hz, as ADR 0027's amendment set it.` Stabilize 2026-10-27 (desktop-avatar, copy-auditor): `avatar/types.ts` still said "at most 30 times a second" after a57677d5 raised the face cap to `FACE_MIRROR_HZ` = 40.
 - `fix(face): faceTimeline's doc comment sits on faceTimeline, not stacked on FaceLineSink's.` Stabilize 2026-10-27 (desktop-avatar, documentation-auditor): an orphaned doc block in `lib/face-timeline.ts` moved onto the function it describes.
+- `fix(chores): one chore whose cadence file cannot be written no longer holds back every chore after it.` scan-sweep stabilize (adopt-engine, error-handler): `ChoreClock.tick` reconciles each cadence in its own try; a write that fails (a file held open on Windows) is one stderr line for that chore, and the chores after it still come due.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
