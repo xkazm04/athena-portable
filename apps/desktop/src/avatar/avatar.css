@@ -1,0 +1,24 @@
+/* Her face arriving (ADR 0120; `Avatar.tsx`, `runtime.ts`). The canvas is drawn hidden; when the
+ * runtime has drawn the rest frame it sets `data-face="ready"` and the face eases in by opacity on
+ * the depth tokens (`styles/app.css`) instead of cutting in. Under Calm `--dur-depth` is already 0;
+ * the rules below also stop the transition outright, and a reduced-motion machine that has not
+ * chosen full motion gets the same, so the face is simply there. Opacity only. */
+
+[data-face] > canvas {
+  opacity: 0;
+  transition: opacity var(--dur-depth) var(--ease-depth);
+}
+
+[data-face="ready"] > canvas {
+  opacity: 1;
+}
+
+:root[data-motion="calm"] [data-face] > canvas {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) [data-face] > canvas {
+    transition: none;
+  }
+}

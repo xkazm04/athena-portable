@@ -16,6 +16,7 @@
  */
 import { frames, systemPrefersReduced, type Clock } from "@/lib/motion";
 
+import "./avatar.css";
 import { createDriver, type Driver, type Pose } from "./driver";
 import { createGlowRenderer, type GlowRenderer } from "./glow";
 import { loadForm } from "./layers";

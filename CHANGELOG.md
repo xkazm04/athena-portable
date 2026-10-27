@@ -1193,6 +1193,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(console): the dock's due line says the chore's missed count and the other chores waiting in different words.` Owner-approved Lane C: "Chore a is due, missed twice since · 1 other chore due" in place of two different "more"s.
 - `fix(setup): Setup's engine count divides by the engines the desktop can launch, not every row the daemon reports.` Stabilize Lane B: "none of the 4 can be used yet" named nebius and muse_code, which the shell cannot start; `engineStateOf` now counts only `ENGINE_IDS`.
 - `fix(companion): the welcome says what runs on this machine and what is sent to her engine.` It no longer promises "no cloud" and "nothing leaves it": the page text she reads goes to her engine, her memory is kept on this machine, and there is no Athena account and no telemetry (`companion/welcome.tsx`; owner-approved wording).
+- `fix(avatar): her face eases in by opacity on the depth tokens instead of cutting in.` Owner-approved Lane C (touches motion; run `pnpm perf`): `avatar.css`, loaded with the lazy runtime, fades the canvas in on `--dur-depth` when `data-face` turns ready; instant under Calm and prefers-reduced-motion.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
