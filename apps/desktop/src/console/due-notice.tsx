@@ -5,7 +5,8 @@
  * how many more wait behind it; pressed, it opens the case's staged review in place: what to check
  * first, then Open and prepare, Skip this one, or Later (put away with no answer; the review stays
  * open on the chore's page), and "Open the chore" for the whole page. Drawn means shown: the seen
- * stamp is sent from here, once the dock has drawn the line, not when the notice arrived. A lazy
+ * stamp is sent from here, once the dock has drawn the line in a window that is not hidden, not
+ * when the notice arrived. A lazy
  * chunk, so the first frame carries none; it starts the poller (`stores/due-poll.ts`) when it
  * mounts, and the review's view is fetched only when a line is first pressed.
  */
@@ -26,8 +27,18 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
   // more and the first frame carries neither.
   useEffect(() => startDue(), []);
   const { notice, more, dock, shown, dismiss, review, prepare, skip, pause, later } = useDue();
+  // Drawn means seen: a hidden window has drawn nothing a person can read, so the stamp waits for
+  // the window to be shown (ADR 0131, decision 8).
   useEffect(() => {
-    if (notice) shown(notice);
+    if (!notice) return;
+    const stamp = () => {
+      if (document.hidden) return;
+      document.removeEventListener("visibilitychange", stamp);
+      shown(notice);
+    };
+    document.addEventListener("visibilitychange", stamp);
+    stamp();
+    return () => document.removeEventListener("visibilitychange", stamp);
   }, [notice, shown]);
   if (!notice) return null;
   const since = notice.missed ? ` (and ${notice.missed} more since)` : "";

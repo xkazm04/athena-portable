@@ -316,6 +316,9 @@ describe("the dock's notice, held to its own words", { timeout: 15_000 }, () => 
     Reflect.deleteProperty(document, "hidden");
     Reflect.deleteProperty(document, "visibilityState");
   });
+  const stamps = () =>
+    daemon.seen.filter((s) => s.method === "POST" && (s.body as { answer?: string }).answer === "seen").map((s) => s.path);
+
   it("Escape closes the review from the line that opened it, where the focus is", async () => {
     await mount([notice("a")]);
     await press(line());
@@ -341,5 +344,18 @@ describe("the dock's notice, held to its own words", { timeout: 15_000 }, () => 
     await press(button("Skip this one"));
     expect(posts().filter((p) => (p.body as { answer?: string }).answer === "skip")).toHaveLength(2);
     expect((await dock()).notice).toBeNull();
+  });
+
+  it("is not stamped seen while the window is hidden, and is stamped once it is shown", async () => {
+    hidden = true;
+    await mount([notice("a")]);
+    expect(host.textContent).toContain("Chore a is due");
+    expect(stamps()).toEqual([]);
+    hidden = false;
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await settle();
+    expect(stamps()).toEqual(["/adopt/cases/a/review"]);
   });
 });
