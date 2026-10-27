@@ -202,6 +202,20 @@ def test_the_vl_call_is_ledgered_under_nebius_with_one_usage(
     assert usages[-1].model == SUPER_VL_MODEL and usages[-1].leg == "research"
 
 
+def test_a_vl_call_that_raised_after_it_was_sent_is_still_ledgered(
+    rig: Rig, session: AdoptSession
+) -> None:
+    # "A call that was sent is ledgered, failed or not": a reader bug after the request went out
+    # is a failed nebius row and one usage, then the Claude leg reads the document.
+    post = Post(raises=RuntimeError("an unexpected bug"))
+    run(session, drop(session, "scan.png", png(800, 1000)), VL_ON, post)
+    assert len(post.sent) == 1 and claude_calls(rig) == 1
+    nebius = [r for r in rig.ledger.rows if r["engine"] == "nebius"]
+    assert len(nebius) == 1 and nebius[0]["is_error"] is True
+    assert nebius[0]["error_reason"] == "engine_error" and nebius[0]["model"] == SUPER_VL_MODEL
+    assert session.counters.get("vl_reader_failed") == 1
+
+
 def test_nemotron_vl_leaves_a_pdf_to_claude(rig: Rig, session: AdoptSession) -> None:
     post = ok_post()
     outcome = run(session, drop(session, "letter.pdf", b"%PDF-1.7\n" + b"x" * 64), VL_ON, post)

@@ -1066,6 +1066,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): the studio's file picker offers the document kinds the refusal admits, from one list instead of two.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the DropZone's `accept` reads `DOCUMENT_MIMES`; studio.test.tsx, seeded red with a new kind against the old literal.
 - `fix(chores): the reconnect banner counts against the session hook's own limit, not a 5 typed twice beside it.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): the studio's and the front door's banners read `MAX_TRIES`; seeded red with a changed limit against the old literal.
 - `fix(intake): an intake card holds at most the three questions its prompt allows, not the interviewer's four.` scan-sweep stabilize (adopt-engine, parity-auditor): `prompts.MAX_INTAKE_QUESTIONS` is the one cap the prompt states and `card_questions` applies.
+- `fix(adopt): a picture-reader call that raised after it was sent is ledgered as a failed row, not dropped.` scan-sweep stabilize (adopt-engine, observability-auditor): the VL reader's catch-all now writes a failed `nebius` row and counts `vl_reader_failed` before the Claude leg reads the document.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

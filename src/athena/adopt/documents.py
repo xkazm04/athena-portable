@@ -25,6 +25,7 @@ larger picture always goes to it. The call is ledgered under the ``nebius`` engi
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -207,9 +208,24 @@ def _read_picture(
     if not key:
         return None
     call = VisionCall(data, sniffed[0], api_key=key, post=post, timeout_s=VL_TIMEOUT_S)
+    started = time.monotonic()
     try:
         reply = call.complete(DOCUMENT_VL_SYSTEM, document_prompt(session.playbook, slots, None))
-    except Exception:  # a VL problem never fails the lane
+    except Exception as exc:  # a VL problem never fails the lane
+        # The request may have gone out: it is a failed row like any other, never no row.
+        session.count("vl_reader_failed")
+        session.account(
+            LegResult(
+                kind="research",
+                ok=False,
+                model=call.model,
+                effort="",
+                ms=int((time.monotonic() - started) * 1000),
+                error_reason="engine_error",
+                detail=f"the picture reader failed: {type(exc).__name__}",
+            ),
+            engine=ENGINE,
+        )
         return None
     if reply.ok:
         value, problem = _checked(reply.text, _SCHEMA, None)
