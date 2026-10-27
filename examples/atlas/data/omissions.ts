@@ -63,7 +63,7 @@ export const OMISSIONS: Omission[] = [
     reason:
       "featured chores' senses: recorded media built into world tables with provenance, a build step a chore's world is made by, not a layer of the turn",
     source: "src/athena/senses/__init__.py; ADR 0226",
-    modules: 14,
+    modules: 15,
   },
   {
     path: "src/athena/harness/meta/",
