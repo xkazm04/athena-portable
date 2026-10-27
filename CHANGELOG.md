@@ -1126,6 +1126,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(docread): the report names the Claude model that answered, not whatever tiers.json says on the day it is scored.` Stabilize 2026-10-27 (proving-docread, parity-auditor): `run_score` stamped today's research tier over the model the readings recorded; it now keeps the recorded model and adds the effort only when the tier still names it.
 - `fix(chores-uat): report.md names a pair dump it cannot read instead of dropping it in silence.` Stabilize 2026-10-27 (proving-chores-uat, observability-auditor): a torn or broken dump was skipped by `load_dumps` and the header's "N pairs on disk" just counted one fewer; the header now names every unreadable dump as left out of every number.
 - `fix(forge): a run directory is dry or live for good, so fixture worlds are never reported or benched as a measurement.` Stabilize 2026-10-27 (proving-forge, parity-auditor): `report --run-dir <dry run>` without `--dry` dropped the dry banner; the first stage now records `forge/mode.json`, a report follows it, and a disagreeing stage is refused (exit 2).
+- `fix(chores-uat): a resume with the other rehearse setting is refused, so one run.json never covers two experiments.` Stabilize 2026-10-27 (proving-chores-uat, risk-assessor): resuming a rehearsed run with --no-rehearse ran the rest without rehearsals and rewrote run.json as if none had rehearsed; the resume now refuses with exit 2 and leaves run.json alone.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

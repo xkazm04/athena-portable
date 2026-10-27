@@ -290,6 +290,18 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
                 "start a new --run-id"
             )
             return 2
+        # Rehearsing or not is part of the experiment: its dumps cannot share a run with the
+        # other setting's, and the run.json written below would claim one for all of them.
+        try:
+            was = json.loads(meta_path.read_text(encoding="utf-8")).get("rehearse")
+        except (OSError, json.JSONDecodeError, AttributeError):
+            was = None
+        if isinstance(was, bool) and was != rehearse:
+            say(
+                f"run {run_id} was run with rehearse {'on' if was else 'off'}, this resume has "
+                f"it {'on' if rehearse else 'off'}; start a new --run-id"
+            )
+            return 2
     run_dir.mkdir(parents=True, exist_ok=True)
     meta_path.write_text(
         json.dumps(

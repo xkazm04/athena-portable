@@ -498,3 +498,27 @@ def test_instrument_names_every_prompt_and_tier() -> None:
     ):
         assert re.fullmatch(r"sha256:[0-9a-f]{16}", ident[key])
     assert ident["judge_tier"] == "claude-sonnet-5-5/medium"
+
+
+def test_a_resume_with_another_rehearse_setting_is_refused_before_anything_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A run whose dumps rehearsed cannot be resumed with --no-rehearse (or back): its pairs would
+    be two experiments under one run.json, which the resume then rewrites as one."""
+    from athena.proving.chores_uat import __main__ as cli
+
+    ran: list[Any] = []
+    monkeypatch.setattr(cli, "claude_available", lambda: True)
+    monkeypatch.setattr(cli, "run_pairs", lambda *a, **k: ran.append(a) or [])
+    monkeypatch.setattr(cli, "write_report", lambda *_a, **_k: None)
+    run_dir = tmp_path / "chores-uat" / "t"
+    run_dir.mkdir(parents=True)
+    meta = {"instrument": instrument(), "rehearse": True, "wall_s": 600.0}
+    (run_dir / "run.json").write_text(json.dumps(meta), "utf-8")
+    argv = ["run", "--uat", str(UAT), "--base", str(tmp_path), "--run-id", "t"]
+    out: list[str] = []
+    assert cli.main([*argv, "--no-rehearse"], echo=out.append) == 2
+    assert not ran and "rehearse" in out[-1] and "start a new --run-id" in out[-1]
+    assert json.loads((run_dir / "run.json").read_text("utf-8"))["rehearse"] is True
+    # The same setting resumes.
+    assert cli.main(argv, echo=out.append) == 0 and len(ran) == 1
