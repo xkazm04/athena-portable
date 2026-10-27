@@ -148,7 +148,7 @@ export const ADOPT_EVENT_KINDS: readonly AdoptEventKind[] = [
 
 /** Routes (all carry the daemon token header, like every other route). */
 export const ADOPT_ROUTES = {
-  start: "/adopt", // POST {playbook_id, intro?, case_id?} -> {ok, session_id, slots, case}
+  start: "/adopt", // POST {playbook_id, intro?, case_id?, space_id?} -> {ok, session_id, slots, case}
   cases: (playbookId: string) =>
     `/adopt/cases?playbook_id=${encodeURIComponent(playbookId)}`, // GET -> {ok, cases, showing, total, footer}
   events: (sid: string, after: number) =>

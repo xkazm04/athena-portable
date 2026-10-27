@@ -100,6 +100,18 @@ describe("the routes", () => {
     expect((calls[0]!.init.headers as Record<string, string>)["X-Athena-Token"]).toBe("tok");
   });
 
+  it("starts a new chore in the project that is active, and never moves a reopened case into it", async () => {
+    const { calls, f } = fake(() => json({ ok: true, session_id: "s1", slots: [] }));
+    const api = new AdoptApi(() => AT, f, () => "spc_0123456789ab");
+    await api.start("x");
+    await api.start("x", "", "proj_0123456789ab");
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ playbook_id: "x", space_id: "spc_0123456789ab" });
+    expect(JSON.parse(String(calls[1]!.init.body))).toEqual({ playbook_id: "x", case_id: "proj_0123456789ab" });
+    // Athena's core is the absent value: nothing is sent.
+    await new AdoptApi(() => AT, f, () => "").start("x");
+    expect(JSON.parse(String(calls[2]!.init.body))).toEqual({ playbook_id: "x" });
+  });
+
   it("follows the events after a seq, frame by frame, skipping a frame that is not one", async () => {
     const { calls, f } = fake(() =>
       sse([

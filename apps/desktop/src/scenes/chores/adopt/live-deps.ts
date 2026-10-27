@@ -17,6 +17,7 @@ import {
 import { PreviewPlayer, TakeRecorder } from "@/modules/voice/audio";
 import { readySttEngines } from "@/modules/voice/model";
 import { endpoint, useDaemon } from "@/stores/daemon";
+import { useSpacesGlance } from "@/stores/spaces-glance";
 
 import type { AdoptDeps, Dictation } from "./deps";
 
@@ -96,5 +97,5 @@ function liveDictation(): Dictation {
 }
 
 export function liveAdoptDeps(): AdoptDeps {
-  return { client: new AdoptApi(at), chores: new ChoresApi(at), dictation: liveDictation() };
+  return { client: new AdoptApi(at, undefined, () => useSpacesGlance.getState().activeId), chores: new ChoresApi(at), dictation: liveDictation() };
 }

@@ -56,6 +56,7 @@ export interface AdoptClient {
   /**
    * A new session; `intro` is what the person says before the first card (optional). `caseId`
    * reopens that saved case of the playbook (ADR 0123): its slots and its approved brief arrive first.
+   * A new chore carries the active project's id (`space_id`, ADR 0225).
    */
   start(playbookId: string, intro?: string, caseId?: string): Promise<StartReply>;
   /** The saved cases of a playbook, latest approval first (ADR 0123). Read-only. */
@@ -79,6 +80,8 @@ export class AdoptApi implements AdoptClient {
   constructor(
     private readonly at: () => Endpoint | null,
     private readonly fetchImpl: FetchLike = globalFetch,
+    /** The project every turn is filed under; `""` is Athena's core (ADR 0225). */
+    private readonly space: () => string = () => "",
   ) {}
 
   async start(playbookId: string, intro?: string, caseId?: string): Promise<StartReply> {
@@ -86,6 +89,10 @@ export class AdoptApi implements AdoptClient {
     const body: Record<string, string> = { playbook_id: playbookId };
     if (words) body.intro = words;
     if (caseId) body.case_id = caseId;
+    // A new chore is adopted in the active project (the approve writes it into the case); a
+    // reopened case keeps its own, so it is never sent one.
+    const space = caseId ? "" : this.space();
+    if (space) body.space_id = space;
     const reply = await this.json<Partial<Record<keyof StartReply, unknown>>>("POST", ADOPT_ROUTES.start, body);
     return {
       ok: true,
