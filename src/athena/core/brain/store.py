@@ -777,7 +777,9 @@ class Brain:
             self.index_supersedes(con, node_id, closes)
         return MemoryRef(node_id, rel, "procedural")
 
-    def _require_supersedable(self, supersedes: Sequence[str], space: str = CORE) -> list[str]:
+    def _require_supersedable(
+        self, supersedes: Sequence[str], space: str = CORE, *, arriving: bool = False
+    ) -> list[str]:
         """The ids a new memory may close: facts or procedurals this brain holds. Deduplicated.
 
         A sleep cycle's merge leg names them, and a model's reference is untrusted until it is
@@ -787,6 +789,9 @@ class Brain:
         Only a memory of the writer's own ``space`` may be closed (ADR 0225). Recall serves the
         successor and never what it closed, in every space: a project's fact closing a core one
         would take it from core and from every other project, where the successor is not visible.
+
+        ``arriving`` is :meth:`receive_file`'s: another device's file may name a memory that has
+        not reached this one yet, so an absent id passes; one held here must still be the space's.
         """
         wanted = list(dict.fromkeys(supersedes))
         if not wanted:
@@ -805,9 +810,9 @@ class Brain:
             ).fetchall()
         known = {str(row[0]): str(row[1] or CORE) for row in rows}
         missing = [s for s in wanted if s not in known]
-        if missing:
+        if missing and not arriving:
             raise ValueError(f"supersedes names memories this brain does not hold: {missing}")
-        walled = [s for s in wanted if known[s] != space]
+        walled = [s for s in wanted if s in known and known[s] != space]
         if walled:
             where = "core" if space == CORE else f"space {space}"
             raise ValueError(f"supersedes names memories that are not {where}'s: {walled}")
@@ -977,6 +982,14 @@ class Brain:
             if not isinstance(sources, list):
                 raise ProvenanceError(f"{rel}: a fact or a procedural must cite its episodes")
             self._require_provenance([str(source) for source in sources], space_of(meta))
+            closes = meta.get(SUPERSEDES_KEY)
+            if isinstance(closes, list):
+                # The supersede wall, as every writer passes it (ADR 0225). A memory named here
+                # that has not arrived yet is let through: replication sends what cites before
+                # what is closed only by the order things were written in.
+                self._require_supersedable(
+                    [str(old) for old in closes], space_of(meta), arriving=True
+                )
             checked = reconcile.confidence_of(meta)
             if checked is None:
                 raise ValueError(f"{rel}: confidence is not a number")

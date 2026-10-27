@@ -8,6 +8,7 @@ the provenance gate every writer passes, and the rebuild's own per-file index st
 
 from __future__ import annotations
 
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -182,3 +183,48 @@ def test_a_received_file_whose_header_disagrees_with_its_path_is_refused(tmp_pat
         with pytest.raises(ValueError, match="not UTF-8"):
             here.receive_file("episode", ep_rel, b"\xff\xfe")
         assert here.counts().get("episode", 0) == 0
+
+
+def test_a_received_memory_may_close_only_its_own_spaces_memories(tmp_path: Path) -> None:
+    """The supersede wall holds at the door as at the writer (ADR 0143, ADR 0225): a broken peer's
+    project fact naming a core fact in ``supersedes`` would hide it from core and every project,
+    where the successor is not visible. One closing a memory of its own space, or one that has not
+    arrived yet, is filed."""
+    space = ids.mint("space")
+    with Brain(tmp_path / "other") as other, Brain(tmp_path / "here") as here:
+        said = other.append_episode("the harbour invoice is due Friday", "user")
+        core_fact = other.write_fact("harbour", "Harbour pays Friday.", sources=[said.id])
+        inside = other.append_episode("harbour detail for the project", "user", space=space)
+        old = other.write_fact("harbour detail", "Old detail.", sources=[inside.id], space=space)
+        for kind, ref in (("episode", said), ("fact", core_fact), ("episode", inside)):
+            here.receive_file(kind, ref.path, (other.root / ref.path).read_bytes())
+        meta, _ = frontmatter.parse((other.root / old.path).read_text(encoding="utf-8"))
+        forged_id = ids.mint("fact")
+        forged_rel = f"semantic/user/{forged_id}_harbour-detail.md"
+        forged = frontmatter.render(
+            [
+                ("id", forged_id),
+                ("type", "fact"),
+                ("scope", "user"),
+                ("key", "harbour detail"),
+                ("confidence", 0.7),
+                ("created", meta["created"]),
+                ("sources", [inside.id]),
+                ("supersedes", [core_fact.id]),
+                ("space", space),
+            ],
+            "Harbour pays Monday.",
+        )
+        with pytest.raises(ValueError, match="not space"):
+            here.receive_file("fact", forged_rel, forged.encode("utf-8"))
+        assert here.node(forged_id) is None and not (here.root / forged_rel).exists()
+        with closing(here.read_connection()) as con:
+            (closed,) = con.execute("SELECT COUNT(*) FROM companion_supersede").fetchone()
+        assert closed == 0, "nothing of core is closed"
+        # Its own space's memory - present or still on its way - is the successor's to close.
+        newer = other.write_fact(
+            "harbour detail", "New detail.", sources=[inside.id], supersedes=[old.id], space=space
+        )
+        here.receive_file("fact", newer.path, (other.root / newer.path).read_bytes())
+        here.receive_file("fact", old.path, (other.root / old.path).read_bytes())
+        assert here.node(newer.id) is not None and here.node(old.id) is not None
