@@ -233,6 +233,26 @@ def test_a_cycle_stamped_ahead_of_the_clock_still_holds_and_says_so(
     )
 
 
+def test_a_failed_cycle_stamped_ahead_of_the_clock_says_so_and_still_holds(
+    brain: Brain, clock: Clock, stamp: Stamp
+) -> None:
+    """The failure sentence has the same clamp the floor had: a failed row stamped hours in this
+    computer's future must not read "failed 1 min ago" while the backoff holds."""
+    r = rig(brain, clock, stamp)
+    write_episodes(brain, 3, chars=100)
+    settle(r.book, clock, hours_ago=-3, status="failed")
+    verdict = r.admission.decide()[0]
+    assert verdict.reason == "failed_recently"
+    assert verdict.text == (
+        "The last cycle is stamped 3 h ahead of this computer's clock; trying again after 1 h."
+    )
+    settle(r.book, clock, hours_ago=-3, status="failed")
+    again = r.admission.decide()[0]
+    assert again.reason == "failed_recently"
+    assert "stamped 3 h ahead of this computer's clock" in again.text
+    assert "2 cycles in a row" in again.text
+
+
 def test_the_ceilings_are_the_adrs() -> None:
     """Every number ADR 0143 (and 0190's backoff) states for the cycle, pinned to it: a changed
     ceiling is an ADR amendment, not a constant edit a test computed from would follow."""

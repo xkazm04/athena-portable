@@ -232,15 +232,18 @@ class SleepAdmission:
         failed_since = _hours_since(failed.finished_at if failed else None, now)
         backoff = failures.backoff_h
         if failed is not None and failed_since is not None and failed_since < backoff:
+            # A stamp ahead of this clock keeps the hold but does not claim "1 min ago".
+            failed_at = (
+                f"failed {_ago(failed_since)} ago"
+                if failed_since >= 0
+                else f"is stamped {_ago(-failed_since)} ahead of this computer's clock"
+            )
             if failures.count == 1:
-                text = (
-                    f"The last cycle failed {_ago(failed_since)} ago; trying again after "
-                    f"{backoff} h."
-                )
+                text = f"The last cycle {failed_at}; trying again after {backoff} h."
             else:
                 cause = _CAUSES.get(str(failed.stats.get("failure") or ""), "it kept failing")
                 text = (
-                    f"The last cycle failed {_ago(failed_since)} ago, {failures.count} cycles in "
+                    f"The last cycle {failed_at}, {failures.count} cycles in "
                     f"a row ({cause}); trying again after {backoff} h."
                 )
             return Verdict(False, "failed_recently", text)
