@@ -87,8 +87,9 @@ export default function Conversation({
   }, [last]);
   useEffect(() => onDraft("composer", text.trim() !== ""), [text, onDraft]);
 
+  // Enter reaches here even while Send is disabled: the words stay in the box until they can go.
   const send = () => {
-    if (!text.trim()) return;
+    if (!ready || !text.trim()) return;
     onSay(text, via);
     setText("");
     setVia("text");

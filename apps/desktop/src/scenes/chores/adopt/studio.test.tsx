@@ -604,6 +604,19 @@ describe("a question card", () => {
     expect(text(".ad-you")).toBe("I paid with two cards.");
   });
 
+  it("keeps the composer's words when Enter is pressed before the session has started", async () => {
+    client.startWith = () => new Promise(() => {});
+    await show();
+    const box = q<HTMLTextAreaElement>("#ad-say")!;
+    type(box, "I paid with two cards.");
+    act(() => {
+      box.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    });
+    await flush();
+    expect(q<HTMLTextAreaElement>("#ad-say")!.value).toBe("I paid with two cards.");
+    expect(client.routes("answer")).toEqual([]);
+  });
+
   it("refuses a document it cannot read, in the conversation, without sending it", async () => {
     await show();
     const input = q<HTMLInputElement>('input[type="file"]')!;
