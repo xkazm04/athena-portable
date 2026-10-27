@@ -11,6 +11,7 @@ import pytest
 from athena.proving.adopt_tiers import pick as pick_module
 from athena.proving.adopt_tiers.cells import bench_digest, cell_digest
 from athena.proving.adopt_tiers.pick import (
+    against,
     aggregate,
     aggregate_shape,
     load_results,
@@ -19,7 +20,7 @@ from athena.proving.adopt_tiers.pick import (
 )
 from athena.proving.adopt_tiers.report import dry_text, report_md
 from athena.proving.adopt_tiers.scenarios import SCENARIOS_DIR, load_scenario, load_scenarios
-from athena.proving.adopt_tiers.simulate import Job, job_path, make_plan, write_record
+from athena.proving.adopt_tiers.simulate import CONFIGS, Job, job_path, make_plan, write_record
 
 LEASE = load_scenario(SCENARIOS_DIR / "easy-lease-end.json")
 SCENARIOS = load_scenarios()
@@ -248,3 +249,43 @@ def test_guard_full_current_clear_grid_picks_what_todays_rule_picks() -> None:
             old.disqualified,
         )
         assert new.why.startswith(old.why)
+
+
+# --- the delta beside a pick is over the cells the pick was read over ----------------------------
+
+
+def _held(interview: str) -> dict[str, Any]:
+    entry = {"model": CONFIGS[interview].model, "effort": CONFIGS[interview].effort}
+    return {"interview": entry}
+
+
+@pytest.mark.usefixtures("scripted")
+def test_the_incumbent_delta_is_over_the_paired_conditioned_cells() -> None:
+    every = [s.id for s in SCENARIOS]
+    opus = _grid("opus-low", every, first=[1000])
+    sonnet = _grid("sonnet-low", every, first=[1100])
+    sonnet[0] = _record(every[0], "sonnet-low", 1, first=[100] * 40, ended="wall_cap")
+    records = opus + sonnet
+    pick = _picks(records)[0]
+    assert pick.config == "opus-low" and pick.speed["sonnet-low"] == 1100
+    stats = aggregate(records, SCENARIOS)
+    out = against([pick], stats, {}, _held("sonnet-low"), records=records, scenarios=SCENARIOS)[0]
+    # The pick ranked 1000 against 1100 over 17 conditioned cells: the delta says the same.
+    assert out.delta["speed_ms"] == -100
+    assert out.runs == {"incumbent": 18, "proposed": 18}
+
+
+@pytest.mark.usefixtures("scripted")
+def test_a_short_incumbent_is_compared_over_the_cells_both_completed() -> None:
+    every = [s.id for s in SCENARIOS]
+    easy = [s.id for s in SCENARIOS if s.band == "easy"]
+    records = _grid("opus-low", every, first=[1500], accuracy=88.0) + _grid(
+        "haiku-low", easy, first=[400], accuracy=99.0
+    )
+    pick = _picks(records)[0]
+    assert pick.config == "opus-low"
+    stats = aggregate(records, SCENARIOS)
+    out = against([pick], stats, {}, _held("haiku-low"), records=records, scenarios=SCENARIOS)[0]
+    both = len(easy) * 2
+    assert out.runs == {"incumbent": both, "proposed": both}
+    assert out.delta["accuracy"] == -11.0

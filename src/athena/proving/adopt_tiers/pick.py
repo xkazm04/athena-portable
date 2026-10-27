@@ -560,15 +560,51 @@ def _diff(old: float | None, new: float | None, digits: int) -> float | None:
     return None if old is None or new is None else round(new - old, digits)
 
 
+def _delta_stats(
+    pick: Pick,
+    incumbent_name: str,
+    records: Sequence[Mapping[str, Any]],
+    scenarios: Sequence[Scenario],
+) -> tuple[ConfigStats, ConfigStats, ConfigStats, ConfigStats] | None:
+    """The incumbent's and the proposal's stats over the cells the pick was read over: quality
+    and usage over the paired cells, speed over the ones every survivor ended clear or brief
+    (ADR 0145). An incumbent the pick did not pair with is read over the cells it and the
+    proposal both completed. ``None`` when either side has no record. Answers
+    ``(incumbent, proposed, incumbent speed, proposed speed)``."""
+    known = [r for r in records if str(r.get("config")) in CONFIGS]
+    cov = coverage(known)
+    proposed = str(pick.config)
+    if incumbent_name not in cov or proposed not in cov:
+        return None
+    union: set[tuple[str, int]] = set().union(*cov.values())
+    candidates = [n for n, cells in cov.items() if cells >= union]
+    if incumbent_name in candidates and proposed in candidates:
+        cells = paired(known, candidates)
+        survivors = [n for n in candidates if n not in pick.disqualified]
+    else:
+        cells = paired(known, [incumbent_name, proposed])
+        survivors = [incumbent_name, proposed]
+    both = (incumbent_name, proposed)
+    body = aggregate(restrict(known, both, cells), scenarios)
+    clear = conditioned(known, survivors, cells)
+    timed = aggregate(restrict(known, both, clear), scenarios) if clear else body
+    return body[both[0]], body[both[1]], timed[both[0]], timed[both[1]]
+
+
 def against(
     picks: Sequence[Pick],
     stats: Mapping[str, ConfigStats],
     shape: Mapping[str, ShapeStats],
     tiers: Mapping[str, Any],
+    *,
+    records: Sequence[Mapping[str, Any]] | None = None,
+    scenarios: Sequence[Scenario] = (),
 ) -> list[Pick]:
     """Stamp each written role's pick with the incumbent in ``tiers``, the proposal, why the
-    incumbent is out of this run (if it is), and proposed-minus-incumbent deltas over the stats
-    the report tables show, with the runs behind each side. Answers the same picks."""
+    incumbent is out of this run (if it is), and proposed-minus-incumbent deltas, with the runs
+    behind each side. With ``records`` the interview and audit deltas are read over the cells the
+    pick was read over (:func:`_delta_stats`); without them, over ``stats``, the report tables'
+    figures. Answers the same picks."""
     held = incumbent(tiers)
     for pick in picks:
         if pick.role not in held:
@@ -592,10 +628,15 @@ def against(
             pick.usage_unit = b.usage_unit
             continue
         x, y = stats.get(inc.config), stats.get(pick.config)
-        if x is None or y is None:
+        fast_x, fast_y = x, y
+        if records is not None:
+            cells = _delta_stats(pick, inc.config, records, scenarios)
+            if cells is not None:  # a side with no record keeps the empty stats: no figures
+                x, y, fast_x, fast_y = cells
+        if x is None or y is None or fast_x is None or fast_y is None:
             continue
         pick.delta = {
-            "speed_ms": _diff(_speed(pick.role, x), _speed(pick.role, y), 0),
+            "speed_ms": _diff(_speed(pick.role, fast_x), _speed(pick.role, fast_y), 0),
             "accuracy": _diff(x.accuracy, y.accuracy, 1),
             "judge": _diff(x.judge, y.judge, 2),
             "usage": _diff(_usage(pick.role, x), _usage(pick.role, y), 4),

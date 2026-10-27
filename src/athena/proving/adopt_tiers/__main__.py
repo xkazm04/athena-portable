@@ -135,7 +135,9 @@ def main(
     _, note = shape_function()
     measured = bool(results.shapes)
     picks = pick_bench(interviews, scenarios, shape_stats, shape_measured=measured, shape_note=note)
-    picks = against(picks, stats, shape_stats, read_tiers(tiers))
+    picks = against(
+        picks, stats, shape_stats, read_tiers(tiers), records=interviews, scenarios=scenarios
+    )
     if verb == "report":
         text = report_md(
             stats,

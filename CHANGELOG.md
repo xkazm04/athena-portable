@@ -1146,6 +1146,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(adopt): the brief writer and the setup lines call a reopened guessed slot the same thing.` Stabilize Lane B (parity-auditor): a reopened case's unconfirmed earlier answer was "you said it" to the model and "(my guess)" on the setup line; both now say "your earlier answer, to check", pinned over all 18 status x source pairs.
 - `fix(adopt): an every-N-days chore set without a start counts from her own date, not the UTC date.` Stabilize Lane B (bounty-hunter): the cadence route filled a missing start from the machine's UTC date before reading her zone; it now reads the zone and the chore clock first, so the first run is her local today + N.
 - `feat(peer): every approval, decline, claim, revoke, lapse and pre-trust refusal writes one audit row.` Stabilize Lane B (observability-auditor): new `athena.peer.audit` appends `<peer root>/audit.jsonl` (fsynced, rotated once at 256 KiB, a repeated refusal from one address coalesced per minute, never a token, nonce, code or claim secret); 0 of 7 acts wrote a row before, 7 of 7 after.
+- fix(proving): the delta beside an adopt-tiers pick is read over the cells the pick was read over (paired for quality and usage, conditioned for speed), so it agrees with the reason it prints (scan-sweep Lane B).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
