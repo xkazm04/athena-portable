@@ -475,6 +475,15 @@ class PeerHost:
     def now(self) -> datetime:
         return self._now()
 
+    def pending_view(self, record: PairingRecord) -> dict[str, Any]:
+        """The record as the person deciding on it sees it: the address that asked, and the paired
+        device an approval would replace (a request naming a device id already filed here)."""
+        replaces = None
+        existing = self.registry.get(record.device_id) if record.device_id else None
+        if existing is not None:
+            replaces = {"peer_id": existing.peer_id, "name": existing.name}
+        return record.pending_view(replaces)
+
     def wait(self, seconds: float) -> None:
         """Sleep ``seconds``, or until :meth:`close`, whichever is first."""
         self._stop.wait(seconds)
@@ -798,4 +807,4 @@ class PeerHost:
                 requested_grants=list(back.get("requested_grants") or []),
                 deliver_to=joined.url,
             )
-            self.publish("pair.requested", pending=record.pending_view())
+            self.publish("pair.requested", pending=self.pending_view(record))

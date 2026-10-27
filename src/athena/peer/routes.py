@@ -104,12 +104,13 @@ def pair_request(host: PeerHost, request: Request) -> Reply:
             kind=_text(body, "kind"),
             device_id=device_id,
             requested_grants=list(grants or []),
+            address=request.client if isinstance(request, PeerRequest) else "",
         )
     except PairingRefused as refusal:
         return _refused(host, request, refusal)
     except ValueError as exc:
         return peer_error(400, "bad_request", str(exc))
-    view = record.pending_view()
+    view = host.pending_view(record)
     host.publish("pair.requested", pending=view)
     me = host.identity.identity
     return 200, {

@@ -49,6 +49,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from urllib.parse import urlsplit
 
 from athena.contracts import ids
 from athena.peer.identity import clean_name, now_iso
@@ -136,10 +137,15 @@ class PairingRecord:
     peer_id: str | None = None
     #: For ``pair_back``: where the asking PC's peer listener is, to deliver the token to.
     deliver_to: str | None = None
+    #: Where the request came from, as the socket said (never the body); ``""`` when unknown.
+    address: str = ""
     wrong: int = 0
     resolved_at: datetime | None = None
 
-    def pending_view(self) -> dict[str, Any]:
+    def pending_view(self, replaces: dict[str, str] | None = None) -> dict[str, Any]:
+        """What the person deciding sees. ``address`` is the channel-stamped one, not the claimed
+        name's; ``replaces`` is the paired device approving this would overwrite (the host knows
+        the registry, so it passes it), else ``None``."""
         return {
             "pairing_id": self.pairing_id,
             "name": self.name,
@@ -147,6 +153,8 @@ class PairingRecord:
             "requested_grants": list(self.requested_grants),
             "expires_at": now_iso(self.expires_at),
             "pair_back": self.direction == "pair_back",
+            "address": self.address or None,
+            "replaces": replaces,
         }
 
 
@@ -222,6 +230,7 @@ class PairingBook:
         kind: str = "",
         device_id: str | None = None,
         requested_grants: Sequence[object] | None = None,
+        address: str = "",
     ) -> tuple[PairingRecord, str]:
         """File (or refresh) the one request against a window: the record and its claim secret.
 
@@ -252,6 +261,7 @@ class PairingBook:
             record.name = clean_name(name, "A device")
             record.device_id = device_id
             record.requested_grants = grants
+            record.address = address
             return record, secret
 
     def approve(
@@ -338,6 +348,7 @@ class PairingBook:
                 device_id=device_id,
                 requested_grants=grants,
                 deliver_to=deliver_to,
+                address=urlsplit(deliver_to).hostname or "",
             )
             self._records[record.pairing_id] = record
             return record

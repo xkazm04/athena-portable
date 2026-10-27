@@ -1158,6 +1158,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(vitals): this PC's gate no longer trusts a reading older than 90 s.` A sampler that stalls used to leave the last figure deciding `held()` and every task claim for ever; past ADR 0143's `VITALS_STALE_S` the local reading now counts as unknown (each figure null, no hold, slots at the cap), as a peer's already did.
 - `fix(daemon): a 401 or 404 sent before the body is read no longer aborts the client socket on Windows.` Stabilize Lane B (test-strategist): a refused tokenless or unrouted POST closed on its unread body and Windows reset the socket (`WinError 10053`) under the reply; the refusal now reads the declared body first, bounded at 1 MiB.
 - fix(proving): an oversized picture docread refuses to send is no call to a resumed purse: its ledger row carries `sent: false` and `restore_budget` and the forge cost table skip it (scan-sweep Lane B).
+- `feat(peer): a pending pairing request carries the address that asked and the paired device approving it would replace.` Stabilize Lane B (security-auditor, device-pairing/pairing-ceremony), daemon side: `pending` on `GET /devices` and `pair.requested` gain `address` (the socket's, never the body's) and `replaces` (`{peer_id, name}` or `null`); the requester's own answer is unchanged. 0 of 2 facts on the card before, 2 of 2 after; the desktop approval card (`apps/desktop/src/scenes/mind/devices.tsx` and its `PendingView` mirror) is owed.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

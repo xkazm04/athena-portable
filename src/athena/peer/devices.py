@@ -12,9 +12,11 @@ device's own chrome is the only one who reaches them, which is what makes
     ``vitals``, the peer's room off its hello or ``null`` (ADR 0143), and ``link`` ``{state,
     since, evidence}``, the one link state :func:`athena.peer.link.derive` earns from named
     evidence (ADR 0140 "Link state")], pending: [{pairing_id,
-    name, kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
-    listener: {up, address, port, error}, joining: [{join_id, address, name, state,
-    expires_at}]}``. Absent values are ``null``, never omitted.
+    name, kind, requested_grants, expires_at, pair_back, address, replaces}], beacon: {on, url},
+    overlay: {state}, listener: {up, address, port, error}, joining: [{join_id, address, name,
+    state, expires_at}]}``. Absent values are ``null``, never omitted. A pending request's
+    ``address`` is the one the socket stamped (never the body's) and ``replaces`` is ``{peer_id,
+    name}`` of the paired device that approving it would overwrite, else ``null``.
 ``PUT /devices/self`` ``{name}``
     Rename this device.
 ``POST /devices/pairing`` ``{kind}``
@@ -71,7 +73,7 @@ def devices(host: PeerHost) -> Reply:
         # and once older than ``VITALS_STALE_S`` (ADR 0143).
         # ``link``: ``{state, since, evidence}`` from the row, the key, the hello and ``memory``.
         "peers": [_peer(host, row) for row in host.registry.rows()],
-        "pending": [record.pending_view() for record in host.pairings.pending()],
+        "pending": [host.pending_view(record) for record in host.pairings.pending()],
         "beacon": {"on": host.beacon, "url": f"{base}/m/" if host.beacon and base else None},
         "overlay": {"state": host.overlay().state},
         "listener": {
