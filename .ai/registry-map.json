@@ -2248,9 +2248,9 @@
           "revision": 22,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "deviation",
-          "evidence": "src/athena/core/approvals.py:494 Declining an unspent approval overwrites its original verdict and decision timestamp instead of preserving an immutable superseding record.",
-          "evaluatedAt": "2026-10-15",
+          "state": "conformant",
+          "evidence": "src/athena/core/approvals.py:811 decline_approved moves the row through _transition, which appends a declined event superseding the approved one; history() reads the full trail (ADR 0164, 8da35cd7).",
+          "evaluatedAt": "2026-10-27",
           "evaluatedAgainst": "sha256-b2:52d7f3cfb87a79d9",
           "evaluatedRevision": 22,
           "revisionsBehind": 0
