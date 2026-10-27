@@ -1094,6 +1094,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): a decision about a read says nothing changes, and one that names no app never ends "in .".` Stabilize 2026-10-27 (desktop-companion-surfaces, copy-auditor): `describeDecision` gave a declared read the change sentence and spelled an empty app for core and tab tools; translate.test.ts.
 - `fix(devices): a refused rename keeps the name the person typed, and Rename waits while one is out.` ADR 0140 (scan-sweep stabilize, desktop-mind-devices-sleep, state-coverage): Rename cleared the draft on the press, so a 400's sentence sat under the old name; the draft now stays until `GET /devices` reads the new name, and the button says "Renaming…" while the request is out. Test: devices.test.tsx driven case, seeded red.
 - `fix(companion): a list's oldest row reads "1 day overdue", as its cell does, not "1 days overdue".` Stabilize 2026-10-27 (desktop-companion-surfaces, copy-auditor): composeList's summary goes through `days()`; translate.test.ts.
+- `fix(tasks): the desktop's task caps and statuses are read against the daemon's, so a changed cap or a new status fails a test.` Stabilize 2026-10-27 (desktop-tasks-and-due, parity-auditor): `lib/tasks.ts` and `TaskRow`'s words restated `daemon/tasks.py` by hand with nothing holding them; `src/lib/tasks.test.ts` reads the Python.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
