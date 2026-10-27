@@ -486,6 +486,10 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
         left = _strs(result.value.get("left_alone"))
     else:
         session.count("malformed_brief" if result.malformed else "failed_brief")
+        # As a failed audit is (_apply_audit): an engine's failure is said; a malformed answer is
+        # only counted. The brief below is the playbook's floor either way.
+        if not result.malformed and result.error_reason not in (None, "parse_error"):
+            session.emit(Error(reason=result.error_reason or "unknown", detail=result.detail))
         lead, setup, dates, claim, left = "", [], [], [], []
     # The example's names and amounts never reach her brief as hers (UAT 2026-10-23, theme 4):
     # a line that carries one she did not say herself is dropped and counted.

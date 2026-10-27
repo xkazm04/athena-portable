@@ -232,6 +232,26 @@ def test_a_failed_brief_leg_falls_back_to_the_gates_never_the_example(rig: Rig) 
     assert "Two late deferrals" not in brief["md"]
     assert "- A recovery firm's offer" in brief["md"]
     assert last(session, "adopt.clear")["rev"] == 1
+    # Malformed twice is counted and says nothing, as a malformed audit is.
+    assert session.counters.get("malformed_brief") == 1
+    assert "adopt.error" not in kinds(session)
+
+
+def test_a_brief_leg_the_engine_failed_says_so_beside_the_fallback_brief(rig: Rig) -> None:
+    # The CLI answered nothing (an engine error, not a malformed answer): the brief still comes,
+    # from the playbook's floor, and the failure is an adopt.error, as a failed audit's is.
+    script = clear_script()
+    script["brief"] = [""]
+    rig.model.script = script
+    session = started(rig)
+    answer_all(session)
+
+    assert session.counters.get("failed_brief") == 1
+    error = last(session, "adopt.error")
+    assert error["reason"] == "engine_error" and error["detail"]
+    order = kinds(session)
+    assert order.index("adopt.error") < order.index("adopt.brief")
+    assert last(session, "adopt.brief")["md"].startswith("I'll do this chore for your case")
 
 
 def test_check_answers_refuses_what_was_not_asked(rig: Rig) -> None:
