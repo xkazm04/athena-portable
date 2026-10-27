@@ -42,7 +42,7 @@ export const OMISSIONS: Omission[] = [
     reason:
       "One Athena across devices: identity, pairing and the overlay-only peer listener, a second machine's story the one-machine stack does not draw",
     source: "src/athena/peer/__init__.py; ADR 0140",
-    modules: 16,
+    modules: 17,
   },
   {
     path: "src/athena/proving/",
