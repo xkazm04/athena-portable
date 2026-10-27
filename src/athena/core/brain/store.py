@@ -58,6 +58,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import math
 import os
 import re
@@ -89,6 +90,8 @@ PROCEDURAL_SCOPES: tuple[str, ...] = paths.PROCEDURAL_SCOPES
 _DAMAGE_CODES = (sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB)
 #: A ritual's file name (ADR 0131): a lowercase slug, so ``rituals/<folder>/<name>.md`` stays put.
 _RITUAL_NAME = re.compile(r"[a-z0-9][a-z0-9_-]{0,63}\Z")
+
+_log = logging.getLogger(__name__)
 
 
 class IndexDamagedError(sqlite3.DatabaseError):
@@ -1149,7 +1152,9 @@ class Brain:
         Runtime state, not memory (``companion_recall_seen`` and ``companion_fade`` are outside
         ``INDEX_TABLES``), so it is written to the index alone. A hit is a ranking hint, so this
         never waits long: when the write lock is not free within :data:`SEEN_LOCK_S`, or the index
-        refuses the write, the hit is let go and the answer is ``False``.
+        refuses the write, the hit is let go and the answer is ``False``. A refusal is logged at
+        warning: a busy lock is expected and passes in silence, but an index that will not take the
+        mark (a full disk, a damaged page) lets every memory in use fade, and that must be seen.
         """
         wanted = list(dict.fromkeys(node_ids))
         if not wanted:
@@ -1168,7 +1173,8 @@ class Brain:
                 con.executemany(
                     "DELETE FROM companion_fade WHERE node_id = ?", [(n,) for n in wanted]
                 )
-        except sqlite3.Error:
+        except sqlite3.Error as exc:
+            _log.warning("recall use marks not written for %d memories: %s", len(wanted), exc)
             return False
         finally:
             self._write_lock.release()

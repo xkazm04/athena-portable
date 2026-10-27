@@ -664,3 +664,17 @@ def test_damage_first_met_by_the_session_row_is_named_and_lets_go_of_the_file(
     # The traceback still holds the half-built Brain, so a handle it leaked would still be open.
     assert raised.value.__cause__ is not None
     (root / "index.sqlite").rename(root / "index.sqlite.set-aside")
+
+
+def test_a_use_mark_the_index_refuses_is_let_go_and_logged(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A mark is a ranking hint, so a refused one never fails the recall - but a memory whose marks
+    keep failing fades while it is in use, and that must not be invisible (ADR 0143)."""
+    with Brain(tmp_path / "brain") as brain:
+        said = brain.append_episode("the harbour invoice", "user")
+        fact = brain.write_fact("harbour", "Harbour pays Friday.", sources=[said.id])
+        brain.writer.execute("DROP TABLE companion_recall_seen")
+        with caplog.at_level("WARNING", logger="athena.core.brain.store"):
+            assert brain.note_recalled([fact.id]) is False
+        assert any("companion_recall_seen" in r.getMessage() for r in caplog.records)
