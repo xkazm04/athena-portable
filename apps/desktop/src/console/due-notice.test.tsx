@@ -79,6 +79,8 @@ interface Daemon {
   down: boolean;
   /** The saved cases `GET /adopt/cases?playbook_id=` lists (ADR 0225: their `space_id`). */
   cases: { case_id: string; space_id: string }[];
+  /** When set, every answer but the seen stamp is refused with a 500. */
+  refuse: boolean;
   seen: { method: string; path: string; body: unknown }[];
 }
 
@@ -104,6 +106,8 @@ function serve(): void {
         const id = decodeURIComponent(m[1]!);
         return json({ ok: true, review: id in daemon.reviews ? daemon.reviews[id] : rawReview(id) });
       }
+      const answer = (init?.body ? JSON.parse(String(init.body)) : {}) as { answer?: string };
+      if (daemon.refuse && method === "POST" && answer.answer !== "seen") return new Response("{}", { status: 500 });
       return json({ ok: true, review: null });
     }),
   );
@@ -149,7 +153,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.resetModules();
   vi.useRealTimers();
-  daemon = { notices: [], reviews: {}, down: false, seen: [], cases: [] };
+  daemon = { notices: [], reviews: {}, down: false, refuse: false, seen: [], cases: [] };
   serve();
   host = document.createElement("div");
   document.body.appendChild(host);
@@ -298,5 +302,29 @@ describe("the dock's due notice opens the staged review in place", { timeout: 15
     };
     if (go.mock.calls.length) expect(go).toHaveBeenCalledWith({ root: "chores", item: "pb-a" });
     else await inPlace();
+  });
+});
+
+describe("the dock's notice, held to its own words", { timeout: 15_000 }, () => {
+  let hidden = false;
+  beforeEach(() => {
+    hidden = false;
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => (hidden ? "hidden" : "visible") });
+  });
+  afterEach(() => {
+    Reflect.deleteProperty(document, "hidden");
+    Reflect.deleteProperty(document, "visibilityState");
+  });
+  it("Escape closes the review from the line that opened it, where the focus is", async () => {
+    await mount([notice("a")]);
+    await press(line());
+    await waitLong(() => expect(button("Open and prepare")).toBeTruthy());
+    line()!.focus();
+    await act(async () => {
+      line()!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+    expect((await dock()).dock.kind).toBe("line");
+    expect(line()?.getAttribute("aria-expanded")).toBe("false");
   });
 });

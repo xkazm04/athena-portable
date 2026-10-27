@@ -44,15 +44,15 @@ export default function DueNotice({ go }: { go: (to: Path) => void }) {
     </p>
   );
   return (
-    <div className="due-notice">
+    // Escape is heard on the whole notice: the focus is on the line that opened the panel, not in it.
+    <div
+      className="due-notice"
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) close();
+      }}
+    >
       {open ? (
-        <section
-          className="due-notice__panel"
-          aria-label={`${notice.title}: the review`}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") close();
-          }}
-        >
+        <section className="due-notice__panel" aria-label={`${notice.title}: the review`}>
           {dock.kind === "reading" ? reading : null}
           {dock.kind === "failed" ? (
             <p className="due-notice__said" role="status">
