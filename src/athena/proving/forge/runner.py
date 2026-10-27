@@ -13,6 +13,7 @@ another run ends the stage cleanly and the caller prints ``(showing N of M)``.
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -116,9 +117,23 @@ def bench_variants(
             continue
         config = replace(instrument, cap_usd=min(per_run_cap, left))
         echo(f"bench {name} on {engine}/{model} (cap ${config.cap_usd:.2f})")
+        started = time.monotonic()
         try:
             report = run(book, config)
         except Exception as exc:
+            # A bench that died may have spent before it did: the row is owed (README §2
+            # invariant 6), and its unknown cost weighs on the cap as an unpriced call (ADR 0122)
+            # so a variant that keeps raising on resume cannot spend past the purse unseen.
+            if charge:
+                budget.charge(CLAUDE, None)
+            log.record(
+                role="bench",
+                engine=CLAUDE,
+                model=f"{engine}/{model}",
+                ms=int((time.monotonic() - started) * 1000),
+                error_reason="engine_error",
+                extra={"variant": name, "raised": type(exc).__name__},
+            )
             out.failed += 1
             out.lines.append(f"{name}: the bench raised {type(exc).__name__}; it will retry")
             continue
