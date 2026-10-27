@@ -143,9 +143,16 @@ describe("the reducer", () => {
 
   it("sums the shown rows in one line, leaving out what is zero", () => {
     const rows = [task(1, { status: "running" }), task(2, { status: "running" }), task(3), task(4, { status: "done" })];
-    expect(summaryOf(rows)).toBe("2 running · 1 in line · 1 finished");
+    expect(summaryOf(rows)).toBe("2 running · 1 in line · 1 done");
     expect(summaryOf([task(3)])).toBe("1 in line");
     expect(summaryOf([])).toBe("");
+  });
+
+  it("never calls a failed, killed or interrupted task finished: each ended status keeps its own word", () => {
+    const ended = [task(1, { status: "done" }), task(2, { status: "done" }), task(3, { status: "failed" }), task(4, { status: "killed" }), task(5, { status: "interrupted" })];
+    expect(summaryOf(ended)).toBe("2 done · 1 failed · 1 killed · 1 interrupted");
+    expect(summaryOf([task(1, { status: "failed" }), task(2, { status: "failed" }), task(3, { status: "failed" })])).toBe("3 failed");
+    for (const row of ended) expect(summaryOf([row])).not.toContain("finished");
   });
 
   it("asks about a task in the same words from both windows", () => {

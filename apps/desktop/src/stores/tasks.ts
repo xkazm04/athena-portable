@@ -139,16 +139,13 @@ export function shownTasks(tasks: readonly TaskView[], now: number): TaskView[] 
   return [...running, ...queued, ...ended];
 }
 
-/** "2 running · 1 in line · 1 finished": the parts that are not zero, or "" when none is. */
+/** "2 running · 1 in line · 1 done · 1 failed": the parts that are not zero, or "" when none is. An ended task keeps its own status word (`TASK_WORDS`), never "finished". */
 export function summaryOf(shown: readonly TaskView[]): string {
-  const running = shown.filter((t) => t.status === "running").length;
-  const queued = shown.filter((t) => t.status === "queued").length;
-  const ended = shown.length - running - queued;
-  return [
-    running ? `${running} running` : "",
-    queued ? `${queued} in line` : "",
-    ended ? `${ended} finished` : "",
-  ]
+  return (["running", "queued", "done", "failed", "killed", "interrupted"] as const)
+    .map((status) => {
+      const n = shown.filter((t) => t.status === status).length;
+      return n ? `${n} ${status === "queued" ? "in line" : status}` : "";
+    })
     .filter(Boolean)
     .join(" · ");
 }
