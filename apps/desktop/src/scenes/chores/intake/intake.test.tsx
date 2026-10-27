@@ -590,6 +590,18 @@ describe("the states, in words, each with a way back", () => {
     expect(intake.starts).toBe(1);
   });
 
+  it("does not reconnect to a session the daemon no longer knows, and offers Start again", async () => {
+    await show();
+    await feed({ kind: "adopt.say", text: "Hi" });
+    intake.live.push(new ApiError(404, "unknown_ref", "no intake session 's1'"));
+    await flush();
+    expect(waits).toEqual([]);
+    expect(intake.streams).toHaveLength(1);
+    expect(text()).toContain("This conversation has ended.");
+    await click(button("Start again"));
+    expect(intake.starts).toBe(2);
+  });
+
   it("says busy plainly, with Try again that starts a new session", async () => {
     intake.startWith = () =>
       Promise.reject(

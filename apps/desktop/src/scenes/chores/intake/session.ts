@@ -4,7 +4,8 @@
  * Modelled on the Adopt studio's (`adopt/session.ts`, whose backoff and wording it shares): on
  * mount `POST /intake`, then follow its events from `after=0`; a stream that drops is followed
  * again from the last `seq` drawn, after 1, 2, then 4 s, five times at most, then the page says so
- * and offers Retry. `session_closed` is the daemon's last word and stops the following. The verdict
+ * and offers Retry. `session_closed` is the daemon's last word and stops the following, and so does
+ * a 404 `unknown_ref` (reaped, or the daemon restarted), which no reconnect can cure. The verdict
  * ends the conversation too: it is the last thing she says, so the stream is let go and the session
  * closed at once, which frees its place among the three the daemon keeps. On unmount the session is
  * closed (fire and forget), including one whose start was still in flight.
@@ -16,7 +17,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import type { Answer, AnswerVia } from "@/lib/adopt";
 
-import { BACKOFF_MS, MAX_TRIES, why } from "../adopt/session";
+import { BACKOFF_MS, MAX_TRIES, gone, why } from "../adopt/session";
 import { realWait, type AdoptDeps } from "../adopt/deps";
 import {
   INITIAL,
@@ -81,6 +82,17 @@ export function useIntakeSession(
           failure = error;
         }
         if (signal.aborted) return;
+        if (gone(failure)) {
+          // Reaped, or the daemon restarted: no reconnect can cure it, so it ends, with Start again.
+          dispatch({
+            t: "conn",
+            conn: "closed",
+            tries: 0,
+            reason: "unknown_ref",
+            detail: "the daemon no longer knows it",
+          });
+          return;
+        }
         tries += 1;
         if (tries > MAX_TRIES) {
           const w = failure

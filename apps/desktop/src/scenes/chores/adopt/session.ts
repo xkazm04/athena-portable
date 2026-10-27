@@ -38,7 +38,7 @@ export const ENDED_WHILE_PARKED =
   "Your earlier conversation had ended on the daemon, so she is starting a fresh one.";
 
 /** A refusal that no reconnect can cure: the daemon does not know this session (ADR 0179). */
-const gone = (error: unknown): boolean =>
+export const gone = (error: unknown): boolean =>
   error instanceof ApiError && error.status === 404 && error.reason === "unknown_ref";
 
 /**

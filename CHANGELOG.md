@@ -1038,6 +1038,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(chores): a refused "Good enough" or "Just decide for me" opens again instead of staying pressed forever.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, state-coverage): the reducer's `enough` takes `undo`, dispatched by both session hooks on a refusal; one test in studio.test.tsx and one in intake.test.tsx.
 - `fix(peer): the phone page's empty "Waiting on you" list is hidden, not laid out as an empty row.` Stabilize 2026-10-27 (peer-devices, visual-craft): `.cards { display: flex }` beat the browser's `[hidden]`, so the empty list kept its row, gap and screen-reader region; `mobile/app.css` now honours `hidden`; test_phone.py guard.
 - `fix(adopt): closing a session no longer waits for the interviewer's answer in flight.` scan-sweep stabilize (adopt-engine, risk-assessor): DELETE, idle expiry and shutdown used to block behind the warm process's read lock for up to a leg's timeout and then retry the interrupted leg as a cold call; the close now kills at once and the interrupted ask is `cancelled`.
+- `fix(chores): the front door stops at a session the daemon no longer knows, like the studio, instead of reconnecting to it for 15 s and again on every Retry.` Stabilize 2026-10-27 (desktop-chores-adopt-intake, parity-auditor): `intake/session.ts` reads 404 `unknown_ref` with the studio's `gone` and ends the conversation, with Start again; intake.test.tsx.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
