@@ -280,3 +280,15 @@ def test_the_report_names_the_claude_model_that_answered(tmp_path: Path) -> None
     assert "effort high" not in moved
     same = run_score(run, tier=Tier("claude-sonnet-5-5", "low"))["models"]["claude"]
     assert same == "claude-sonnet-5-5 (effort low, Read only)"
+
+
+def test_a_read_killed_mid_line_resumes_and_scores(tmp_path: Path) -> None:
+    config = Config(scenarios=("easy-data-broker",), degradations=("clean",), dry=True)
+    run = open_run(Config(**{**config.__dict__, "out": str(tmp_path)}))
+    run_read(run, echo=lambda _s: None)
+    lines = run.answers.read_text(encoding="utf-8").splitlines()
+    # The process died while writing the last answer: half a line, no newline.
+    run.answers.write_text("\n".join(lines[:-1]) + "\n" + lines[-1][:30], encoding="utf-8")
+    run_read(run, echo=lambda _s: None)  # the torn unit is read again
+    report = run_score(run)
+    assert report["all"]["claude"]["units"] + report["all"]["vl"]["units"] == len(lines)

@@ -100,13 +100,29 @@ def run_render(run: Run, *, echo: Callable[[str], None] = print) -> None:
 
 
 def _saved(path: Path) -> dict[tuple[str, str], Reading]:
+    """The answers on disk, the newest line per (reader, unit) winning. A line a killed read left
+    half-written is skipped, so its unit is read again on resume rather than the run dying."""
     out: dict[tuple[str, str], Reading] = {}
     if path.is_file():
         for line in path.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                r = Reading.from_json(json.loads(line))
-                out[(r.reader, r.unit)] = r
+            try:
+                raw = json.loads(line)
+                r = Reading.from_json(raw)
+            except (json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError):
+                continue
+            out[(r.reader, r.unit)] = r
     return out
+
+
+def _end_line(path: Path) -> None:
+    """Close a torn last line, so the next answer is appended on a line of its own."""
+    if path.is_file() and path.stat().st_size:
+        with path.open("rb") as handle:
+            handle.seek(-1, 2)
+            torn = handle.read(1) != b"\n"
+        if torn:
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write("\n")
 
 
 def run_read(run: Run, *, echo: Callable[[str], None] = print) -> tuple[Budget, RunLog]:
@@ -129,6 +145,7 @@ def run_read(run: Run, *, echo: Callable[[str], None] = print) -> tuple[Budget, 
         if v.values is not None and is_dry(v) == config.dry
     }
     tier: Tier | None = claude_tier() if "claude" in config.readers and not config.dry else None
+    _end_line(run.answers)
     for reader in config.readers:
         for unit in run.units:
             if (reader, unit.id) in done:
