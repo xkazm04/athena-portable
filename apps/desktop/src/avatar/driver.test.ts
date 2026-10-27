@@ -2,6 +2,9 @@
  * The face driver - ADR 0120 ("Athena has a face"), motion: seeded procedural motion, the speech
  * drive (the producer's mouth, followed), the neural crossfade, and settling at rest.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { createDriver, mulberry32, speechTarget, type Pose } from "./driver";
@@ -128,6 +131,20 @@ describe("neural motion crossfades over the procedural", () => {
     for (let i = 0; i < 12; i++) p = d.step(FRAME);
     expect(p.blinkL).toBeLessThan(1);
     expect(Math.abs(p.yaw - 10 * 0.55)).toBeGreaterThan(1);
+  });
+
+  it("the glow forms' 0.55x is applied once across the seam, not by the helper and again here", () => {
+    // The helper's retarget (face_helper/motion.py) and this driver both claimed the spike's one
+    // x0.55; applied twice her neural head moved at 0.30x. A gain the helper applies is read off it.
+    const motionPy = readFileSync(resolve(__dirname, "../../../../src/athena/channels/voice/face_helper/motion.py"), "utf8");
+    const helperGain = Number(/^HEAD_GAIN = ([\d.]+)/m.exec(motionPy)?.[1] ?? 1);
+    const d = createDriver({ seed: 5 });
+    let p: Pose = d.pose;
+    for (let i = 0; i < 30; i++) {
+      d.setSignal(signal({ phase: "speaking", motion }));
+      p = d.step(FRAME);
+    }
+    expect(helperGain * (p.yaw / motion.yaw)).toBeCloseTo(0.55, 5);
   });
 
   it("a track whose blink is null moves the head but leaves her own blinks running", () => {

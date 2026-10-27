@@ -17,7 +17,8 @@
  * 3. **Neural motion.** When `signal.motion` is set it takes the head, the gaze and (unless its
  *    `blink` is null: the track leaves the lids to her own blinks) the blinks over
  *    a 200 ms crossfade, and hands them back over another when it ends; breathing and the floating
- *    parts stay procedural throughout. The spike ran neural motion at 0.55x.
+ *    parts stay procedural throughout. The spike ran neural motion at 0.55x; it is applied here
+ *    and only here (the helper's retarget sends the head unscaled).
  *
  * **It settles.** At rest (idle or gate, silent, no neural track) it keeps living for a short linger
  * and then eases every motion to zero and reports `settled`; the runtime then stops its frame loop
@@ -56,7 +57,7 @@ export interface DriverOptions {
   seed?: number;
   /** Procedural head scale (the spike's glow forms: 0.7). */
   motionScale?: number;
-  /** Neural head scale (the spike: 0.55). */
+  /** Neural head scale (the spike: 0.55), the only one: the helper sends her head unscaled. */
   neuralScale?: number;
   /** Seconds an idle face keeps moving after its last signal change before it settles. */
   idleLinger?: number;

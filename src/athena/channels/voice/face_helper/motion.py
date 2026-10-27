@@ -6,9 +6,10 @@ LivePortrait motion (21x3 expression deltas and head pose in degrees) from the a
 a carrier render, leave-one-clip-out R² 0.59-0.90); the retarget filters and resamples to RigParams
 v1 at 60 fps with the *glow* profile the operator's two forms were tuned with:
 
-- head x0.55, centred on the sentence's median, low-passed at 2 Hz (pitch 2.5, roll 1.6) because
-  the raw pose bobs at syllable rate, and eased in from neutral over the first 0.5 s (JoyVASA has a
-  start transient);
+- head centred on the sentence's median, low-passed at 2 Hz (pitch 2.5, roll 1.6) because the raw
+  pose bobs at syllable rate, and eased in from neutral over the first 0.5 s (JoyVASA has a start
+  transient). The profile's head x0.55 is not applied here: the face applies it, once, as its
+  neural scale (``apps/desktop/src/avatar/driver.ts``), and applied on both sides it was 0.30x;
 - lids: the partial lid drop kept with its neural timing, capped at 0.2 (a deeper one reads as a
   blink on the glow rigs), plus crisp full blinks on the strongest peaks, at least 2.2 s apart;
 - brow and gaze decoded, centred and low-passed.
@@ -42,7 +43,6 @@ from typing import Any
 from .probe import TRAINED_STEPS
 
 FPS = 60
-HEAD_GAIN = 0.55
 HEAD_HZ = 2.0
 LID_MAX = 0.2
 EASE_S = 0.5
@@ -340,7 +340,7 @@ def retarget(
     head: dict[str, Any] = {}
     for key, hz in (("yaw", HEAD_HZ), ("pitch", HEAD_HZ * 1.25), ("roll", HEAD_HZ * 0.8)):
         x = motion[key].astype(np.float64)
-        x = (x - np.median(x)) * dec["pose"][key]["sign_to_rig"] * HEAD_GAIN
+        x = (x - np.median(x)) * dec["pose"][key]["sign_to_rig"]
         head[key] = _resample(_lowpass(x, hz, fs), fs, t) * _smoothstep(t / EASE_S)
     blink = _blinks(_decode(motion["exp"], channels["blink"]), fs, t, channels["blink"])
     b = _decode(motion["exp"], channels["brow"])
