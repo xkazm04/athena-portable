@@ -243,6 +243,10 @@ describe("the journal", () => {
     expect(h).toContain(">stopped<");
     expect(h).not.toContain(">still going<");
     expect(h).toContain("She stopped before finishing this one: the app closed while she slept.");
+    // The line under the gauge reads the same row the same way: stopped, never still going.
+    expect(h).not.toContain("still going");
+    expect(h).toContain("Last sleep, 2 min ago: stopped before it finished; the app closed while she slept.");
+    expect(html("sleeping")).toContain("Last sleep, 2 min ago: still going");
     // While she sleeps, the newest running row is the sleep under way.
     expect(html("sleeping")).toContain(">still going<");
   });

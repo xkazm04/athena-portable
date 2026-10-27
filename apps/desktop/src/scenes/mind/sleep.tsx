@@ -153,11 +153,15 @@ export function pressureWords(view: SleepView): string {
   return `She has ${figure(view.pressure_chars)} characters of new conversation to sleep on${from}; she sleeps at ${at}.`;
 }
 
-/** The last cycle in a line: when, how it ended, why it ran, and what it did. */
-export function lastWords(cycle: CycleView, now: number): string {
+/**
+ * The last cycle in a line: when, how it ended, why it ran, and what it did. `stopped` is a
+ * `running` row that is not the sleep under way (the app closed on it), read as the journal reads it.
+ */
+export function lastWords(cycle: CycleView, now: number, stopped = false): string {
   const why = cycle.reason ? (REASON_WORDS[cycle.reason] ?? cycle.reason) : null;
-  const head =
-    cycle.status === "failed"
+  const head = stopped
+    ? `Last sleep, ${whenAgo(endOf(cycle), now)}: stopped before it finished; the app closed while she slept.`
+    : cycle.status === "failed"
       ? `Last sleep, ${whenAgo(endOf(cycle), now)}: failed${why ? ` (${why})` : ""}.`
       : `Last sleep, ${whenAgo(endOf(cycle), now)}: ${STATUS_WORD[cycle.status]}${why ? `, because ${why}` : ""}.`;
   const did = statsWords(cycle.stats, cycle.status);
@@ -289,7 +293,7 @@ function Sleep({ model, view, opening }: { model: SleepModel; view: SleepView; o
       </div>
       {view.last ? (
         <p className="sleep__last typo-body" data-status={view.last.status}>
-          {lastWords(view.last, now)}
+          {lastWords(view.last, now, view.last.status === "running" && !sleeping)}
         </p>
       ) : null}
       <Proposals model={model} open={open} opening={opening} />
