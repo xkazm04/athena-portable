@@ -130,6 +130,7 @@ export function statsWords(stats: Partial<CycleStats> | null, status: CycleStatu
     n("faded") ? `${figure(n("faded"))} faded` : "",
     n("forget_proposed") ? `${figure(n("forget_proposed"))} offered to forget` : "",
     n("barred") ? `${figure(n("barred"))} you had her forget left forgotten` : "",
+    n("skipped") ? `passed over ${plural(n("skipped"), "episode")} she could not distil` : "",
   ].filter(Boolean);
   return parts.length ? parts.join(" · ") : null;
 }

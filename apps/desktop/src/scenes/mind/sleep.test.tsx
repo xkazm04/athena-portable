@@ -130,6 +130,22 @@ describe("the last sleep", () => {
     );
   });
 
+  it("says why a cycle finished in part when it walked past an episode it failed on twice", () => {
+    // core/sleep/cycle.py: the quarantined episode is skipped (`skipped: 1`, `episodes_in: 0`).
+    const cycle = {
+      id: "cyc_00000000c010",
+      started_at: "2026-10-24T06:58:00Z",
+      finished_at: "2026-10-24T07:00:00Z",
+      status: "partial" as const,
+      reason: "pressure",
+      stats: { episodes_in: 0, skipped: 1 },
+    };
+    expect(statsWords(cycle.stats, "partial")).toBe("passed over 1 episode she could not distil");
+    expect(lastWords(cycle, DEVICES_NOW)).toBe(
+      "Last sleep, 5 h ago: finished in part, because enough had piled up. She passed over 1 episode she could not distil.",
+    );
+  });
+
   it("reads a reason it does not know as sent", () => {
     const cycle = sleepFixtures.typical!.state.cycles[0]!;
     expect(lastWords({ ...cycle, reason: "moon_phase", stats: null }, DEVICES_NOW)).toBe("Last sleep, 5 h ago: finished, because moon_phase.");

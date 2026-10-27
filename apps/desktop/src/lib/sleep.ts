@@ -36,6 +36,9 @@ export interface CycleStats {
   forget_proposed: number;
   /** Candidates skipped because a person forgot that key: she wanted them back and did not take them. */
   barred: number;
+  /** Episodes walked past: the one the compress step failed on alone twice is parked, not
+   * distilled, and the cycle settles `partial` (`core/sleep/cycle.py`). */
+  skipped: number;
 }
 
 export interface CycleView {
