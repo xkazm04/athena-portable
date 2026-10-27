@@ -375,8 +375,10 @@ describe("the wizard: a phone", () => {
     expect(h).toContain('data-expired="1"');
     expect(h).toContain("This code ran out.");
     expect(h).toContain(">New code<");
-    // A dead window's address is not offered any more.
+    // A dead window's address is not offered any more: not as text, not as a picture, not its code.
     expect(h).not.toContain("claim=");
+    expect(h).not.toContain('<svg class="qr"');
+    expect(h).not.toContain("7Q4-K2P");
   });
 
   it("offers to show a code when none is open (after a reload, say)", () => {
@@ -416,6 +418,18 @@ describe("the wizard: a computer", () => {
     expect(h).toContain("M7K-Q2X");
     expect(h).toContain("100.64.0.7");
     expect(h).toContain('stroke-dasharray="80.00 100"');
+  });
+
+  it("offers no code once the window ran out: only that it ran out, and a new one", () => {
+    const base = deviceFixtures["pairing-pc"]!;
+    const pc = { ...base.state.opened.pc!, expires_at: "2026-10-24T11:59:00Z" };
+    const h = render({ ...base, state: { ...base.state, opened: { pc } } }, { wizard: "pc", branch: "show" });
+    expect(h).toContain('data-expired="1"');
+    expect(h).toContain("This code ran out.");
+    expect(h).toContain(">New code<");
+    expect(h).not.toContain("M7K-Q2X");
+    expect(h).not.toContain("Next: you approve it here");
+    expect(h).toContain("The other computer can no longer use this code.");
   });
 
   it("joins: the private network's computers to pick from, phones and offline ones left out", () => {

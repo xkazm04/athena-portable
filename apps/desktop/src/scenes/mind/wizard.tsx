@@ -466,7 +466,11 @@ function PhoneCode({ model, now, spent, onMint }: { model: DevicesModel; now: nu
   return (
     <div className="cwizard__code">
       <CountdownLens window={opened} now={now} over={fresh}>
-        {picture ? <QrSvg picture={picture} label="The QR code that pairs your phone" /> : <span className="lens__code">{code}</span>}
+        {over ? null : picture ? (
+          <QrSvg picture={picture} label="The QR code that pairs your phone" />
+        ) : (
+          <span className="lens__code">{code}</span>
+        )}
       </CountdownLens>
       <div className="cwizard__words">
         {over ? (
@@ -561,6 +565,8 @@ function PcCode({
   const view = model.state.view!;
   if (!opened || spent.includes(opened.pairing_id)) return <NoWindow model={model} kind="pc" onMint={onMint} />;
   const busy = Boolean(model.state.busy["pairing.pc"]);
+  // A window that ran out is dead: its code is not offered any more, only a new one.
+  const over = msLeft(opened, now) <= 0;
   const fresh = (
     <Button size="sm" variant="primary" disabledReason={busy ? "Making a code…" : undefined} onClick={onMint}>
       New code
@@ -569,21 +575,27 @@ function PcCode({
   return (
     <div className="cwizard__code">
       <CountdownLens window={opened} now={now} over={fresh}>
-        <span className="lens__code">{groupCode(opened.code)}</span>
+        {over ? null : <span className="lens__code">{groupCode(opened.code)}</span>}
       </CountdownLens>
       <div className="cwizard__words">
-        <p className="typo-body">On the other computer, open Mind, then Devices, press + PC and choose Join another PC. Type there:</p>
-        <Facts>
-          <Fact label="This computer's address" value="code">
-            {view.listener.address ?? "not listening yet"}
-          </Fact>
-          <Fact label="The code" value="code">
-            {groupCode(opened.code)}
-          </Fact>
-        </Facts>
+        {over ? (
+          <p className="typo-body">The other computer can no longer use this code. Make a new one; it works for five minutes.</p>
+        ) : (
+          <>
+            <p className="typo-body">On the other computer, open Mind, then Devices, press + PC and choose Join another PC. Type there:</p>
+            <Facts>
+              <Fact label="This computer's address" value="code">
+                {view.listener.address ?? "not listening yet"}
+              </Fact>
+              <Fact label="The code" value="code">
+                {groupCode(opened.code)}
+              </Fact>
+            </Facts>
+          </>
+        )}
         {view.listener.error ? <p className="typo-caption">Athena could not listen: {view.listener.error}</p> : null}
         <Remaining window={opened} now={now} />
-        <p className="typo-caption">Next: you approve it here. The wizard moves on by itself when it asks.</p>
+        {over ? null : <p className="typo-caption">Next: you approve it here. The wizard moves on by itself when it asks.</p>}
         <Refusal text={model.state.errors["pairing.pc"]} />
         <Button size="sm" variant="ghost" onClick={onBack}>
           Back
