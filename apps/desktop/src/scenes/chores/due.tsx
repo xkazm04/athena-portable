@@ -58,7 +58,7 @@ export function ReviewView({
   const lines = orderedLines(review.lines);
   const { unknown } = portalsOf(review);
   return (
-    <div className="pa-run pa-due__review" aria-label="This chore is due">
+    <div className="pa-run pa-due__review" role="group" aria-label="This chore is due">
       <span className="pa-case__title">{dueLine(review)}</span>
       {review.ask_slow ? (
         <div className="pa-run__line" role="note">
@@ -86,7 +86,7 @@ export function ReviewView({
               {l.action ? <span className="pa-run__action">{l.action}</span> : null}
               {l.at ? <span className="pa-run__status">{dayOf(l.at)}</span> : null}
               {l.text || Object.keys(l.params).length ? (
-                <pre className="pa-run__params" aria-label="What the record says">
+                <pre className="pa-run__params" role="note" aria-label="What the record says">
                   {l.text ||
                     Object.entries(l.params)
                       .map(([k, v]) => `${k}: ${v}`)
@@ -249,7 +249,7 @@ export default function Due({
   const c = reply.cadence;
   const open = review?.review && !review.review.answer ? review : null;
   return (
-    <div className="pa-runs pa-due" aria-label="When it comes due">
+    <div className="pa-runs pa-due" role="group" aria-label="When it comes due">
       <h4 className="pa-kpi__label">When it comes due</h4>
       {c ? (
         <p className="pa-run__line">

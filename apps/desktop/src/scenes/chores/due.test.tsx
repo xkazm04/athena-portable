@@ -290,4 +290,21 @@ describe("When it comes due, on the chore's page", { timeout: 15_000 }, () => {
     act(() => root.unmount());
     host.remove();
   });
+
+  it("names its regions with a role that carries a name: the section and the review are groups", async () => {
+    const lines: ReviewLine[] = [{ kind: "may_have_completed", action: "", params: {}, at: "", text: "host.pay may have completed" }];
+    const { host, root } = await mountDue({
+      cadence: vi.fn(async () => reply),
+      review: vi.fn(async () => review({ lines, lines_total: 1 })),
+      setCadence: vi.fn(async () => reply),
+      answer: vi.fn(async () => null),
+    } as unknown as Partial<ChoresApi>);
+    // aria-label on a plain div is prohibited (ARIA 1.2: generic): it names nothing a reader announces.
+    const named = [...host.querySelectorAll("[aria-label]")].filter((el) => ["DIV", "SPAN", "PRE"].includes(el.tagName));
+    expect(named.filter((el) => !el.getAttribute("role")).map((el) => el.getAttribute("aria-label"))).toEqual([]);
+    expect(host.querySelector('[role="group"][aria-label="When it comes due"]')).toBeTruthy();
+    expect(host.querySelector('[role="group"][aria-label="This chore is due"]')).toBeTruthy();
+    act(() => root.unmount());
+    host.remove();
+  });
 });
