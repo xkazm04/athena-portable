@@ -57,10 +57,16 @@ import { gzipSync } from "node:zlib";
  * Projects light, its glyph, the six-root grammar, the bar pill's lazy slot, the spaces glance and
  * the run store's `space_id` measured 166,901 B with the spaces store and client already off the
  * first frame. The 99 B above it is headroom, to lower at the next measurement.
+ *
+ * Raised 2026-10-27 to 167,200 B (+200 B), owner-approved in the stabilize-2026-10-27 triage,
+ * before the cards it pays for: the tree stood at exactly 167,000 B after the shared /events stream
+ * (0a0279fa), and two measured fixes wait on room - one shared daemon request door (+46 B) and the
+ * console catching an OS reduced-motion change (+72 B). The ~80 B left over is working room, to
+ * lower at the next measurement.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 167_000,
+  ceilingBytes: 167_200,
   targetBytes: 125_000,
 };
 
