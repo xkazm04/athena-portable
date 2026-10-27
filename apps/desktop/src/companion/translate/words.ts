@@ -35,6 +35,17 @@ export const OUTBOUND: ReadonlySet<string> = new Set(["send", "post", "publish",
 /** Verbs that take their object bare: "void invoice INV-109", not "void an invoice". */
 export const DIRECT: ReadonlySet<string> = new Set(["void", "delete", "remove", "cancel", "archive", "close", "mark", "reject", "revoke"]);
 const LEXICON: Readonly<Record<string, string>> = { mail: "email" };
+/**
+ * Her own tools whose names are not `verb_object` (`src/athena/core/catalog.py`), as a verb and an
+ * object: without them `core.tasks` read "Tasksed 1 memory" and `core.task_stop` "Tasked a stop".
+ */
+export const CORE_WORDS: Readonly<Record<string, readonly [verb: string, object: string]>> = {
+  checkpoint: ["save", "note"],
+  delegate: ["delegate", "task"],
+  tasks: ["list", "tasks"],
+  task_stop: ["stop", "task"],
+  devices: ["list", "devices"],
+};
 /** An id's prefix names the thing; only a naming aid, an unknown prefix falls back to the tool's noun. */
 export const PREFIX_NOUN: Readonly<Record<string, string>> = { inv: "invoice", cand: "candidate", acc: "account", act: "activity", tsk: "task", apr: "decision", draft: "draft", msg: "message" };
 export const MONEY_KEY = /^(amount|balance|invoiced|collected|outstanding|overdue|paid|total|price|cost|revenue|spent|budget|due)$/;
@@ -117,6 +128,8 @@ export function parseTool(name: string): ToolName {
   const app = scoped ? (parts[1] ?? "") : "";
   const leaf = (scoped ? parts.slice(2).join("_") : parts.slice(1).join("_")) || parts[parts.length - 1] || "";
   const words = leaf.split("_").filter(Boolean);
+  const core = source === "core" ? CORE_WORDS[leaf] : undefined;
+  if (core) return { source, app, verb: core[0], object: core[1], name };
   const verb = (words[0] ?? "run").toLowerCase();
   let object = words.slice(1).join(" ");
   if (!object) object = source === "tabs" ? "tab" : source === "core" ? "memory" : "";

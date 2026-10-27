@@ -11,7 +11,8 @@ import { expect, test } from "vitest";
 import type { TranscriptEntry } from "@/stores/run";
 
 import { describeDecision } from "./decision";
-import { EMPTY_CONTEXT, buildContext, prettyRaw, translate, translateAll, type PlainMessage } from "./index";
+import { EMPTY_CONTEXT, buildContext, describeRunning, prettyRaw, translate, translateAll, type PlainMessage } from "./index";
+import { parseTool } from "./words";
 import data from "./sessions.fixture.json";
 
 interface Session {
@@ -283,4 +284,20 @@ test("a call that failed in words never reads as done", () => {
   expect(thrown).toMatchObject({ tone: "fail", title: "Could not send a reminder in Ledgerbox", sub: "Error: the tab closed" });
   const refused = translate({ id: "g", kind: "tool", tier: 1, ok: false, text: "host.ledgerbox.void_invoice → refused" });
   expect(refused).toMatchObject({ tone: "fail", title: "Could not void invoice in Ledgerbox", sub: "Refused" });
+});
+
+// Her own tools are named by the daemon's catalog; each must read as a verb and an object.
+test("every core tool the daemon's catalog names reads as a verb and an object, done and running", () => {
+  const catalog = readFileSync(new URL("../../../../../src/athena/core/catalog.py", import.meta.url), "utf8");
+  const names = [...new Set([...catalog.matchAll(/name="(core\.[a-z_]+)"/g)].map((m) => m[1]!))];
+  expect(names.length).toBeGreaterThanOrEqual(7);
+  const verbs = new Set(["recall", "write", "save", "delegate", "list", "stop"]);
+  for (const name of names) expect(verbs.has(parseTool(name).verb), `${name} reads as "${describeRunning(name)}"`).toBe(true);
+  const done = (text: string) => translate({ id: "c", kind: "tool", tier: 1, ok: true, text }).title;
+  expect(done('core.tasks → {"tasks":[{"id":"task_1","title":"x","status":"running"}]}')).toBe("Listed 1 task");
+  expect(done('core.devices → {"devices":[{"name":"kaziho"}]}')).toBe("Listed 1 device");
+  expect(done('core.task_stop → {"ok":true}')).toBe("Stopped a task");
+  expect(done('core.delegate → {"ok":true}')).toBe("Delegated a task");
+  expect(done('core.checkpoint → {"ok":true}')).toBe("Saved a note");
+  expect(describeRunning("core.tasks")).toBe("Listing the tasks");
 });
