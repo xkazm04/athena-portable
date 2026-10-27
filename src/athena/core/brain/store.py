@@ -1291,6 +1291,7 @@ class Brain:
             for _, rels in found.values():
                 for rel in rels:
                     (self.root / rel).unlink(missing_ok=True)
+            _remove_conflict_copies(self.root, space, set(found))
             erased = json.dumps(sorted(found))
             each = "(SELECT value FROM json_each(?))"
             with self.write_txn() as con:
@@ -1315,10 +1316,37 @@ class Brain:
                 ):
                     con.execute(f"DELETE FROM {table} WHERE {column} IN {each}", (erased,))
                 con.execute("DELETE FROM companion_proposal WHERE space = ?", (space,))
+            self._redact_journals(space, set(found))
         counts = dict.fromkeys(STAMPED_KINDS, 0)
         for kind, _ in found.values():
             counts[kind] = counts.get(kind, 0) + 1
         return counts
+
+    def _redact_journals(self, space: str, erased: set[str]) -> None:
+        """Replace each sleep-journal line that names ``space`` or an erased memory's id with a
+        fixed placeholder, and re-index the journal from the redacted text (its FTS row and
+        excerpt too). Every other line, and every journal with no such line, is left as written.
+        Called with the write lock held."""
+        base = self.root / "cycles"
+        if not base.is_dir():
+            return
+        names = (space, *sorted(erased))
+        for path in sorted(base.glob("*.md")):
+            try:
+                file_text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if not any(name in file_text for name in names):
+                continue
+            meta, body = frontmatter.parse(file_text)
+            cycle_id, created = str(meta.get("id") or ""), str(meta.get("created") or "")
+            if not cycle_id or not created:
+                continue
+            lines = [
+                JOURNAL_REDACTED if any(name in line for name in names) else line
+                for line in _lf(body).splitlines()
+            ]
+            self.write_cycle_report(cycle_id, "\n".join(lines), created=created)
 
     # -- reads ---------------------------------------------------------------------------------
 
@@ -1458,6 +1486,28 @@ _STAMPED_DIRS: tuple[tuple[str, str], ...] = (
     *((f"semantic/{scope}", "fact") for scope in paths.FACT_SCOPES),
     *((f"procedurals/{scope}", "procedural") for scope in paths.PROCEDURAL_SCOPES),
 )
+
+
+#: What a sleep-journal line about an erased project becomes: no id, no key, no word of it.
+JOURNAL_REDACTED = "- (a line about an erased project was removed)"
+
+
+def _remove_conflict_copies(root: Path, space: str, erased: set[str]) -> None:
+    """Delete the replication conflict copies (``.peer/conflicts/<id>.<peer>.md``) of the erased
+    memories: those named for an erased id, and those whose own header says ``space``."""
+    base = root / ".peer" / "conflicts"
+    if not base.is_dir():
+        return
+    for path in sorted(base.glob("*.md")):
+        named = path.name.split(".", 1)[0] in erased
+        if not named:
+            try:
+                file_text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if space not in file_text or space_of(frontmatter.parse(file_text)[0]) != space:
+                continue
+        path.unlink(missing_ok=True)
 
 
 def _stamped_on_disk(root: Path, space: str) -> list[tuple[str, str, str]]:

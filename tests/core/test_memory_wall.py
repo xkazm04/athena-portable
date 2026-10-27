@@ -458,3 +458,46 @@ def test_a_copied_brain_with_projects_rebuilds_an_identical_index(tmp_path: Path
     with Brain(copy, session_id="conv_wall") as brain:
         reconcile_from_disk(brain)
         assert index_fingerprint(brain) == fingerprint
+
+
+def test_erasing_a_project_redacts_its_journal_lines_and_removes_its_conflict_copies(
+    brain: Brain,
+) -> None:
+    """ADR 0225: erase leaves no searchable word of the space. The sleep journal keeps every
+    other line as written; a conflict copy of another project's memory stays."""
+    world = World(brain)
+    a, b = world.a, world.b
+    noisy = brain.write_cycle_report(
+        "cyc_aaaaaaaaaaaa",
+        f"# Sleep\n- fact `zephyr budget` in {a}\n- fact `quokka budget` in {b}\n"
+        f"- confirmed {world.fact[a]} (not written again)\n- core fact `harbour` kept\n",
+        created="2026-10-20T01:00:00+00:00",
+    )
+    quiet_text = "# Sleep\n- core fact `harbour` kept"
+    quiet = brain.write_cycle_report(
+        "cyc_bbbbbbbbbbbb", quiet_text, created="2026-10-21T01:00:00+00:00"
+    )
+    quiet_before = (brain.root / quiet.path).read_bytes()
+    conflicts = brain.root / ".peer" / "conflicts"
+    conflicts.mkdir(parents=True)
+    mine = conflicts / f"{world.fact[a]}.dev_bbbbbbbbbbbb.md"
+    theirs = conflicts / f"{world.fact[b]}.dev_bbbbbbbbbbbb.md"
+    mine.write_text("copy of A", encoding="utf-8")
+    theirs.write_text("copy of B", encoding="utf-8")
+
+    brain.erase_space(a)
+
+    journal = (brain.root / noisy.path).read_text(encoding="utf-8")
+    assert a not in journal and world.fact[a] not in journal and "zephyr" not in journal
+    assert f"`quokka budget` in {b}" in journal and "core fact `harbour` kept" in journal
+    assert (brain.root / quiet.path).read_bytes() == quiet_before
+    with closing(brain.read_connection()) as con:
+        indexed = con.execute(
+            "SELECT body FROM companion_fts WHERE node_id = ?", (noisy.id,)
+        ).fetchone()
+        excerpt = con.execute(
+            "SELECT body_excerpt FROM companion_node WHERE id = ?", (noisy.id,)
+        ).fetchone()
+    assert "zephyr" not in indexed[0] and a not in indexed[0] and "quokka budget" in indexed[0]
+    assert "zephyr" not in excerpt[0]
+    assert not mine.exists() and theirs.exists()

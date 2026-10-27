@@ -1162,6 +1162,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(mind): a sleep proposal no longer reads a per-proposal busy flag the store never sets.` Stabilize Lane B: the Sleep section drew four buttons as "Answering..." from `busy[proposal.id]`, which only `busy.run` is ever written to (answers are staged, and a staged or sending row leaves the list); the dead read and its props are gone, pinned by a render test.
 
 - fix(proving): the chores-UAT judge's voice check enforces the 80-200 words its prompt asks for, not 60-260 (scan-sweep Lane C, owner-approved).
+- `fix(brain): erasing a project also redacts it from the sleep journals and removes its conflict copies.` Journal lines (`cycles/*.md`, and their FTS row and excerpt) that name the space or an erased memory's id become a fixed placeholder, and `.peer/conflicts/` copies of the erased memories are deleted; every other line and file is left as written (ADR 0225).
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.
