@@ -1103,6 +1103,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `fix(companion): a call held because its last run never answered reads "Held back", not "Could not".` Stabilize 2026-10-27 (desktop-companion-surfaces, state-coverage): the translator reads ADR 0101's `held:` line and never says "Nothing was changed" for it; translate.test.ts reads the line from `lib/execute.ts`.
 - `fix(chores): the featured band earns its status off Main's first frame, so first paint is back under its 167,000 B ceiling.` Stabilize 2026-10-27 (desktop-tasks-and-due, code-optimizer; ADR 0226): `Playbook.featured` is the authored block; the status rule and an eager proofs glob live in `scenes/chores/featured-model.ts`; first paint 167,239 -> 166,780 B gz.
 - `fix(tasks): the tasks clock stands still behind a hidden window and catches up when it is shown.` Stabilize 2026-10-27 (desktop-tasks-and-due, code-optimizer): `useTasksNow` skipped no tick while hidden; it now does, and ticks once on being shown (first paint 166,780 -> 166,821 B).
+- `fix(tasks): Main's task card lets a failed Ask go once it has something newer to say, instead of hiding the mirror's problem.` Stabilize 2026-10-27 (desktop-tasks-and-due, state-coverage): the "did not come forward" line stood until the next Ask; it now lasts only while the list and problem it was said over are unchanged (first paint 166,821 -> 166,873 B).
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 

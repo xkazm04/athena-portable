@@ -85,19 +85,27 @@ export function SurfaceTasksView({ shown, problem, held, now, all, onMore, onSto
 export function SurfaceTasks() {
   const { tasks, problem, held } = useTasks();
   const [all, setAll] = useState(false);
-  const [refused, setRefused] = useState<string | null>(null);
+  // A failed Ask, with the list and problem it was said over: it stands only until the card has
+  // something newer to say - the list moved on, or the mirror has a problem of its own.
+  const [refused, setRefused] = useState<{ said: string; over: TaskView[]; problem: string | null } | null>(null);
   const now = useTasksNow(tasks.some((t) => t.status === "running"));
   useEffect(() => startTasks(), []);
   const ask = (task: TaskView) => {
     setRefused(null);
-    athenaOffer(askAbout(task)).catch((err: unknown) =>
-      setRefused(`Her window did not come forward: ${err instanceof Error ? err.message : String(err)}`),
-    );
+    athenaOffer(askAbout(task)).catch((err: unknown) => {
+      const s = useTasks.getState();
+      setRefused({
+        said: `Her window did not come forward: ${err instanceof Error ? err.message : String(err)}`,
+        over: s.tasks,
+        problem: s.problem,
+      });
+    });
   };
+  const said = refused && refused.over === tasks && refused.problem === problem ? refused.said : null;
   return (
     <SurfaceTasksView
       shown={shownTasks(tasks, now)}
-      problem={refused ?? problem}
+      problem={said ?? problem}
       held={held}
       now={now}
       all={all}
