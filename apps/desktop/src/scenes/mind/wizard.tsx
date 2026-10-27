@@ -700,7 +700,7 @@ function Done({ model, kind, answered, onClose }: { model: DevicesModel; kind: D
     <div className="cwizard__done" data-in={lettingIn ? "1" : undefined}>
       <svg className="done__mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
         <circle cx="24" cy="24" r="21" />
-        {lettingIn ? <path className="done__tick" d="M15 25l6 6 12-13" pathLength={1} /> : <path className="done__tick" d="M17 17l14 14M31 17L17 31" pathLength={1} />}
+        {lettingIn ? <path className="done__tick" d="M15 25l6 6 12-13" /> : <path className="done__tick" d="M17 17l14 14M31 17L17 31" />}
       </svg>
       <div className="cwizard__words">
         {lettingIn ? (

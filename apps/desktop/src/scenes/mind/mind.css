@@ -341,8 +341,8 @@
 .sky__link[data-state="online"] .sky__flow {
   stroke: var(--status-success);
   stroke-width: 3;
-  stroke-dasharray: 2 26;
-  animation: sky-flow 2.8s linear infinite;
+  /* A slow breath on the motion clock (four settles), not a dash offset: opacity only, 0 under Calm. */
+  animation: sky-flow calc(var(--dur-settle) * 4) ease-in-out infinite alternate;
 }
 .sky__link[data-state="asleep"] line {
   stroke: var(--border-default);
@@ -363,8 +363,8 @@
   stroke-width: 2;
 }
 @keyframes sky-flow {
-  to {
-    stroke-dashoffset: -56;
+  from {
+    opacity: 0.2;
   }
 }
 @keyframes sky-ask {
@@ -1111,12 +1111,15 @@
 .done__tick {
   stroke: var(--foreground);
   stroke-width: 3;
-  stroke-dasharray: 1 1;
-  animation: done-draw var(--dur-settle) var(--ease-settle) var(--dur-depth) both;
+  /* The mark settles in by opacity and scale from its own centre (no dash offset, no repaint). */
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: done-in var(--dur-settle) var(--ease-settle) var(--dur-depth) both;
 }
-@keyframes done-draw {
+@keyframes done-in {
   from {
-    stroke-dashoffset: 1;
+    opacity: 0;
+    transform: scale(0.6);
   }
 }
 

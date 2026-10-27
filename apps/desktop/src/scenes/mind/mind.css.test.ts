@@ -31,3 +31,13 @@ test("the text field eases its hover like the surface's ask field", () => {
   expect(rule(".mind__input")).toMatch(/transition:[^;]*var\(--duration-fast\)/);
   expect(rule(".mind__input:hover")).toMatch(/border-color:\s*var\(--/);
 });
+
+test("the online link's flow and the Done tick move by opacity and transform on the motion tokens, never by dash offset", () => {
+  // A dash offset repaints the SVG every frame; the sheet's motion contract is transform and opacity.
+  expect(css).not.toMatch(/stroke-dashoffset/);
+  const flow = rule(".sky__link[data-state=\"online\"] .sky__flow");
+  expect(flow).toMatch(/animation:[^;]*var\(--dur-[a-z]+\)/);
+  expect(rule(".done__tick")).toMatch(/animation:[^;]*var\(--dur-settle\)[^;]*var\(--ease-settle\)/);
+  // Calm still stops the flow outright.
+  expect(css).toMatch(/:root\[data-motion="calm"\] \.sky__flow,/);
+});
