@@ -5,7 +5,7 @@ was refreshed on 2026-10-26, and where a page and this table disagree, this tabl
 [README](../../README.md) are newer. Each page says what the module is for, what is built, how it
 works in outline, where the code lives, and what is not done.
 The design authority stays the [README](../../README.md) (its six invariants and its architecture);
-decisions are in [`docs/adr/`](../adr/) (225 records); the night-by-night history is in the
+decisions are in [`docs/adr/`](../adr/) (235 records); the night-by-night history is in the
 [CHANGELOG](../../CHANGELOG.md).
 
 ## What Athena is
@@ -27,7 +27,7 @@ Nebius Token Factory is a third engine used to test her.
 | Third-party connectors (Gmail, Notion) | [connectors.md](connectors.md) | built |
 | The page bridge (`inject.js`, `gate.js`) | [bridge.md](bridge.md) | built |
 | The desktop: shell, depth console, companion, halo, face | [desktop.md](desktop.md) | built; six scenes (Projects, Apps, Chores, Accounts, Voice, Mind) and a Ctrl+K finder |
-| Playbooks and their bench | [playbooks.md](playbooks.md) | 95 playbooks benched: 93 exceed their bar, 2 fall short |
+| Playbooks and their bench | [playbooks.md](playbooks.md) | 100 playbooks benched: 96 exceed their bar, 4 fall short |
 | The Proving Ground (Nemotron on Token Factory) | [proving-ground.md](proving-ground.md) | Gauntlet, Characters and trigger page built; Sandboxes blocked on beta access |
 | Example apps and user acceptance | [examples-and-uat.md](examples-and-uat.md) | three example host apps and the atlas explorer, a four-act journey, five Characters plus the chores pairs |
 | Projects, devices and sleep | [README](../../README.md) sections 3.5 and 14; ADRs 0140, 0143, 0225 | built; no page of its own yet |
@@ -61,6 +61,6 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pyt
 pnpm typecheck && pnpm lint && pnpm test
 ```
 
-On 2026-10-26, on Windows 11: ruff, mypy, ESLint and tsc are clean; pytest collects 3,837 tests and
-passes; the desktop's Vitest suite runs 3,060, the bridge and example apps' `node --test` suites 948,
-the journey's Playwright suite 17 and `cargo test` 167, all passing.
+On 2026-10-28, on Windows 11: pytest collects 4,194 tests (7 skipped) and passes; the desktop's
+Vitest suite runs 3,185, the bridge and example apps' `node --test` suites 949, the journey's
+Playwright suite 17 and `cargo test` 169, all passing.

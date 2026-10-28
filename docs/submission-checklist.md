@@ -20,8 +20,8 @@ Deadline 2026-10-30 10:00 PDT. Track: **Personal AI**. Owner is who closes the r
 | Feedback on Token Factory, AI Cloud and NVIDIA tools | done | `docs/feedback.md` (from README §13) | Director |
 | Explain updates if the project predates 2026-08-26 | done, not needed | first commit 2026-09-12 (`git log --reverse`); stated in `docs/submission.md` | — |
 | Repeat-run stability numbers | done | `docs/submission.md` **Repeat runs** (seeds 11 and 12, 2026-10-07) and **Retest on newer Nemotron models** (2026-10-22) | — |
-| Test counts refreshed | done 2026-10-26 | `docs/submission.md` **Technical execution**: pytest 3,837, Vitest 3,060, `node --test` 948, Playwright 17, cargo 167. Refresh again only if the code changes before submit | Director |
-| Sandboxes beta access | blocked | ADR 0033; the access request is the operator's | operator |
+| Test counts refreshed | done 2026-10-28 | `docs/submission.md` **Technical execution**: pytest 4,194, Vitest 3,185, `node --test` 949, Playwright 17, cargo 169. Refresh again only if the code changes before submit | Director |
+| Sandboxes beta access | not used | ADR 0033; the submission does not rely on it | — |
 
 ## Devpost form fields
 

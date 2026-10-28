@@ -23,16 +23,16 @@ voice calls themselves.
 
 ## The product as it stands
 
-The later weeks built the product around the gate (1,354 commits since 2026-10-08, `git log
---since=2026-10-08 --oneline | wc -l` on 2026-10-26). What a judge sees on one Windows PC:
+The later weeks built the product around the gate (1,594 commits since 2026-10-08, `git log
+--since=2026-10-08 --oneline | wc -l` on 2026-10-28). What a judge sees on one Windows PC:
 
 - **One window with depths.** The main window is a console over six scenes: Projects, Apps, Chores,
   Accounts, Voice and Mind (`apps/desktop/src/console/scenes.tsx`). Ctrl+K, or `/` outside a field,
   opens a finder that goes to any place by name.
 - **Projects are walled memory spaces (ADR 0225).** Taxes, a garden and a job hunt each get a
   Project; a memory written in one is recalled only there, and Core holds what belongs everywhere.
-- **Chores are playbooks.** 95 playbooks under `playbooks/`, each with a committed `bench.json`:
-  93 read `exceeds` and 2 `short`, all on Claude Sonnet, run 2026-10-08 to 2026-10-23 (the
+- **Chores are playbooks.** 100 playbooks under `playbooks/`, each with a committed `bench.json`:
+  96 read `exceeds` and 4 `short`, all on Claude Sonnet, run 2026-10-08 to 2026-10-26 (the
   `verdict.word` of `playbooks/*/bench.json`). The Chores scene replays each latest run turn by turn.
 - **Adopting a chore is a conversation (ADR 0097).** "Make it yours" opens a studio: she asks
   question cards, research lanes fill the case, the person drops in a letter or a statement, and an
@@ -41,6 +41,9 @@ The later weeks built the product around the gate (1,354 commits since 2026-10-0
   a card waits (ADR 0027). Her face is a drawn avatar where WebGL2 is available, a bell of light
   otherwise (ADR 0120); mouth shapes timed to speech need an optional face-helper environment. She
   speaks with local Kokoro and hears with local Whisper; the Voice scene walks the install.
+- **A look of her own (ADR 0142).** Look in Mind offers three skins; Wavefront, ported from a design
+  contest the owner judged, is the default, and the seal comes to her avatar. A skin is a token layer on the
+  real markup, so every scene keeps its structure and its contrast checks.
 - **Accounts.** Gmail and Notion connectors, and the tools of MCP servers the person lists in
   `mcp.json` (ADR 0144; Athena is the MCP client), each write behind the same gate.
 - **She sleeps on what she wrote (ADR 0143).** A cycle distils new conversation into facts and
@@ -252,8 +255,8 @@ Athena Portable is a new project. Its first commit is dated 2026-09-12, after th
 2026-08-26, and every commit since is in the period. It was rebuilt from scratch here, with an
 earlier product as prior art only. The Proving Ground, the `nebius` engine, the gate's single-use
 fix and the trigger page were built for this hackathon, with ADRs 0030 to 0039 recording the Proving
-Ground's founding decisions and ADR 0097 the documents lane the retest reached. All 225 ADRs, 0001
-(dated 2026-09-12) to 0225, were written in the period (`ls docs/adr/*.md | wc -l`).
+Ground's founding decisions and ADR 0097 the documents lane the retest reached. All 235 ADRs, 0001
+(dated 2026-09-12) to 0235, were written in the period (`ls docs/adr/*.md | wc -l`).
 
 ## How to run it, and how judges test it
 
@@ -312,10 +315,10 @@ minted only by the page and retired when it navigates.
 - **Proving Ground:** standard-library HTTP and SSE, throwaway worlds per attack, per-run and
   per-day spend caps, and verdicts read off the gate.
 - **Quality bar:** Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy, and an
-  architecture decision record for every choice a later reader could question (225 to date,
-  0001 to 0225, `ls docs/adr/*.md | wc -l`). On 2026-10-26 pytest collected 3,837 tests, the
-  desktop's Vitest suite ran 3,060, the bridge and example apps' `node --test` suites 948, the
-  journey's Playwright suite 17, and `cargo test` 167, all passing.
+  architecture decision record for every choice a later reader could question (235 to date,
+  0001 to 0235, `ls docs/adr/*.md | wc -l`). On 2026-10-28 pytest collected 4,194 tests (7 skipped), the
+  desktop's Vitest suite ran 3,185, the bridge and example apps' `node --test` suites 949, the
+  journey's Playwright suite 17, and `cargo test` 169, all passing.
 
 ## Non-goals
 
@@ -330,6 +333,6 @@ and a model never decides whether something is gated.
 | Criterion | Where it is answered |
 |---|---|
 | Technological Implementation | the Proving Ground (gate-read verdicts, approve-path probe, the fix it found), the `nebius` engine, Technical execution |
-| Design (complete product) | The product as it stands: one console over six scenes, Projects as walled memory, 95 benched chores adopted through a conversation, the halo, face and local voice, sleep proposals, a paired fleet; the architecture; the trigger page; How to run it |
+| Design (complete product) | The product as it stands: one console over six scenes, Projects as walled memory, 100 benched chores adopted through a conversation, the halo, face and local voice, sleep proposals, a paired fleet; the architecture; the trigger page; How to run it |
 | Potential Impact | the Track line; adversarial and user-level testing at cents per run (Where Token Factory accelerated the work) |
 | Quality of the Idea | Nemotron as attacker, user, second judge and document reader against a gate whose verdict no model sets; How NVIDIA Nemotron is used |

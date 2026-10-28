@@ -89,3 +89,7 @@ Dispatch: after Lane B, folded into the same write-set group as the Lane B cards
 - First-paint ceiling raised to 167,200 B (owner): build the shared daemon request door and the console reduced-motion fix.
 - Build: omitted motion channel with face.rs (Rust granted); tier pick ties on run-to-run noise.
 - Declined: forge failed generator call stops counting as a refusal (today's rule stands).
+
+## Status - 2026-10-28
+
+Audited against git history: all 16 Lane C and all 48 Lane B cards are built (61) or declined (3: judge drift anchors, failed-form fallback in the waking Face step, forge failed-generator rule). None is open. Cards are matched to commits by title (see `git log --since=2026-10-27`); each card's instrument test was not re-run in the audit.
