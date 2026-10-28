@@ -315,6 +315,38 @@ def test_a_refusal_sent_before_the_body_is_read_still_reaches_the_caller(live: L
     assert lost == []
 
 
+CRLF = bytes([13, 10])
+
+
+def test_a_caller_that_hangs_up_before_the_answer_is_read_leaves_no_traceback(
+    live: Live, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """A caller that resets its socket before it reads (the shell's probes, a cancelled fetch)
+    makes the reply's write fail with ``WinError 10053`` or a broken pipe. That is the caller's
+    choice, not a daemon fault, so the handler ends the connection quietly instead of letting
+    ``socketserver`` print a traceback into every terminal that watches the sidecar."""
+    live.daemon.routes.add(Route("GET", "/big", lambda request: (200, {"fill": "x" * 8_000_000})))
+    for _ in range(25):
+        connection = socket.create_connection((live.host, live.port), timeout=PATIENT_S)
+        connection.setsockopt(
+            socket.SOL_SOCKET, socket.SO_LINGER, (1).to_bytes(4, "little") + bytes(4)
+        )
+        connection.sendall(
+            b"GET /big HTTP/1.1"
+            + CRLF
+            + b"Host: localhost"
+            + CRLF
+            + b"X-Athena-Token: "
+            + TOKEN.encode()
+            + CRLF * 2
+        )
+        connection.close()
+    assert live.request("/health").status == 200  # the daemon is still answering
+    time.sleep(0.5)  # let the workers of the abandoned requests finish
+    err = capfd.readouterr().err
+    assert "Traceback" not in err, err[-1500:]
+
+
 def test_a_route_that_raises_is_a_500_that_quotes_nothing(live: Live) -> None:
     """A body may hold anything the caller put in it, so the detail is the exception type."""
 

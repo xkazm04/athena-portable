@@ -666,6 +666,19 @@ class DaemonServer(ThreadingHTTPServer):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         super().server_bind()
 
+    def handle_error(self, request: Any, client_address: Any) -> None:
+        """Say nothing when the caller is the one that hung up.
+
+        ``socketserver`` prints a full traceback for any exception that leaves a handler. A caller
+        that resets its socket (``WinError 10053`` or ``10054``, a broken pipe) before it sends its
+        request or reads the answer - the shell's probes, a cancelled fetch - is no daemon fault and
+        leaves nothing to answer, so the traceback only floods the terminal that watches the
+        sidecar. Anything else still prints.
+        """
+        if isinstance(sys.exc_info()[1], ConnectionError):
+            return
+        super().handle_error(request, client_address)
+
 
 def _log_escape(method: str, path: str, exc: BaseException) -> None:
     """One line on stderr for a failure that escaped a route or a socket (the daemon's log).
