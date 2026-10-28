@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import pytest
 
@@ -137,7 +139,7 @@ def test_a_png_is_the_same_lines_screenshotted_beside_the_pdf(tmp_path: Path) ->
 
     def run(argv: list[str], **kw: object) -> None:
         seen.append(argv)
-        page = Path(argv[-1].removeprefix("file:///"))
+        page = Path(url2pathname(urlparse(argv[-1]).path))
         assert "Riverside &lt;General&gt;" in page.read_text(encoding="utf-8")
         Path(argv[-2].removeprefix("--screenshot=")).write_bytes(b"PNG")
 
