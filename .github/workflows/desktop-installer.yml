@@ -1,0 +1,136 @@
+name: Desktop installer
+
+# Builds the Windows installer on a runner of the architecture it is for, installs it, launches it
+# and checks the frozen daemon comes up (scripts/package-desktop.ps1 does every stage; this file
+# only provides the machine). The daemon is a PyInstaller binary and cannot be cross-built, which
+# is why ARM64 gets its own runner instead of a --target flag.
+#
+# Run it from a terminal:  scripts\package-desktop.ps1 -Remote            (arm64, downloads the result)
+# or from the Actions tab: Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: "Architecture to build"
+        type: choice
+        options: [both, x64, arm64]
+        default: both
+      publish:
+        description: "Attach the installers to a GitHub Release (prerelease) after every stage passed"
+        type: boolean
+        default: false
+      tag:
+        description: "Release tag when publishing (empty = desktop-v<version>)"
+        type: string
+        required: false
+
+concurrency:
+  group: desktop-installer-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  # `matrix` is not available to a job-level `if`, so the legs to run are chosen here.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      legs: ${{ steps.pick.outputs.legs }}
+    steps:
+      - id: pick
+        run: |
+          X64='{"arch":"x64","runner":"windows-latest"}'
+          ARM='{"arch":"arm64","runner":"windows-11-arm"}'
+          case "${{ inputs.arch }}" in
+            x64)   LEGS="[$X64]" ;;
+            arm64) LEGS="[$ARM]" ;;
+            *)     LEGS="[$X64,$ARM]" ;;
+          esac
+          echo "legs=$LEGS" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.arch }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.legs) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+          # The two legs build different machine code; they must never share a cache.
+          key: ${{ matrix.arch }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build, install, launch, uninstall
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File scripts\package-desktop.ps1 -Arch ${{ matrix.arch }}
+
+      # Uploaded even when a stage failed: the report says which one.
+      - name: Upload installer, checksums and report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: athena-desktop-${{ matrix.arch }}
+          path: |
+            build/installer/*-setup.exe
+            build/installer/SHA256SUMS.txt
+            build/installer/report.json
+          if-no-files-found: warn
+
+  publish:
+    name: publish
+    needs: build
+    if: ${{ inputs.publish && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: athena-desktop-*
+          path: dist-installers
+          merge-multiple: true
+
+      # Each leg wrote its own one-line SHA256SUMS.txt; merge-multiple keeps the last, so rebuild
+      # the file from the installers that are actually here.
+      - name: Checksums
+        working-directory: dist-installers
+        run: sha256sum *-setup.exe | tee SHA256SUMS.txt
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(jq -r .version apps/desktop/src-tauri/tauri.conf.json)
+          TAG="${{ inputs.tag }}"
+          TAG="${TAG:-desktop-v$VERSION}"
+          NOTES="Unsigned Windows installer. Windows SmartScreen will warn: choose More info, then Run anyway. Verify the download against SHA256SUMS.txt."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist-installers/*-setup.exe dist-installers/SHA256SUMS.txt --clobber
+          else
+            gh release create "$TAG" dist-installers/*-setup.exe dist-installers/SHA256SUMS.txt \
+              --prerelease --title "Athena desktop $VERSION" --notes "$NOTES" --target "${{ github.sha }}"
+          fi
