@@ -75,3 +75,6 @@ evidence/
 # Featured chores (ADR 0300): rendered sheets are regenerable, recorded media stay local (ADR 0055)
 playbooks/*/senses/render/
 playbooks/*/senses/media/
+
+# demo film sources, take and audio (kept locally, not published)
+film/
