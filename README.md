@@ -52,6 +52,29 @@ you approve it. The Record lists every call with its cost.
 `http://127.0.0.1:1431/preview.html?scene=chores&fixture=typical&picker=1`. Every test runs
 without a provider: `uv run pytest` and `pnpm typecheck && pnpm lint && pnpm test`.
 
+## Install on Windows 11 (x64 and ARM64)
+
+Download `Athena_<version>_x64-setup.exe` or `Athena_<version>_arm64-setup.exe` from the
+[releases page](https://github.com/xkazm04/athena-portable/releases), check it against
+`SHA256SUMS.txt`, and run it. It installs for the current user only (no administrator prompt) to
+`%LOCALAPPDATA%\Athena`, and carries its own daemon, so Python is not needed. The installer is not
+code-signed yet, so Windows SmartScreen will warn: choose **More info**, then **Run anyway**.
+
+To build one yourself, `scripts\package-desktop.ps1` does every step and stops at the first failure:
+it freezes the daemon, builds the installer, installs it silently, starts it, waits for the daemon
+to answer, checks no daemon outlives the app, and uninstalls. It writes
+`build\installer\` (installer, `SHA256SUMS.txt`, `report.json`).
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-desktop.ps1            # this PC's architecture
+powershell -ExecutionPolicy Bypass -File scripts\package-desktop.ps1 -Remote     # ARM64, built and tested on a GitHub ARM runner
+powershell -ExecutionPolicy Bypass -File scripts\package-desktop.ps1 -Publish    # also attach to a Release (opt-in)
+```
+
+The daemon is a frozen Python program that cannot be cross-built, so an installer is built on a
+machine of its own architecture; `-Remote` is how an x64 PC gets the ARM64 one. How the check
+works is in [apps/desktop/SIDECAR.md](apps/desktop/SIDECAR.md).
+
 ## Capabilities and keys
 
 Everything works without a key unless the last column says otherwise.
