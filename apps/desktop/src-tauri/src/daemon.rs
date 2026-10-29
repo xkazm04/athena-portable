@@ -417,7 +417,13 @@ fn brain_dir(app: &AppHandle) -> PathBuf {
     app_data(app).join("brain")
 }
 
+/// `ATHENA_DATA_DIR` moves the brain and the token file somewhere else, the way `ATHENA_STORE`
+/// moves the store. The installer test sets both so a smoke run on a person's own PC never opens
+/// their brain.
 fn app_data(app: &AppHandle) -> PathBuf {
+    if let Some(dir) = std::env::var_os("ATHENA_DATA_DIR").filter(|v| !v.is_empty()) {
+        return PathBuf::from(dir);
+    }
     app.path()
         .app_data_dir()
         .unwrap_or_else(|_| PathBuf::from("."))
@@ -1242,6 +1248,71 @@ fn record_start_failure(app: &AppHandle, engine: &str, error: String) {
         .edit(app, |s| mark_start_failed(s, engine, error));
 }
 
+// ==============================================================================================
+// The daemon smoke (`ATHENA_SMOKE_DAEMON=1`)
+// ==============================================================================================
+
+/// How long a smoke waits for the daemon. Longer than the 20 s the status itself allows, because
+/// the first run of a one-file PyInstaller binary unpacks itself before it answers.
+const SMOKE_DAEMON_WAIT: Duration = Duration::from_secs(90);
+
+/// `(ok, the one JSON line)` for a status the smoke has settled on. `timed_out` is the smoke's own
+/// deadline, which is not a daemon state. The token never goes in the line: it is printed to a
+/// log and written to a file the installer test keeps.
+fn smoke_report(status: &DaemonStatus, timed_out: bool) -> (bool, String) {
+    let ok = !timed_out && status.health == Health::Ready;
+    let mut line = serde_json::json!({
+        "smoke": true,
+        "ok": ok,
+        "daemon": status.health,
+        "source": status.source,
+        "engine": status.engine,
+    });
+    if let Some(url) = status.url.as_ref().filter(|_| ok) {
+        line["url"] = serde_json::json!(url);
+    }
+    if !ok {
+        line["reason"] = serde_json::json!(if timed_out {
+            "the daemon was not ready in time".to_string()
+        } else if status.error.is_empty() {
+            "the daemon is not ready".to_string()
+        } else {
+            status.error.clone()
+        });
+    }
+    (ok, line.to_string())
+}
+
+/// `ATHENA_SMOKE_DAEMON=1`: wait for the daemon this launch started, print one JSON line saying
+/// whether it came up, write it to `ATHENA_SMOKE_OUT` too when that names a file (a release
+/// build has no console, so a pipe is not guaranteed), and end the process: 0 ready, 1 not. The
+/// installer test's proof that the installed shell found its sidecar, and that the sidecar runs.
+pub fn smoke_if_asked(app: &AppHandle) {
+    if std::env::var("ATHENA_SMOKE_DAEMON").map_or(true, |v| v.is_empty()) {
+        return;
+    }
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        let started = Instant::now();
+        let (ok, line) = loop {
+            let status = app.state::<Daemon>().status();
+            let settled = matches!(status.health, Health::Ready | Health::Failed);
+            let timed_out = started.elapsed() >= SMOKE_DAEMON_WAIT;
+            if settled || timed_out {
+                break smoke_report(&status, timed_out && !settled);
+            }
+            tokio::time::sleep(Duration::from_millis(250)).await;
+        };
+        println!("[smoke] daemon: {line}");
+        if let Some(out) = std::env::var_os("ATHENA_SMOKE_OUT").filter(|v| !v.is_empty()) {
+            if let Err(e) = std::fs::write(&out, &line) {
+                eprintln!("[smoke] cannot write {}: {e}", Path::new(&out).display());
+            }
+        }
+        app.exit(if ok { 0 } else { 1 });
+    });
+}
+
 /// The exit hook. `ExitRequested` fires when the last window closes and `Exit` just before the
 /// process leaves; taking both means the daemon is gone whichever way the shell is quit.
 pub fn on_app_event(app: &AppHandle, event: &tauri::RunEvent) {
@@ -1659,6 +1730,37 @@ mod tests {
     }
 
     // -- the argv contract ---------------------------------------------------------------------
+
+    #[test]
+    fn the_daemon_smoke_line_says_ready_or_why_not_and_never_carries_the_token() {
+        let mut status = DaemonStatus {
+            token: "secret-token".to_string(),
+            health: Health::Ready,
+            url: Some("http://127.0.0.1:51057".to_string()),
+            source: "sidecar".to_string(),
+            ..DaemonStatus::default()
+        };
+        let (ok, line) = smoke_report(&status, false);
+        assert!(ok);
+        let v: serde_json::Value = serde_json::from_str(&line).unwrap();
+        assert_eq!(v["daemon"], "ready");
+        assert_eq!(v["url"], "http://127.0.0.1:51057");
+        assert!(v.get("reason").is_none());
+        assert!(!line.contains("secret-token"));
+
+        status.health = Health::Failed;
+        status.error = "no athena-daemon beside the app".to_string();
+        let (ok, line) = smoke_report(&status, false);
+        let v: serde_json::Value = serde_json::from_str(&line).unwrap();
+        assert!(!ok);
+        assert_eq!(v["reason"], "no athena-daemon beside the app");
+        assert!(v.get("url").is_none(), "a failed daemon has no url on the line");
+
+        status.health = Health::Starting;
+        let (ok, line) = smoke_report(&status, true);
+        assert!(!ok);
+        assert!(line.contains("not ready in time"));
+    }
 
     #[test]
     fn the_arguments_are_the_contract_in_sidecar_md() {

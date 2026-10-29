@@ -166,3 +166,20 @@ tests). To run a *built* exe against a checkout on purpose, set `ATHENA_DEV_FALL
 | the status says `the daemon refused this shell's token` | something else is already listening on that URL, or the token file was replaced between the write and the read. |
 | `{"ok": false, …}` on the first line | the engine's CLI is not on PATH *for the spawned process*. A GUI app on Windows does not inherit a shell's PATH edits. |
 | a CORS error in the panel | the webview's origin is not one of `UI_ORIGINS`. Check the exact origin, scheme and port included. |
+
+## The installer smoke
+
+`scripts/package-desktop.ps1` proves an installed build with the shell's own smoke, set by
+environment because the other two smokes (`ATHENA_SMOKE`, `ATHENA_SMOKE_HANDS`) already are:
+
+| Variable | Effect |
+|---|---|
+| `ATHENA_SMOKE_DAEMON=1` | wait (up to 90 s: the first run of a one-file binary unpacks itself) for the daemon this launch started, print `[smoke] daemon: {...}`, and exit 0 when it is `ready`, 1 when not. A smoke run restores no tabs and writes no session. |
+| `ATHENA_SMOKE_OUT=<file>` | also write that JSON line to the file. A release build has no console, so a pipe is not guaranteed. |
+| `ATHENA_DATA_DIR=<dir>` | the brain and the token file live here instead of the app data directory. |
+| `ATHENA_STORE=<file>` | (existing) the shell's own SQLite store. |
+
+The test sets the last two to a scratch folder, so it never opens a person's real brain. The line
+keys are `smoke, ok, daemon, source, engine`, plus `url` when ready and `reason` when not; the
+token is never on it. `source` is `sidecar` for the frozen binary and `uv` for the dev fallback,
+which is how the test knows the installer carried its daemon.

@@ -273,6 +273,8 @@ pub fn run() {
             // c24's own smoke: one page hand and the shell's capture, against a real window.
             hands::smoke_if_asked(&handle, start_tab);
             daemon::start_at_launch(&handle);
+            // The installer test's check: wait for that daemon, report, exit (SIDECAR.md).
+            daemon::smoke_if_asked(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
 
             Ok(())

@@ -158,9 +158,9 @@ pub fn plan(saved: &Value, start_url: Option<&str>, refused: &dyn Fn(&str) -> bo
     out
 }
 
-/// Is this process a smoke run? Either smoke variable, set and non-empty.
+/// Is this process a smoke run? Any smoke variable, set and non-empty.
 pub fn is_smoke_run(env: &dyn Fn(&str) -> Option<String>) -> bool {
-    ["ATHENA_SMOKE", "ATHENA_SMOKE_HANDS"]
+    ["ATHENA_SMOKE", "ATHENA_SMOKE_HANDS", "ATHENA_SMOKE_DAEMON"]
         .iter()
         .any(|k| env(k).is_some_and(|v| !v.is_empty()))
 }
@@ -379,6 +379,7 @@ mod tests {
         };
         assert!(is_smoke_run(&env(&[("ATHENA_SMOKE", "1")])));
         assert!(is_smoke_run(&env(&[("ATHENA_SMOKE_HANDS", "1")])));
+        assert!(is_smoke_run(&env(&[("ATHENA_SMOKE_DAEMON", "1")])));
         assert!(!is_smoke_run(&env(&[("ATHENA_SMOKE", "")])), "an empty variable is unset");
         assert!(!is_smoke_run(&env(&[])));
 
